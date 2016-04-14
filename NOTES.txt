@@ -1,0 +1,60 @@
+Requirements
+------------
+
+- each packet MUST be able to contain multiple options (to minimise
+  RTTs)
+
+  - is the requirement for multiple options in a single packet actually
+    necessary.   An alternative might be to rely on Nagle and then just
+    use the single RCODE field which would simplify the reply packets
+    somewhat because there'd be no need to reserve per-option bits in
+    the response records.  The downside is the overhead of 14 bytes for
+    the TCP and DNS headers on each message.
+
+- each packet MUST generate a response (unless that packet contains
+  a "terminate" option)
+
+- the primary RCODE field is used for higher-level signaling:
+
+- the success or failure of each option MUST be individually reported
+  (i.e not in the primary RCODE field)
+
+- the session initiator (client) MUST be capable of handling packets
+  sent to it unilaterally by the server (e.g. timeout updates,
+  "terminate" options).
+
+Proposals
+---------
+
+- For RCODE:
+
+  o   NOERROR  (option OK)
+  o   NOTIMP   (opcode not implemented)
+  o   FORMERR  (packet malformed)
+
+- For per-option errors (re-using the RCODE registry)
+
+  o   NOERROR  (all OK)
+  o   NOTIMP   (option not recognised)
+  o   REFUSED  (refused for policy reasons)
+  o   others as appropriate ?
+
+- use the QR bit to indicate option / response flow direction
+
+  -> don't mix options and responses in the same packet
+
+- TCP keepalive (real keepalive, not the misnamed RFC 7828 one)
+  handled by sending a packet with no options in it
+
+Outstanding Questions
+---------------------
+
+- Are there any interactions with pipelining / OOP ?
+
+- Is it important to maintain resource record list semantics (i.e
+  should the packet look completely like a normal DNS packet to existing
+  software but with an unexpected opcode) ?
+
+- perhaps use all counts == 0 with extra data "after the end"?  To most
+  existing code that should look like a normal packet with garbage on
+  the end

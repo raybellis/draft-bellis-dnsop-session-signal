@@ -1,0 +1,18 @@
+{
+  "name": "draft-bellis-dnsop-session-signal",
+  "author": {
+    "name": "Ray Bellis",
+    "email": "ray@isc.org"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/ray/draft-bellis-dnsop-session-signal.git"
+  },
+  "devDependencies": {
+    "grunt": "0.4",
+    "grunt-contrib-watch": "0.6",
+    "grunt-express": "1.4",
+    "grunt-kramdown-rfc2629": "0.0",
+    "jit-grunt": "0.9"
+  }
+}
