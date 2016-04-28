@@ -11,10 +11,15 @@ Requirements
     the response records.  The downside is the overhead of 14 bytes for
     the TCP and DNS headers on each message.
 
+[[RB: I've gone for multiple options for now]]
+
 - each packet MUST generate a response (unless that packet contains
   a "terminate" option)
 
-- the primary RCODE field is used for higher-level signaling:
+[[RB: not sure about this now - this also doesn't seem to be appropriate
+for things like the idle timeout option]
+
+- the primary RCODE field is used for higher-level signaling
 
 - the success or failure of each option MUST be individually reported
   (i.e not in the primary RCODE field)
@@ -43,6 +48,9 @@ Proposals
 
   -> don't mix options and responses in the same packet
 
+[[RB: current draft text doesn't mandate this, since the request
+direction is also indicated in the four bits reserved for response status]]
+
 - TCP keepalive (real keepalive, not the misnamed RFC 7828 one)
   handled by sending a packet with no options in it
 
@@ -58,3 +66,5 @@ Outstanding Questions
 - perhaps use all counts == 0 with extra data "after the end"?  To most
   existing code that should look like a normal packet with garbage on
   the end
+
+[[RB:  I've gone for the zero counts with "extra data" for now]]
