@@ -6,8 +6,8 @@
 <!ENTITY RFC6891 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.6891.xml">
 <!ENTITY RFC2119 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml">
 <!ENTITY RFC1035 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.1035.xml">
-<!ENTITY RFC0768 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.0768.xml">
 <!ENTITY RFC7828 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.7828.xml">
+<!ENTITY RFC0768 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.0768.xml">
 ]>
 
 <?rfc toc="yes"?>
@@ -81,9 +81,9 @@
 
 <t>The Extension Mechanisms for DNS (EDNS(0)) <xref target="RFC6891"/> is explicitly
 defined to only have &ldquo;per-message&rdquo; semantics.  This document defines a
-new OpCode used to carry persistent &ldquo;per-session&rdquo; TLVs, and defines an
-initial set of TLVs used to handle feature negotiation and to manage
-session timeouts and termination.</t>
+new Session Signaling OpCode used to carry persistent &ldquo;per-session&rdquo;
+TLVs, and defines an initial set of TLVs used to handle feature
+negotiation and to manage session timeouts and termination.</t>
 
 
 
@@ -103,9 +103,9 @@ session timeouts and termination.</t>
 <section anchor="terminology" title="Terminology">
 
 <t>The terms &ldquo;initiator&rdquo; and &ldquo;responder&rdquo; correspond respectively to the
-initial sender and subsequent receiver of a Session TLV, regardless of
-which was the &ldquo;client&rdquo; and &ldquo;server&rdquo; in the usual DNS sense.  The term
-&ldquo;sender&rdquo; may apply to either an initiator or responder.</t>
+initial sender and subsequent receiver of a Session Signaling TLV,
+regardless of which was the &ldquo;client&rdquo; and &ldquo;server&rdquo; in the usual DNS
+sense.  The term &ldquo;sender&rdquo; may apply to either an initiator or responder.</t>
 
 <t>The key words &ldquo;MUST&rdquo;, &ldquo;MUST NOT&rdquo;, &ldquo;REQUIRED&rdquo;, &ldquo;SHALL&rdquo;, &ldquo;SHALL NOT&rdquo;,
 &ldquo;SHOULD&rdquo;, &ldquo;SHOULD NOT&rdquo;, &ldquo;RECOMMENDED&rdquo;, &ldquo;MAY&rdquo;, and &ldquo;OPTIONAL&rdquo; in this
@@ -114,20 +114,20 @@ document are to be interpreted as described in <xref target="RFC2119"/>.</t>
 </section>
 <section anchor="protocol-details" title="Protocol Details">
 
-<t>A packet containing the Session OpCode MUST NOT be sent over a
+<t>A packet containing the Session Signaling OpCode MUST NOT be sent over a
 connectionless protocol such as UDP <xref target="RFC0768"/>.</t>
 
-<t>Session TLVs relate only to the specific Layer 4 protocol connection
-over which they are being carried.  In the presence of a middle box
-(e.g. a DNS proxy or forwarder) they MUST NOT by forwarded in either
-direction by that middle box.</t>
+<t>Session Signaling TLVs relate only to the specific Layer 4 protocol
+connection over which they are being carried.  In the presence of a
+middle box (e.g. a DNS proxy or forwarder) they MUST NOT be blindly
+forwarded in either direction by that middle box.</t>
 
 <section anchor="packet-format" title="Packet Format">
 
-<t>A Session Signaling packet does not conform to the usual DNS packet
-format.  The 12 octet header format from <xref target="RFC1035"/> is preserved, but
-the four count fields (QDOUNT, ANCOUNT, NSCOUNT and ARCOUNT) MUST all be
-set to zero.</t>
+<t>A packet containing a Session Signaling Opcode does not conform to the
+usual DNS packet format.  The 12 octet header format from <xref target="RFC1035"/>
+is preserved, but the four count fields (QDOUNT, ANCOUNT, NSCOUNT and
+ARCOUNT) MUST all be set to zero.</t>
 
 <t>A list of TLVs are used in place of the usual sections, and MUST appear
 immediately after the 12 octet header.  The total size of the TLVs is
@@ -137,39 +137,54 @@ the 12 octets of the DNS header.</t>
 </section>
 <section anchor="packet-handling" title="Packet Handling">
 
+<t>Both clients and servers may unilaterally send Session Signaling TLVs at
+any point in the lifetime of a Layer 4 connection and are therefore
+considered to be the initiator with respect to that TLV.</t>
+
+<t>Not all Session Signaling TLVs require a response.  A single DNS message
+MAY combine both responses to requests previously received, and new
+requests.</t>
+
+<t>(editor&rsquo;s note - I was originally against both of the points in the
+previous paragraph, but once you&rsquo;ve got per-TLV status codes and a field
+indicating &ldquo;requests&rdquo; there doesn&rsquo;t seem to be any reason not to.)</t>
+
 </section>
 <section anchor="tlv-format" title="TLV Format">
 
 <figure><artwork><![CDATA[
+                                             1   1   1   1   1   1
+     0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-0: |  SESS-STATUS  |         SESSION-TYPE                          |
+   |SESSION-STATUS |         SESSION-TYPE                          |
    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-2: |                        SESSION-LENGTH                         |
+   |                        SESSION-LENGTH                         |
    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-4: |                                                               |
+   |                                                               |
    /                         SESSION-DATA                          /
    /                                                               /
    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 ]]></artwork></figure>
 
 <t><list style="hanging">
-  <t hangText='SESS-STATUS:'>
-  A 4 bit field used to differentiate between requests and
-responses (and the success or otherwise of the latter), per the DNS
-Session Status Codes Registry.  It MUST contain &ldquo;REQUEST&rdquo; (0) within
+  <t hangText='SESSION-STATUS:'>
+  A 4 bit field used to differentiate between requests and responses
+(and the success or otherwise of the latter), per the DNS Session
+Signalling Status Codes Registry.  It MUST contain &ldquo;REQUEST&rdquo; (0) within
 request packets and a non-zero code in response packets.</t>
   <t hangText='SESSION-TYPE:'>
-  A 12 bit field in network order giving the type of the
-current Session TLV per the IANA DNS Session Type Codes Registry.</t>
+  A 12 bit field in network order giving the type of the current Session
+Signaling TLV per the IANA DNS Session Signaling Type Codes Registry.</t>
   <t hangText='SESSION-LENGTH:'>
   A 16 bit field in network order giving the size in octets of
 SESSION-DATA.</t>
   <t hangText='SESSION-DATA:'>
   Type-code specific.  The SESSION-DATA field MUST be NUL padded to an
-even number of octets such that each Session TLV is aligned on a two
-octet boundary relative to the start of the first Session TLV.  Padding
-octets MUST NOT be included in the calculation of SESSION-LENGTH but
-MUST be included in the calculation of the overall message length.</t>
+even number of octets such that each Session Signaling TLV is aligned on
+a two octet boundary relative to the start of the first Session
+Signaling TLV.  Padding octets MUST NOT be included in the calculation
+of SESSION-LENGTH but MUST be included in the calculation of the overall
+message length.</t>
 </list></t>
 
 </section>
@@ -178,15 +193,18 @@ MUST be included in the calculation of the overall message length.</t>
 
 <section anchor="feature-negotiation" title="Feature Negotiation">
 
-<section anchor="session-support" title="Session Support">
+<section anchor="typecode-support" title="TypeCode Support">
 
-<t>The Session Support TLV (1) is used to allow an client and server
-to exchange information about which Session Type Codes they support.</t>
+<t>The TypeCode Support TLV (1) is used to allow a client and server to
+exchange information about which Session Signaling Type Codes they
+support.</t>
 
-<t>The SESSION-DATA contains a list of the Session Type Codes supported by
-the sender.</t>
+<t>The SESSION-DATA contains a list of the Session Signaling Type Codes
+supported by the sender.</t>
 
 <figure><artwork><![CDATA[
+                                             1   1   1   1   1   1
+     0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
    |                           TYPE CODEs                          |
    /                              ...                              /
@@ -197,15 +215,16 @@ the sender.</t>
 <t><list style="hanging">
   <t hangText='TYPE CODEs:'>
   A list of 16 bit words in network order comprising the complete list
-of Session Type Codes supported by the sender.  Since a Session Type
-Code is in reality only a 12 bit value, the four most significant bits
-of each word MUST be zero.  The number of TYPE CODEs can be calculated
-from the total length of the TLV.</t>
+of Session Signaling Type Codes supported by the sender.  Since a
+Session Signaling Type Code is in reality only a 12 bit value, the four
+most significant bits of each word MUST be zero.  The number of TYPE
+CODEs can be calculated from the total length of the TLV.</t>
 </list></t>
 
-<t>An initiator MAY send its own list of supported Session Type Codes in a
-Session Support TLV, and if sent they MUST be complete.  Otherwise the
-SESSION-DATA MUST be empty.</t>
+<t>An initiator MAY send its own list of supported Session Signaling Type
+Codes in a TypeCode Support TLV, and if sent they MUST be complete.
+Otherwise the SESSION-DATA MUST be empty.  In either case the responder
+MUST response with its complete list of supported Type Codes.</t>
 
 </section>
 <section anchor="edns-support" title="EDNS Support">
@@ -219,6 +238,8 @@ flags followed by a list of of the EDNS Option Codes supported by the
 sender.</t>
 
 <figure><artwork><![CDATA[
+                                             1   1   1   1   1   1
+     0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
    |               Z               |            VERSION            |
    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
@@ -246,11 +267,12 @@ can be calculated from the total length of the TLV minus the four octets
 for the preceding fields.</t>
 </list></t>
 
-<t>A client MAY send its own EDNS Support data in an EDNS Support TLV,
-and if sent it MUST be complete.  Otherwise the SESSION-DATA MUST be
-empty.</t>
+<t>A client MAY send its own EDNS Support data in an EDNS Support TLV, and
+if sent it MUST be complete.  Otherwise the SESSION-DATA MUST be empty.
+In either case the responder MUST respond with its complete EDNS Support
+data.</t>
 
-<t>A server SHOULD NOT sent an unsoliticited populated EDNS Support TLV.</t>
+<t>TODO: A server SHOULD NOT sent an unsoliticited populated EDNS Support TLV.</t>
 
 </section>
 </section>
@@ -258,7 +280,7 @@ empty.</t>
 
 <section anchor="terminate" title="Terminate">
 
-<t>The Terminate TLV (64) MAY be sent be a server to request that the client
+<t>The Terminate TLV (64) MAY be sent by a server to request that the client
 terminate the connection.  It MUST NOT be sent by a client.</t>
 
 <t>The client SHOULD terminate the connection as soon as possible, but MAY
@@ -277,6 +299,8 @@ client how long it may leave the current connection idle for.</t>
 <t>The SESSION-DATA is as follows:</t>
 
 <figure><artwork><![CDATA[
+                                             1   1   1   1   1   1
+     0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
    |                         IDLE TIMEOUT                          |
    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
@@ -292,25 +316,29 @@ bit word in network order in units of 100 milliseconds.</t>
 within the same connection.  The client SHOULD pay attention to the most
 recently received value, regardless of which method was used to send it.</t>
 
+<t>The client SHOULD terminate the current connection if it remains idle
+for longer than the specified timeout (and MAY of course terminate the
+connection earlier if desired).</t>
+
 <t>(author&rsquo;s note - this assumes that the EDNS OPT RR is added at the final
 stage of packet processing, and therefore not affected by out-of-order
-processing).</t>
+processing)</t>
 
 </section>
 </section>
 </section>
 <section anchor="iana-considerations" title="IANA Considerations">
 
-<section anchor="dns-session-opcode-registration" title="DNS Session OpCode Registration">
+<section anchor="dns-session-signaling-opcode-registration" title="DNS Session Signaling OpCode Registration">
 
-<t>IANA are directed to assign the value TBD for the Session OpCode in the
-DNS OpCodes Registry.</t>
+<t>IANA are directed to assign the value TBD for the Session Signaling
+OpCode in the DNS OpCodes Registry.</t>
 
 </section>
-<section anchor="dns-session-status-codes-registry" title="DNS Session Status Codes Registry">
+<section anchor="dns-session-signaling-status-codes-registry" title="DNS Session Signaling Status Codes Registry">
 
-<t>IANA are directed to create the DNS Session Status Codes Registry, with
-initial values as follows:</t>
+<t>IANA are directed to create the DNS Session Signaling Status Codes
+Registry, with initial values as follows:</t>
 
 <texttable>
       <ttcol align='right'>Code</ttcol>
@@ -335,13 +363,14 @@ initial values as follows:</t>
       <c>RFC-TBD1</c>
 </texttable>
 
-<t>Registration of additional Session Status Codes requires Standards Action.</t>
+<t>Registration of additional Session Signaling Status Codes requires
+Standards Action.</t>
 
 </section>
-<section anchor="dns-session-type-codes-registry" title="DNS Session Type Codes Registry">
+<section anchor="dns-session-signaling-type-codes-registry" title="DNS Session Signaling Type Codes Registry">
 
-<t>IANA are directed to create the DNS Session Type Codes Registry, with
-initial values as follows:</t>
+<t>IANA are directed to create the DNS Session Signaling Type Codes
+Registry, with initial values as follows:</t>
 
 <texttable>
       <ttcol align='right'>Type</ttcol>
@@ -353,7 +382,7 @@ initial values as follows:</t>
       <c>&#160;</c>
       <c>RFC-TBD1</c>
       <c>1</c>
-      <c>Session Support</c>
+      <c>TypeCode Support</c>
       <c>Standard</c>
       <c>RFC-TBD1</c>
       <c>2</c>
@@ -390,7 +419,8 @@ initial values as follows:</t>
       <c>&#160;</c>
 </texttable>
 
-<t>Registration of additional Session Type Codes requires Expert Review.</t>
+<t>Registration of additional Session Signaling Type Codes requires Expert
+Review.</t>
 
 </section>
 </section>
@@ -415,6 +445,7 @@ initial values as follows:</t>
 &RFC6891;
 &RFC2119;
 &RFC1035;
+&RFC7828;
 
 
     </references>
@@ -422,7 +453,6 @@ initial values as follows:</t>
     <references title='Informative References'>
 
 &RFC0768;
-&RFC7828;
 
 
     </references>
