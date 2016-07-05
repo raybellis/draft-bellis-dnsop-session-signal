@@ -38,8 +38,8 @@ author:
     phone: +1 408 974 3207
     email: cheshire@apple.com
   -
-    ins: S. Dickinson
-    name: Sara Dickinson
+    ins: J. Dickinson
+    name: John Dickinson
     org: Sinodun Internet Technologies
     abbrev: Sinodun
     street:
@@ -221,52 +221,6 @@ Codes in a TypeCode Support TLV, and if sent they MUST be complete.
 Otherwise the SESSION-DATA MUST be empty.  In either case the responder
 MUST response with its complete list of supported Type Codes.
 
-### EDNS Support
-
-The EDNS Support TLV (2) is used to allow a client and server to
-exchange information about which EDNS Version, Flags and Option Codes
-they support.
-
-The SESSION-DATA contains the supported EDNS version number and EDNS
-flags followed by a list of of the EDNS Option Codes supported by the
-sender.
-
-                                                 1   1   1   1   1   1
-         0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
-       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-       |               Z               |            VERSION            |
-       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-       |                             FLAGS                             |
-       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-       |                           OPT CODEs                           |
-       /                              ...                              /
-       /                                                               /
-       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-
-Z:
-: Set to zero by initiators and ignored by responders, unless modified
-in a subsequent specification.
-
-VERSION:
-: The maximum EDNS version number supported by the sender.
-
-FLAGS:
-: A bit mask containing a one (1) for each corresponding EDNS Flag bit
-(e.g. "DO") supported by the sender, and zero (0) otherwise.
-
-OPT CODEs:
-: A list of 16 bit words in network order containing the complete list
-of EDNS Option Codes supported by the sender.  The number of OPT CODEs
-can be calculated from the total length of the TLV minus the four octets
-for the preceding fields.
-
-A client MAY send its own EDNS Support data in an EDNS Support TLV, and
-if sent it MUST be complete.  Otherwise the SESSION-DATA MUST be empty.
-In either case the responder MUST respond with its complete EDNS Support
-data.
-
-TODO: A server SHOULD NOT sent an unsoliticited populated EDNS Support TLV.
-
 ## Layer 4 Connection Management TLVs
 
 ### Terminate
@@ -341,7 +295,6 @@ Registry, with initial values as follows:
 |--:|------|--------|-----------|
 | 0 | Reserved | | RFC-TBD1 |
 | 1 | TypeCode Support | Standard | RFC-TBD1 |
-| 2 | EDNS Support | Standard | RFC-TBD1 |
 | 3 - 63 | Unassigned, reserved for feature negotiation TLVs | | |
 | 64 | Terminate | Standard | RFC-TBD1 |
 | 65 | Idle Timeout | Standard | RFC-TBD1 |
