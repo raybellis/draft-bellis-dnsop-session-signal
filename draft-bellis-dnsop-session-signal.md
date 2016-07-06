@@ -324,7 +324,8 @@ Review. << RB: definition of process required? >>
 
 # Security Considerations
 
-TBD
+The authors are not aware of any specific security considerations
+introduced by this specification at this time.
 
 # Acknowledgements
 
