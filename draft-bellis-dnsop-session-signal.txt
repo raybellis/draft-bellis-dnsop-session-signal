@@ -5,13 +5,13 @@
 DNSOP Working Group                                            R. Bellis
 Internet-Draft                                                       ISC
 Intended status: Standards Track                             S. Cheshire
-Expires: October 3, 2016                                      Apple Inc.
+Expires: January 7, 2017                                      Apple Inc.
                                                             J. Dickinson
                                                                  Sinodun
                                                                A. Mankin
                                                              T. Pusateri
                                                             Unaffiliated
-                                                              April 2016
+                                                            July 6, 2016
 
 
                          DNS Session Signaling
@@ -41,7 +41,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on October 3, 2016.
+   This Internet-Draft will expire on January 7, 2017.
 
 Copyright Notice
 
@@ -53,9 +53,9 @@ Copyright Notice
 
 
 
-Bellis, et al.           Expires October 3, 2016                [Page 1]
+Bellis, et al.           Expires January 7, 2017                [Page 1]
 
-Internet-Draft            DNS Session Signaling               April 2016
+Internet-Draft            DNS Session Signaling                July 2016
 
 
    (http://trustee.ietf.org/license-info) in effect on the date of
@@ -109,9 +109,9 @@ Table of Contents
 
 
 
-Bellis, et al.           Expires October 3, 2016                [Page 2]
+Bellis, et al.           Expires January 7, 2017                [Page 2]
 
-Internet-Draft            DNS Session Signaling               April 2016
+Internet-Draft            DNS Session Signaling                July 2016
 
 
    protocol parsers should be able to read the packet header and then
@@ -165,9 +165,9 @@ Internet-Draft            DNS Session Signaling               April 2016
 
 
 
-Bellis, et al.           Expires October 3, 2016                [Page 3]
+Bellis, et al.           Expires January 7, 2017                [Page 3]
 
-Internet-Draft            DNS Session Signaling               April 2016
+Internet-Draft            DNS Session Signaling                July 2016
 
 
 3.2.  Message Handling
@@ -208,8 +208,9 @@ Internet-Draft            DNS Session Signaling               April 2016
 
    SESSION-STATUS:  A 4 bit field used in a response to indicate the
       success (or otherwise) of an operation, as defined in the DNS
-      Session Signaling Status Codes Registry.  It MUST contain
-      "NOERROR" (0) in a request message.
+      Session Signaling Status Codes Registry.  It SHOULD contain
+      "NOERROR" (0) in a request message but the responder MUST NOT
+      reject the request if it does not.
 
    SESSION-TYPE:  A 12 bit field in network order giving the type of the
       current Session Signaling TLV per the IANA DNS Session Signaling
@@ -220,10 +221,9 @@ Internet-Draft            DNS Session Signaling               April 2016
 
 
 
-
-Bellis, et al.           Expires October 3, 2016                [Page 4]
+Bellis, et al.           Expires January 7, 2017                [Page 4]
 
-Internet-Draft            DNS Session Signaling               April 2016
+Internet-Draft            DNS Session Signaling                July 2016
 
 
    SESSION-DATA:  Type-code specific.  The SESSION-DATA field MUST be
@@ -277,9 +277,9 @@ Internet-Draft            DNS Session Signaling               April 2016
 
 
 
-Bellis, et al.           Expires October 3, 2016                [Page 5]
+Bellis, et al.           Expires January 7, 2017                [Page 5]
 
-Internet-Draft            DNS Session Signaling               April 2016
+Internet-Draft            DNS Session Signaling                July 2016
 
 
 4.2.  Layer 4 Connection Management TLVs
@@ -333,9 +333,9 @@ Internet-Draft            DNS Session Signaling               April 2016
 
 
 
-Bellis, et al.           Expires October 3, 2016                [Page 6]
+Bellis, et al.           Expires January 7, 2017                [Page 6]
 
-Internet-Draft            DNS Session Signaling               April 2016
+Internet-Draft            DNS Session Signaling                July 2016
 
 
    << RB: this assumes that the EDNS OPT RR is added at the final stage
@@ -389,9 +389,9 @@ Internet-Draft            DNS Session Signaling               April 2016
 
 
 
-Bellis, et al.           Expires October 3, 2016                [Page 7]
+Bellis, et al.           Expires January 7, 2017                [Page 7]
 
-Internet-Draft            DNS Session Signaling               April 2016
+Internet-Draft            DNS Session Signaling                July 2016
 
 
    +----------+---------------------------------+----------+-----------+
@@ -426,7 +426,8 @@ Internet-Draft            DNS Session Signaling               April 2016
 
 6.  Security Considerations
 
-   TBD
+   The authors are not aware of any specific security considerations
+   introduced by this specification at this time.
 
 7.  Acknowledgements
 
@@ -438,17 +439,21 @@ Internet-Draft            DNS Session Signaling               April 2016
               specification", STD 13, RFC 1035, DOI 10.17487/RFC1035,
               November 1987, <http://www.rfc-editor.org/info/rfc1035>.
 
+
+
+
+
+
+
+Bellis, et al.           Expires January 7, 2017                [Page 8]
+
+Internet-Draft            DNS Session Signaling                July 2016
+
+
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119, DOI 10.17487/
               RFC2119, March 1997,
               <http://www.rfc-editor.org/info/rfc2119>.
-
-
-
-Bellis, et al.           Expires October 3, 2016                [Page 8]
-
-Internet-Draft            DNS Session Signaling               April 2016
-
 
    [RFC6891]  Damas, J., Graff, M., and P. Vixie, "Extension Mechanisms
               for DNS (EDNS(0))", STD 75, RFC 6891, DOI 10.17487/
@@ -490,20 +495,21 @@ Authors' Addresses
    United Kingdom
 
 
+
+
+
+
+
+
+Bellis, et al.           Expires January 7, 2017                [Page 9]
+
+Internet-Draft            DNS Session Signaling                July 2016
+
+
    Allison Mankin
    Unaffiliated
 
    Email: allison.mankin@gmail.com
-
-
-
-
-
-
-
-Bellis, et al.           Expires October 3, 2016                [Page 9]
-
-Internet-Draft            DNS Session Signaling               April 2016
 
 
    Tom Pusateri
@@ -551,10 +557,4 @@ Internet-Draft            DNS Session Signaling               April 2016
 
 
 
-
-
-
-
-
-
-Bellis, et al.           Expires October 3, 2016               [Page 10]
+Bellis, et al.           Expires January 7, 2017               [Page 10]

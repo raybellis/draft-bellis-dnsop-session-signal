@@ -69,7 +69,7 @@
       </address>
     </author>
 
-    <date year="2016" month="April"/>
+    <date year="2016" month="July"/>
 
     <area>Internet</area>
     <workgroup>DNSOP Working Group</workgroup>
@@ -204,8 +204,8 @@ such that all pending responses must be answered?&nbsp;&raquo;</t>
   <t hangText='SESSION-STATUS:'>
   A 4 bit field used in a response to indicate the success (or
 otherwise) of an operation, as defined in the DNS Session Signaling
-Status Codes Registry.  It MUST contain &ldquo;NOERROR&rdquo; (0) in a request
-message.</t>
+Status Codes Registry.  It SHOULD contain &ldquo;NOERROR&rdquo; (0) in a request
+message but the responder MUST NOT reject the request if it does not.</t>
   <t hangText='SESSION-TYPE:'>
   A 12 bit field in network order giving the type of the current Session
 Signaling TLV per the IANA DNS Session Signaling Type Codes Registry.</t>
@@ -416,7 +416,8 @@ Review. &laquo;&nbsp;RB: definition of process required?&nbsp;&raquo;</t>
 </section>
 <section anchor="security-considerations" title="Security Considerations">
 
-<t>TBD</t>
+<t>The authors are not aware of any specific security considerations
+introduced by this specification at this time.</t>
 
 </section>
 <section anchor="acknowledgements" title="Acknowledgements">
