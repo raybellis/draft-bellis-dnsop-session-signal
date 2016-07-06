@@ -6,7 +6,7 @@ DNSOP Working Group                                            R. Bellis
 Internet-Draft                                                       ISC
 Intended status: Standards Track                             S. Cheshire
 Expires: October 3, 2016                                      Apple Inc.
-                                                            S. Dickinson
+                                                            J. Dickinson
                                                                  Sinodun
                                                                A. Mankin
                                                              T. Pusateri
@@ -22,8 +22,9 @@ Abstract
    The Extension Mechanisms for DNS (EDNS(0)) [RFC6891] is explicitly
    defined to only have "per-message" semantics.  This document defines
    a new Session Signaling OpCode used to carry persistent "per-session"
-   TLVs, and defines an initial set of TLVs used to handle feature
-   negotiation and to manage session timeouts and termination.
+   type-length-values (TLVs), and defines an initial set of TLVs used to
+   handle feature negotiation and to manage session timeouts and
+   termination.
 
 Status of This Memo
 
@@ -49,7 +50,6 @@ Copyright Notice
 
    This document is subject to BCP 78 and the IETF Trust's Legal
    Provisions Relating to IETF Documents
-   (http://trustee.ietf.org/license-info) in effect on the date of
 
 
 
@@ -58,6 +58,7 @@ Bellis, et al.           Expires October 3, 2016                [Page 1]
 Internet-Draft            DNS Session Signaling               April 2016
 
 
+   (http://trustee.ietf.org/license-info) in effect on the date of
    publication of this document.  Please review these documents
    carefully, as they describe your rights and restrictions with respect
    to this document.  Code Components extracted from this document must
@@ -68,15 +69,14 @@ Internet-Draft            DNS Session Signaling               April 2016
 Table of Contents
 
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
-   2.  Terminology . . . . . . . . . . . . . . . . . . . . . . . . .   2
+   2.  Terminology . . . . . . . . . . . . . . . . . . . . . . . . .   3
    3.  Protocol Details  . . . . . . . . . . . . . . . . . . . . . .   3
-     3.1.  Packet Format . . . . . . . . . . . . . . . . . . . . . .   3
-     3.2.  Packet Handling . . . . . . . . . . . . . . . . . . . . .   3
-     3.3.  TLV Format  . . . . . . . . . . . . . . . . . . . . . . .   3
-   4.  Mandatory TLVs  . . . . . . . . . . . . . . . . . . . . . . .   4
-     4.1.  Feature Negotiation . . . . . . . . . . . . . . . . . . .   4
-       4.1.1.  TypeCode Support  . . . . . . . . . . . . . . . . . .   4
-       4.1.2.  EDNS Support  . . . . . . . . . . . . . . . . . . . .   5
+     3.1.  Message Format  . . . . . . . . . . . . . . . . . . . . .   3
+     3.2.  Message Handling  . . . . . . . . . . . . . . . . . . . .   4
+     3.3.  TLV Format  . . . . . . . . . . . . . . . . . . . . . . .   4
+   4.  Mandatory TLVs  . . . . . . . . . . . . . . . . . . . . . . .   5
+     4.1.  Feature Negotiation . . . . . . . . . . . . . . . . . . .   5
+       4.1.1.  TypeCode Support  . . . . . . . . . . . . . . . . . .   5
      4.2.  Layer 4 Connection Management TLVs  . . . . . . . . . . .   6
        4.2.1.  Terminate . . . . . . . . . . . . . . . . . . . . . .   6
        4.2.2.  Idle Timeout  . . . . . . . . . . . . . . . . . . . .   6
@@ -86,14 +86,36 @@ Table of Contents
      5.3.  DNS Session Signaling Type Codes Registry . . . . . . . .   7
    6.  Security Considerations . . . . . . . . . . . . . . . . . . .   8
    7.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .   8
-   8.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   8
-     8.1.  Normative References  . . . . . . . . . . . . . . . . . .   8
-     8.2.  Informative References  . . . . . . . . . . . . . . . . .   9
+   8.  Normative References  . . . . . . . . . . . . . . . . . . . .   8
    Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .   9
 
 1.  Introduction
 
-   ...
+   The Extension Mechanisms for DNS (EDNS(0)) [RFC6891] is explicitly
+   defined to only have "per-message" semantics.  This document defines
+   a new Session Signaling OpCode used to carry persistent "per-session"
+   type-length-values (TLVs), and defines an initial set of TLVs used to
+   handle feature negotiation and to manage session timeouts and
+   termination.
+
+   A further issue with EDNS(0) is that there is no standard mechanism
+   for a client to be able to tell whether a server has processed or
+   otherwise acted upon the individual options contained with an OPT RR.
+   The Session Signaling Opcode therefore requires an explicit response
+   to each TLV within a request.
+
+   The message format (see Section 3.1) does not completely conform to
+   the standard DNS packet format but is designed such that existing DNS
+
+
+
+Bellis, et al.           Expires October 3, 2016                [Page 2]
+
+Internet-Draft            DNS Session Signaling               April 2016
+
+
+   protocol parsers should be able to read the packet header and then
+   simply ignore the extra data that appears thereafter.
 
 2.  Terminology
 
@@ -107,60 +129,38 @@ Table of Contents
    "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
    document are to be interpreted as described in [RFC2119].
 
-
-
-Bellis, et al.           Expires October 3, 2016                [Page 2]
-
-Internet-Draft            DNS Session Signaling               April 2016
-
-
 3.  Protocol Details
 
-   A packet containing the Session Signaling OpCode MUST NOT be sent
-   over a connectionless protocol such as UDP [RFC0768].
+   Session Signaling messages MUST only be carried in protocols and in
+   environments that can guarantee that the same two endpoints are in
+   communication for the entire lifetime of the session.
 
-   Session Signaling TLVs relate only to the specific Layer 4 protocol
-   connection over which they are being carried.  In the presence of a
-   middle box (e.g. a DNS proxy or forwarder) they MUST NOT be blindly
-   forwarded in either direction by that middle box.
+   Session Signaling messages relate only to the specific session in
+   which they are being carried.  Where a middle box (e.g. a DNS proxy,
+   forwarder, or session multiplexer) is in the path the message MUST
+   NOT be blindly forwarded in either direction by that middle box.
+   This does not preclude the use of these messages in the presence of a
+   NAT box that rewrites Layer 3 or Layer 4 headers but otherwise
+   maintains the effect of a single session.
 
-3.1.  Packet Format
+   << RB: OSI Layer 5 session analog?  This is obviously intended for
+   TCP "sessions" which aren't distinct from Layer 4, but is this also
+   applicable to DNS-o-DTLS, or DNS over UDP with an EDNS cookie - I
+   think probably "yes" for the former, but "no" for the latter.  I'm
+   wondering whether "session" is even the right term to be using
+   here >>
 
-   A packet containing a Session Signaling Opcode does not conform to
-   the usual DNS packet format.  The 12 octet header format from
-   [RFC1035] is preserved, but the four count fields (QDOUNT, ANCOUNT,
-   NSCOUNT and ARCOUNT) MUST all be set to zero.
+3.1.  Message Format
+
+   A message containing a Session Signaling Opcode does not conform to
+   the usual DNS message format.  The 12 octet header format from
+   [RFC1035] is preserved, but the four section count fields (QDCOUNT,
+   ANCOUNT, NSCOUNT and ARCOUNT) MUST all be set to zero.
 
    A list of TLVs are used in place of the usual sections, and MUST
    appear immediately after the 12 octet header.  The total size of the
    TLVs is calculated from the value of the standard two octet framing
    word minus the 12 octets of the DNS header.
-
-3.2.  Packet Handling
-
-   Both clients and servers may unilaterally send Session Signaling TLVs
-   at any point in the lifetime of a Layer 4 connection and are
-   therefore considered to be the initiator with respect to that TLV.
-
-   Not all Session Signaling TLVs require a response.  A single DNS
-   message MAY combine both responses to requests previously received,
-   and new requests.
-
-   (editor's note - I was originally against both of the points in the
-   previous paragraph, but once you've got per-TLV status codes and a
-   field indicating "requests" there doesn't seem to be any reason not
-   to.)
-
-3.3.  TLV Format
-
-
-
-
-
-
-
-
-
 
 
 
@@ -169,6 +169,30 @@ Bellis, et al.           Expires October 3, 2016                [Page 3]
 
 Internet-Draft            DNS Session Signaling               April 2016
 
+
+3.2.  Message Handling
+
+   Both clients and servers may unilaterally send Session Signaling
+   messages at any point in the lifetime of a session and are therefore
+   considered to be the initiator with respect to that message.  The
+   initiator MUST set the value of the QR bit in the DNS header to zero
+   (0), and the responder MUST set it to one (1).
+
+   Every Session Signaling request message MUST elicit a response (which
+   MUST have the same ID in the DNS message header as in the request)
+   and every TLV contained within the request requires a corresponding
+   TLV in the response.
+
+   In order to preserve the correct sequence of state, Session Signaling
+   requests MUST NOT be processed out of order.  Similarly the TLVs in a
+   message MUST be processed in the order in which they are contained in
+   the message, and the order of the TLVs in the response MUST
+   correspond with the order of the TLVs in the request.
+
+   << RB: should the presence of a SS message create a "sequencing
+   point", such that all pending responses must be answered? >>
+
+3.3.  TLV Format
 
                                                 1   1   1   1   1   1
         0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
@@ -182,11 +206,10 @@ Internet-Draft            DNS Session Signaling               April 2016
       /                                                               /
       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
-   SESSION-STATUS:  A 4 bit field used to differentiate between requests
-      and responses (and the success or otherwise of the latter), per
-      the DNS Session Signalling Status Codes Registry.  It MUST contain
-      "REQUEST" (0) within request packets and a non-zero code in
-      response packets.
+   SESSION-STATUS:  A 4 bit field used in a response to indicate the
+      success (or otherwise) of an operation, as defined in the DNS
+      Session Signaling Status Codes Registry.  It MUST contain
+      "NOERROR" (0) in a request message.
 
    SESSION-TYPE:  A 12 bit field in network order giving the type of the
       current Session Signaling TLV per the IANA DNS Session Signaling
@@ -195,12 +218,24 @@ Internet-Draft            DNS Session Signaling               April 2016
    SESSION-LENGTH:  A 16 bit field in network order giving the size in
       octets of SESSION-DATA.
 
+
+
+
+Bellis, et al.           Expires October 3, 2016                [Page 4]
+
+Internet-Draft            DNS Session Signaling               April 2016
+
+
    SESSION-DATA:  Type-code specific.  The SESSION-DATA field MUST be
       NUL padded to an even number of octets such that each Session
       Signaling TLV is aligned on a two octet boundary relative to the
       start of the first Session Signaling TLV.  Padding octets MUST NOT
       be included in the calculation of SESSION-LENGTH but MUST be
       included in the calculation of the overall message length.
+
+   << RB: the padding is specified such that client code can read the
+   type and length fields directly from an aligned uint16_t array (with
+   byte swapping) >>
 
 4.  Mandatory TLVs
 
@@ -214,17 +249,6 @@ Internet-Draft            DNS Session Signaling               April 2016
 
    The SESSION-DATA contains a list of the Session Signaling Type Codes
    supported by the sender.
-
-
-
-
-
-
-
-Bellis, et al.           Expires October 3, 2016                [Page 4]
-
-Internet-Draft            DNS Session Signaling               April 2016
-
 
                                                 1   1   1   1   1   1
         0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
@@ -244,35 +268,11 @@ Internet-Draft            DNS Session Signaling               April 2016
    An initiator MAY send its own list of supported Session Signaling
    Type Codes in a TypeCode Support TLV, and if sent they MUST be
    complete.  Otherwise the SESSION-DATA MUST be empty.  In either case
-   the responder MUST response with its complete list of supported Type
+   the responder MUST respond with its complete list of supported Type
    Codes.
 
-4.1.2.  EDNS Support
 
-   The EDNS Support TLV (2) is used to allow a client and server to
-   exchange information about which EDNS Version, Flags and Option Codes
-   they support.
 
-   The SESSION-DATA contains the supported EDNS version number and EDNS
-   flags followed by a list of of the EDNS Option Codes supported by the
-   sender.
-
-                                                1   1   1   1   1   1
-        0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
-      +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-      |               Z               |            VERSION            |
-      +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-      |                             FLAGS                             |
-      +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-      |                           OPT CODEs                           |
-      /                              ...                              /
-      /                                                               /
-      +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-
-   Z: Set to zero by initiators and ignored by responders, unless
-      modified in a subsequent specification.
-
-   VERSION:  The maximum EDNS version number supported by the sender.
 
 
 
@@ -282,41 +282,30 @@ Bellis, et al.           Expires October 3, 2016                [Page 5]
 Internet-Draft            DNS Session Signaling               April 2016
 
 
-   FLAGS:  A bit mask containing a one (1) for each corresponding EDNS
-      Flag bit (e.g.  "DO") supported by the sender, and zero (0)
-      otherwise.
-
-   OPT CODEs:  A list of 16 bit words in network order containing the
-      complete list of EDNS Option Codes supported by the sender.  The
-      number of OPT CODEs can be calculated from the total length of the
-      TLV minus the four octets for the preceding fields.
-
-   A client MAY send its own EDNS Support data in an EDNS Support TLV,
-   and if sent it MUST be complete.  Otherwise the SESSION-DATA MUST be
-   empty.  In either case the responder MUST respond with its complete
-   EDNS Support data.
-
-   TODO: A server SHOULD NOT sent an unsoliticited populated EDNS
-   Support TLV.
-
 4.2.  Layer 4 Connection Management TLVs
 
 4.2.1.  Terminate
 
    The Terminate TLV (64) MAY be sent by a server to request that the
-   client terminate the connection.  It MUST NOT be sent by a client.
+   client terminate the session, and when sent MUST be the only TLV
+   present.  It MUST NOT be requested by a client.
 
-   The client SHOULD terminate the connection as soon as possible, but
-   MAY wait for any inflight queries to be answered.  It SHOULD NOT
-   initiate any new queries over the existing connection.
+   The client SHOULD terminate the session as soon as possible, but MAY
+   wait for any inflight queries to be answered.  It MUST NOT initiate
+   any new queries over the existing session, nor send any further TLVs
+   other than its response to the Terminate request.
 
-   This TLV has no SESSION-DATA.
+   << RB: dns-sd push has a "reconnect delay" option but I think it's of
+   questionable value since in an anycast or load-balancing architecture
+   there's no way for the client to know which instance sent the option
+   nor control which server instance the next connection will go to.
+   This would IMHO be better controlled directly at the TCP layer. >>
 
 4.2.2.  Idle Timeout
 
    The Idle Timeout TLV (65) has similar semantics to the EDNS TCP
    Keepalive Option [RFC7828].  It is used by a server to tell the
-   client how long it may leave the current connection idle for.
+   client how long it may leave the current session idle for.
 
    The SESSION-DATA is as follows:
 
@@ -326,9 +315,20 @@ Internet-Draft            DNS Session Signaling               April 2016
       |                         IDLE TIMEOUT                          |
       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
-   IDLE TIMEOUT:  the idle timeout for the current Layer 4 connection,
-      specified as a 16 bit word in network order in units of 100
-      milliseconds.
+   IDLE TIMEOUT:  the idle timeout for the current session, specified as
+      a 16 bit word in network order in units of 100 milliseconds.
+
+   It is NOT an error for this TLV and the similar EDNS option to appear
+   within the same session.  The client SHOULD pay attention to the most
+   recently received value, regardless of which method was used to send
+   it.
+
+   The client SHOULD terminate the current session if it remains idle
+   for longer than the specified timeout (and MAY of course terminate
+   the session earlier).  The server MAY unilaterally terminate the
+   connection at any time, but SHOULD allow the client to keep the
+   connection open if further messages are received before the idle
+   timeout expires.
 
 
 
@@ -338,18 +338,9 @@ Bellis, et al.           Expires October 3, 2016                [Page 6]
 Internet-Draft            DNS Session Signaling               April 2016
 
 
-   It is NOT an error for this TLV and the similar EDNS option to appear
-   within the same connection.  The client SHOULD pay attention to the
-   most recently received value, regardless of which method was used to
-   send it.
-
-   The client SHOULD terminate the current connection if it remains idle
-   for longer than the specified timeout (and MAY of course terminate
-   the connection earlier if desired).
-
-   (author's note - this assumes that the EDNS OPT RR is added at the
-   final stage of packet processing, and therefore not affected by out-
-   of-order processing)
+   << RB: this assumes that the EDNS OPT RR is added at the final stage
+   of message processing, and therefore not affected by out-of-order
+   processing - c.f. comment above about sequencing points >>
 
 5.  IANA Considerations
 
@@ -366,13 +357,11 @@ Internet-Draft            DNS Session Signaling               April 2016
      +------+----------+---------------------------------+-----------+
      | Code | Mnemonic | Description                     | Reference |
      +------+----------+---------------------------------+-----------+
-     |    0 | REQUEST  | Request packet                  | RFC-TBD1  |
+     |    0 | NOERROR  | TLV processed successfully      | RFC-TBD1  |
      |      |          |                                 |           |
      |    4 | NOTIMP   | TLV not implemented             | RFC-TBD1  |
      |      |          |                                 |           |
      |    5 | REFUSED  | TLV declined for policy reasons | RFC-TBD1  |
-     |      |          |                                 |           |
-     |   15 | SUCCESS  | TLV processed sucessfully       | RFC-TBD1  |
      +------+----------+---------------------------------+-----------+
 
    Registration of additional Session Signaling Status Codes requires
@@ -382,6 +371,17 @@ Internet-Draft            DNS Session Signaling               April 2016
 
    IANA are directed to create the DNS Session Signaling Type Codes
    Registry, with initial values as follows:
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -401,17 +401,15 @@ Internet-Draft            DNS Session Signaling               April 2016
    |          |                                 |          |           |
    |        1 | TypeCode Support                | Standard | RFC-TBD1  |
    |          |                                 |          |           |
-   |        2 | EDNS Support                    | Standard | RFC-TBD1  |
-   |          |                                 |          |           |
-   |   3 - 63 | Unassigned, reserved for        |          |           |
+   |   2 - 63 | Unassigned, reserved for        |          |           |
    |          | feature negotiation TLVs        |          |           |
    |          |                                 |          |           |
    |       64 | Terminate                       | Standard | RFC-TBD1  |
    |          |                                 |          |           |
    |       65 | Idle Timeout                    | Standard | RFC-TBD1  |
    |          |                                 |          |           |
-   | 66 - 127 | Unassigned, reserved for layer  |          |           |
-   |          | 4 connection TLVs               |          |           |
+   | 66 - 127 | Unassigned, reserved for        |          |           |
+   |          | session management TLVs         |          |           |
    |          |                                 |          |           |
    |    127 - | Unassigned                      |          |           |
    |     3965 |                                 |          |           |
@@ -424,7 +422,7 @@ Internet-Draft            DNS Session Signaling               April 2016
    +----------+---------------------------------+----------+-----------+
 
    Registration of additional Session Signaling Type Codes requires
-   Expert Review.
+   Expert Review. << RB: definition of process required? >>
 
 6.  Security Considerations
 
@@ -434,14 +432,16 @@ Internet-Draft            DNS Session Signaling               April 2016
 
    TBW
 
-8.  References
-
-8.1.  Normative References
+8.  Normative References
 
    [RFC1035]  Mockapetris, P., "Domain names - implementation and
               specification", STD 13, RFC 1035, DOI 10.17487/RFC1035,
               November 1987, <http://www.rfc-editor.org/info/rfc1035>.
 
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119, DOI 10.17487/
+              RFC2119, March 1997,
+              <http://www.rfc-editor.org/info/rfc2119>.
 
 
 
@@ -449,11 +449,6 @@ Bellis, et al.           Expires October 3, 2016                [Page 8]
 
 Internet-Draft            DNS Session Signaling               April 2016
 
-
-   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
-              Requirement Levels", BCP 14, RFC 2119, DOI 10.17487/
-              RFC2119, March 1997,
-              <http://www.rfc-editor.org/info/rfc2119>.
 
    [RFC6891]  Damas, J., Graff, M., and P. Vixie, "Extension Mechanisms
               for DNS (EDNS(0))", STD 75, RFC 6891, DOI 10.17487/
@@ -464,12 +459,6 @@ Internet-Draft            DNS Session Signaling               April 2016
               edns-tcp-keepalive EDNS0 Option", RFC 7828, DOI 10.17487/
               RFC7828, April 2016,
               <http://www.rfc-editor.org/info/rfc7828>.
-
-8.2.  Informative References
-
-   [RFC0768]  Postel, J., "User Datagram Protocol", STD 6, RFC 768, DOI
-              10.17487/RFC0768, August 1980,
-              <http://www.rfc-editor.org/info/rfc768>.
 
 Authors' Addresses
 
@@ -493,20 +482,7 @@ Authors' Addresses
    Email: cheshire@apple.com
 
 
-
-
-
-
-
-
-
-
-Bellis, et al.           Expires October 3, 2016                [Page 9]
-
-Internet-Draft            DNS Session Signaling               April 2016
-
-
-   Sara Dickinson
+   John Dickinson
    Sinodun Internet Technologies
    Magadalen Centre
    Oxford Science Park
@@ -520,11 +496,35 @@ Internet-Draft            DNS Session Signaling               April 2016
    Email: allison.mankin@gmail.com
 
 
+
+
+
+
+
+Bellis, et al.           Expires October 3, 2016                [Page 9]
+
+Internet-Draft            DNS Session Signaling               April 2016
+
+
    Tom Pusateri
    Unaffiliated
 
    Phone: +1 843 473 7394
    Email: pusateri@bangj.com
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
