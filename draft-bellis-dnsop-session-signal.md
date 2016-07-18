@@ -48,6 +48,19 @@ author:
     city: Oxford
     code: OX4 4GA
     country: United Kingdom
+    email: jad@sinodun.com
+  -
+    ins: S. Dickinson
+    name: Sara Dickinson
+    org: Sinodun Internet Technologies
+    abbrev: Sinodun
+    street:
+    - Magadalen Centre
+    - Oxford Science Park
+    city: Oxford
+    code: OX4 4GA
+    country: United Kingdom
+    email: sara@sinodun.com
   -
     ins: A. Mankin
     name: Allison Mankin
@@ -315,7 +328,7 @@ Registry, with initial values as follows:
 | 64 | Terminate | Standard | RFC-TBD1 |
 | 65 | Idle Timeout | Standard | RFC-TBD1 |
 | 66 - 127 | Unassigned, reserved for session management TLVs | | |
-| 127 - 3965 | Unassigned | | |
+| 127 - 3967 | Unassigned | | |
 | 3968 - 4031 | Reserved for local / experimental use | | |
 | 4032 - 4095 | Reserved for future expansion | | |
 
