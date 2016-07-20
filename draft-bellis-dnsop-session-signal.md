@@ -9,7 +9,7 @@ wg: DNSOP Working Group
 kw: Internet-Draft
 cat: std
 
-coding: us-ascii
+coding: utf-8
 pi:
   - toc
   - symrefs
