@@ -95,7 +95,7 @@ manage session timeouts and termination.
 A further issue with EDNS(0) is that there is no standard mechanism for
 a client to be able to tell whether a server has processed or otherwise
 acted upon the individual options contained with an OPT RR.  The Session
-Signaling Opcode therefore requires an explicit response to each request
+Signaling OpCode therefore requires an explicit response to each request
 message.
 
 It should be noted that the message format (see {{format}}) does not
@@ -126,9 +126,13 @@ not preclude the use of these messages in the presence of a NAT box that
 rewrites Layer 3 or Layer 4 headers but otherwise maintains the effect
 of a single session.
 
+Session Signaling support is said to be confirmed after the first
+session signaling TLV has been successfully sent by the initiator
+and acknowledged by the responder.
+
 ## Message Format {#format}
 
-A message containing a Session Signaling Opcode does not conform to the
+A message containing a Session Signaling OpCode does not conform to the
 usual DNS message format.  The 4 octet header format from {{!RFC1035}}
 is however preserved, since that includes the message ID and OpCode and
 RCODE fields, and the QR bit that differentiates requests from responses.
@@ -173,6 +177,7 @@ interpreted as follows:
 | Code | Mnemonic | Description | Reference |
 |-----:|----------|-------------|-----------|
 | 0 | NOERROR | TLV processed successfully | RFC-TBD1 |
+| 1 | FORMERR | TLV format error | RFC-TBD1 |
 | 4 | NOTIMP | Session Signaling not supported | RFC-TBD1 |
 | 5 | REFUSED | TLV declined for policy reasons | RFC-TBD1 |
 
@@ -268,12 +273,12 @@ at any time, but SHOULD allow the client to keep the connection open if
 further messages are received before the idle timeout expires.
 
 A client / server pair that supports Session Signaling MUST NOT use the
-EDNS TCP KeepAlive option within any message once Session Signaling
-support has been negotiated.
+EDNS TCP KeepAlive option within any message once bi-directional Session
+Signaling support has been confirmed.
 
 # IANA Considerations
 
-## DNS Session Signaling OpCode Registration
+## DNS Session Signaling Opcode Registration
 
 IANA are directed to assign the value TBD for the Session Signaling
 OpCode in the DNS OpCodes Registry.
