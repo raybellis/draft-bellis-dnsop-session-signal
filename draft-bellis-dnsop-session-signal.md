@@ -80,8 +80,7 @@ The Extension Mechanisms for DNS (EDNS(0)) {{!RFC6891}} is explicitly
 defined to only have "per-message" semantics.  This document defines a
 new Session Signaling OpCode used to carry persistent "per-session"
 type-length-values (TLVs), and defines an initial set of TLVs used to
-handle feature negotiation and to manage session timeouts and
-termination.
+manage session timeouts and termination.
 
 --- middle
 
@@ -91,19 +90,16 @@ The Extension Mechanisms for DNS (EDNS(0)) {{!RFC6891}} is explicitly
 defined to only have "per-message" semantics.  This document defines a
 new Session Signaling OpCode used to carry persistent "per-session"
 type-length-values (TLVs), and defines an initial set of TLVs used to
-handle feature negotiation and to manage session timeouts and
-termination.
+manage session timeouts and termination.
 
 A further issue with EDNS(0) is that there is no standard mechanism for
 a client to be able to tell whether a server has processed or otherwise
 acted upon the individual options contained with an OPT RR.  The Session
-Signaling Opcode therefore requires an explicit response to each TLV
-within a request.
+Signaling Opcode therefore requires an explicit response to each request
+message.
 
-The message format (see {{format}}) does not completely conform to the
-standard DNS packet format but is designed such that existing DNS
-protocol parsers should be able to read the packet header and then
-simply ignore the extra data that appears thereafter.
+It should be noted that the message format (see {{format}}) does not
+conform to the standard DNS packet format.
 
 # Terminology
 
@@ -130,23 +126,28 @@ not preclude the use of these messages in the presence of a NAT box that
 rewrites Layer 3 or Layer 4 headers but otherwise maintains the effect
 of a single session.
 
-<< RB: OSI Layer 5 session analog?  This is obviously intended for TCP
-"sessions" which aren't distinct from Layer 4, but is this also
-applicable to DNS-o-DTLS, or DNS over UDP with an EDNS cookie - I think
-probably "yes" for the former, but "no" for the latter.  I'm wondering
-whether "session" is even the right term to be using here >>
-
 ## Message Format {#format}
 
 A message containing a Session Signaling Opcode does not conform to the
-usual DNS message format.  The 12 octet header format from {{!RFC1035}}
-is preserved, but the four section count fields (QDCOUNT, ANCOUNT,
-NSCOUNT and ARCOUNT) MUST all be set to zero.
+usual DNS message format.  The 4 octet header format from {{!RFC1035}}
+is however preserved, since that includes the message ID and OpCode and
+RCODE fields, and the QR bit that differentiates requests from responses.
 
-A list of TLVs are used in place of the usual sections, and MUST appear
-immediately after the 12 octet header.  The total size of the TLVs is
-calculated from the value of the standard two octet framing word minus
-the 12 octets of the DNS header.
+Each message MUST contain only a single TLV.
+
+                                                 1   1   1   1   1   1
+         0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+       |                          MESSAGE ID                           |
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+       |QR |    OpCode     |            Z              |     RCODE     |
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+       |                                                               |
+       /                           TLV-DATA                            /
+       /                                                               /
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+
+<< RB: put field descriptions in here? >>
 
 ## Message Handling
 
@@ -157,25 +158,32 @@ initiator MUST set the value of the QR bit in the DNS header to zero
 (0), and the responder MUST set it to one (1).
 
 Every Session Signaling request message MUST elicit a response (which
-MUST have the same ID in the DNS message header as in the request) and
-every TLV contained within the request requires a corresponding TLV in
-the response.
+MUST have the same ID in the DNS message header as in the request).
 
 In order to preserve the correct sequence of state, Session Signaling
-requests MUST NOT be processed out of order.  Similarly the TLVs in a
-message MUST be processed in the order in which they are contained in
-the message, and the order of the TLVs in the response MUST correspond
-with the order of the TLVs in the request.
+requests MUST NOT be processed out of order.
 
 << RB: should the presence of a SS message create a "sequencing point",
 such that all pending responses must be answered? >>
+
+The RCODE value in a response uses a subset of the standard
+(non-extended) RCODE values from the IANA DNS RCODEs registry,
+interpreted as follows:
+
+| Code | Mnemonic | Description | Reference |
+|-----:|----------|-------------|-----------|
+| 0 | NOERROR | TLV processed successfully | RFC-TBD1 |
+| 4 | NOTIMP | Session Signaling not supported | RFC-TBD1 |
+| 5 | REFUSED | TLV declined for policy reasons | RFC-TBD1 |
+
+<< RB: any others? >>
 
 ## TLV Format
 
                                                  1   1   1   1   1   1
          0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-       |SESSION-STATUS |         SESSION-TYPE                          |
+       |                         SESSION-TYPE                          |
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
        |                        SESSION-LENGTH                         |
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
@@ -184,14 +192,8 @@ such that all pending responses must be answered? >>
        /                                                               /
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
-SESSION-STATUS:
-: A 4 bit field used in a response to indicate the success (or
-otherwise) of an operation, as defined in the DNS Session Signaling
-Status Codes Registry.  It SHOULD contain "NOERROR" (0) in a request
-message but the responder MUST NOT reject the request if it does not.
-
 SESSION-TYPE:
-: A 12 bit field in network order giving the type of the current Session
+: A 16 bit field in network order giving the type of the current Session
 Signaling TLV per the IANA DNS Session Signaling Type Codes Registry.
 
 SESSION-LENGTH:
@@ -199,72 +201,51 @@ SESSION-LENGTH:
 SESSION-DATA.
 
 SESSION-DATA:
-: Type-code specific.  The SESSION-DATA field MUST be NUL padded to an
-even number of octets such that each Session Signaling TLV is aligned on
-a two octet boundary relative to the start of the first Session
-Signaling TLV.  Padding octets MUST NOT be included in the calculation
-of SESSION-LENGTH but MUST be included in the calculation of the overall
-message length.
-
-<< RB: the padding is specified such that client code can read the type
-and length fields directly from an aligned uint16_t array (with byte
-swapping) >>
+: Type-code specific.
 
 # Mandatory TLVs
 
-## Feature Negotiation
+## Session Management Support TLVs
 
-### TypeCode Support
+### "Not Implemented"
 
-The TypeCode Support TLV (1) is used to allow a client and server to
-exchange information about which Session Signaling Type Codes they
-support.
+Since the "NOTIMP" RCODE is required to indicate lack of support for the
+Session Signaling OpCode itself, the "Not Implemented" TLV (0) MUST
+be returned in response to a TLV that is not implemented by the
+responder.
 
-The SESSION-DATA contains a list of the Session Signaling Type Codes
-supported by the sender.
+This TLV has no SESSION-DATA.
+
+## Session Management TLVs
+
+### Terminate
+
+The Terminate TLV (1) MAY be sent by a server to request that the
+client terminate the session.  It MUST NOT be initiated by a client.
+
+The client SHOULD terminate the session as soon as possible, but MAY
+wait for any inflight queries to be answered.  It MUST NOT initiate any
+new requests over the existing session.
+
+The SESSION-DATA is as follows:
 
                                                  1   1   1   1   1   1
          0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-       |                           TYPE CODEs                          |
-       /                              ...                              /
-       /                                                               /
+       |                        RECONNECT DELAY                        |
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
-TYPE CODEs:
-: A list of 16 bit words in network order comprising the complete list
-of Session Signaling Type Codes supported by the sender.  Since a
-Session Signaling Type Code is in reality only a 12 bit value, the four
-most significant bits of each word MUST be zero.  The number of TYPE
-CODEs can be calculated from the total length of the TLV.
+RECONNECT DELAY:
+: a time value, specified as a 16 bit word in network order in units of
+100 milliseconds, within which the client MUST NOT establish a new
+session to the current server.
 
-An initiator MAY send its own list of supported Session Signaling Type
-Codes in a TypeCode Support TLV, and if sent they MUST be complete.
-Otherwise the SESSION-DATA MUST be empty.  In either case the responder
-MUST respond with its complete list of supported Type Codes.
-
-## Layer 4 Connection Management TLVs
-
-### Terminate
-
-The Terminate TLV (64) MAY be sent by a server to request that the
-client terminate the session, and when sent MUST be the only TLV
-present.  It MUST NOT be requested by a client.
-
-The client SHOULD terminate the session as soon as possible, but MAY
-wait for any inflight queries to be answered.  It MUST NOT initiate any
-new queries over the existing session, nor send any further TLVs other
-than its response to the Terminate request.
-
-<< RB: dns-sd push has a "reconnect delay" option but I think it's of
-questionable value since in an anycast or load-balancing architecture
-there's no way for the client to know which instance sent the option nor
-control which server instance the next connection will go to.  This
-would IMHO be better controlled directly at the TCP layer. >>
+The RECOMMENDED value is 10 seconds.  << RB: text required here about
+default values for load balancers, etc >>
 
 ### Idle Timeout
 
-The Idle Timeout TLV (65) has similar semantics to the EDNS TCP
+The Idle Timeout TLV (2) has similar semantics to the EDNS TCP
 Keepalive Option {{!RFC7828}}.  It is used by a server to tell the
 client how long it may leave the current session idle for.
 
@@ -280,19 +261,15 @@ IDLE TIMEOUT:
 : the idle timeout for the current session, specified as a 16
 bit word in network order in units of 100 milliseconds.
 
-It is NOT an error for this TLV and the similar EDNS option to appear
-within the same session.  The client SHOULD pay attention to the most
-recently received value, regardless of which method was used to send it.
-
 The client SHOULD terminate the current session if it remains idle for
 longer than the specified timeout (and MAY of course terminate the
 session earlier).  The server MAY unilaterally terminate the connection
 at any time, but SHOULD allow the client to keep the connection open if
 further messages are received before the idle timeout expires.
 
-<< RB: this assumes that the EDNS OPT RR is added at the final stage of
-message processing, and therefore not affected by out-of-order
-processing - c.f. comment above about sequencing points >>
+A client / server pair that supports Session Signaling MUST NOT use the
+EDNS TCP KeepAlive option within any message once Session Signaling
+support has been negotiated.
 
 # IANA Considerations
 
@@ -301,20 +278,6 @@ processing - c.f. comment above about sequencing points >>
 IANA are directed to assign the value TBD for the Session Signaling
 OpCode in the DNS OpCodes Registry.
 
-## DNS Session Signaling Status Codes Registry
-
-IANA are directed to create the DNS Session Signaling Status Codes
-Registry, with initial values as follows:
-
-| Code | Mnemonic | Description | Reference |
-|-----:|----------|-------------|-----------|
-| 0 | NOERROR | TLV processed successfully | RFC-TBD1 |
-| 4 | NOTIMP | TLV not implemented | RFC-TBD1 |
-| 5 | REFUSED | TLV declined for policy reasons | RFC-TBD1 |
-
-Registration of additional Session Signaling Status Codes requires
-Standards Action.
-
 ## DNS Session Signaling Type Codes Registry
 
 IANA are directed to create the DNS Session Signaling Type Codes
@@ -322,15 +285,13 @@ Registry, with initial values as follows:
 
 | Type | Name | Status | Reference |
 |--:|------|--------|-----------|
-| 0 | Reserved | | RFC-TBD1 |
-| 1 | TypeCode Support | Standard | RFC-TBD1 |
-| 2 - 63 | Unassigned, reserved for feature negotiation TLVs | | |
-| 64 | Terminate | Standard | RFC-TBD1 |
-| 65 | Idle Timeout | Standard | RFC-TBD1 |
-| 66 - 127 | Unassigned, reserved for session management TLVs | | |
-| 127 - 3967 | Unassigned | | |
-| 3968 - 4031 | Reserved for local / experimental use | | |
-| 4032 - 4095 | Reserved for future expansion | | |
+| 0 | Not implemented | | RFC-TBD1 |
+| 1 | Terminate | Standard | RFC-TBD1 |
+| 2 | Idle Timeout | Standard | RFC-TBD1 |
+| 3 - 63 | Unassigned, reserved for session management TLVs | | |
+| 64 - 63487 | Unassigned | | |
+| 63488 - 64511 | Reserved for local / experimental use | | |
+| 64512 - 65535 | Reserved for future expansion | | |
 
 Registration of additional Session Signaling Type Codes requires Expert
 Review. << RB: definition of process required? >>
