@@ -140,11 +140,10 @@ rewrites Layer 3 or Layer 4 headers but otherwise maintains the effect
 of a single session.
 
 Session Signaling support is said to be confirmed after the first
-session signaling TLV has been successfully sent by the initiator and
-acknowledged by the responder.
-
-<< RB: do we need an explicit "start session signaling" message, since
-none of the initial defined set are mandatory to use? >>
+session signaling TLV has been sent by a client and successfully
+acknowledged by the server.  A server MUST NOT initiate Session
+Signaling messages until a client-initiated Session Signaling message is
+observed first.
 
 ## Message Format {#format}
 
@@ -201,8 +200,6 @@ interpreted as follows:
 | 4 | NOTIMP | Session Signaling not supported |
 | 5 | REFUSED | TLV declined for policy reasons |
 
-<< RB: any others? >>
-
 ## TLV Format
 
                                                  1   1   1   1   1   1
@@ -243,10 +240,25 @@ This TLV has no SESSION-DATA.
 
 ## Session Management TLVs
 
-### Terminate
+### Start Session
 
-The Terminate TLV (1) MAY be sent by a server to request that the
-client terminate the session.  It MUST NOT be initiated by a client.
+The Start Session TLV (1) MAY be used by a client to indicate support
+for Session Signaling.  It MUST NOT be initiated by a server.
+
+It is not required that this TLV be used in every session - the
+intention is to provide a suitable "No-Op" TLV to permit Session
+Signaling support to be negotiated without carrying any other
+information.
+
+This TLV has no SESSION-DATA.
+
+<< RB: this could perhaps also be used as a real "no-op" message to
+provide application-level keep-alive pings >>
+
+### Terminate Session
+
+The Terminate Session TLV (2) MAY be sent by a server to request that
+the client terminate the session.  It MUST NOT be initiated by a client.
 
 The client SHOULD terminate the session as soon as possible, but MAY
 wait for any inflight queries to be answered.  It MUST NOT initiate any
@@ -270,7 +282,7 @@ default values for load balancers, etc >>
 
 ### Idle Timeout
 
-The Idle Timeout TLV (2) has similar semantics to the EDNS TCP
+The Idle Timeout TLV (3) has similar semantics to the EDNS TCP
 Keepalive Option {{!RFC7828}}.  It is used by a server to tell the
 client how long it may leave the current session idle for.
 
@@ -311,9 +323,10 @@ Registry, with initial values as follows:
 | Type | Name | Status | Reference |
 |--:|------|--------|-----------|
 | 0 | Not implemented | | RFC-TBD1 |
-| 1 | Terminate | Standard | RFC-TBD1 |
-| 2 | Idle Timeout | Standard | RFC-TBD1 |
-| 3 - 63 | Unassigned, reserved for session management TLVs | | |
+| 1 | Start Session | Standard | RFC-TBD1 |
+| 2 | Terminate Session | Standard | RFC-TBD1 |
+| 3 | Idle Timeout | Standard | RFC-TBD1 |
+| 4 - 63 | Unassigned, reserved for session management TLVs | | |
 | 64 - 63487 | Unassigned | | |
 | 63488 - 64511 | Reserved for local / experimental use | | |
 | 64512 - 65535 | Reserved for future expansion | | |
@@ -323,8 +336,8 @@ Review. << RB: definition of process required? >>
 
 # Security Considerations
 
-The authors are not aware of any specific security considerations
-introduced by this specification at this time.
+If this mechanism is to be used over TLS, the TLS session SHOULD be
+established before any Session Signaling messages are used.
 
 # Acknowledgements
 

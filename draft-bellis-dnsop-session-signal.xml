@@ -168,11 +168,10 @@ rewrites Layer 3 or Layer 4 headers but otherwise maintains the effect
 of a single session.</t>
 
 <t>Session Signaling support is said to be confirmed after the first
-session signaling TLV has been successfully sent by the initiator and
-acknowledged by the responder.</t>
-
-<t>« RB: do we need an explicit “start session signaling” message, since
-none of the initial defined set are mandatory to use? »</t>
+session signaling TLV has been sent by a client and successfully
+acknowledged by the server.  A server MUST NOT initiate Session
+Signaling messages until a client-initiated Session Signaling message is
+observed first.</t>
 
 <section anchor="format" title="Message Format">
 
@@ -243,8 +242,6 @@ interpreted as follows:</t>
       <c>TLV declined for policy reasons</c>
 </texttable>
 
-<t>« RB: any others? »</t>
-
 </section>
 <section anchor="tlv-format" title="TLV Format">
 
@@ -292,10 +289,26 @@ responder.</t>
 </section>
 <section anchor="session-management-tlvs" title="Session Management TLVs">
 
-<section anchor="terminate" title="Terminate">
+<section anchor="start-session" title="Start Session">
 
-<t>The Terminate TLV (1) MAY be sent by a server to request that the
-client terminate the session.  It MUST NOT be initiated by a client.</t>
+<t>The Start Session TLV (1) MAY be used by a client to indicate support
+for Session Signaling.  It MUST NOT be initiated by a server.</t>
+
+<t>It is not required that this TLV be used in every session - the
+intention is to provide a suitable “No-Op” TLV to permit Session
+Signaling support to be negotiated without carrying any other
+information.</t>
+
+<t>This TLV has no SESSION-DATA.</t>
+
+<t>« RB: this could perhaps also be used as a real “no-op” message to
+provide application-level keep-alive pings »</t>
+
+</section>
+<section anchor="terminate-session" title="Terminate Session">
+
+<t>The Terminate Session TLV (2) MAY be sent by a server to request that
+the client terminate the session.  It MUST NOT be initiated by a client.</t>
 
 <t>The client SHOULD terminate the session as soon as possible, but MAY
 wait for any inflight queries to be answered.  It MUST NOT initiate any
@@ -324,7 +337,7 @@ default values for load balancers, etc »</t>
 </section>
 <section anchor="idle-timeout" title="Idle Timeout">
 
-<t>The Idle Timeout TLV (2) has similar semantics to the EDNS TCP
+<t>The Idle Timeout TLV (3) has similar semantics to the EDNS TCP
 Keepalive Option <xref target="RFC7828"/>.  It is used by a server to tell the
 client how long it may leave the current session idle for.</t>
 
@@ -380,14 +393,18 @@ Registry, with initial values as follows:</t>
       <c>&#160;</c>
       <c>RFC-TBD1</c>
       <c>1</c>
-      <c>Terminate</c>
+      <c>Start Session</c>
       <c>Standard</c>
       <c>RFC-TBD1</c>
       <c>2</c>
+      <c>Terminate Session</c>
+      <c>Standard</c>
+      <c>RFC-TBD1</c>
+      <c>3</c>
       <c>Idle Timeout</c>
       <c>Standard</c>
       <c>RFC-TBD1</c>
-      <c>3 - 63</c>
+      <c>4 - 63</c>
       <c>Unassigned, reserved for session management TLVs</c>
       <c>&#160;</c>
       <c>&#160;</c>
@@ -412,8 +429,8 @@ Review. « RB: definition of process required? »</t>
 </section>
 <section anchor="security-considerations" title="Security Considerations">
 
-<t>The authors are not aware of any specific security considerations
-introduced by this specification at this time.</t>
+<t>If this mechanism is to be used over TLS, the TLS session SHOULD be
+established before any Session Signaling messages are used.</t>
 
 </section>
 <section anchor="acknowledgements" title="Acknowledgements">
