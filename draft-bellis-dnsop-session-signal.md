@@ -112,7 +112,7 @@ The term "session" in the context of this document means the exchange of
 DNS messages over a single connection using an end-to-end transport
 protocol where:
 
-- connections are long-lived
+- connections can be long-lived
 - either end of the connection may initiate requests
 - message delivery order is guaranteed
 - it is guaranteed that the same two endpoints are in communication for
@@ -126,10 +126,10 @@ document are to be interpreted as described in {{!RFC2119}}.
 
 Session Signaling messages MUST only be carried in protocols and in
 environments where a session may be established according to the
-definition above.  Standard DNS over TCP, and DNS over TLS {{?RFC7858}}
-are appropriate protocols.  DNS over plain UDP is not appropriate since
-it fails on both the bi-directional initiation requirement and the
-message order delivery requirement.
+definition above.  Standard DNS over TCP {{!RFC1035}}, and DNS over TLS
+{{?RFC7858}} are appropriate protocols.  DNS over plain UDP is not
+appropriate since it fails on both the bi-directional initiation
+requirement and the message order delivery requirement.
 
 Session Signaling messages relate only to the specific session in which
 they are being carried.  Where a middle box (e.g. a DNS proxy,
@@ -140,13 +140,14 @@ rewrites Layer 3 or Layer 4 headers but otherwise maintains the effect
 of a single session.
 
 A server MUST NOT initiate Session Signaling messages until a
-client-initiated Session Signaling message is observed first.  This
+client-initiated Session Signaling message is received first.  This
 requirement is to ensure that the client does not observe unsolicited
 inbound messages until it has indicated its ability to handle them.
 
-Session Signaling support is therefore said to be confirmed after the
-first session signaling TLV has been sent by a client and successfully
-acknowledged by the server.
+Session Signaling support is therefore said to be confirmed from the
+client's point of view after the first session signaling TLV has been
+sent by that client and subsequently successfully acknowledged by the
+server.
 
 Use of Session Signaling by a client should be taken as an implicit
 request for a long-lived session.
@@ -350,8 +351,9 @@ Review. << RB: definition of process required? >>
 
 # Security Considerations
 
-If this mechanism is to be used over TLS, the TLS session SHOULD be
-established before any Session Signaling messages are used.
+If this mechanism is to be used with DNS over TLS, then these messages
+are subject to the same constraints as any other DNS over TLS messages
+and MUST NOT be sent in the clear before the TLS session is established.
 
 # Acknowledgements
 
