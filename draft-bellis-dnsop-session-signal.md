@@ -64,7 +64,7 @@ author:
   -
     ins: A. Mankin
     name: Allison Mankin
-    org: Unaffiliated
+    org: Salesforce
     email: allison.mankin@gmail.com
   -
     ins: T. Pusateri

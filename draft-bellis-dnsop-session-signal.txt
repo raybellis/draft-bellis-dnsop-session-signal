@@ -10,6 +10,7 @@ Expires: January 22, 2017                                     Apple Inc.
                                                             S. Dickinson
                                                                  Sinodun
                                                                A. Mankin
+                                                              Salesforce
                                                              T. Pusateri
                                                             Unaffiliated
                                                            July 21, 2016
@@ -48,8 +49,7 @@ Copyright Notice
    Copyright (c) 2016 IETF Trust and the persons identified as the
    document authors.  All rights reserved.
 
-   This document is subject to BCP 78 and the IETF Trust's Legal
-   Provisions Relating to IETF Documents
+
 
 
 
@@ -58,6 +58,8 @@ Bellis, et al.          Expires January 22, 2017                [Page 1]
 Internet-Draft            DNS Session Signaling                July 2016
 
 
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents
    (http://trustee.ietf.org/license-info) in effect on the date of
    publication of this document.  Please review these documents
    carefully, as they describe your rights and restrictions with respect
@@ -76,7 +78,7 @@ Table of Contents
      3.3.  TLV Format  . . . . . . . . . . . . . . . . . . . . . . .   5
    4.  Mandatory TLVs  . . . . . . . . . . . . . . . . . . . . . . .   5
      4.1.  Session Management Support TLVs . . . . . . . . . . . . .   5
-       4.1.1.  "Not Implemented" . . . . . . . . . . . . . . . . . .   5
+       4.1.1.  "Not Implemented" . . . . . . . . . . . . . . . . . .   6
      4.2.  Session Management TLVs . . . . . . . . . . . . . . . . .   6
        4.2.1.  Terminate . . . . . . . . . . . . . . . . . . . . . .   6
        4.2.2.  Idle Timeout  . . . . . . . . . . . . . . . . . . . .   6
@@ -104,8 +106,6 @@ Table of Contents
    The Session Signaling OpCode therefore requires an explicit response
    to each request message.
 
-   It should be noted that the message format (see Section 3.1) does not
-   conform to the standard DNS packet format.
 
 
 
@@ -113,6 +113,9 @@ Bellis, et al.          Expires January 22, 2017                [Page 2]
 
 Internet-Draft            DNS Session Signaling                July 2016
 
+
+   It should be noted that the message format (see Section 3.1) does not
+   conform to the standard DNS packet format.
 
 2.  Terminology
 
@@ -160,15 +163,15 @@ Internet-Draft            DNS Session Signaling                July 2016
    session signaling TLV has been successfully sent by the initiator and
    acknowledged by the responder.
 
-   << RB: do we need an explicit "start session signaling" message,
-   since none of the initial defined set are mandatory to use? >>
-
 
 
 Bellis, et al.          Expires January 22, 2017                [Page 3]
 
 Internet-Draft            DNS Session Signaling                July 2016
 
+
+   << RB: do we need an explicit "start session signaling" message,
+   since none of the initial defined set are mandatory to use? >>
 
 3.1.  Message Format
 
@@ -215,9 +218,6 @@ Internet-Draft            DNS Session Signaling                July 2016
    << RB: should the presence of a SS message create a "sequencing
    point", such that all pending responses must be answered? >>
 
-   The RCODE value in a response uses a subset of the standard (non-
-   extended) RCODE values from the IANA DNS RCODEs registry, interpreted
-   as follows:
 
 
 
@@ -225,6 +225,10 @@ Bellis, et al.          Expires January 22, 2017                [Page 4]
 
 Internet-Draft            DNS Session Signaling                July 2016
 
+
+   The RCODE value in a response uses a subset of the standard (non-
+   extended) RCODE values from the IANA DNS RCODEs registry, interpreted
+   as follows:
 
            +------+----------+---------------------------------+
            | Code | Mnemonic | Description                     |
@@ -267,12 +271,8 @@ Internet-Draft            DNS Session Signaling                July 2016
 
 4.1.  Session Management Support TLVs
 
-4.1.1.  "Not Implemented"
 
-   Since the "NOTIMP" RCODE is required to indicate lack of support for
-   the Session Signaling OpCode itself, the "Not Implemented" TLV (0)
-   MUST be returned in response to a TLV that is not implemented by the
-   responder.
+
 
 
 
@@ -281,6 +281,13 @@ Bellis, et al.          Expires January 22, 2017                [Page 5]
 
 Internet-Draft            DNS Session Signaling                July 2016
 
+
+4.1.1.  "Not Implemented"
+
+   Since the "NOTIMP" RCODE is required to indicate lack of support for
+   the Session Signaling OpCode itself, the "Not Implemented" TLV (0)
+   MUST be returned in response to a TLV that is not implemented by the
+   responder.
 
    This TLV has no SESSION-DATA.
 
@@ -324,13 +331,6 @@ Internet-Draft            DNS Session Signaling                July 2016
       |                         IDLE TIMEOUT                          |
       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
-   IDLE TIMEOUT:  the idle timeout for the current session, specified as
-      a 16 bit word in network order in units of 100 milliseconds.
-
-   The client SHOULD terminate the current session if it remains idle
-   for longer than the specified timeout (and MAY of course terminate
-   the session earlier).  The server MAY unilaterally terminate the
-
 
 
 Bellis, et al.          Expires January 22, 2017                [Page 6]
@@ -338,6 +338,12 @@ Bellis, et al.          Expires January 22, 2017                [Page 6]
 Internet-Draft            DNS Session Signaling                July 2016
 
 
+   IDLE TIMEOUT:  the idle timeout for the current session, specified as
+      a 16 bit word in network order in units of 100 milliseconds.
+
+   The client SHOULD terminate the current session if it remains idle
+   for longer than the specified timeout (and MAY of course terminate
+   the session earlier).  The server MAY unilaterally terminate the
    connection at any time, but SHOULD allow the client to keep the
    connection open if further messages are received before the idle
    timeout expires.
@@ -380,12 +386,6 @@ Internet-Draft            DNS Session Signaling                July 2016
    |     65535 |                                |          |           |
    +-----------+--------------------------------+----------+-----------+
 
-   Registration of additional Session Signaling Type Codes requires
-   Expert Review. << RB: definition of process required? >>
-
-
-
-
 
 
 
@@ -393,6 +393,9 @@ Bellis, et al.          Expires January 22, 2017                [Page 7]
 
 Internet-Draft            DNS Session Signaling                July 2016
 
+
+   Registration of additional Session Signaling Type Codes requires
+   Expert Review. << RB: definition of process required? >>
 
 6.  Security Considerations
 
@@ -434,9 +437,6 @@ Internet-Draft            DNS Session Signaling                July 2016
               2016, <http://www.rfc-editor.org/info/rfc7858>.
 
 Authors' Addresses
-
-
-
 
 
 
@@ -491,7 +491,7 @@ Internet-Draft            DNS Session Signaling                July 2016
 
 
    Allison Mankin
-   Unaffiliated
+   Salesforce
 
    Email: allison.mankin@gmail.com
 
