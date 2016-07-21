@@ -5,14 +5,14 @@
 DNSOP Working Group                                            R. Bellis
 Internet-Draft                                                       ISC
 Intended status: Standards Track                             S. Cheshire
-Expires: January 21, 2017                                     Apple Inc.
+Expires: January 22, 2017                                     Apple Inc.
                                                             J. Dickinson
                                                             S. Dickinson
                                                                  Sinodun
                                                                A. Mankin
                                                              T. Pusateri
                                                             Unaffiliated
-                                                           July 20, 2016
+                                                           July 21, 2016
 
 
                          DNS Session Signaling
@@ -41,7 +41,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on January 21, 2017.
+   This Internet-Draft will expire on January 22, 2017.
 
 Copyright Notice
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Bellis, et al.          Expires January 21, 2017                [Page 1]
+Bellis, et al.          Expires January 22, 2017                [Page 1]
 
 Internet-Draft            DNS Session Signaling                July 2016
 
@@ -71,21 +71,23 @@ Table of Contents
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
    2.  Terminology . . . . . . . . . . . . . . . . . . . . . . . . .   3
    3.  Protocol Details  . . . . . . . . . . . . . . . . . . . . . .   3
-     3.1.  Message Format  . . . . . . . . . . . . . . . . . . . . .   3
+     3.1.  Message Format  . . . . . . . . . . . . . . . . . . . . .   4
      3.2.  Message Handling  . . . . . . . . . . . . . . . . . . . .   4
-     3.3.  TLV Format  . . . . . . . . . . . . . . . . . . . . . . .   4
+     3.3.  TLV Format  . . . . . . . . . . . . . . . . . . . . . . .   5
    4.  Mandatory TLVs  . . . . . . . . . . . . . . . . . . . . . . .   5
      4.1.  Session Management Support TLVs . . . . . . . . . . . . .   5
        4.1.1.  "Not Implemented" . . . . . . . . . . . . . . . . . .   5
-     4.2.  Session Management TLVs . . . . . . . . . . . . . . . . .   5
-       4.2.1.  Terminate . . . . . . . . . . . . . . . . . . . . . .   5
+     4.2.  Session Management TLVs . . . . . . . . . . . . . . . . .   6
+       4.2.1.  Terminate . . . . . . . . . . . . . . . . . . . . . .   6
        4.2.2.  Idle Timeout  . . . . . . . . . . . . . . . . . . . .   6
-   5.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   6
-     5.1.  DNS Session Signaling OpCode Registration . . . . . . . .   6
-     5.2.  DNS Session Signaling Type Codes Registry . . . . . . . .   6
-   6.  Security Considerations . . . . . . . . . . . . . . . . . . .   7
-   7.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .   7
-   8.  Normative References  . . . . . . . . . . . . . . . . . . . .   7
+   5.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   7
+     5.1.  DNS Session Signaling Opcode Registration . . . . . . . .   7
+     5.2.  DNS Session Signaling Type Codes Registry . . . . . . . .   7
+   6.  Security Considerations . . . . . . . . . . . . . . . . . . .   8
+   7.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .   8
+   8.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   8
+     8.1.  Normative References  . . . . . . . . . . . . . . . . . .   8
+     8.2.  Informative References  . . . . . . . . . . . . . . . . .   8
    Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .   8
 
 1.  Introduction
@@ -99,7 +101,7 @@ Table of Contents
    A further issue with EDNS(0) is that there is no standard mechanism
    for a client to be able to tell whether a server has processed or
    otherwise acted upon the individual options contained with an OPT RR.
-   The Session Signaling Opcode therefore requires an explicit response
+   The Session Signaling OpCode therefore requires an explicit response
    to each request message.
 
    It should be noted that the message format (see Section 3.1) does not
@@ -107,9 +109,7 @@ Table of Contents
 
 
 
-
-
-Bellis, et al.          Expires January 21, 2017                [Page 2]
+Bellis, et al.          Expires January 22, 2017                [Page 2]
 
 Internet-Draft            DNS Session Signaling                July 2016
 
@@ -122,6 +122,18 @@ Internet-Draft            DNS Session Signaling                July 2016
    sense.  The term "sender" may apply to either an initiator or
    responder.
 
+   The term "session" in the context of this document requires use of a
+   DNS transport where:
+
+   o  connections are long-lived
+
+   o  either end of the connection may initiate requests
+
+   o  message delivery order is guaranteed
+
+   o  it is guaranteed that the same two endpoints are in communication
+      for the entire lifetime of the session.
+
    The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
    "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
    document are to be interpreted as described in [RFC2119].
@@ -129,8 +141,11 @@ Internet-Draft            DNS Session Signaling                July 2016
 3.  Protocol Details
 
    Session Signaling messages MUST only be carried in protocols and in
-   environments that can guarantee that the same two endpoints are in
-   communication for the entire lifetime of the session.
+   environments where a session may be established according to the
+   definition above.  Standard DNS over TCP, and DNS over TLS [RFC7858]
+   are appropriate protocols.  DNS over plain UDP is not appropriate
+   since it fails on the bi-directional initiation and message order
+   delivery requirements.
 
    Session Signaling messages relate only to the specific session in
    which they are being carried.  Where a middle box (e.g. a DNS proxy,
@@ -140,9 +155,24 @@ Internet-Draft            DNS Session Signaling                July 2016
    NAT box that rewrites Layer 3 or Layer 4 headers but otherwise
    maintains the effect of a single session.
 
+   Session Signaling support is said to be confirmed after the first
+   session signaling TLV has been successfully sent by the initiator and
+   acknowledged by the responder.
+
+
+
+
+
+
+
+Bellis, et al.          Expires January 22, 2017                [Page 3]
+
+Internet-Draft            DNS Session Signaling                July 2016
+
+
 3.1.  Message Format
 
-   A message containing a Session Signaling Opcode does not conform to
+   A message containing a Session Signaling OpCode does not conform to
    the usual DNS message format.  The 4 octet header format from
    [RFC1035] is however preserved, since that includes the message ID
    and OpCode and RCODE fields, and the QR bit that differentiates
@@ -161,14 +191,6 @@ Internet-Draft            DNS Session Signaling                July 2016
       /                           TLV-DATA                            /
       /                                                               /
       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-
-
-
-
-Bellis, et al.          Expires January 21, 2017                [Page 3]
-
-Internet-Draft            DNS Session Signaling                July 2016
-
 
    << RB: put field descriptions in here? >>
 
@@ -193,10 +215,23 @@ Internet-Draft            DNS Session Signaling                July 2016
    extended) RCODE values from the IANA DNS RCODEs registry, interpreted
    as follows:
 
+
+
+
+
+
+
+Bellis, et al.          Expires January 22, 2017                [Page 4]
+
+Internet-Draft            DNS Session Signaling                July 2016
+
+
      +------+----------+---------------------------------+-----------+
      | Code | Mnemonic | Description                     | Reference |
      +------+----------+---------------------------------+-----------+
      |    0 | NOERROR  | TLV processed successfully      | RFC-TBD1  |
+     |      |          |                                 |           |
+     |    1 | FORMERR  | TLV format error                | RFC-TBD1  |
      |      |          |                                 |           |
      |    4 | NOTIMP   | Session Signaling not supported | RFC-TBD1  |
      |      |          |                                 |           |
@@ -219,13 +254,6 @@ Internet-Draft            DNS Session Signaling                July 2016
       /                                                               /
       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
-
-
-Bellis, et al.          Expires January 21, 2017                [Page 4]
-
-Internet-Draft            DNS Session Signaling                July 2016
-
-
    SESSION-TYPE:  A 16 bit field in network order giving the type of the
       current Session Signaling TLV per the IANA DNS Session Signaling
       Type Codes Registry.
@@ -245,6 +273,14 @@ Internet-Draft            DNS Session Signaling                July 2016
    the Session Signaling OpCode itself, the "Not Implemented" TLV (0)
    MUST be returned in response to a TLV that is not implemented by the
    responder.
+
+
+
+
+Bellis, et al.          Expires January 22, 2017                [Page 5]
+
+Internet-Draft            DNS Session Signaling                July 2016
+
 
    This TLV has no SESSION-DATA.
 
@@ -274,14 +310,6 @@ Internet-Draft            DNS Session Signaling                July 2016
    The RECOMMENDED value is 10 seconds.  << RB: text required here about
    default values for load balancers, etc >>
 
-
-
-
-Bellis, et al.          Expires January 21, 2017                [Page 5]
-
-Internet-Draft            DNS Session Signaling                July 2016
-
-
 4.2.2.  Idle Timeout
 
    The Idle Timeout TLV (2) has similar semantics to the EDNS TCP
@@ -302,17 +330,25 @@ Internet-Draft            DNS Session Signaling                July 2016
    The client SHOULD terminate the current session if it remains idle
    for longer than the specified timeout (and MAY of course terminate
    the session earlier).  The server MAY unilaterally terminate the
+
+
+
+Bellis, et al.          Expires January 22, 2017                [Page 6]
+
+Internet-Draft            DNS Session Signaling                July 2016
+
+
    connection at any time, but SHOULD allow the client to keep the
    connection open if further messages are received before the idle
    timeout expires.
 
    A client / server pair that supports Session Signaling MUST NOT use
-   the EDNS TCP KeepAlive option within any message once Session
-   Signaling support has been negotiated.
+   the EDNS TCP KeepAlive option within any message once bi-directional
+   Session Signaling support has been confirmed.
 
 5.  IANA Considerations
 
-5.1.  DNS Session Signaling OpCode Registration
+5.1.  DNS Session Signaling Opcode Registration
 
    IANA are directed to assign the value TBD for the Session Signaling
    OpCode in the DNS OpCodes Registry.
@@ -321,22 +357,6 @@ Internet-Draft            DNS Session Signaling                July 2016
 
    IANA are directed to create the DNS Session Signaling Type Codes
    Registry, with initial values as follows:
-
-
-
-
-
-
-
-
-
-
-
-
-Bellis, et al.          Expires January 21, 2017                [Page 6]
-
-Internet-Draft            DNS Session Signaling                July 2016
-
 
    +-----------+--------------------------------+----------+-----------+
    |      Type | Name                           | Status   | Reference |
@@ -363,6 +383,17 @@ Internet-Draft            DNS Session Signaling                July 2016
    Registration of additional Session Signaling Type Codes requires
    Expert Review. << RB: definition of process required? >>
 
+
+
+
+
+
+
+Bellis, et al.          Expires January 22, 2017                [Page 7]
+
+Internet-Draft            DNS Session Signaling                July 2016
+
+
 6.  Security Considerations
 
    The authors are not aware of any specific security considerations
@@ -372,7 +403,9 @@ Internet-Draft            DNS Session Signaling                July 2016
 
    TBW
 
-8.  Normative References
+8.  References
+
+8.1.  Normative References
 
    [RFC1035]  Mockapetris, P., "Domain names - implementation and
               specification", STD 13, RFC 1035, DOI 10.17487/RFC1035,
@@ -382,17 +415,6 @@ Internet-Draft            DNS Session Signaling                July 2016
               Requirement Levels", BCP 14, RFC 2119, DOI 10.17487/
               RFC2119, March 1997,
               <http://www.rfc-editor.org/info/rfc2119>.
-
-
-
-
-
-
-
-Bellis, et al.          Expires January 21, 2017                [Page 7]
-
-Internet-Draft            DNS Session Signaling                July 2016
-
 
    [RFC6891]  Damas, J., Graff, M., and P. Vixie, "Extension Mechanisms
               for DNS (EDNS(0))", STD 75, RFC 6891, DOI 10.17487/
@@ -404,7 +426,29 @@ Internet-Draft            DNS Session Signaling                July 2016
               RFC7828, April 2016,
               <http://www.rfc-editor.org/info/rfc7828>.
 
+8.2.  Informative References
+
+   [RFC7858]  Hu, Z., Zhu, L., Heidemann, J., Mankin, A., Wessels, D.,
+              and P. Hoffman, "Specification for DNS over Transport
+              Layer Security (TLS)", RFC 7858, DOI 10.17487/RFC7858, May
+              2016, <http://www.rfc-editor.org/info/rfc7858>.
+
 Authors' Addresses
+
+
+
+
+
+
+
+
+
+
+
+Bellis, et al.          Expires January 22, 2017                [Page 8]
+
+Internet-Draft            DNS Session Signaling                July 2016
+
 
    Ray Bellis
    Internet Systems Consortium, Inc.
@@ -436,20 +480,6 @@ Authors' Addresses
    Email: jad@sinodun.com
 
 
-
-
-
-
-
-
-
-
-
-Bellis, et al.          Expires January 21, 2017                [Page 8]
-
-Internet-Draft            DNS Session Signaling                July 2016
-
-
    Sara Dickinson
    Sinodun Internet Technologies
    Magadalen Centre
@@ -464,6 +494,16 @@ Internet-Draft            DNS Session Signaling                July 2016
    Unaffiliated
 
    Email: allison.mankin@gmail.com
+
+
+
+
+
+
+
+Bellis, et al.          Expires January 22, 2017                [Page 9]
+
+Internet-Draft            DNS Session Signaling                July 2016
 
 
    Tom Pusateri
@@ -501,4 +541,20 @@ Internet-Draft            DNS Session Signaling                July 2016
 
 
 
-Bellis, et al.          Expires January 21, 2017                [Page 9]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Bellis, et al.          Expires January 22, 2017               [Page 10]

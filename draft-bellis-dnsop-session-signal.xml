@@ -7,6 +7,7 @@
 <!ENTITY RFC2119 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml">
 <!ENTITY RFC1035 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.1035.xml">
 <!ENTITY RFC7828 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.7828.xml">
+<!ENTITY RFC7858 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.7858.xml">
 ]>
 
 <?rfc toc="yes"?>
@@ -118,7 +119,7 @@ manage session timeouts and termination.</t>
 <t>A further issue with EDNS(0) is that there is no standard mechanism for
 a client to be able to tell whether a server has processed or otherwise
 acted upon the individual options contained with an OPT RR.  The Session
-Signaling Opcode therefore requires an explicit response to each request
+Signaling OpCode therefore requires an explicit response to each request
 message.</t>
 
 <t>It should be noted that the message format (see <xref target="format"/>) does not
@@ -132,6 +133,17 @@ initial sender and subsequent receiver of a Session Signaling TLV,
 regardless of which was the “client” and “server” in the usual DNS
 sense.  The term “sender” may apply to either an initiator or responder.</t>
 
+<t>The term “session” in the context of this document requires use of a DNS
+transport where:</t>
+
+<t><list style="symbols">
+  <t>connections are long-lived</t>
+  <t>either end of the connection may initiate requests</t>
+  <t>message delivery order is guaranteed</t>
+  <t>it is guaranteed that the same two endpoints are in communication for
+the entire lifetime of the session.</t>
+</list></t>
+
 <t>The key words “MUST”, “MUST NOT”, “REQUIRED”, “SHALL”, “SHALL NOT”,
 “SHOULD”, “SHOULD NOT”, “RECOMMENDED”, “MAY”, and “OPTIONAL” in this
 document are to be interpreted as described in <xref target="RFC2119"/>.</t>
@@ -140,8 +152,11 @@ document are to be interpreted as described in <xref target="RFC2119"/>.</t>
 <section anchor="protocol-details" title="Protocol Details">
 
 <t>Session Signaling messages MUST only be carried in protocols and in
-environments that can guarantee that the same two endpoints are in
-communication for the entire lifetime of the session.</t>
+environments where a session may be established according to the
+definition above.  Standard DNS over TCP, and DNS over TLS <xref target="RFC7858"/>
+are appropriate protocols.  DNS over plain UDP is not appropriate since
+it fails on the bi-directional initiation and message order delivery
+requirements.</t>
 
 <t>Session Signaling messages relate only to the specific session in which
 they are being carried.  Where a middle box (e.g. a DNS proxy,
@@ -151,9 +166,13 @@ not preclude the use of these messages in the presence of a NAT box that
 rewrites Layer 3 or Layer 4 headers but otherwise maintains the effect
 of a single session.</t>
 
+<t>Session Signaling support is said to be confirmed after the first
+session signaling TLV has been successfully sent by the initiator
+and acknowledged by the responder.</t>
+
 <section anchor="format" title="Message Format">
 
-<t>A message containing a Session Signaling Opcode does not conform to the
+<t>A message containing a Session Signaling OpCode does not conform to the
 usual DNS message format.  The 4 octet header format from <xref target="RFC1035"/>
 is however preserved, since that includes the message ID and OpCode and
 RCODE fields, and the QR bit that differentiates requests from responses.</t>
@@ -206,6 +225,10 @@ interpreted as follows:</t>
       <c>0</c>
       <c>NOERROR</c>
       <c>TLV processed successfully</c>
+      <c>RFC-TBD1</c>
+      <c>1</c>
+      <c>FORMERR</c>
+      <c>TLV format error</c>
       <c>RFC-TBD1</c>
       <c>4</c>
       <c>NOTIMP</c>
@@ -325,15 +348,15 @@ at any time, but SHOULD allow the client to keep the connection open if
 further messages are received before the idle timeout expires.</t>
 
 <t>A client / server pair that supports Session Signaling MUST NOT use the
-EDNS TCP KeepAlive option within any message once Session Signaling
-support has been negotiated.</t>
+EDNS TCP KeepAlive option within any message once bi-directional Session
+Signaling support has been confirmed.</t>
 
 </section>
 </section>
 </section>
 <section anchor="iana-considerations" title="IANA Considerations">
 
-<section anchor="dns-session-signaling-opcode-registration" title="DNS Session Signaling OpCode Registration">
+<section anchor="dns-session-signaling-opcode-registration" title="DNS Session Signaling Opcode Registration">
 
 <t>IANA are directed to assign the value TBD for the Session Signaling
 OpCode in the DNS OpCodes Registry.</t>
@@ -411,6 +434,12 @@ introduced by this specification at this time.</t>
 
     </references>
 
+    <references title='Informative References'>
+
+&RFC7858;
+
+
+    </references>
 
 
 

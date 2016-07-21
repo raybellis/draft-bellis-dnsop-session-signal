@@ -108,6 +108,16 @@ initial sender and subsequent receiver of a Session Signaling TLV,
 regardless of which was the "client" and "server" in the usual DNS
 sense.  The term "sender" may apply to either an initiator or responder.
 
+The term "session" in the context of this document means the exchange of
+DNS messages over a single connection using an end-to-end transport protocol
+where:
+
+- connections are long-lived
+- either end of the connection may initiate requests
+- message delivery order is guaranteed
+- it is guaranteed that the same two endpoints are in communication for
+the entire lifetime of the session.
+
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
 "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
 document are to be interpreted as described in {{!RFC2119}}.
@@ -115,8 +125,11 @@ document are to be interpreted as described in {{!RFC2119}}.
 # Protocol Details
 
 Session Signaling messages MUST only be carried in protocols and in
-environments that can guarantee that the same two endpoints are in
-communication for the entire lifetime of the session.
+environments where a session may be established according to the
+definition above.  Standard DNS over TCP, and DNS over TLS {{?RFC7858}}
+are appropriate protocols.  DNS over plain UDP is not appropriate since
+it fails on the bi-directional initiation and message order delivery
+requirements.
 
 Session Signaling messages relate only to the specific session in which
 they are being carried.  Where a middle box (e.g. a DNS proxy,
