@@ -139,11 +139,14 @@ not preclude the use of these messages in the presence of a NAT box that
 rewrites Layer 3 or Layer 4 headers but otherwise maintains the effect
 of a single session.
 
-Session Signaling support is said to be confirmed after the first
-session signaling TLV has been sent by a client and successfully
-acknowledged by the server.  A server MUST NOT initiate Session
-Signaling messages until a client-initiated Session Signaling message is
-observed first.
+A server MUST NOT initiate Session Signaling messages until a
+client-initiated Session Signaling message is observed first.  This
+requirement is to ensure that the client does not observe unsolicited
+inbound messages until it has indicated its ability to handle them.
+
+Session Signaling support is therefore said to be confirmed after the
+first session signaling TLV has been sent by a client and successfully
+acknowledged by the server.
 
 Use of Session Signaling by a client should be taken as an implicit
 request for a long-lived session.
