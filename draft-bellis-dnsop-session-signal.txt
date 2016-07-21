@@ -76,20 +76,20 @@ Table of Contents
      3.1.  Message Format  . . . . . . . . . . . . . . . . . . . . .   4
      3.2.  Message Handling  . . . . . . . . . . . . . . . . . . . .   4
      3.3.  TLV Format  . . . . . . . . . . . . . . . . . . . . . . .   5
-   4.  Mandatory TLVs  . . . . . . . . . . . . . . . . . . . . . . .   5
-     4.1.  Session Management Support TLVs . . . . . . . . . . . . .   5
-       4.1.1.  "Not Implemented" . . . . . . . . . . . . . . . . . .   5
+   4.  Mandatory TLVs  . . . . . . . . . . . . . . . . . . . . . . .   6
+     4.1.  Session Management Support TLVs . . . . . . . . . . . . .   6
+       4.1.1.  "Not Implemented" . . . . . . . . . . . . . . . . . .   6
      4.2.  Session Management TLVs . . . . . . . . . . . . . . . . .   6
        4.2.1.  Start Session . . . . . . . . . . . . . . . . . . . .   6
        4.2.2.  Terminate Session . . . . . . . . . . . . . . . . . .   6
        4.2.3.  Idle Timeout  . . . . . . . . . . . . . . . . . . . .   7
    5.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   7
-     5.1.  DNS Session Signaling Opcode Registration . . . . . . . .   7
-     5.2.  DNS Session Signaling Type Codes Registry . . . . . . . .   7
+     5.1.  DNS Session Signaling Opcode Registration . . . . . . . .   8
+     5.2.  DNS Session Signaling Type Codes Registry . . . . . . . .   8
    6.  Security Considerations . . . . . . . . . . . . . . . . . . .   8
    7.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .   8
-   8.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   8
-     8.1.  Normative References  . . . . . . . . . . . . . . . . . .   8
+   8.  References  . . . . . . . . . . . . . . . . . . . . . . . . .   9
+     8.1.  Normative References  . . . . . . . . . . . . . . . . . .   9
      8.2.  Informative References  . . . . . . . . . . . . . . . . .   9
    Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .   9
 
@@ -159,9 +159,9 @@ Internet-Draft            DNS Session Signaling                July 2016
    NAT box that rewrites Layer 3 or Layer 4 headers but otherwise
    maintains the effect of a single session.
 
-   Session Signaling support is said to be confirmed after the first
-   session signaling TLV has been sent by a client and successfully
-   acknowledged by the server.  A server MUST NOT initiate Session
+   A server MUST NOT initiate Session Signaling messages until a client-
+   initiated Session Signaling message is observed first.  This
+
 
 
 
@@ -170,8 +170,15 @@ Bellis, et al.          Expires January 22, 2017                [Page 3]
 Internet-Draft            DNS Session Signaling                July 2016
 
 
-   Signaling messages until a client-initiated Session Signaling message
-   is observed first.
+   requirement is to ensure that the client does not observe unsolicited
+   inbound messages until it has indicated its ability to handle them.
+
+   Session Signaling support is therefore said to be confirmed after the
+   first session signaling TLV has been sent by a client and
+   successfully acknowledged by the server.
+
+   Use of Session Signaling by a client should be taken as an implicit
+   request for a long-lived session.
 
 3.1.  Message Format
 
@@ -212,19 +219,18 @@ Internet-Draft            DNS Session Signaling                July 2016
    Every Session Signaling request message MUST elicit a response (which
    MUST have the same ID in the DNS message header as in the request).
 
-   In order to preserve the correct sequence of state, Session Signaling
-   requests MUST NOT be processed out of order.
-
-   << RB: should the presence of a SS message create a "sequencing
-   point", such that all pending responses must be answered? >>
-
-
 
 
 Bellis, et al.          Expires January 22, 2017                [Page 4]
 
 Internet-Draft            DNS Session Signaling                July 2016
 
+
+   In order to preserve the correct sequence of state, Session Signaling
+   requests MUST NOT be processed out of order.
+
+   << RB: should the presence of a SS message create a "sequencing
+   point", such that all pending responses must be answered? >>
 
    The RCODE value in a response uses a subset of the standard (non-
    extended) RCODE values from the IANA DNS RCODEs registry, interpreted
@@ -265,14 +271,8 @@ Internet-Draft            DNS Session Signaling                July 2016
 
    SESSION-DATA:  Type-code specific.
 
-4.  Mandatory TLVs
 
-4.1.  Session Management Support TLVs
 
-4.1.1.  "Not Implemented"
-
-   Since the "NOTIMP" RCODE is required to indicate lack of support for
-   the Session Signaling OpCode itself, the "Not Implemented" TLV (0)
 
 
 
@@ -282,6 +282,14 @@ Bellis, et al.          Expires January 22, 2017                [Page 5]
 Internet-Draft            DNS Session Signaling                July 2016
 
 
+4.  Mandatory TLVs
+
+4.1.  Session Management Support TLVs
+
+4.1.1.  "Not Implemented"
+
+   Since the "NOTIMP" RCODE is required to indicate lack of support for
+   the Session Signaling OpCode itself, the "Not Implemented" TLV (0)
    MUST be returned in response to a TLV that is not implemented by the
    responder.
 
@@ -291,13 +299,14 @@ Internet-Draft            DNS Session Signaling                July 2016
 
 4.2.1.  Start Session
 
-   The Start Session TLV (1) MAY be used by a client to indicate support
-   for Session Signaling.  It MUST NOT be initiated by a server.
+   The Start Session TLV (1) SHOULD be used by a client to indicate
+   support for Session Signaling.  It MUST NOT be initiated by a server.
 
-   It is not required that this TLV be used in every session - the
-   intention is to provide a suitable "No-Op" TLV to permit Session
-   Signaling support to be negotiated without carrying any other
-   information.
+   It is not required that this TLV be used in every session - any valid
+   client-initiated TLV will suffice to initiate Session Signaling
+   support.  The intention of this TLV is to provide a suitable "No-Op"
+   TLV to permit Session Signaling support to be negotiated without
+   carrying any other information.
 
    This TLV has no SESSION-DATA.
 
@@ -322,15 +331,6 @@ Internet-Draft            DNS Session Signaling                July 2016
       |                        RECONNECT DELAY                        |
       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
-   RECONNECT DELAY:  a time value, specified as a 16 bit word in network
-      order in units of 100 milliseconds, within which the client MUST
-      NOT establish a new session to the current server.
-
-   The RECOMMENDED value is 10 seconds.  << RB: text required here about
-   default values for load balancers, etc >>
-
-
-
 
 
 Bellis, et al.          Expires January 22, 2017                [Page 6]
@@ -338,13 +338,27 @@ Bellis, et al.          Expires January 22, 2017                [Page 6]
 Internet-Draft            DNS Session Signaling                July 2016
 
 
+   RECONNECT DELAY:  a time value, specified as a 16 bit word in network
+      order in units of 100 milliseconds, within which the client MUST
+      NOT establish a new session to the current server.
+
+   The RECOMMENDED value is 10 seconds.  << RB: text required here about
+   default values for load balancers, etc >>
+
 4.2.3.  Idle Timeout
 
-   The Idle Timeout TLV (3) has similar semantics to the EDNS TCP
-   Keepalive Option [RFC7828].  It is used by a server to tell the
-   client how long it may leave the current session idle for.
+   The Idle Timeout TLV (3) has similar intent to the EDNS TCP Keepalive
+   Option [RFC7828].  It is used by a server to tell the client how long
+   it may leave the current session idle for.  a client.  The definition
+   of an idle session is as specified in [RFC7766].
 
-   The SESSION-DATA is as follows:
+   Messages generate by the client have no SESSION-DATA (whether in
+   requests or responses).  A client-initiated Idle Timeout TLV allows
+   the client to request the current timeout value, whereas a server-
+   initiated request allows the server to unilaterally update the
+   current timeout value.
+
+   Messages generated by the server contain SESSION-DATA as follows:
 
                                                 1   1   1   1   1   1
         0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
@@ -368,20 +382,6 @@ Internet-Draft            DNS Session Signaling                July 2016
 
 5.  IANA Considerations
 
-5.1.  DNS Session Signaling Opcode Registration
-
-   IANA are directed to assign the value TBD for the Session Signaling
-   OpCode in the DNS OpCodes Registry.
-
-5.2.  DNS Session Signaling Type Codes Registry
-
-   IANA are directed to create the DNS Session Signaling Type Codes
-   Registry, with initial values as follows:
-
-
-
-
-
 
 
 
@@ -393,6 +393,16 @@ Bellis, et al.          Expires January 22, 2017                [Page 7]
 
 Internet-Draft            DNS Session Signaling                July 2016
 
+
+5.1.  DNS Session Signaling Opcode Registration
+
+   IANA are directed to assign the value TBD for the Session Signaling
+   OpCode in the DNS OpCodes Registry.
+
+5.2.  DNS Session Signaling Type Codes Registry
+
+   IANA are directed to create the DNS Session Signaling Type Codes
+   Registry, with initial values as follows:
 
    +-----------+--------------------------------+----------+-----------+
    |      Type | Name                           | Status   | Reference |
@@ -430,6 +440,16 @@ Internet-Draft            DNS Session Signaling                July 2016
 
    TBW
 
+
+
+
+
+
+Bellis, et al.          Expires January 22, 2017                [Page 8]
+
+Internet-Draft            DNS Session Signaling                July 2016
+
+
 8.  References
 
 8.1.  Normative References
@@ -443,17 +463,15 @@ Internet-Draft            DNS Session Signaling                July 2016
               RFC2119, March 1997,
               <http://www.rfc-editor.org/info/rfc2119>.
 
-
-
-Bellis, et al.          Expires January 22, 2017                [Page 8]
-
-Internet-Draft            DNS Session Signaling                July 2016
-
-
    [RFC6891]  Damas, J., Graff, M., and P. Vixie, "Extension Mechanisms
               for DNS (EDNS(0))", STD 75, RFC 6891, DOI 10.17487/
               RFC6891, April 2013,
               <http://www.rfc-editor.org/info/rfc6891>.
+
+   [RFC7766]  Dickinson, J., Dickinson, S., Bellis, R., Mankin, A., and
+              D. Wessels, "DNS Transport over TCP - Implementation
+              Requirements", RFC 7766, DOI 10.17487/RFC7766, March 2016,
+              <http://www.rfc-editor.org/info/rfc7766>.
 
    [RFC7828]  Wouters, P., Abley, J., Dickinson, S., and R. Bellis, "The
               edns-tcp-keepalive EDNS0 Option", RFC 7828, DOI 10.17487/
@@ -479,6 +497,15 @@ Authors' Addresses
    Email: ray@isc.org
 
 
+
+
+
+
+Bellis, et al.          Expires January 22, 2017                [Page 9]
+
+Internet-Draft            DNS Session Signaling                July 2016
+
+
    Stuart Cheshire
    Apple Inc.
    1 Infinite Loop
@@ -497,13 +524,6 @@ Authors' Addresses
    United Kingdom
 
    Email: jad@sinodun.com
-
-
-
-
-Bellis, et al.          Expires January 22, 2017                [Page 9]
-
-Internet-Draft            DNS Session Signaling                July 2016
 
 
    Sara Dickinson
@@ -527,26 +547,6 @@ Internet-Draft            DNS Session Signaling                July 2016
 
    Phone: +1 843 473 7394
    Email: pusateri@bangj.com
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
