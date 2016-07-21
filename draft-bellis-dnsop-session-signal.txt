@@ -122,8 +122,9 @@ Internet-Draft            DNS Session Signaling                July 2016
    sense.  The term "sender" may apply to either an initiator or
    responder.
 
-   The term "session" in the context of this document requires use of a
-   DNS transport where:
+   The term "session" in the context of this document means the exchange
+   of DNS messages over a single connection using an end-to-end
+   transport protocol where:
 
    o  connections are long-lived
 
@@ -144,8 +145,8 @@ Internet-Draft            DNS Session Signaling                July 2016
    environments where a session may be established according to the
    definition above.  Standard DNS over TCP, and DNS over TLS [RFC7858]
    are appropriate protocols.  DNS over plain UDP is not appropriate
-   since it fails on the bi-directional initiation and message order
-   delivery requirements.
+   since it fails on both the bi-directional initiation requirement and
+   the message order delivery requirement.
 
    Session Signaling messages relate only to the specific session in
    which they are being carried.  Where a middle box (e.g. a DNS proxy,
@@ -159,9 +160,8 @@ Internet-Draft            DNS Session Signaling                July 2016
    session signaling TLV has been successfully sent by the initiator and
    acknowledged by the responder.
 
-
-
-
+   << RB: do we need an explicit "start session signaling" message,
+   since none of the initial defined set are mandatory to use? >>
 
 
 
@@ -192,7 +192,11 @@ Internet-Draft            DNS Session Signaling                July 2016
       /                                                               /
       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
-   << RB: put field descriptions in here? >>
+   The MESSAGE ID, QR, OpCode and RCODE fields have their usual meaning
+   as defined in [RFC1035].
+
+   The Z bits are currently unused, and SHOULD be set to zero (0) in
+   requests and responses unless re-defined in a later specification.
 
 3.2.  Message Handling
 
@@ -217,26 +221,22 @@ Internet-Draft            DNS Session Signaling                July 2016
 
 
 
-
-
-
-
 Bellis, et al.          Expires January 22, 2017                [Page 4]
 
 Internet-Draft            DNS Session Signaling                July 2016
 
 
-     +------+----------+---------------------------------+-----------+
-     | Code | Mnemonic | Description                     | Reference |
-     +------+----------+---------------------------------+-----------+
-     |    0 | NOERROR  | TLV processed successfully      | RFC-TBD1  |
-     |      |          |                                 |           |
-     |    1 | FORMERR  | TLV format error                | RFC-TBD1  |
-     |      |          |                                 |           |
-     |    4 | NOTIMP   | Session Signaling not supported | RFC-TBD1  |
-     |      |          |                                 |           |
-     |    5 | REFUSED  | TLV declined for policy reasons | RFC-TBD1  |
-     +------+----------+---------------------------------+-----------+
+           +------+----------+---------------------------------+
+           | Code | Mnemonic | Description                     |
+           +------+----------+---------------------------------+
+           |    0 | NOERROR  | TLV processed successfully      |
+           |      |          |                                 |
+           |    1 | FORMERR  | TLV format error                |
+           |      |          |                                 |
+           |    4 | NOTIMP   | Session Signaling not supported |
+           |      |          |                                 |
+           |    5 | REFUSED  | TLV declined for policy reasons |
+           +------+----------+---------------------------------+
 
    << RB: any others? >>
 

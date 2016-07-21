@@ -133,8 +133,9 @@ initial sender and subsequent receiver of a Session Signaling TLV,
 regardless of which was the “client” and “server” in the usual DNS
 sense.  The term “sender” may apply to either an initiator or responder.</t>
 
-<t>The term “session” in the context of this document requires use of a DNS
-transport where:</t>
+<t>The term “session” in the context of this document means the exchange of
+DNS messages over a single connection using an end-to-end transport
+protocol where:</t>
 
 <t><list style="symbols">
   <t>connections are long-lived</t>
@@ -155,8 +156,8 @@ document are to be interpreted as described in <xref target="RFC2119"/>.</t>
 environments where a session may be established according to the
 definition above.  Standard DNS over TCP, and DNS over TLS <xref target="RFC7858"/>
 are appropriate protocols.  DNS over plain UDP is not appropriate since
-it fails on the bi-directional initiation and message order delivery
-requirements.</t>
+it fails on both the bi-directional initiation requirement and the
+message order delivery requirement.</t>
 
 <t>Session Signaling messages relate only to the specific session in which
 they are being carried.  Where a middle box (e.g. a DNS proxy,
@@ -167,8 +168,11 @@ rewrites Layer 3 or Layer 4 headers but otherwise maintains the effect
 of a single session.</t>
 
 <t>Session Signaling support is said to be confirmed after the first
-session signaling TLV has been successfully sent by the initiator
-and acknowledged by the responder.</t>
+session signaling TLV has been successfully sent by the initiator and
+acknowledged by the responder.</t>
+
+<t>« RB: do we need an explicit “start session signaling” message, since
+none of the initial defined set are mandatory to use? »</t>
 
 <section anchor="format" title="Message Format">
 
@@ -193,7 +197,11 @@ RCODE fields, and the QR bit that differentiates requests from responses.</t>
    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 ]]></artwork></figure>
 
-<t>« RB: put field descriptions in here? »</t>
+<t>The MESSAGE ID, QR, OpCode and RCODE fields have their usual meaning as
+defined in <xref target="RFC1035"/>.</t>
+
+<t>The Z bits are currently unused, and SHOULD be set to zero (0) in
+requests and responses unless re-defined in a later specification.</t>
 
 </section>
 <section anchor="message-handling" title="Message Handling">
@@ -221,23 +229,18 @@ interpreted as follows:</t>
       <ttcol align='right'>Code</ttcol>
       <ttcol align='left'>Mnemonic</ttcol>
       <ttcol align='left'>Description</ttcol>
-      <ttcol align='left'>Reference</ttcol>
       <c>0</c>
       <c>NOERROR</c>
       <c>TLV processed successfully</c>
-      <c>RFC-TBD1</c>
       <c>1</c>
       <c>FORMERR</c>
       <c>TLV format error</c>
-      <c>RFC-TBD1</c>
       <c>4</c>
       <c>NOTIMP</c>
       <c>Session Signaling not supported</c>
-      <c>RFC-TBD1</c>
       <c>5</c>
       <c>REFUSED</c>
       <c>TLV declined for policy reasons</c>
-      <c>RFC-TBD1</c>
 </texttable>
 
 <t>« RB: any others? »</t>

@@ -109,8 +109,8 @@ regardless of which was the "client" and "server" in the usual DNS
 sense.  The term "sender" may apply to either an initiator or responder.
 
 The term "session" in the context of this document means the exchange of
-DNS messages over a single connection using an end-to-end transport protocol
-where:
+DNS messages over a single connection using an end-to-end transport
+protocol where:
 
 - connections are long-lived
 - either end of the connection may initiate requests
@@ -128,8 +128,8 @@ Session Signaling messages MUST only be carried in protocols and in
 environments where a session may be established according to the
 definition above.  Standard DNS over TCP, and DNS over TLS {{?RFC7858}}
 are appropriate protocols.  DNS over plain UDP is not appropriate since
-it fails on the bi-directional initiation and message order delivery
-requirements.
+it fails on both the bi-directional initiation requirement and the
+message order delivery requirement.
 
 Session Signaling messages relate only to the specific session in which
 they are being carried.  Where a middle box (e.g. a DNS proxy,
@@ -140,8 +140,11 @@ rewrites Layer 3 or Layer 4 headers but otherwise maintains the effect
 of a single session.
 
 Session Signaling support is said to be confirmed after the first
-session signaling TLV has been successfully sent by the initiator
-and acknowledged by the responder.
+session signaling TLV has been successfully sent by the initiator and
+acknowledged by the responder.
+
+<< RB: do we need an explicit "start session signaling" message, since
+none of the initial defined set are mandatory to use? >>
 
 ## Message Format {#format}
 
@@ -164,7 +167,11 @@ Each message MUST contain only a single TLV.
        /                                                               /
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
-<< RB: put field descriptions in here? >>
+The MESSAGE ID, QR, OpCode and RCODE fields have their usual meaning as
+defined in {{!RFC1035}}.
+
+The Z bits are currently unused, and SHOULD be set to zero (0) in
+requests and responses unless re-defined in a later specification.
 
 ## Message Handling
 
@@ -187,12 +194,12 @@ The RCODE value in a response uses a subset of the standard
 (non-extended) RCODE values from the IANA DNS RCODEs registry,
 interpreted as follows:
 
-| Code | Mnemonic | Description | Reference |
-|-----:|----------|-------------|-----------|
-| 0 | NOERROR | TLV processed successfully | RFC-TBD1 |
-| 1 | FORMERR | TLV format error | RFC-TBD1 |
-| 4 | NOTIMP | Session Signaling not supported | RFC-TBD1 |
-| 5 | REFUSED | TLV declined for policy reasons | RFC-TBD1 |
+| Code | Mnemonic | Description |
+|-----:|----------|-------------|
+| 0 | NOERROR | TLV processed successfully |
+| 1 | FORMERR | TLV format error |
+| 4 | NOTIMP | Session Signaling not supported |
+| 5 | REFUSED | TLV declined for policy reasons |
 
 << RB: any others? >>
 
