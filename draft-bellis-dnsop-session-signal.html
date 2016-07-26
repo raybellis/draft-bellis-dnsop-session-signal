@@ -398,7 +398,7 @@
 <link href="#rfc.authors" rel="Chapter"/>
 
 
-  <meta name="generator" content="xml2rfc version 2.5.0 - http://tools.ietf.org/tools/xml2rfc" />
+  <meta name="generator" content="xml2rfc version 2.4.13.dev1 - http://tools.ietf.org/tools/xml2rfc" />
   <link rel="schema.dct" href="http://purl.org/dc/terms/" />
 
   <meta name="dct.creator" content="Bellis, R., Cheshire, S., Dickinson, J., Dickinson, S., Mankin, A., and T. Pusateri" />
@@ -520,8 +520,8 @@
 
   <h1 id="rfc.section.1"><a href="#rfc.section.1">1.</a> <a href="#introduction" id="introduction">Introduction</a></h1>
 <p id="rfc.section.1.p.1">The EDNS(0) Extension Mechanism for DNS <a href="#RFC6891">[RFC6891]</a> is explicitly defined to only have &#8220;per-message&#8221; semantics.  This document defines a new Session Signaling Opcode used to carry persistent &#8220;per-session&#8221; type-length-values (TLVs), and defines an initial set of TLVs used to manage session timeouts and termination.</p>
-<p id="rfc.section.1.p.2">With EDNS(0), multiple options may be packed into a single OPT RR, and there is no generalized mechanism for a client to be able to tell whether a server has processed or otherwise acted upon each individual option within the combined OPT RR.  The specifications for each individual option, such as the EDNS TCP Keepalive Option <a href="#RFC7828">[RFC7828]</a>, need to define how each different option is to be acknowledged, if necessary.</p>
-<p id="rfc.section.1.p.3">With Session Signaling, in contrast, each Session Signaling operation is communicated its own separate DNS message, and the RCODE in the response indicates the success or failure of that operation.</p>
+<p id="rfc.section.1.p.2">With EDNS(0), multiple options may be packed into a single OPT RR, and there is no generalized mechanism for a client to be able to tell whether a server has processed or otherwise acted upon each individual option within the combined OPT RR.  The specifications for each individual option need to define how each different option is to be acknowledged, if necessary.</p>
+<p id="rfc.section.1.p.3">With Session Signaling, in contrast, each Session Signaling operation is communicated in its own separate DNS message, and the RCODE in the response indicates the success or failure of that operation.</p>
 <p id="rfc.section.1.p.4">It should be noted that the message format for Session Signaling operations (see <a href="#format">Section 3.2</a>) differs from the DNS packet format used for standard queries and responses, in that it has a shorter header (four octets instead of usual twelve octets).</p>
 <h1 id="rfc.section.2"><a href="#rfc.section.2">2.</a> <a href="#terminology" id="terminology">Terminology</a></h1>
 <p id="rfc.section.2.p.1">The key words &#8220;MUST&#8221;, &#8220;MUST NOT&#8221;, &#8220;REQUIRED&#8221;, &#8220;SHALL&#8221;, &#8220;SHALL NOT&#8221;, &#8220;SHOULD&#8221;, &#8220;SHOULD NOT&#8221;, &#8220;RECOMMENDED&#8221;, &#8220;NOT RECOMMENDED&#8221;, &#8220;MAY&#8221;, and &#8220;OPTIONAL&#8221; in this document are to be interpreted as described in &#8220;Key words for use in RFCs to Indicate Requirement Levels&#8221; <a href="#RFC2119">[RFC2119]</a>.</p>
@@ -531,8 +531,8 @@
 <p/>
 
 <ul>
-  <li>The connection between client and server is persistent and relatively long-lived (minutes or hours, rather than seconds).</li>
-  <li>Either end of the connection may send messages to to other</li>
+  <li>The connection between client and server is persistent and relatively long-lived (i.e. minutes or hours, rather than seconds).</li>
+  <li>Either end of the connection may initiate messages to the other</li>
   <li>Messages are delivered in order</li>
 </ul>
 <h1 id="rfc.section.3"><a href="#rfc.section.3">3.</a> <a href="#protocol-details" id="protocol-details">Protocol Details</a></h1>
@@ -542,7 +542,7 @@
 <p id="rfc.section.3.p.4">A server SHOULD NOT initiate Session Signaling messages until a client-initiated Session Signaling message is received first, unless in an environment where it is known in advance by other means that both client and server support Session Signaling.  This requirement is to ensure that the clients that do not support Session Signaling do not receive unsolicited inbound Session Signaling messages that they would not know how to handle.</p>
 <h1 id="rfc.section.3.1"><a href="#rfc.section.3.1">3.1.</a> <a href="#lifecycle" id="lifecycle">Session Lifecycle</a></h1>
 <p id="rfc.section.3.1.p.1">A session begins when a client makes a new connection to a server.</p>
-<p id="rfc.section.3.1.p.2">The client may perform as many DNS operations as it wishes on the newly created connection. Operations MAY be pipelined (i.e., the client doesn&#8217;t need wait for a reply before sening the next message).  The server MUST act on messages in the order they are received, but responses to those messages MAY be sent out of order, if appropriate.</p>
+<p id="rfc.section.3.1.p.2">The client may perform as many DNS operations as it wishes on the newly created connection. Operations MAY be pipelined (i.e., the client doesn&#8217;t need wait for a reply before sending the next message).  The server MUST act on messages in the order they are received, but responses to those messages MAY be sent out of order, if appropriate.</p>
 <p id="rfc.section.3.1.p.3">When a server implementing this specification receives a new connection from a client, it MUST begin by internally assigning an initial idle timeout of 30 seconds to that connection.  At both servers and clients, the generation or reception of any complete DNS message, including DNS requests, responses, updates, or Session Signaling messages, resets the idle timer for that connection (see <a href="#RFC7766">[RFC7766]</a>).</p>
 <p id="rfc.section.3.1.p.4">If, at any time during the life of the connection, half the idle-timeout value (i.e., 15 seconds by default) elapses without any DNS messages being sent or received on a connection, then the connection is considered idle and the client MUST take action.  When this happens the client MUST either send at least one new message to reset the idle timer &#8211; such as a Session Signaling keepalive message (see <a href="#keepalive">Section 4.2.1</a>), or any other valid DNS message &#8211; or close the connection.</p>
 <p id="rfc.section.3.1.p.5">If, at any time during the life of the connection, the full idle-timeout value (i.e., 30 seconds by default) elapses without any DNS messages being sent or received on a connection, then the connection is considered delinquent and the server SHOULD forcibly terminate the connection. For sessions over TCP (or over TLS-over-TCP), to avoid the burden of having a connection in TIME-WAIT state, instead of closing the connection gracefully with a TCP FIN the server SHOULD abort the connection with a TCP RST. (In the Sockets API this is achieved by setting the SO_LINGER option to zero before closing the socket.)</p>
@@ -639,8 +639,8 @@
 <h1 id="rfc.section.4.2.1"><a href="#rfc.section.4.2.1">4.2.1.</a> <a href="#keepalive" id="keepalive">Keepalive</a></h1>
 <p id="rfc.section.4.2.1.p.1">The Keepalive TLV (1) is be used by a client to reset a connection&#8217;s idle timer, and at the same time to request what the idle timeout should be from this point forward in the connection.</p>
 <p id="rfc.section.4.2.1.p.2">The Keepalive TLV also MAY be initiated by a server, to unilaterally inform the client of a new idle timeout this point forward in this connection.</p>
-<p id="rfc.section.4.2.1.p.3">It is not required that the Keepalive TLV be used in every session.  While many Session Signaling operations (such as DNS Push Notifications [I-D.draft-ietf-dnssd-push]) will be used in conjuntion with a long-lived connection, this is not required, and in some cases the default 30-second timeout may be perfectly appropriate.</p>
-<p id="rfc.section.4.2.1.p.4">&#171;&#160;SC: Couldn&#8217;t figure out how to add the I-D reference, sorry. Please help.&#160;&#187;</p>
+<p id="rfc.section.4.2.1.p.3">It is not required that the Keepalive TLV be used in every session.  While many Session Signaling operations (such as DNS Push Notifications [I-D.ietf-dnssd-push]) will be used in conjunction with a long-lived connection, this is not required, and in some cases the default 30-second timeout may be perfectly appropriate.</p>
+<p id="rfc.section.4.2.1.p.4">&#171;&#160;TODO: update above dnssd-push reference once xml2rfc is online again&#160;&#187;</p>
 <p id="rfc.section.4.2.1.p.5">The SSOP-DATA for the the Keepalive TLV is as follows:</p>
 <pre>
                                              1   1   1   1   1   1
@@ -699,7 +699,7 @@
     <tr>
       <td class="right">0</td>
       <td class="left">SSOP-NOTIMP</td>
-      <td class="left"/>
+      <td class="left">Standard</td>
       <td class="left">RFC-TBD1</td>
     </tr>
     <tr>

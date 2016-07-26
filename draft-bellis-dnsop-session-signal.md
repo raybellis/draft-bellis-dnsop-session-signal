@@ -92,21 +92,21 @@ new Session Signaling Opcode used to carry persistent "per-session"
 type-length-values (TLVs), and defines an initial set of TLVs used to
 manage session timeouts and termination.
 
-With EDNS(0), multiple options may be packed into a single OPT RR,
-and there is no generalized mechanism for a client to be able to tell
+With EDNS(0), multiple options may be packed into a single OPT RR, and
+there is no generalized mechanism for a client to be able to tell
 whether a server has processed or otherwise acted upon each individual
-option within the combined OPT RR.
-The specifications for each individual option, such as the
-EDNS TCP Keepalive Option {{!RFC7828}}, need to define how
-each different option is to be acknowledged, if necessary.
+option within the combined OPT RR.  The specifications for each
+individual option need to define how each different option is to be
+acknowledged, if necessary.
 
 With Session Signaling, in contrast, each Session Signaling operation is
-communicated its own separate DNS message, and the RCODE in the response
-indicates the success or failure of that operation.
+communicated in its own separate DNS message, and the RCODE in the
+response indicates the success or failure of that operation.
 
-It should be noted that the message format for Session Signaling operations (see {{format}})
-differs from the DNS packet format used for standard queries and responses,
-in that it has a shorter header (four octets instead of usual twelve octets).
+It should be noted that the message format for Session Signaling
+operations (see {{format}}) differs from the DNS packet format used for
+standard queries and responses, in that it has a shorter header (four
+octets instead of usual twelve octets).
 
 # Terminology
 
@@ -124,8 +124,9 @@ The term "sender" may apply to either an initiator or responder.
 The term "session" in the context of this document means the exchange of
 DNS messages using an end-to-end transport protocol where:
 
-- The connection between client and server is persistent and relatively long-lived (minutes or hours, rather than seconds).
-- Either end of the connection may send messages to to other
+- The connection between client and server is persistent and relatively
+  long-lived (i.e. minutes or hours, rather than seconds).
+- Either end of the connection may initiate messages to the other
 - Messages are delivered in order
 
 # Protocol Details
@@ -166,16 +167,16 @@ A session begins when a client makes a new connection to a server.
 
 The client may perform as many DNS operations as it wishes on the newly
 created connection. Operations MAY be pipelined (i.e., the client
-doesn’t need wait for a reply before sening the next message).
+doesn’t need wait for a reply before sending the next message).
 The server MUST act on messages in the order they are received, but
 responses to those messages MAY be sent out of order, if appropriate.
 
 When a server implementing this specification receives a new connection
 from a client, it MUST begin by internally assigning an initial idle
-timeout of 30 seconds to that connection.
-At both servers and clients, the generation or reception of any complete
-DNS message, including DNS requests, responses, updates, or Session
-Signaling messages, resets the idle timer for that connection (see {{!RFC7766}}).
+timeout of 30 seconds to that connection.  At both servers and clients,
+the generation or reception of any complete DNS message, including DNS
+requests, responses, updates, or Session Signaling messages, resets the
+idle timer for that connection (see {{!RFC7766}}).
 
 If, at any time during the life of the connection,
 half the idle-timeout value (i.e., 15 seconds by default) elapses
@@ -318,11 +319,11 @@ the client of a new idle timeout this point forward in this connection.
 
 It is not required that the Keepalive TLV be used in every session.
 While many Session Signaling operations
-(such as DNS Push Notifications [I-D.draft-ietf-dnssd-push])
-will be used in conjuntion with a long-lived connection, this is not required,
+(such as DNS Push Notifications [I-D.ietf-dnssd-push])
+will be used in conjunction with a long-lived connection, this is not required,
 and in some cases the default 30-second timeout may be perfectly appropriate.
 
-<< SC: Couldn’t figure out how to add the I-D reference, sorry. Please help. >>
+<< TODO: update above dnssd-push reference once xml2rfc is online again >>
 
 The SSOP-DATA for the the Keepalive TLV is as follows:
 
@@ -412,7 +413,7 @@ Registry, with initial values as follows:
 
 | Type | Name | Status | Reference |
 |--:|------|--------|-----------|
-| 0 | SSOP-NOTIMP | | RFC-TBD1 |
+| 0 | SSOP-NOTIMP | Standard | RFC-TBD1 |
 | 1 | SSOP-Keepalive | Standard | RFC-TBD1 |
 | 2 | SSOP-Terminate | Standard | RFC-TBD1 |
 | 3 - 63 | Unassigned, reserved for session management TLVs | | |
