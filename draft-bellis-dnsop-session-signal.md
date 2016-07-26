@@ -1,6 +1,6 @@
 ---
 title: DNS Session Signaling
-docname: draft-bellis-dnsop-session-signal-00
+docname: draft-bellis-dnsop-session-signal-02
 date: 2016-07
 
 ipr: trust200902
@@ -76,9 +76,9 @@ author:
 
 --- abstract
 
-The Extension Mechanisms for DNS (EDNS(0)) {{!RFC6891}} is explicitly
+The EDNS(0) Extension Mechanism for DNS {{!RFC6891}} is explicitly
 defined to only have "per-message" semantics.  This document defines a
-new Session Signaling OpCode used to carry persistent "per-session"
+new Session Signaling Opcode used to carry persistent "per-session"
 type-length-values (TLVs), and defines an initial set of TLVs used to
 manage session timeouts and termination.
 
@@ -86,115 +86,167 @@ manage session timeouts and termination.
 
 # Introduction
 
-The Extension Mechanisms for DNS (EDNS(0)) {{!RFC6891}} is explicitly
+The EDNS(0) Extension Mechanism for DNS {{!RFC6891}} is explicitly
 defined to only have "per-message" semantics.  This document defines a
-new Session Signaling OpCode used to carry persistent "per-session"
+new Session Signaling Opcode used to carry persistent "per-session"
 type-length-values (TLVs), and defines an initial set of TLVs used to
 manage session timeouts and termination.
 
-A further issue with EDNS(0) is that there is no standard mechanism for
-a client to be able to tell whether a server has processed or otherwise
-acted upon the individual options contained with an OPT RR.  The Session
-Signaling OpCode therefore requires an explicit response to each request
-message.
+With EDNS(0), multiple options may be packed into a single OPT RR,
+and there is no generalized mechanism for a client to be able to tell
+whether a server has processed or otherwise acted upon each individual
+option within the combined OPT RR.
+The specifications for each individual option, such as the
+EDNS TCP Keepalive Option {{!RFC7828}}, need to define how
+each different option is to be acknowledged, if necessary.
 
-It should be noted that the message format (see {{format}}) does not
-conform to the standard DNS packet format.
+With Session Signaling, in contrast, each Session Signaling operation is
+communicated its own separate DNS message, and the RCODE in the response
+indicates the success or failure of that operation.
+
+It should be noted that the message format for Session Signaling operations (see {{format}})
+differs from the DNS packet format used for standard queries and responses,
+in that it has a shorter header (four octets instead of usual twelve octets).
 
 # Terminology
 
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+"SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+"OPTIONAL" in this document are to be interpreted as described in
+"Key words for use in RFCs to Indicate Requirement Levels" {{!RFC2119}}.
+
 The terms "initiator" and "responder" correspond respectively to the
 initial sender and subsequent receiver of a Session Signaling TLV,
-regardless of which was the "client" and "server" in the usual DNS
-sense.  The term "sender" may apply to either an initiator or responder.
+regardless of which was the "client" and "server" in the usual DNS sense.
+
+The term "sender" may apply to either an initiator or responder.
 
 The term "session" in the context of this document means the exchange of
-DNS messages over a single connection using an end-to-end transport
-protocol where:
+DNS messages using an end-to-end transport protocol where:
 
-- connections can be long-lived
-- either end of the connection may initiate requests
-- message delivery order is guaranteed
-- it is guaranteed that the same two endpoints are in communication for
-the entire lifetime of the session.
-
-The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
-"SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
-document are to be interpreted as described in {{!RFC2119}}.
+- The connection between client and server is persistent and relatively long-lived (minutes or hours, rather than seconds).
+- Either end of the connection may send messages to to other
+- Messages are delivered in order
 
 # Protocol Details
 
 Session Signaling messages MUST only be carried in protocols and in
 environments where a session may be established according to the
 definition above.  Standard DNS over TCP {{!RFC1035}}, and DNS over TLS
-{{?RFC7858}} are appropriate protocols.  DNS over plain UDP is not
-appropriate since it fails on both the bi-directional initiation
-requirement and the message order delivery requirement.
+{{?RFC7858}} are suitable protocols.  DNS over plain UDP is not
+appropriate since it fails on the requirement for in-order message
+delivery, and, in the presence of NAT gateways and firewalls with short UDP
+timeouts, it fails to provide a persistent bi-directional communication
+channel unless an excessive amount of keepalive traffic is used.
 
 Session Signaling messages relate only to the specific session in which
 they are being carried.  Where a middle box (e.g. a DNS proxy,
 forwarder, or session multiplexer) is in the path the message MUST NOT
 be blindly forwarded in either direction by that middle box.  This does
 not preclude the use of these messages in the presence of a NAT box that
-rewrites Layer 3 or Layer 4 headers but otherwise maintains the effect
-of a single session.
+rewrites IP-layer or transport-layer headers but otherwise maintains the
+effect of a single session.
 
-A server MUST NOT initiate Session Signaling messages until a
-client-initiated Session Signaling message is received first.  This
-requirement is to ensure that the client does not observe unsolicited
-inbound messages until it has indicated its ability to handle them.
+A client MAY attempt to initiate Session Signaling messages at any time on
+a connection; receiving a NOTIMP response in reply indicates that the
+server does not implement Session Signaling, and the client SHOULD NOT
+issue further Session Signaling messages on that connection.
 
-Session Signaling support is therefore said to be confirmed from the
-client's point of view after the first session signaling TLV has been
-sent by that client and subsequently successfully acknowledged by the
-server.
+A server SHOULD NOT initiate Session Signaling messages until a
+client-initiated Session Signaling message is received first,
+unless in an environment where it is known in advance by other
+means that both client and server support Session Signaling.
+This requirement is to ensure that the clients that do not support
+Session Signaling do not receive unsolicited inbound Session Signaling
+messages that they would not know how to handle.
 
-Use of Session Signaling by a client should be taken as an implicit
-request for a long-lived session.
+## Session Lifecycle {#lifecycle}
+
+A session begins when a client makes a new connection to a server.
+
+The client may perform as many DNS operations as it wishes on the newly
+created connection. Operations MAY be pipelined (i.e., the client
+doesn’t need wait for a reply before sening the next message).
+The server MUST act on messages in the order they are received, but
+responses to those messages MAY be sent out of order, if appropriate.
+
+When a server implementing this specification receives a new connection
+from a client, it MUST begin by internally assigning an initial idle
+timeout of 30 seconds to that connection.
+At both servers and clients, the generation or reception of any complete
+DNS message, including DNS requests, responses, updates, or Session
+Signaling messages, resets the idle timer for that connection (see {{!RFC7766}}).
+
+If, at any time during the life of the connection,
+half the idle-timeout value (i.e., 15 seconds by default) elapses
+without any DNS messages being sent or received on a connection,
+then the connection is considered idle and the client MUST take action.
+When this happens the client MUST either send at least one new message
+to reset the idle timer -- such as a Session Signaling keepalive message
+(see {{keepalive}}), or any other valid DNS message -- or close the connection.
+
+If, at any time during the life of the connection,
+the full idle-timeout value (i.e., 30 seconds by default) elapses
+without any DNS messages being sent or received on a connection,
+then the connection is considered delinquent and the server SHOULD
+forcibly terminate the connection. For sessions over TCP (or over TLS-over-TCP),
+to avoid the burden of having a connection in TIME-WAIT state, instead of
+closing the connection gracefully with a TCP FIN the server SHOULD abort
+the connection with a TCP RST. (In the Sockets API this is achieved by
+setting the SO_LINGER option to zero before closing the socket.)
+
+If the client wishes to keep an idle connection open for longer than
+the default duration without having to send traffic every 15 seconds,
+then it uses the Session Signaling
+keepalive message to request a longer idle timeout (see {{keepalive}}).
+
+A client is not required to wait until half of the idle-timeout value
+before closing a connection. A client MAY close a connection at any time,
+at the client’s discretion, if it has no further need for the connection at that time.
 
 ## Message Format {#format}
 
-A message containing a Session Signaling OpCode does not conform to the
-usual DNS message format.  The 4 octet header format from {{!RFC1035}}
-is however preserved, since that includes the message ID and OpCode and
-RCODE fields, and the QR bit that differentiates requests from responses.
-
-Each message MUST contain only a single TLV.
+A Session Signaling message begins with the
+first 4 octets of the standard DNS message header {{!RFC1035}},
+with the Opcode field set to the Session Signaling Opcode.
+A Session Signaling message does not contain
+the QDCOUNT, ANCOUNT, NSCOUNT and ARCOUNT fields
+fields used in standard DNS queries and responses.
+This 4-octet header is followed by a single Session Signaling TLV.
 
                                                  1   1   1   1   1   1
          0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
        |                          MESSAGE ID                           |
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-       |QR |    OpCode     |            Z              |     RCODE     |
+       |QR |    Opcode     |            Z              |     RCODE     |
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
        |                                                               |
        /                           TLV-DATA                            /
        /                                                               /
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
-The MESSAGE ID, QR, OpCode and RCODE fields have their usual meaning as
-defined in {{!RFC1035}}.
+The MESSAGE ID, QR, Opcode and RCODE fields have their usual meanings {{!RFC1035}}.
 
 The Z bits are currently unused, and SHOULD be set to zero (0) in
 requests and responses unless re-defined in a later specification.
 
 ## Message Handling
 
-Both clients and servers may unilaterally send Session Signaling
-messages at any point in the lifetime of a session and are therefore
-considered to be the initiator with respect to that message.  The
-initiator MUST set the value of the QR bit in the DNS header to zero
+On a connection between a client and server that support Session Signaling,
+either end may unilaterally send Session Signaling
+messages at any point in the lifetime of a session,
+and therefore either client or server may be the initiator of a message.
+The initiator MUST set the value of the QR bit in the DNS header to zero
 (0), and the responder MUST set it to one (1).
 
 Every Session Signaling request message MUST elicit a response (which
 MUST have the same ID in the DNS message header as in the request).
 
-In order to preserve the correct sequence of state, Session Signaling
-requests MUST NOT be processed out of order.
-
 << RB: should the presence of a SS message create a "sequencing point",
-such that all pending responses must be answered? >>
+such that all pending responses must be answered?
+SC: I do not believe so. We can define an explicit SS "sequencing point"
+opcode for this if necessary. >>
 
 The RCODE value in a response uses a subset of the standard
 (non-extended) RCODE values from the IANA DNS RCODEs registry,
@@ -212,24 +264,28 @@ interpreted as follows:
                                                  1   1   1   1   1   1
          0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-       |                         SESSION-TYPE                          |
+       |                           SSOP-TYPE                           |
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-       |                        SESSION-LENGTH                         |
+       |                          SSOP-LENGTH                          |
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
        |                                                               |
-       /                         SESSION-DATA                          /
+       /                           SSOP-DATA                           /
        /                                                               /
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
-SESSION-TYPE:
+SSOP-TYPE:
 : A 16 bit field in network order giving the type of the current Session
 Signaling TLV per the IANA DNS Session Signaling Type Codes Registry.
 
-SESSION-LENGTH:
-: A 16 bit field in network order giving the size in octets of
-SESSION-DATA.
+<< SC: I changed SESSION-TYPE to SSOP-TYPE because to me SESSION-TYPE read
+as “type of session” which it is not. It is Session Signaling Operation Type,
+Session Signaling Operation Length, Session Signaling Operation Data. >>
 
-SESSION-DATA:
+SSOP-LENGTH:
+: A 16 bit field in network order giving the size in octets of
+SSOP-DATA.
+
+SSOP-DATA:
 : Type-code specific.
 
 # Mandatory TLVs
@@ -238,41 +294,95 @@ SESSION-DATA:
 
 ### "Not Implemented"
 
-Since the "NOTIMP" RCODE is required to indicate lack of support for the
-Session Signaling OpCode itself, the "Not Implemented" TLV (0) MUST
-be returned in response to a TLV that is not implemented by the
-responder.
+Since the "NOTIMP" RCODE in the DNS message header is used to indicate lack
+of support for the Session Signaling Opcode itself, a different mechanism
+is used to indicate lack of support of a specific SSOP-TYPE.
+If a server that supports Session Signaling receives a Session Signaling
+query message (QR bit zero) with an SSOP-TYPE it does not support, it returns a
+response message (QR bit one) containing a single Session Signaling SSOP-NOTIMP TLV (0).
+The MESSAGE ID in the message header serves to tell the client which of its
+requests was not understood.
 
-This TLV has no SESSION-DATA.
+The SSOP-NOTIMP TLV has no SSOP-DATA.
 
 ## Session Management TLVs
 
-### Start Session
+### Keepalive {#keepalive}
 
-The Start Session TLV (1) SHOULD be used by a client to indicate support
-for Session Signaling.  It MUST NOT be initiated by a server.
+The Keepalive TLV (1) is be used by a client to reset a connection’s
+idle timer, and at the same time to request what the idle timeout
+should be from this point forward in the connection.
 
-It is not required that this TLV be used in every session - any valid
-client-initiated TLV will suffice to initiate Session Signaling support.
-The intention of this TLV is to provide a suitable "No-Op" TLV to permit
-Session Signaling support to be negotiated without carrying any other
-information.
+The Keepalive TLV also MAY be initiated by a server, to unilaterally inform
+the client of a new idle timeout this point forward in this connection.
 
-This TLV has no SESSION-DATA.
+It is not required that the Keepalive TLV be used in every session.
+While many Session Signaling operations
+(such as DNS Push Notifications [I-D.draft-ietf-dnssd-push])
+will be used in conjuntion with a long-lived connection, this is not required,
+and in some cases the default 30-second timeout may be perfectly appropriate.
 
-<< RB: this could perhaps also be used as a real "no-op" message to
-provide application-level keep-alive pings >>
+<< SC: Couldn’t figure out how to add the I-D reference, sorry. Please help. >>
+
+The SSOP-DATA for the the Keepalive TLV is as follows:
+
+                                                 1   1   1   1   1   1
+         0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+       |                         IDLE TIMEOUT                          |
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+
+IDLE TIMEOUT:
+: the idle timeout for the current session, specified as a 16
+bit word in network order in units of 100 milliseconds.
+This is the timeout at which the server will forcibly terminate the connection
+with a TCP RST (or equivalent for other protocols); after half this interval
+the client MUST take action to either preserve the connection, or close it
+if it is no longer needed.
+
+In a client-initated Session Signaling Keepalive message, the IDLE TIMEOUT
+contains the client’s requested value for the idle timeout.
+
+In a server response to a client-initated message, the IDLE TIMEOUT
+contains the server’s chosen value for the idle timeout, which the client
+MUST respect. This is modeled after the DHCP protocol, where the client
+requests a certain lease lifetime, but the server is the ultimate authority
+for deciding what lease lifetime is actually granted.
+
+In a server-initated Session Signaling Keepalive message, the IDLE TIMEOUT
+unilaterally informs the client of the new idle timeout this point forward
+in this connection.
+
+In a client response to a server-initated message, there is no SSOP-DATA.
+SSOP-LENGTH is zero.
+
+The Idle Timeout TLV (3) has similar intent to the EDNS TCP Keepalive
+Option {{!RFC7828}}.
+A client/server pair that supports Session Signaling MUST NOT use the
+EDNS TCP KeepAlive option within any message once bi-directional Session
+Signaling support has been confirmed.
+
+<< SC: And if client or server does use EDNS TCP Keepalive, then other end should...
+close connection? Silently ignore? >>
 
 ### Terminate Session
 
-The Terminate Session TLV (2) MAY be sent by a server to request that
-the client terminate the session.  It MUST NOT be initiated by a client.
+There may be rare cases where a server is overloaded and wishes to shed
+load. If the server simply closes connections, the likely behaviour of
+clients is to detect this as a network failure, and reconnect.
 
-The client SHOULD terminate the session as soon as possible, but MAY
-wait for any inflight queries to be answered.  It MUST NOT initiate any
-new requests over the existing session.
+To avoid this reconnection implosion, the server sends a Terminate
+Session TLV (2) to inform the client of the overload situation.
+After sending a Terminate Session TLV the server MUST NOT
+send any further messages on the connection.
 
-The SESSION-DATA is as follows:
+The Terminate Session TLV (2) MUST NOT be initiated by a client.
+
+Upon receipt of the Terminate Session TLV (2) the client MUST
+make note of the reconnect delay for this server, and then immediately
+close the connection.
+
+The SSOP-DATA is as follows:
 
                                                  1   1   1   1   1   1
          0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
@@ -288,47 +398,12 @@ session to the current server.
 The RECOMMENDED value is 10 seconds.  << RB: text required here about
 default values for load balancers, etc >>
 
-### Idle Timeout
-
-The Idle Timeout TLV (3) has similar intent to the EDNS TCP Keepalive
-Option {{!RFC7828}}.  It is used by a server to tell the client how long
-it may leave the current session idle for.  a client.  The definition of
-an idle session is as specified in {{!RFC7766}}.
-
-Messages generate by the client have no SESSION-DATA (whether in
-requests or responses).  A client-initiated Idle Timeout TLV allows the
-client to request the current timeout value, whereas a server-initiated
-request allows the server to unilaterally update the current timeout
-value.
-
-Messages generated by the server contain SESSION-DATA as follows:
-
-                                                 1   1   1   1   1   1
-         0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
-       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-       |                         IDLE TIMEOUT                          |
-       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-
-IDLE TIMEOUT:
-: the idle timeout for the current session, specified as a 16
-bit word in network order in units of 100 milliseconds.
-
-The client SHOULD terminate the current session if it remains idle for
-longer than the specified timeout (and MAY of course terminate the
-session earlier).  The server MAY unilaterally terminate the connection
-at any time, but SHOULD allow the client to keep the connection open if
-further messages are received before the idle timeout expires.
-
-A client / server pair that supports Session Signaling MUST NOT use the
-EDNS TCP KeepAlive option within any message once bi-directional Session
-Signaling support has been confirmed.
-
 # IANA Considerations
 
 ## DNS Session Signaling Opcode Registration
 
 IANA are directed to assign the value TBD for the Session Signaling
-OpCode in the DNS OpCodes Registry.
+Opcode in the DNS OpCodes Registry.
 
 ## DNS Session Signaling Type Codes Registry
 
@@ -337,11 +412,10 @@ Registry, with initial values as follows:
 
 | Type | Name | Status | Reference |
 |--:|------|--------|-----------|
-| 0 | Not implemented | | RFC-TBD1 |
-| 1 | Start Session | Standard | RFC-TBD1 |
-| 2 | Terminate Session | Standard | RFC-TBD1 |
-| 3 | Idle Timeout | Standard | RFC-TBD1 |
-| 4 - 63 | Unassigned, reserved for session management TLVs | | |
+| 0 | SSOP-NOTIMP | | RFC-TBD1 |
+| 1 | SSOP-Keepalive | Standard | RFC-TBD1 |
+| 2 | SSOP-Terminate | Standard | RFC-TBD1 |
+| 3 - 63 | Unassigned, reserved for session management TLVs | | |
 | 64 - 63487 | Unassigned | | |
 | 63488 - 64511 | Reserved for local / experimental use | | |
 | 64512 - 65535 | Reserved for future expansion | | |
