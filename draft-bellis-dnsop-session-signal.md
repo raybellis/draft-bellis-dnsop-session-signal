@@ -86,10 +86,21 @@ manage session timeouts and termination.
 
 # Introduction
 
+The use of transports other than UDP for DNS is being increasingly specified, 
+for example, DNS-over-TCP {{!RFC7766}}, DNS-over-TLS {{?RFC7858}} and recent
+work on DNS Push Notifications {{?I-D.ietf-dnssd-push}}. Such transports frequently
+use persistent, long-lived sessions and therefore when using them for transporting 
+DNS messages it is of benefit to have a mechanism
+that can establish parameters associated with those sessions, such as timeouts.
+In such situations it is also advantageous to support server initiated messages.
+
 The EDNS(0) Extension Mechanism for DNS {{!RFC6891}} is explicitly
-defined to only have "per-message" semantics.  This document defines a
-new Session Signaling Opcode used to carry persistent "per-session"
-type-length-values (TLVs), and defines an initial set of TLVs used to
+defined to only have "per-message" semantics. Whilst EDNS(0) has been used to 
+signal at least one session related parameter (the edns-tcp-keepalive EDNS0 
+Option {{?RFC7828}}) the result is less than optimal due to the restrictions
+imposed by the EDNS(0) semantics and the lack of server initiated signalling.
+This document defines a new Session Signaling Opcode used to carry persistent
+"per-session" type-length-values (TLVs), and defines an initial set of TLVs used to
 manage session timeouts and termination.
 
 With EDNS(0), multiple options may be packed into a single OPT RR, and
@@ -166,7 +177,7 @@ messages that they would not know how to handle.
 A session begins when a client makes a new connection to a server.
 
 The client may perform as many DNS operations as it wishes on the newly
-created connection. Operations MAY be pipelined (i.e., the client
+created connection. Operations SHOULD be pipelined (i.e., the client
 doesn’t need wait for a reply before sending the next message).
 The server MUST act on messages in the order they are received, but
 responses to those messages MAY be sent out of order, if appropriate.
@@ -181,10 +192,10 @@ idle timer for that connection (see {{!RFC7766}}).
 If, at any time during the life of the connection,
 half the idle-timeout value (i.e., 15 seconds by default) elapses
 without any DNS messages being sent or received on a connection,
-then the connection is considered idle and the client MUST take action.
+then the connection is considered stale and the client MUST take action.
 When this happens the client MUST either send at least one new message
-to reset the idle timer -- such as a Session Signaling keepalive message
-(see {{keepalive}}), or any other valid DNS message -- or close the connection.
+to reset the idle timer -- such as a Session Signaling Idle Timout message
+(see {{idletimeout}}), or any other valid DNS message -- or close the connection.
 
 If, at any time during the life of the connection,
 the full idle-timeout value (i.e., 30 seconds by default) elapses
@@ -199,7 +210,7 @@ setting the SO_LINGER option to zero before closing the socket.)
 If the client wishes to keep an idle connection open for longer than
 the default duration without having to send traffic every 15 seconds,
 then it uses the Session Signaling
-keepalive message to request a longer idle timeout (see {{keepalive}}).
+Idle Timeout message to request a longer idle timeout (see {{idletimeout}}).
 
 A client is not required to wait until half of the idle-timeout value
 before closing a connection. A client MAY close a connection at any time,
@@ -308,22 +319,20 @@ The SSOP-NOTIMP TLV has no SSOP-DATA.
 
 ## Session Management TLVs
 
-### Keepalive {#keepalive}
+### Idle Timeout {#idletimeout}
 
-The Keepalive TLV (1) is be used by a client to reset a connection’s
+The Idle Timeout TLV (1) is be used by a client to reset a connection’s
 idle timer, and at the same time to request what the idle timeout
 should be from this point forward in the connection.
 
-The Keepalive TLV also MAY be initiated by a server, to unilaterally inform
+The Idle Timeout TLV also MAY be initiated by a server, to unilaterally inform
 the client of a new idle timeout this point forward in this connection.
 
-It is not required that the Keepalive TLV be used in every session.
+It is not required that the Idle Timeout TLV be used in every session.
 While many Session Signaling operations
 (such as DNS Push Notifications {{?I-D.ietf-dnssd-push}})
 will be used in conjunction with a long-lived connection, this is not required,
 and in some cases the default 30-second timeout may be perfectly appropriate.
-
-<< TODO: update above dnssd-push reference once xml2rfc is online again >>
 
 The SSOP-DATA for the the Keepalive TLV is as follows:
 
@@ -341,7 +350,7 @@ with a TCP RST (or equivalent for other protocols); after half this interval
 the client MUST take action to either preserve the connection, or close it
 if it is no longer needed.
 
-In a client-initated Session Signaling Keepalive message, the IDLE TIMEOUT
+In a client-initated Session Signaling Idle Timeout message, the IDLE TIMEOUT
 contains the client’s requested value for the idle timeout.
 
 In a server response to a client-initated message, the IDLE TIMEOUT
@@ -350,7 +359,7 @@ MUST respect. This is modeled after the DHCP protocol, where the client
 requests a certain lease lifetime, but the server is the ultimate authority
 for deciding what lease lifetime is actually granted.
 
-In a server-initated Session Signaling Keepalive message, the IDLE TIMEOUT
+In a server-initated Session Signaling Idle Timeout message, the IDLE TIMEOUT
 unilaterally informs the client of the new idle timeout this point forward
 in this connection.
 
