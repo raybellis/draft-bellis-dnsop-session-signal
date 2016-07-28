@@ -96,8 +96,8 @@ In such situations it is also advantageous to support server initiated messages.
 
 The EDNS(0) Extension Mechanism for DNS {{!RFC6891}} is explicitly
 defined to only have "per-message" semantics. Whilst EDNS(0) has been used to 
-signal at least one session related parameter (the edns-tcp-keepalive EDNS0 
-Option {{?RFC7828}}) the result is less than optimal due to the restrictions
+signal at least one session related parameter (the EDNS TCP KeepAlive option
+{{?RFC7828}}) the result is less than optimal due to the restrictions
 imposed by the EDNS(0) semantics and the lack of server initiated signalling.
 This document defines a new Session Signaling Opcode used to carry persistent
 "per-session" type-length-values (TLVs), and defines an initial set of TLVs used to
@@ -194,7 +194,7 @@ half the idle-timeout value (i.e., 15 seconds by default) elapses
 without any DNS messages being sent or received on a connection,
 then the connection is considered stale and the client MUST take action.
 When this happens the client MUST either send at least one new message
-to reset the idle timer -- such as a Session Signaling Idle Timout message
+to reset the idle timer -- such as a Session Signaling Idle Timeout message
 (see {{idletimeout}}), or any other valid DNS message -- or close the connection.
 
 If, at any time during the life of the connection,
@@ -251,6 +251,9 @@ messages at any point in the lifetime of a session,
 and therefore either client or server may be the initiator of a message.
 The initiator MUST set the value of the QR bit in the DNS header to zero
 (0), and the responder MUST set it to one (1).
+
+<<TODO: Specify behaviour on receipt of a message from an initiator with the QR
+bit set to 1, etc.>>
 
 Every Session Signaling request message MUST elicit a response (which
 MUST have the same ID in the DNS message header as in the request).
@@ -334,7 +337,7 @@ While many Session Signaling operations
 will be used in conjunction with a long-lived connection, this is not required,
 and in some cases the default 30-second timeout may be perfectly appropriate.
 
-The SSOP-DATA for the the Keepalive TLV is as follows:
+The SSOP-DATA for the the Idle Timeout TLV is as follows:
 
                                                  1   1   1   1   1   1
          0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
@@ -350,21 +353,23 @@ with a TCP RST (or equivalent for other protocols); after half this interval
 the client MUST take action to either preserve the connection, or close it
 if it is no longer needed.
 
-In a client-initated Session Signaling Idle Timeout message, the IDLE TIMEOUT
+In a client-initiated Session Signaling Idle Timeout message, the IDLE TIMEOUT
 contains the client’s requested value for the idle timeout.
 
-In a server response to a client-initated message, the IDLE TIMEOUT
+In a server response to a client-initiated message, the IDLE TIMEOUT
 contains the server’s chosen value for the idle timeout, which the client
 MUST respect. This is modeled after the DHCP protocol, where the client
 requests a certain lease lifetime, but the server is the ultimate authority
 for deciding what lease lifetime is actually granted.
 
-In a server-initated Session Signaling Idle Timeout message, the IDLE TIMEOUT
+In a server-initiated Session Signaling Idle Timeout message, the IDLE TIMEOUT
 unilaterally informs the client of the new idle timeout this point forward
 in this connection.
 
-In a client response to a server-initated message, there is no SSOP-DATA.
+In a client response to a server-initiated message, there is no SSOP-DATA.
 SSOP-LENGTH is zero.
+
+<<TODO: Specify the behaviour when a server sends a 0 IDLE TIMEOUT.>>
 
 The Idle Timeout TLV (3) has similar intent to the EDNS TCP Keepalive
 Option {{!RFC7828}}.
@@ -386,7 +391,9 @@ Session TLV (2) to inform the client of the overload situation.
 After sending a Terminate Session TLV the server MUST NOT
 send any further messages on the connection.
 
-The Terminate Session TLV (2) MUST NOT be initiated by a client.
+The Terminate Session TLV (2) MUST NOT be initiated by a client. 
+
+<<TODO: Specify behaviour if the Terminate Session TLV is initiated by a client.>>
 
 Upon receipt of the Terminate Session TLV (2) the client MUST
 make note of the reconnect delay for this server, and then immediately
