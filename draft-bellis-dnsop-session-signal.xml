@@ -9,6 +9,7 @@
 <!ENTITY RFC7766 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.7766.xml">
 <!ENTITY RFC7828 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.7828.xml">
 <!ENTITY RFC7858 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.7858.xml">
+<!ENTITY I-D.ietf-dnssd-push SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-dnssd-push.xml">
 ]>
 
 <?rfc toc="yes"?>
@@ -373,11 +374,9 @@ the client of a new idle timeout this point forward in this connection.</t>
 
 <t>It is not required that the Keepalive TLV be used in every session.
 While many Session Signaling operations
-(such as DNS Push Notifications [I-D.ietf-dnssd-push])
+(such as DNS Push Notifications <xref target="I-D.ietf-dnssd-push"/>)
 will be used in conjunction with a long-lived connection, this is not required,
 and in some cases the default 30-second timeout may be perfectly appropriate.</t>
-
-<t>« TODO: update above dnssd-push reference once xml2rfc is online again »</t>
 
 <t>The SSOP-DATA for the the Keepalive TLV is as follows:</t>
 
@@ -550,6 +549,7 @@ and MUST NOT be sent in the clear before the TLS session is established.</t>
     <references title='Informative References'>
 
 &RFC7858;
+&I-D.ietf-dnssd-push;
 
 
     </references>

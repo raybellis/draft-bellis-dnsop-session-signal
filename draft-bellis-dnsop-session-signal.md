@@ -319,7 +319,7 @@ the client of a new idle timeout this point forward in this connection.
 
 It is not required that the Keepalive TLV be used in every session.
 While many Session Signaling operations
-(such as DNS Push Notifications [I-D.ietf-dnssd-push])
+(such as DNS Push Notifications {{?I-D.ietf-dnssd-push}})
 will be used in conjunction with a long-lived connection, this is not required,
 and in some cases the default 30-second timeout may be perfectly appropriate.
 
