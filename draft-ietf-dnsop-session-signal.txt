@@ -5,7 +5,7 @@
 DNSOP Working Group                                            R. Bellis
 Internet-Draft                                                       ISC
 Intended status: Standards Track                             S. Cheshire
-Expires: January 29, 2017                                     Apple Inc.
+Expires: February 16, 2017                                    Apple Inc.
                                                             J. Dickinson
                                                             S. Dickinson
                                                                  Sinodun
@@ -13,19 +13,19 @@ Expires: January 29, 2017                                     Apple Inc.
                                                               Salesforce
                                                              T. Pusateri
                                                             Unaffiliated
-                                                           July 28, 2016
+                                                         August 15, 2016
 
 
                          DNS Session Signaling
-                  draft-bellis-dnsop-session-signal-02
+                   draft-ietf-dnsop-session-signal-00
 
 Abstract
 
-   The EDNS(0) Extension Mechanism for DNS [RFC6891] is explicitly
-   defined to only have "per-message" semantics.  This document defines
-   a new Session Signaling Opcode used to carry persistent "per-session"
-   type-length-values (TLVs), and defines an initial set of TLVs used to
-   manage session timeouts and termination.
+   The EDNS(0) Extension Mechanism for DNS is explicitly defined to only
+   have "per-message" semantics.  This document defines a new Session
+   Signaling Opcode used to carry persistent "per-session" type-length-
+   values (TLVs), and defines an initial set of TLVs used to manage
+   session timeouts and termination.
 
 Status of This Memo
 
@@ -42,7 +42,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on January 29, 2017.
+   This Internet-Draft will expire on February 16, 2017.
 
 Copyright Notice
 
@@ -53,9 +53,9 @@ Copyright Notice
 
 
 
-Bellis, et al.          Expires January 29, 2017                [Page 1]
+Bellis, et al.          Expires February 16, 2017               [Page 1]
 
-Internet-Draft            DNS Session Signaling                July 2016
+Internet-Draft            DNS Session Signaling              August 2016
 
 
    This document is subject to BCP 78 and the IETF Trust's Legal
@@ -109,9 +109,9 @@ Table of Contents
 
 
 
-Bellis, et al.          Expires January 29, 2017                [Page 2]
+Bellis, et al.          Expires February 16, 2017               [Page 2]
 
-Internet-Draft            DNS Session Signaling                July 2016
+Internet-Draft            DNS Session Signaling              August 2016
 
 
    The EDNS(0) Extension Mechanism for DNS [RFC6891] is explicitly
@@ -165,9 +165,9 @@ Internet-Draft            DNS Session Signaling                July 2016
 
 
 
-Bellis, et al.          Expires January 29, 2017                [Page 3]
+Bellis, et al.          Expires February 16, 2017               [Page 3]
 
-Internet-Draft            DNS Session Signaling                July 2016
+Internet-Draft            DNS Session Signaling              August 2016
 
 
    o  Messages are delivered in order
@@ -221,9 +221,9 @@ Internet-Draft            DNS Session Signaling                July 2016
 
 
 
-Bellis, et al.          Expires January 29, 2017                [Page 4]
+Bellis, et al.          Expires February 16, 2017               [Page 4]
 
-Internet-Draft            DNS Session Signaling                July 2016
+Internet-Draft            DNS Session Signaling              August 2016
 
 
    When a server implementing this specification receives a new
@@ -277,9 +277,9 @@ Internet-Draft            DNS Session Signaling                July 2016
 
 
 
-Bellis, et al.          Expires January 29, 2017                [Page 5]
+Bellis, et al.          Expires February 16, 2017               [Page 5]
 
-Internet-Draft            DNS Session Signaling                July 2016
+Internet-Draft            DNS Session Signaling              August 2016
 
 
                                                 1   1   1   1   1   1
@@ -333,9 +333,9 @@ Internet-Draft            DNS Session Signaling                July 2016
 
 
 
-Bellis, et al.          Expires January 29, 2017                [Page 6]
+Bellis, et al.          Expires February 16, 2017               [Page 6]
 
-Internet-Draft            DNS Session Signaling                July 2016
+Internet-Draft            DNS Session Signaling              August 2016
 
 
            +------+----------+---------------------------------+
@@ -389,9 +389,9 @@ Internet-Draft            DNS Session Signaling                July 2016
 
 
 
-Bellis, et al.          Expires January 29, 2017                [Page 7]
+Bellis, et al.          Expires February 16, 2017               [Page 7]
 
-Internet-Draft            DNS Session Signaling                July 2016
+Internet-Draft            DNS Session Signaling              August 2016
 
 
 4.1.1.  "Not Implemented"
@@ -445,9 +445,9 @@ Internet-Draft            DNS Session Signaling                July 2016
 
 
 
-Bellis, et al.          Expires January 29, 2017                [Page 8]
+Bellis, et al.          Expires February 16, 2017               [Page 8]
 
-Internet-Draft            DNS Session Signaling                July 2016
+Internet-Draft            DNS Session Signaling              August 2016
 
 
    In a client-initiated Session Signaling Idle Timeout message, the
@@ -501,9 +501,9 @@ Internet-Draft            DNS Session Signaling                July 2016
 
 
 
-Bellis, et al.          Expires January 29, 2017                [Page 9]
+Bellis, et al.          Expires February 16, 2017               [Page 9]
 
-Internet-Draft            DNS Session Signaling                July 2016
+Internet-Draft            DNS Session Signaling              August 2016
 
 
    Upon receipt of the Terminate Session TLV (2) the client MUST make
@@ -557,9 +557,9 @@ Internet-Draft            DNS Session Signaling                July 2016
 
 
 
-Bellis, et al.          Expires January 29, 2017               [Page 10]
+Bellis, et al.          Expires February 16, 2017              [Page 10]
 
-Internet-Draft            DNS Session Signaling                July 2016
+Internet-Draft            DNS Session Signaling              August 2016
 
 
    +-----------+--------------------------------+----------+-----------+
@@ -607,20 +607,20 @@ Internet-Draft            DNS Session Signaling                July 2016
               November 1987, <http://www.rfc-editor.org/info/rfc1035>.
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
-              Requirement Levels", BCP 14, RFC 2119, DOI 10.17487/
-              RFC2119, March 1997,
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
               <http://www.rfc-editor.org/info/rfc2119>.
 
 
 
-Bellis, et al.          Expires January 29, 2017               [Page 11]
+Bellis, et al.          Expires February 16, 2017              [Page 11]
 
-Internet-Draft            DNS Session Signaling                July 2016
+Internet-Draft            DNS Session Signaling              August 2016
 
 
    [RFC6891]  Damas, J., Graff, M., and P. Vixie, "Extension Mechanisms
-              for DNS (EDNS(0))", STD 75, RFC 6891, DOI 10.17487/
-              RFC6891, April 2013,
+              for DNS (EDNS(0))", STD 75, RFC 6891,
+              DOI 10.17487/RFC6891, April 2013,
               <http://www.rfc-editor.org/info/rfc6891>.
 
    [RFC7766]  Dickinson, J., Dickinson, S., Bellis, R., Mankin, A., and
@@ -629,8 +629,8 @@ Internet-Draft            DNS Session Signaling                July 2016
               <http://www.rfc-editor.org/info/rfc7766>.
 
    [RFC7828]  Wouters, P., Abley, J., Dickinson, S., and R. Bellis, "The
-              edns-tcp-keepalive EDNS0 Option", RFC 7828, DOI 10.17487/
-              RFC7828, April 2016,
+              edns-tcp-keepalive EDNS0 Option", RFC 7828,
+              DOI 10.17487/RFC7828, April 2016,
               <http://www.rfc-editor.org/info/rfc7828>.
 
 8.2.  Informative References
@@ -669,9 +669,9 @@ Authors' Addresses
 
 
 
-Bellis, et al.          Expires January 29, 2017               [Page 12]
+Bellis, et al.          Expires February 16, 2017              [Page 12]
 
-Internet-Draft            DNS Session Signaling                July 2016
+Internet-Draft            DNS Session Signaling              August 2016
 
 
    John Dickinson
@@ -725,4 +725,4 @@ Internet-Draft            DNS Session Signaling                July 2016
 
 
 
-Bellis, et al.          Expires January 29, 2017               [Page 13]
+Bellis, et al.          Expires February 16, 2017              [Page 13]

@@ -1,7 +1,7 @@
 ---
 title: DNS Session Signaling
-docname: draft-bellis-dnsop-session-signal-02
-date: 2016-07
+docname: draft-ietf-dnsop-session-signal-00
+date: 2016-08
 
 ipr: trust200902
 area: Internet
@@ -76,7 +76,7 @@ author:
 
 --- abstract
 
-The EDNS(0) Extension Mechanism for DNS {{!RFC6891}} is explicitly
+The EDNS(0) Extension Mechanism for DNS is explicitly
 defined to only have "per-message" semantics.  This document defines a
 new Session Signaling Opcode used to carry persistent "per-session"
 type-length-values (TLVs), and defines an initial set of TLVs used to
