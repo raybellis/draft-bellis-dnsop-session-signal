@@ -1,6 +1,6 @@
 ---
 title: DNS Session Signaling
-docname: draft-ietf-dnsop-session-signal-02
+docname: draft-ietf-dnsop-session-signal-00
 date: 2016-08
 
 ipr: trust200902

@@ -5,7 +5,7 @@
 DNSOP Working Group                                            R. Bellis
 Internet-Draft                                                       ISC
 Intended status: Standards Track                             S. Cheshire
-Expires: February 15, 2017                                    Apple Inc.
+Expires: February 16, 2017                                    Apple Inc.
                                                             J. Dickinson
                                                             S. Dickinson
                                                                  Sinodun
@@ -13,11 +13,11 @@ Expires: February 15, 2017                                    Apple Inc.
                                                               Salesforce
                                                              T. Pusateri
                                                             Unaffiliated
-                                                         August 14, 2016
+                                                         August 15, 2016
 
 
                          DNS Session Signaling
-                   draft-ietf-dnsop-session-signal-02
+                   draft-ietf-dnsop-session-signal-00
 
 Abstract
 
@@ -42,7 +42,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on February 15, 2017.
+   This Internet-Draft will expire on February 16, 2017.
 
 Copyright Notice
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Bellis, et al.          Expires February 15, 2017               [Page 1]
+Bellis, et al.          Expires February 16, 2017               [Page 1]
 
 Internet-Draft            DNS Session Signaling              August 2016
 
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Bellis, et al.          Expires February 15, 2017               [Page 2]
+Bellis, et al.          Expires February 16, 2017               [Page 2]
 
 Internet-Draft            DNS Session Signaling              August 2016
 
@@ -165,7 +165,7 @@ Internet-Draft            DNS Session Signaling              August 2016
 
 
 
-Bellis, et al.          Expires February 15, 2017               [Page 3]
+Bellis, et al.          Expires February 16, 2017               [Page 3]
 
 Internet-Draft            DNS Session Signaling              August 2016
 
@@ -221,7 +221,7 @@ Internet-Draft            DNS Session Signaling              August 2016
 
 
 
-Bellis, et al.          Expires February 15, 2017               [Page 4]
+Bellis, et al.          Expires February 16, 2017               [Page 4]
 
 Internet-Draft            DNS Session Signaling              August 2016
 
@@ -277,7 +277,7 @@ Internet-Draft            DNS Session Signaling              August 2016
 
 
 
-Bellis, et al.          Expires February 15, 2017               [Page 5]
+Bellis, et al.          Expires February 16, 2017               [Page 5]
 
 Internet-Draft            DNS Session Signaling              August 2016
 
@@ -333,7 +333,7 @@ Internet-Draft            DNS Session Signaling              August 2016
 
 
 
-Bellis, et al.          Expires February 15, 2017               [Page 6]
+Bellis, et al.          Expires February 16, 2017               [Page 6]
 
 Internet-Draft            DNS Session Signaling              August 2016
 
@@ -389,7 +389,7 @@ Internet-Draft            DNS Session Signaling              August 2016
 
 
 
-Bellis, et al.          Expires February 15, 2017               [Page 7]
+Bellis, et al.          Expires February 16, 2017               [Page 7]
 
 Internet-Draft            DNS Session Signaling              August 2016
 
@@ -445,7 +445,7 @@ Internet-Draft            DNS Session Signaling              August 2016
 
 
 
-Bellis, et al.          Expires February 15, 2017               [Page 8]
+Bellis, et al.          Expires February 16, 2017               [Page 8]
 
 Internet-Draft            DNS Session Signaling              August 2016
 
@@ -501,7 +501,7 @@ Internet-Draft            DNS Session Signaling              August 2016
 
 
 
-Bellis, et al.          Expires February 15, 2017               [Page 9]
+Bellis, et al.          Expires February 16, 2017               [Page 9]
 
 Internet-Draft            DNS Session Signaling              August 2016
 
@@ -557,7 +557,7 @@ Internet-Draft            DNS Session Signaling              August 2016
 
 
 
-Bellis, et al.          Expires February 15, 2017              [Page 10]
+Bellis, et al.          Expires February 16, 2017              [Page 10]
 
 Internet-Draft            DNS Session Signaling              August 2016
 
@@ -613,7 +613,7 @@ Internet-Draft            DNS Session Signaling              August 2016
 
 
 
-Bellis, et al.          Expires February 15, 2017              [Page 11]
+Bellis, et al.          Expires February 16, 2017              [Page 11]
 
 Internet-Draft            DNS Session Signaling              August 2016
 
@@ -669,7 +669,7 @@ Authors' Addresses
 
 
 
-Bellis, et al.          Expires February 15, 2017              [Page 12]
+Bellis, et al.          Expires February 16, 2017              [Page 12]
 
 Internet-Draft            DNS Session Signaling              August 2016
 
@@ -725,4 +725,4 @@ Internet-Draft            DNS Session Signaling              August 2016
 
 
 
-Bellis, et al.          Expires February 15, 2017              [Page 13]
+Bellis, et al.          Expires February 16, 2017              [Page 13]

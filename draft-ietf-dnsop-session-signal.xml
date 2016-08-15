@@ -16,7 +16,7 @@
 <?rfc symrefs="yes"?>
 <?rfc sortrefs="yes"?>
 
-<rfc ipr="trust200902" docName="draft-ietf-dnsop-session-signal-02" category="std">
+<rfc ipr="trust200902" docName="draft-ietf-dnsop-session-signal-00" category="std">
 
   <front>
     <title>DNS Session Signaling</title>
