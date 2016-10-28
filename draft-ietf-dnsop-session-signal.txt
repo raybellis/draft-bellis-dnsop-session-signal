@@ -131,10 +131,10 @@ Internet-Draft            DNS Session Signaling             October 2016
    motivation to pack multiple operations into a single message for
    efficiency reasons.  Each Session Signaling operation is communicated
    in its own separate DNS message, and the transport protocol can take
-   care of packing those separate DNS messages into a single IP packet
-   if appropriate.  For example, TCP can pack multiple small DNS
-   messages into a single TCP segment.  The RCODE in the response
-   message indicates the success or failure of the operation.
+   care of packing separate DNS messages into a single IP packet if
+   appropriate.  For example, TCP can pack multiple small DNS messages
+   into a single TCP segment.  The RCODE in each response message
+   indicates the success or failure of the operation in question.
 
    It should be noted that the message format for Session Signaling
    operations (see Section 3.2) differs from the DNS packet format used
@@ -261,9 +261,9 @@ Internet-Draft            DNS Session Signaling             October 2016
    connection.  For sessions over TCP (or over TLS over TCP), to avoid
    the burden of having a connection in TIME-WAIT state, instead of
    closing the connection gracefully with a TCP FIN the server SHOULD
-   abort the connection with a TCP RST.  (In the Sockets API this is
-   achieved by setting the SO_LINGER option to zero before closing the
-   socket.)
+   abort the connection with a TCP RST (or equivalent for other
+   protocols).  (In the BSD Sockets API this is achieved by setting the
+   SO_LINGER option to zero before closing the socket.)
 
    If the client wishes to keep an idle connection open for longer than
    the default duration without having to send traffic every 15 seconds,
@@ -306,6 +306,18 @@ Internet-Draft            DNS Session Signaling             October 2016
    the future a Session Signaling modifier TLV needs to be defined to
    perform this function.
 
+   Note however that, while Session Signaling _messages_ cannot include
+   EDNS(0) or TSIG records, a Session Signaling _session_ is typically
+   used to carry a whole series of DNS messages of different kinds,
+   including Session Signaling messages, and other DNS message types
+   like Query [RFC1034][RFC1035] and Update [RFC2136], and those
+   messages can carry EDNS(0) and TSIG records.  This specification
+   explicitly prohibits use of the EDNS(0) TCP Keepalive Option
+   [RFC7828] in messages sent on a Session Signaling session (because it
+   duplicates the functionality provided by the Session Signaling Idle
+   Timeout TLV), but messages may contain other EDNS(0) options where
+   appropriate.
+
                                                 1   1   1   1   1   1
         0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
@@ -318,18 +330,6 @@ Internet-Draft            DNS Session Signaling             October 2016
       /                                                               /
       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
-   The MESSAGE ID, QR, Opcode and RCODE fields have their usual meanings
-   [RFC1035].
-
-   The RCODE in a request message (QR=0) MUST be zero.  If a client or
-   server receives a request message (QR=0) where the RCODE is not zero,
-   this is a fatal error and it MUST immediately terminate the
-   connection with a TCP RST (or equivalent for other protocols).
-
-   The Z bits are currently unused, and in both requests and responses
-   the Z bits SHOULD be set to zero (0) on transmission and silently
-   ignored on reception, unless a future document specifies otherwise.
-
 
 
 
@@ -337,6 +337,18 @@ Bellis, et al.             Expires May 1, 2017                  [Page 6]
 
 Internet-Draft            DNS Session Signaling             October 2016
 
+
+   The MESSAGE ID, QR, Opcode and RCODE fields have their usual meanings
+   [RFC1035].
+
+   In a request message (QR=0) the RCODE MUST be zero.  If a client or
+   server receives a request message (QR=0) where the RCODE is not zero,
+   this is a fatal error and it MUST immediately terminate the
+   connection with a TCP RST (or equivalent for other protocols).
+
+   The Z bits are currently unused, and in both requests and responses
+   the Z bits SHOULD be set to zero (0) on transmission and silently
+   ignored on reception, unless a future document specifies otherwise.
 
 3.3.  Message Handling
 
@@ -358,8 +370,8 @@ Internet-Draft            DNS Session Signaling             October 2016
    ID MUST NOT be reused while the initiator is waiting for a response
    to its request.  For a long-lived operation, such as a DNS Push
    Notification subscription [I-D.ietf-dnssd-push] the MESSAGE ID for
-   the subscription MUST NOT be reused for as long as the subscription
-   is active.
+   the operation MUST NOT be reused for as long as the operation is
+   active.
 
    The namespaces of 16-bit MESSAGE IDs are disjoint in each direction.
    For example, it is _not_ an error for both client and server to send
@@ -374,18 +386,6 @@ Internet-Draft            DNS Session Signaling             October 2016
    (or equivalent for other protocols).
 
    The RCODE value in a response may be one of the following values:
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -459,8 +459,9 @@ Internet-Draft            DNS Session Signaling             October 2016
    It is not required that the Idle Timeout TLV be used in every
    session.  While many Session Signaling operations (such as DNS Push
    Notifications [I-D.ietf-dnssd-push]) will be used in conjunction with
-   a long-lived connection, this is not required, and in some cases the
-   default 30-second timeout may be perfectly appropriate.
+   a long-lived connection, not all Session Signaling operations require
+   a long-lived connection, and in some cases the default 30-second
+   timeout may be perfectly appropriate.
 
    The SSOP-DATA for the the Idle Timeout TLV is as follows:
 
@@ -496,8 +497,7 @@ Internet-Draft            DNS Session Signaling             October 2016
    a client-initiated request, or a server-initiated message) with an
    IDLE TIMEOUT value less than ten seconds.  If a client receives an
    Idle Timeout message specifying an IDLE TIMEOUT value less than ten
-   seconds this is an error and the client MUST immediately terminate
-   the connection with a TCP RST (or equivalent for other protocols).
+
 
 
 
@@ -506,7 +506,10 @@ Bellis, et al.             Expires May 1, 2017                  [Page 9]
 Internet-Draft            DNS Session Signaling             October 2016
 
 
-   The Idle Timeout TLV (3) has similar intent to the EDNS(0) TCP
+   seconds this is an error and the client MUST immediately terminate
+   the connection with a TCP RST (or equivalent for other protocols).
+
+   The Idle Timeout TLV (1) has similar intent to the EDNS(0) TCP
    Keepalive Option [RFC7828].  A client/server pair that supports
    Session Signaling MUST NOT use the EDNS(0) TCP KeepAlive option
    within any message on a connection once bi-directional Session
@@ -520,37 +523,34 @@ Internet-Draft            DNS Session Signaling             October 2016
 4.1.2.  Terminate Session
 
    There may be rare cases where a server is overloaded and wishes to
-   shed load.  If the server simply closes connections, the likely
-   behaviour of clients is to detect this as a network failure, and
-   reconnect.
+   shed load.  If the server handles this by simply closing connections,
+   the likely behaviour of clients is to detect this as a network
+   failure, and reconnect.
 
    To avoid this reconnection implosion, the server sends a Terminate
-   Session TLV (2) to inform the client of the overload situation.
+   Session TLV (0) to inform the client of the overload situation.
    After sending a Terminate Session TLV the server MUST NOT send any
    further messages on the connection.
 
-   The Terminate Session TLV (2) MUST NOT be initiated by a client.  If
+   The Terminate Session TLV (0) MUST NOT be initiated by a client.  If
    a server receives a Terminate Session TLV this is an error and the
    server MUST immediately terminate the connection with a TCP RST (or
    equivalent for other protocols).
 
-   Upon receipt of the Terminate Session TLV (2) the client MUST make
+   Upon receipt of the Terminate Session TLV (0) the client MUST make
    note of the reconnect delay for this server, and then immediately
    close the connection.  This is to place the burden of TCP's TIME-WAIT
    state on the client.  After sending the Terminate Session TLV the
    server SHOULD allow the client five seconds to close the connection,
    and if the client has not closed the connection after five seconds
-   then the server SHOULD abort the connection with a TCP RST.  (In the
-   Sockets API this is achieved by setting the SO_LINGER option to zero
-   before closing the socket.)
+   then the server SHOULD abort the connection with a TCP RST (or
+   equivalent for other protocols).  (In the BSD Sockets API this is
+   achieved by setting the SO_LINGER option to zero before closing the
+   socket.)
 
    The SSOP-DATA is as follows:
 
-                           1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
-       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-      |                   RECONNECT DELAY (32 bits)                   |
-      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
 
 
 
@@ -562,6 +562,12 @@ Bellis, et al.             Expires May 1, 2017                 [Page 10]
 Internet-Draft            DNS Session Signaling             October 2016
 
 
+                           1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |                   RECONNECT DELAY (32 bits)                   |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
    RECONNECT DELAY:  a time value, specified as a 32 bit word in network
       order in units of milliseconds, within which the client MUST NOT
       establish a new session to the current server.
@@ -572,13 +578,13 @@ Internet-Draft            DNS Session Signaling             October 2016
 
 5.1.  DNS Session Signaling Opcode Registration
 
-   IANA are directed to assign the value TBD (tentatively 6) for the
-   Session Signaling Opcode in the DNS OpCodes Registry.
+   IANA are directed to assign a value (tentatively 6) in the DNS
+   Opcodes Registry for the Session Signaling Opcode.
 
 5.2.  DNS Session Signaling RCODE Registration
 
-   IANA are directed to assign the value TBD (tentatively 11) for the
-   SSOPNOTIMP error code in the DNS RCODE Registry.
+   IANA are directed to assign a value (tentatively 11) in the DNS RCODE
+   Registry for the SSOPNOTIMP error code.
 
 5.3.  DNS Session Signaling Type Codes Registry
 
@@ -588,9 +594,9 @@ Internet-Draft            DNS Session Signaling             October 2016
    +-----------+--------------------------------+----------+-----------+
    |      Type | Name                           | Status   | Reference |
    +-----------+--------------------------------+----------+-----------+
-   |         0 | SSOP-Terminate                 | Standard | RFC-TBD1  |
+   |         0 | SSOP-Terminate                 | Standard | RFC-TBD   |
    |           |                                |          |           |
-   |         1 | SSOP-Keepalive                 | Standard | RFC-TBD1  |
+   |         1 | SSOP-IdleTimeout               | Standard | RFC-TBD   |
    |           |                                |          |           |
    |    3 - 63 | Unassigned, reserved for       |          |           |
    |           | session management TLVs        |          |           |
@@ -605,18 +611,16 @@ Internet-Draft            DNS Session Signaling             October 2016
    |     65535 |                                |          |           |
    +-----------+--------------------------------+----------+-----------+
 
-   Registration of additional Session Signaling Type Codes requires
-   publication of an appropriate IETF "Standards Action" or "IESG
-   Approval" document [RFC5226].
-
-
-
 
 
 Bellis, et al.             Expires May 1, 2017                 [Page 11]
 
 Internet-Draft            DNS Session Signaling             October 2016
 
+
+   Registration of additional Session Signaling Type Codes requires
+   publication of an appropriate IETF "Standards Action" or "IESG
+   Approval" document [RFC5226].
 
 6.  Security Considerations
 
@@ -633,6 +637,10 @@ Internet-Draft            DNS Session Signaling             October 2016
 
 8.1.  Normative References
 
+   [RFC1034]  Mockapetris, P., "Domain names - concepts and facilities",
+              STD 13, RFC 1034, DOI 10.17487/RFC1034, November 1987,
+              <http://www.rfc-editor.org/info/rfc1034>.
+
    [RFC1035]  Mockapetris, P., "Domain names - implementation and
               specification", STD 13, RFC 1035, DOI 10.17487/RFC1035,
               November 1987, <http://www.rfc-editor.org/info/rfc1035>.
@@ -646,10 +654,25 @@ Internet-Draft            DNS Session Signaling             October 2016
               Extensions", RFC 2132, DOI 10.17487/RFC2132, March 1997,
               <http://www.rfc-editor.org/info/rfc2132>.
 
+   [RFC2136]  Vixie, P., Ed., Thomson, S., Rekhter, Y., and J. Bound,
+              "Dynamic Updates in the Domain Name System (DNS UPDATE)",
+              RFC 2136, DOI 10.17487/RFC2136, April 1997,
+              <http://www.rfc-editor.org/info/rfc2136>.
+
    [RFC5226]  Narten, T. and H. Alvestrand, "Guidelines for Writing an
               IANA Considerations Section in RFCs", BCP 26, RFC 5226,
               DOI 10.17487/RFC5226, May 2008,
               <http://www.rfc-editor.org/info/rfc5226>.
+
+
+
+
+
+
+Bellis, et al.             Expires May 1, 2017                 [Page 12]
+
+Internet-Draft            DNS Session Signaling             October 2016
+
 
    [RFC6891]  Damas, J., Graff, M., and P. Vixie, "Extension Mechanisms
               for DNS (EDNS(0))", STD 75, RFC 6891,
@@ -665,14 +688,6 @@ Internet-Draft            DNS Session Signaling             October 2016
               edns-tcp-keepalive EDNS0 Option", RFC 7828,
               DOI 10.17487/RFC7828, April 2016,
               <http://www.rfc-editor.org/info/rfc7828>.
-
-
-
-
-Bellis, et al.             Expires May 1, 2017                 [Page 12]
-
-Internet-Draft            DNS Session Signaling             October 2016
-
 
 8.2.  Informative References
 
@@ -707,6 +722,14 @@ Authors' Addresses
    Email: cheshire@apple.com
 
 
+
+
+
+Bellis, et al.             Expires May 1, 2017                 [Page 13]
+
+Internet-Draft            DNS Session Signaling             October 2016
+
+
    John Dickinson
    Sinodun Internet Technologies
    Magadalen Centre
@@ -715,19 +738,6 @@ Authors' Addresses
    United Kingdom
 
    Email: jad@sinodun.com
-
-
-
-
-
-
-
-
-
-
-Bellis, et al.             Expires May 1, 2017                 [Page 13]
-
-Internet-Draft            DNS Session Signaling             October 2016
 
 
    Sara Dickinson
@@ -751,16 +761,6 @@ Internet-Draft            DNS Session Signaling             October 2016
 
    Phone: +1 843 473 7394
    Email: pusateri@bangj.com
-
-
-
-
-
-
-
-
-
-
 
 
 

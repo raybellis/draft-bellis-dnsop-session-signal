@@ -112,10 +112,10 @@ acknowledged, if necessary.
 With Session Signaling, in contrast, there is no compelling motivation
 to pack multiple operations into a single message for efficiency reasons.
 Each Session Signaling operation is communicated in its own separate
-DNS message, and the transport protocol can take care of packing those
+DNS message, and the transport protocol can take care of packing
 separate DNS messages into a single IP packet if appropriate.
 For example, TCP can pack multiple small DNS messages into a single TCP segment.
-The RCODE in the response message indicates the success or failure of the operation.
+The RCODE in each response message indicates the success or failure of the operation in question.
 
 It should be noted that the message format for Session Signaling
 operations (see {{format}}) differs from the DNS packet format used for
@@ -213,7 +213,8 @@ then the connection is considered delinquent and the server SHOULD
 forcibly terminate the connection. For sessions over TCP (or over TLS over TCP),
 to avoid the burden of having a connection in TIME-WAIT state, instead of
 closing the connection gracefully with a TCP FIN the server SHOULD abort
-the connection with a TCP RST. (In the Sockets API this is achieved by
+the connection with a TCP RST (or equivalent for other protocols).
+(In the BSD Sockets API this is achieved by
 setting the SO_LINGER option to zero before closing the socket.)
 
 If the client wishes to keep an idle connection open for longer than
@@ -248,6 +249,17 @@ Similarly there is, by design, no way to add a TSIG record to a Session
 Signaling message. If this capability becomes necessary in the future a
 Session Signaling modifier TLV needs to be defined to perform this function.
 
+Note however that, while Session Signaling *messages* cannot include
+EDNS(0) or TSIG records, a Session Signaling *session* is typically used to carry
+a whole series of DNS messages of different kinds, including Session Signaling messages,
+and other DNS message types like Query {{!RFC1034}}{{!RFC1035}} and Update {{!RFC2136}},
+and those messages can carry EDNS(0) and TSIG records.
+This specification explicitly prohibits use of the
+EDNS(0) TCP Keepalive Option {{!RFC7828}}
+in messages sent on a Session Signaling session (because it duplicates
+the functionality provided by the Session Signaling Idle Timeout TLV),
+but messages may contain other EDNS(0) options where appropriate.
+
                                                  1   1   1   1   1   1
          0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
@@ -262,7 +274,7 @@ Session Signaling modifier TLV needs to be defined to perform this function.
 
 The MESSAGE ID, QR, Opcode and RCODE fields have their usual meanings {{!RFC1035}}.
 
-The RCODE in a request message (QR=0) MUST be zero. If a client or server
+In a request message (QR=0) the RCODE MUST be zero. If a client or server
 receives a request message (QR=0) where the RCODE is not zero, this is a
 fatal error and it MUST immediately terminate the connection with a TCP RST
 (or equivalent for other protocols).
@@ -288,8 +300,8 @@ An initiator MUST NOT reuse a MESSAGE ID that is already in use for an outstandi
 request. At the very least, this means that a MESSAGE ID MUST NOT be reused
 while the initiator is waiting for a response to its request.
 For a long-lived operation, such as a DNS Push Notification
-subscription {{?I-D.ietf-dnssd-push}} the MESSAGE ID for the subscription
-MUST NOT be reused for as long as the subscription is active.
+subscription {{?I-D.ietf-dnssd-push}} the MESSAGE ID for the operation
+MUST NOT be reused for as long as the operation is active.
 
 The namespaces of 16-bit MESSAGE IDs are disjoint in each direction.
 For example, it is *not* an error for both client and server to send a request
@@ -355,7 +367,8 @@ the client of a new idle timeout this point forward in this connection.
 It is not required that the Idle Timeout TLV be used in every session.
 While many Session Signaling operations
 (such as DNS Push Notifications {{?I-D.ietf-dnssd-push}})
-will be used in conjunction with a long-lived connection, this is not required,
+will be used in conjunction with a long-lived connection,
+not all Session Signaling operations require a long-lived connection,
 and in some cases the default 30-second timeout may be perfectly appropriate.
 
 The SSOP-DATA for the the Idle Timeout TLV is as follows:
@@ -395,7 +408,7 @@ If a client receives an Idle Timeout message specifying an IDLE TIMEOUT value
 less than ten seconds this is an error and the client MUST immediately
 terminate the connection with a TCP RST (or equivalent for other protocols).
 
-The Idle Timeout TLV (3) has similar intent to the
+The Idle Timeout TLV (1) has similar intent to the
 EDNS(0) TCP Keepalive Option {{!RFC7828}}.
 A client/server pair that supports Session Signaling MUST NOT use the
 EDNS(0) TCP KeepAlive option within any message on a connection
@@ -409,26 +422,27 @@ terminate the connection with a TCP RST (or equivalent for other protocols).
 ### Terminate Session
 
 There may be rare cases where a server is overloaded and wishes to shed
-load. If the server simply closes connections, the likely behaviour of
-clients is to detect this as a network failure, and reconnect.
+load. If the server handles this by simply closing connections, the likely
+behaviour of clients is to detect this as a network failure, and reconnect.
 
 To avoid this reconnection implosion, the server sends a Terminate
-Session TLV (2) to inform the client of the overload situation.
+Session TLV (0) to inform the client of the overload situation.
 After sending a Terminate Session TLV the server MUST NOT
 send any further messages on the connection.
 
-The Terminate Session TLV (2) MUST NOT be initiated by a client.
+The Terminate Session TLV (0) MUST NOT be initiated by a client.
 If a server receives a Terminate Session TLV this is an error and the server MUST
 immediately terminate the connection with a TCP RST (or equivalent for other protocols).
 
-Upon receipt of the Terminate Session TLV (2) the client MUST
+Upon receipt of the Terminate Session TLV (0) the client MUST
 make note of the reconnect delay for this server, and then immediately
 close the connection.
 This is to place the burden of TCP's TIME-WAIT state on the client.
 After sending the Terminate Session TLV the server SHOULD allow the
 client five seconds to close the connection, and if the client has not
 closed the connection after five seconds then the server SHOULD abort
-the connection with a TCP RST. (In the Sockets API this is achieved by
+the connection with a TCP RST (or equivalent for other protocols).
+(In the BSD Sockets API this is achieved by
 setting the SO_LINGER option to zero before closing the socket.)
 
 The SSOP-DATA is as follows:
@@ -449,13 +463,13 @@ The RECOMMENDED value is 10 seconds.
 
 ## DNS Session Signaling Opcode Registration
 
-IANA are directed to assign the value TBD (tentatively 6)
-for the Session Signaling Opcode in the DNS OpCodes Registry.
+IANA are directed to assign a value (tentatively 6)
+in the DNS Opcodes Registry for the Session Signaling Opcode.
 
 ## DNS Session Signaling RCODE Registration
 
-IANA are directed to assign the value TBD (tentatively 11)
-for the SSOPNOTIMP error code in the DNS RCODE Registry.
+IANA are directed to assign a value (tentatively 11)
+in the DNS RCODE Registry for the SSOPNOTIMP error code.
 
 ## DNS Session Signaling Type Codes Registry
 
@@ -464,8 +478,8 @@ Registry, with initial values as follows:
 
 | Type | Name | Status | Reference |
 |--:|------|--------|-----------|
-| 0 | SSOP-Terminate | Standard | RFC-TBD1 |
-| 1 | SSOP-Keepalive | Standard | RFC-TBD1 |
+| 0 | SSOP-Terminate | Standard | RFC-TBD |
+| 1 | SSOP-IdleTimeout | Standard | RFC-TBD |
 | 3 - 63 | Unassigned, reserved for session management TLVs | | |
 | 64 - 63487 | Unassigned | | |
 | 63488 - 64511 | Reserved for local / experimental use | | |
