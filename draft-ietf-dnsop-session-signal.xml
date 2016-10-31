@@ -360,8 +360,10 @@ but messages may contain other EDNS(0) options where appropriate.</t>
 
 <t>The MESSAGE ID, QR, Opcode and RCODE fields have their usual meanings <xref target="RFC1035"/>.</t>
 
-<t>In a request message (QR=0) the RCODE MUST be set to zero on transmission,
-and silently ignored on reception.</t>
+<t>In a request message (QR=0) the RCODE is generally set to zero on transmission,
+and silently ignored on reception, except where specified otherwise
+(for example, the Terminate Session operation,
+where the RCODE indicates the reason for termination).</t>
 
 <t>The Z bits are currently unused, and in both requests and responses the
 Z bits SHOULD be set to zero (0) on transmission and silently ignored
@@ -600,11 +602,11 @@ send any further messages on the connection.</t>
 If a server receives a Terminate Session TLV this is an error and the server MUST
 immediately terminate the connection with a TCP RST (or equivalent for other protocols).</t>
 
-<t>Upon receipt of the Terminate Session TLV (0) the client MUST
+<t>Upon receipt of a Terminate Session request from the server, the client MUST
 make note of the reconnect delay for this server, and then immediately
 close the connection.
 This is to place the burden of TCP’s TIME-WAIT state on the client.
-After sending the Terminate Session TLV the server SHOULD allow the
+After sending the Terminate Session request the server SHOULD allow the
 client five seconds to close the connection, and if the client has not
 closed the connection after five seconds then the server SHOULD abort
 the connection with a TCP RST (or equivalent for other protocols).
@@ -634,10 +636,13 @@ append a Terminate TLV (0) to the response, indicating the time interval
 during which the client SHOULD NOT attempt this operation again.</t>
 
 <t>When appended to a DNS response message for some client request,
-the Terminate TLV (0) is considered a modifier TLV.</t>
+the Terminate TLV (0) is considered a modifier TLV.
+The indicated time interval during which the client SHOULD NOT retry
+applies only to the failed operation, not to the session as a whole.</t>
 
 <t>When sent in a DNS request message, the Terminate Session TLV (0)
-is considered an operation TLV.
+is considered an operation TLV. It applies to the session as a whole,
+and the client MUST close the connection, as described above.
 The RCODE MUST indicate the reason for the termination.
 RCODE NOERROR indicates a routine shutdown.
 RCODE SERVFAIL indicates that the server is overloaded due to resource exhaustion.
@@ -645,11 +650,13 @@ RCODE REFUSED indicates that the server has been reconfigured and is no longer
 accepting DNS Push Notification requests for one or more of the currently
 subscribed names.</t>
 
-<t>This document specifies only these three RCODE values for Termination TLVs. Servers
-sending Termination TLVs SHOULD use one of these three values. However, future
-circumstances may create situations where other RCODE values are appropriate in
-Termination TLVs, so clients MUST be prepared to accept Termination Messages with
-any RCODE value.</t>
+<t>« SC: Perhaps we should change the name of TLV (0) to be “retry delay” instead of “Terminate”? »</t>
+
+<t>This document specifies only these three RCODE values for Terminate Session request.
+Servers sending Terminate Session requests SHOULD use one of these three values.
+However, future circumstances may create situations where other RCODE values
+are appropriate in Terminate Session requests, so clients MUST be prepared
+to accept Terminate Session requests with any RCODE value.</t>
 
 <t>In the case where the server is rejecting some, but not all, of the existing
 subscriptions (perhaps because it has been reconfigured and is no longer
@@ -659,7 +666,7 @@ immediately.</t>
 
 <t>In the case where a server is terminating a large number of connections at once
 (e.g., if the system is restarting) and the server doesn’t want to be inundated
-with a flood of simultaneous retries, it SHOULD send different THROTTLE delay
+with a flood of simultaneous retries, it SHOULD send different RECONNECT delay
 values to each client. These adjustments MAY be selected randomly, pseudorandomly,
 or deterministically (e.g., incrementing the time value by one tenth of a second
 for each successive client, yielding a post-restart reconnection rate of ten
