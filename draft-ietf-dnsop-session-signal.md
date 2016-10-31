@@ -73,7 +73,6 @@ author:
     phone: +1 843 473 7394
     email: pusateri@bangj.com
 
-
 --- abstract
 
 The EDNS(0) Extension Mechanism for DNS is explicitly
@@ -181,9 +180,16 @@ This requirement is to ensure that the clients that do not support
 Session Signaling do not receive unsolicited inbound Session Signaling
 messages that they would not know how to handle.
 
+Clients and servers SHOULD silently ignore unrecognized messages
+(both requests and responses) over the connection.
+This allows for backwards compatibility with future enhancements.
+
 ## Session Lifecycle {#lifecycle}
 
 A session begins when a client makes a new connection to a server.
+
+If a client makes a connection and then fails to send any DNS messages,
+then after 30 seconds the server SHOULD abort the connection with a TCP RST.
 
 The client may perform as many DNS operations as it wishes on the newly
 created connection. Operations SHOULD be pipelined (i.e., the client
@@ -206,6 +212,8 @@ When this happens the client MUST either send at least one new message
 to reset the idle timer -- such as a Session Signaling Idle Timeout message
 (see {{idletimeout}}), or any other valid DNS message -- or close the connection.
 
+If a client disconnects from the network abruptly, without cleanly closing its connection,
+the server learns of this after failing to receive further traffic from that client.
 If, at any time during the life of the connection,
 the full idle-timeout value (i.e., 30 seconds by default) elapses
 without any DNS messages being sent or received on a connection,
@@ -219,41 +227,140 @@ setting the SO_LINGER option to zero before closing the socket.)
 
 If the client wishes to keep an idle connection open for longer than
 the default duration without having to send traffic every 15 seconds,
-then it uses the Session Signaling
-Idle Timeout message to request a longer idle timeout (see {{idletimeout}}).
+then it uses the Session Signaling Idle Timeout message to request
+a longer idle timeout, as described in {{idletimeout}}.
+
+### Client-Initiated Termination
 
 A client is not required to wait until half of the idle-timeout value
-before closing a connection. A client MAY close a connection at any time,
-at the client’s discretion, if it has no further need for the connection at that time.
+before closing a connection. A client SHOULD close a connection at any time,
+at the client’s discretion, if it determines that, at that time, it has no
+current or reasonably anticipated imminent future need for the connection.
+
+Upon receiving an error response from the server, a client SHOULD NOT
+automatically close the connection. An error relating to one particular operation
+on a connection does not necessarily imply that all other operations on that
+connection have also failed, or that future operations will fail. The client
+should assume that the server will make its own decision about whether or not to
+close the connection, based on the server's determination of whether the error
+condition pertains to this particular operation, or would also apply to any
+subsequent operations. If the server does not close the connection then the client
+SHOULD continue to use that connection for subsequent operations.
+
+### Server-Initiated Termination
+
+After sending an error response to a client, the server MAY close the connection,
+or may allow the connection to remain open. For error conditions
+that only affect the single operation in question, the server SHOULD return an
+error response to the client and leave the connection open for further operations.
+For error conditions that are likely to make all operations unsuccessful in the
+immediate future, the server SHOULD return an error response to the client and then
+close the connection by sending a Terminate Session request message,
+as described in {{terminate}}.
+
+There may be rare cases where a server is overloaded and wishes to shed load.
+If the server handles this by simply closing connections, the likely behaviour
+of clients is to detect this as a network failure, and reconnect.
+
+To avoid this reconnection implosion, in this situation the server also
+sends a Terminate Session request message, with an RCODE of SERVFAIL,
+to inform the client of the overload situation.
+
+After sending a Terminate Session request message, the server MUST NOT
+send any further messages on that connection.
+
+A Terminate Session request message MUST NOT be initiated by a client.
+If a server receives a Terminate Session request message this is an error
+and the server MUST immediately terminate the connection with a TCP RST
+(or equivalent for other protocols).
+
+Upon receipt of a Terminate Session request from the server, the client MUST
+make note of the reconnect delay for this server, and then immediately
+close the connection.
+This is to place the burden of TCP's TIME-WAIT state on the client.
+
+After sending the Terminate Session request the server SHOULD allow the
+client five seconds to close the connection, and if the client has not
+closed the connection after five seconds then the server SHOULD abort
+the connection with a TCP RST (or equivalent for other protocols).
+(In the BSD Sockets API this is achieved by
+setting the SO_LINGER option to zero before closing the socket.)
+
+In the case where the server is canceling some, but not all,
+of the existing operations on a connection, with a REFUSED (5) RCODE
+(perhaps because it has been reconfigured and is no longer authoritative for those names),
+the RECONNECT DELAY MAY be zero, indicating that the client SHOULD immediately
+attempt to re-establish its operations.
+It is likely that some of the new attempts will be successful and some will not.
+
+In the case where a server is terminating a large number of connections at once
+(e.g., if the system is restarting) and the server doesn't want to be inundated with a flood
+of simultaneous retries, it SHOULD send different RECONNECT delay values to each client.
+These adjustments MAY be selected randomly, pseudorandomly, or deterministically
+(e.g., incrementing the time value by one tenth of a second for each successive
+client, yielding a post-restart reconnection rate of ten clients per second).
+
+Apart from the cases described above, a server MUST NOT close a connection with
+a client, except in extraordinary error conditions. Closing the connection is the
+client's responsibility, to be done at the client's discretion, when it so chooses.
+A server only closes a connection under exceptional circumstances, such as
+when the server application software or underlying operating system is
+restarting, the server application terminated unexpectedly (perhaps due to a
+bug that makes it crash), or the server is undergoing maintenance procedures.
+When possible, a server SHOULD send a Terminate Session message informing the
+client of the reason for the connection being closed, and allow the client
+five seconds to receive it before the server resorts to forcibly aborting the connection.
+
+After a connection is closed by the server, the client SHOULD try to reconnect,
+to that server, or to another suitable server, if more than one is available.
+If reconnecting to the same server, the client MUST respect the indicated delay
+before attempting to reconnect.
+
+If a server is low on resources it MAY simply terminate a client connection with a
+TCP RST. However, the likely behaviour of the client may be simply to reconnect
+immediately, putting more burden on the server. Therefore, a server SHOULD instead
+choose to shed client load by sending a Terminate Session message, as described above.
+Upon reception of the Termination TLV the client is expected to close the
+connection, and if it does not then the server will abort the connection five seconds later.
 
 ## Connection Sharing {#sharing}
 
 A client that supports Session Signaling SHOULD NOT make multiple
 connections to the same DNS server.
 
-A single server may support DNS Updates {{!RFC2136}} and/or
-DNS Push Notifications {{?I-D.ietf-dnssd-push}} for one or more DNS zones.
-When a client discovers that the DNS Update server and/or DNS Push Notification
-server for several different names (including names that fall within different zones)
+A single server may support multiple services,
+including DNS Updates {{!RFC2136}},
+DNS Push Notifications {{?I-D.ietf-dnssd-push}},
+and other services, for one or more DNS zones.
+When a client discovers that the target server for several different operations
 is the same target hostname and port, the client SHOULD use a single
-shared connection for all relevant operations on those names.
+shared connection for all those operations.
 A client SHOULD NOT open multiple connections to the same target host and port
-just because the names being updated and/or queried are different or
+just because the names being operated on are different or
 happen to fall within different zones.
 This is to reduce unnecessary connection load on the DNS server.
 
 For the purposes here, the determination of "same server" is made by
-comparing the target hostname and port of the DNS server (as indicated in the
-"_dns‑update‑tls._tcp.&lt;zone&gt;" SRV record or
-"_dns‑push‑tls._tcp.&lt;zone&gt;" SRV record),
+comparing the target hostname and port of the desired DNS server,
 not the IP address(es) that the target hostname resolves to.
+The hostname and port of the desired DNS server in question may be
+obtained via manual configuration, may be learned automatically from
+"_dns‑update‑tls._tcp.&lt;zone&gt;" or
+"_dns‑push‑tls._tcp.&lt;zone&gt;" SRV records,
+or may be learned by other means used by other protocols.
+
 If two different target hostnames happen to resolve to the same IP
 address(es), then the client SHOULD NOT recognize these as the "same server"
 for the purposes of using a single shared connection to that server.
 If an administrator wishes to use a single server for multiple zones and/or
-multiple roles (e.g., both DNS Updates and DNS Push Notifications), and wishes to
-have clients use a single shared connection for operations on that server, then
-the administrator MUST use the same target hostname in the appropriate SRV records.
+multiple roles (e.g., both DNS Updates and DNS Push Notifications), and wishes
+to have clients use a single shared connection for operations on that server,
+then the administrator MUST specify the same target server hostname
+for all the desired zones and/or roles,
+either in the appropriate manual configuration data
+(for clients that are configured manully)
+or in the appropriate SRV records
+(for clients that learn configuration from the network).
 
 However, server implementers and operators should be aware that even when
 the same target hostname is correctly used, this connection
@@ -266,10 +373,6 @@ MUST be prepared to accept multiple connections from the same client IP address.
 
 Independent client devices behind the same NAT gateway will also typically appear to
 the DNS server to be different source ports on the same client IP address.
-
-Clients and servers SHOULD silently ignore unrecognized messages (both requests
-and responses) over the connection. This allows for backwards
-compatibility with future enhancements.
 
 ## Message Format {#format}
 
@@ -348,11 +451,12 @@ An initiator MUST NOT reuse a MESSAGE ID that is already in use for an outstandi
 request, unless specified otherwise by the relevant specification for the
 Session Signaling TLV in question.
 At the very least, this means that a MESSAGE ID MUST NOT be reused for a particular SSOP-TYPE
-while the initiator is waiting for a response to a previous request with the same SSOP-TYPE.
-For a long-lived operation, such as a DNS Push Notification
+while the initiator is waiting for a response to a previous request with the same SSOP-TYPE,
+unless specified otherwise by the relevant specification for the Session Signaling TLV in question.
+(For a long-lived operation, such as a DNS Push Notification
 subscription {{?I-D.ietf-dnssd-push}} the MESSAGE ID for the operation
 MUST NOT be reused for a new subscription as long as the
-existing subscription is active.
+existing subscription is active.)
 
 The namespaces of 16-bit MESSAGE IDs are disjoint in each direction.
 For example, it is *not* an error for both client and server to send a request
@@ -374,6 +478,12 @@ The RCODE value in a response may be one of the following values:
 | 4 | NOTIMP | Session Signaling not supported |
 | 5 | REFUSED | TLV declined for policy reasons |
 | 11 | SSOPNOTIMP | Session Signaling operation Type Code not supported |
+
+~~~
+
+
+
+~~~
 
 ## TLV Format
 
@@ -400,11 +510,31 @@ SSOP-DATA.
 SSOP-DATA:
 : Type-code specific.
 
-# Mandatory TLVs
+~~~
 
-## Session Management TLVs
 
-### Idle Timeout {#idletimeout}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+~~~
+
+# Idle Timeout TLV {#idletimeout}
 
 The Idle Timeout TLV (1) is be used by a client to reset a connection’s
 idle timer, and at the same time to request what the idle timeout
@@ -450,7 +580,16 @@ for deciding what lease lifetime is actually granted.
 In a server-initiated Session Signaling Idle Timeout message, the IDLE TIMEOUT
 unilaterally informs the client of the new idle timeout this point forward
 in this connection. In a client response to a server-initiated message,
-there is no SSOP-DATA. SSOP-LENGTH is zero.
+there is no SSOP-DATA. SSOP-LENGTH is zero. The RCODE MUST be zero.
+
+<< SC: Do we even need a client response to this server-initiated message?
+The response conveys no information.
+On the other hand, it may simplify the specification
+if we say that *all* request messages elicit exactly one response message.
+Please weigh in with opinions. We need to decide this.
+Currently draft-ietf-dnssd-push says that push notification messages from
+server to client do not elicit any response message from the client.
+We need to decide if this is allowed. >>
 
 Note that the lower the IDLE TIMEOUT value, the higher the load on client
 and server. For example, an IDLE TIMEOUT value of 200ms would result in a
@@ -477,78 +616,27 @@ EDNS(0) TCP KeepAlive option, this is an error and the receiver of the
 EDNS(0) TCP KeepAlive option MUST immediately
 terminate the connection with a TCP RST (or equivalent for other protocols).
 
-# Client-Initiated Termination
+~~~
 
-Upon receiving an error response from the server, a client SHOULD NOT
-automatically close the connection. An error relating to one particular operation
-on a connection does not necessarily imply that all other operations on that
-connection have also failed, or that future operations will fail. The client
-should assume that the server will make its own decision about whether or not to
-close the connection, based on the server's determination of whether the error
-condition pertains to this particular operation, or would also apply to any
-subsequent operations. If the server does not close the connection then the client
-SHOULD continue to use that connection for subsequent operations.
 
-# Server-Initiated Termination
 
-If a client makes a connection and then fails to send any DNS messages, then after
-a period of inactivity the server SHOULD close the connection. The default idle
-timeout in the DNS Session Signaling specification is 30 seconds. A different idle
-timeout may be requested by the client, and the server can modify the idle timeout
-at any time by responding to a client Idle Timeout request, or by initiating an
-Idle Timeout message of its own. If no data has been sent on the connection the
-server MAY abort the connection with a TCP RST. If data has been sent on the
-connection then the server SHOULD close the connection gracefully with a TCP FIN
-so that the data is reliably delivered.
 
-At both servers and clients, the generation or reception of any complete DNS
-message resets the keepalive timer for that connection.
 
-In the absence of any other messages on a connection, a client MUST generate
-keepalive traffic before the idle timeout expires, or the server is entitled to
-close the connection. The client maintains the connection by sending a
-Session Signaling Idle Timeout TLV requesting a new timeout value.
 
-If a client disconnects from the network abruptly, without closing its connection,
-the server learns of this after failing to receive further traffic from that
-client. If no requests, responses, update messages or keepalive traffic occurs on
-a connection my the idle timeout, then this indicates that the client is probably
-no longer on the network, and the server SHOULD abort the connection with a TCP
-RST.
 
-After sending an error response to a client, the server MAY close the connection,
-or may allow the connection to remain open. For error conditions
-that only affect the single operation in question, the server SHOULD return an
-error response to the client and leave the connection open for further operations.
-For error conditions that are likely to make all operations unsuccessful in the
-immediate future, the server SHOULD return an error response to the client and
-then close the connection by sending a Terminate Session TLV, as described below.
 
-There may be rare cases where a server is overloaded and wishes to shed
-load. If the server handles this by simply closing connections, the likely
-behaviour of clients is to detect this as a network failure, and reconnect.
+~~~
 
-To avoid this reconnection implosion, the server sends a Terminate
-Session TLV (0) to inform the client of the overload situation.
-After sending a Terminate Session TLV the server MUST NOT
-send any further messages on the connection.
+# Terminate TLV {#terminate}
 
-The Terminate Session TLV (0) MUST NOT be initiated by a client.
-If a server receives a Terminate Session TLV this is an error and the server MUST
-immediately terminate the connection with a TCP RST (or equivalent for other protocols).
+The Terminate TLV (0) is be used by a server to request that a client
+close the connection, and not to reconnect for the indicated time interval.
+It is also used as a modifier on error responses, to indicate how long the
+client should wait before retrying that particular operation.
 
-Upon receipt of a Terminate Session request from the server, the client MUST
-make note of the reconnect delay for this server, and then immediately
-close the connection.
-This is to place the burden of TCP's TIME-WAIT state on the client.
-After sending the Terminate Session request the server SHOULD allow the
-client five seconds to close the connection, and if the client has not
-closed the connection after five seconds then the server SHOULD abort
-the connection with a TCP RST (or equivalent for other protocols).
-(In the BSD Sockets API this is achieved by
-setting the SO_LINGER option to zero before closing the socket.)
+<< SC: Perhaps we should change the name of TLV (0) to be "retry delay" instead of "Terminate"? >>
 
-The SSOP-DATA is as follows:
+The SSOP-DATA for the the Terminate TLV is as follows:
 
                             1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
         0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -571,60 +659,23 @@ the Terminate TLV (0) is considered a modifier TLV.
 The indicated time interval during which the client SHOULD NOT retry
 applies only to the failed operation, not to the session as a whole.
 
-When sent in a DNS request message, the Terminate Session TLV (0)
+When sent in a DNS request message, from server to client, the Terminate Session TLV (0)
 is considered an operation TLV. It applies to the session as a whole,
-and the client MUST close the connection, as described above.
+and the client MUST close the connection, as described previously.
 The RCODE MUST indicate the reason for the termination.
 RCODE NOERROR indicates a routine shutdown.
 RCODE SERVFAIL indicates that the server is overloaded due to resource exhaustion.
 RCODE REFUSED indicates that the server has been reconfigured and is no longer
-accepting DNS Push Notification requests for one or more of the currently
-subscribed names.
-
-<< SC: Perhaps we should change the name of TLV (0) to be "retry delay" instead of "Terminate"? >>
+able to perform one of the functions currently being performed on this connection
+(for example, a DNS Push Notification server could be reconfigured such that
+is is no longer accepting DNS Push Notification requests for one or more of
+the currently subscribed names).
 
 This document specifies only these three RCODE values for Terminate Session request.
 Servers sending Terminate Session requests SHOULD use one of these three values.
 However, future circumstances may create situations where other RCODE values
 are appropriate in Terminate Session requests, so clients MUST be prepared
 to accept Terminate Session requests with any RCODE value.
-
-In the case where the server is rejecting some, but not all, of the existing
-subscriptions (perhaps because it has been reconfigured and is no longer
-authoritative for those names) with a REFUSED (5) RCODE, the RECONNECT DELAY MAY be
-zero, indicating that the client SHOULD attempt to re-establish its subscriptions
-immediately.
-
-In the case where a server is terminating a large number of connections at once
-(e.g., if the system is restarting) and the server doesn't want to be inundated
-with a flood of simultaneous retries, it SHOULD send different RECONNECT delay
-values to each client. These adjustments MAY be selected randomly, pseudorandomly,
-or deterministically (e.g., incrementing the time value by one tenth of a second
-for each successive client, yielding a post-restart reconnection rate of ten
-clients per second).
-
-Apart from the cases described above, a server MUST NOT close a connection with a
-DNS Push Notification client, except in extraordinary error conditions. Closing
-the connection is the client's responsibility, to be done at the client's
-discretion, when it so chooses. A DNS Push Notification server only closes a DNS
-Push Notification connection under exceptional circumstances, such as when the
-server application software or underlying operating system is restarting, the
-server application terminated unexpectedly (perhaps due to a bug that makes it
-crash), or the server is undergoing maintenance procedures. When possible, a DNS
-Push Notification server SHOULD send a Terminate Session message informing the
-client of the reason for the connection being closed.
-
-After a connection is closed by the server, the client SHOULD try to reconnect, to
-that server, or to another server supporting DNS Push Notifications for the zone.
-If reconnecting to the same server, the client MUST respect the indicated delay
-before attempting to reconnect.
-
-If a server is low on resources it MAY simply terminate a client connection with a
-TCP RST. However, the likely behaviour of the client may be simply to reconnect
-immediately, putting more burden on the server. Therefore, a server SHOULD instead
-choose to shed client load by sending a Terminate Session message, as described above.
-Upon reception of the Termination TLV the client is expected to close the
-connection, and if it does not then the server will abort the connection five seconds later.
 
 # IANA Considerations
 
