@@ -87,7 +87,7 @@ Table of Contents
      7.1.  DNS Session Signaling Opcode Registration . . . . . . . .  15
      7.2.  DNS Session Signaling RCODE Registration  . . . . . . . .  15
      7.3.  DNS Session Signaling Type Codes Registry . . . . . . . .  15
-   8.  Security Considerations . . . . . . . . . . . . . . . . . . .  15
+   8.  Security Considerations . . . . . . . . . . . . . . . . . . .  16
    9.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  16
    10. References  . . . . . . . . . . . . . . . . . . . . . . . . .  16
      10.1.  Normative References . . . . . . . . . . . . . . . . . .  16
@@ -577,12 +577,21 @@ Internet-Draft            DNS Session Signaling             October 2016
    server-initiated message, there is no SSOP-DATA.  SSOP-LENGTH is
    zero.
 
-   The server MUST NOT send a Idle Timeout message (either a response to
-   a client-initiated request, or a server-initiated message) with an
-   IDLE TIMEOUT value less than ten seconds.  If a client receives an
-   Idle Timeout message specifying an IDLE TIMEOUT value less than ten
-   seconds this is an error and the client MUST immediately terminate
-   the connection with a TCP RST (or equivalent for other protocols).
+   Note that the lower the IDLE TIMEOUT value, the higher the load on
+   client and server.  For example, an IDLE TIMEOUT value of 200ms would
+   result in a continuous stream of at least ten messages per second, in
+   both directions, to keep the connection alive.  And, in this example,
+   a single packet loss and retransmission could introduce a momentary
+   pause in the stream of messages, long enough to cause the server to
+   overzealously abort the connection.
+
+   Because of this concern, the server MUST NOT send a Idle Timeout
+   message (either a response to a client-initiated request, or a
+   server-initiated message) with an IDLE TIMEOUT value less than ten
+   seconds.  If a client receives an Idle Timeout message specifying an
+   IDLE TIMEOUT value less than ten seconds this is an error and the
+   client MUST immediately terminate the connection with a TCP RST (or
+   equivalent for other protocols).
 
    The Idle Timeout TLV (1) has similar intent to the EDNS(0) TCP
    Keepalive Option [RFC7828].  A client/server pair that supports
@@ -601,15 +610,6 @@ Internet-Draft            DNS Session Signaling             October 2016
    automatically close the connection.  An error relating to one
    particular operation on a connection does not necessarily imply that
    all other operations on that connection have also failed, or that
-   future operations will fail.  The client should assume that the
-   server will make its own decision about whether or not to close the
-   connection, based on the server's determination of whether the error
-   condition pertains to this particular operation, or would also apply
-   to any subsequent operations.  If the server does not close the
-   connection then the client SHOULD continue to use that connection for
-   subsequent operations.
-
-
 
 
 
@@ -617,6 +617,14 @@ Bellis, et al.             Expires May 1, 2017                 [Page 11]
 
 Internet-Draft            DNS Session Signaling             October 2016
 
+
+   future operations will fail.  The client should assume that the
+   server will make its own decision about whether or not to close the
+   connection, based on the server's determination of whether the error
+   condition pertains to this particular operation, or would also apply
+   to any subsequent operations.  If the server does not close the
+   connection then the client SHOULD continue to use that connection for
+   subsequent operations.
 
 6.  Server-Initiated Termination
 
@@ -659,14 +667,6 @@ Internet-Draft            DNS Session Signaling             October 2016
    then close the connection by sending a Terminate Session TLV, as
    described below.
 
-   There may be rare cases where a server is overloaded and wishes to
-   shed load.  If the server handles this by simply closing connections,
-   the likely behaviour of clients is to detect this as a network
-   failure, and reconnect.
-
-   To avoid this reconnection implosion, the server sends a Terminate
-   Session TLV (0) to inform the client of the overload situation.
-
 
 
 Bellis, et al.             Expires May 1, 2017                 [Page 12]
@@ -674,6 +674,13 @@ Bellis, et al.             Expires May 1, 2017                 [Page 12]
 Internet-Draft            DNS Session Signaling             October 2016
 
 
+   There may be rare cases where a server is overloaded and wishes to
+   shed load.  If the server handles this by simply closing connections,
+   the likely behaviour of clients is to detect this as a network
+   failure, and reconnect.
+
+   To avoid this reconnection implosion, the server sends a Terminate
+   Session TLV (0) to inform the client of the overload situation.
    After sending a Terminate Session TLV the server MUST NOT send any
    further messages on the connection.
 
@@ -715,13 +722,6 @@ Internet-Draft            DNS Session Signaling             October 2016
    When appended to a DNS response message for some client request, the
    Terminate TLV (0) is considered a modifier TLV.
 
-   When sent in a DNS request message, the Terminate Session TLV (0) is
-   considered an operation TLV.  The RCODE MUST indicate the reason for
-   the termination.  RCODE NOERROR indicates a routine shutdown.  RCODE
-   SERVFAIL indicates that the server is overloaded due to resource
-   exhaustion.  RCODE REFUSED indicates that the server has been
-   reconfigured and is no longer accepting DNS Push Notification
-   requests for one or more of the currently subscribed names.
 
 
 
@@ -729,6 +729,14 @@ Bellis, et al.             Expires May 1, 2017                 [Page 13]
 
 Internet-Draft            DNS Session Signaling             October 2016
 
+
+   When sent in a DNS request message, the Terminate Session TLV (0) is
+   considered an operation TLV.  The RCODE MUST indicate the reason for
+   the termination.  RCODE NOERROR indicates a routine shutdown.  RCODE
+   SERVFAIL indicates that the server is overloaded due to resource
+   exhaustion.  RCODE REFUSED indicates that the server has been
+   reconfigured and is no longer accepting DNS Push Notification
+   requests for one or more of the currently subscribed names.
 
    This document specifies only these three RCODE values for Termination
    TLVs.  Servers sending Termination TLVs SHOULD use one of these three
@@ -770,6 +778,14 @@ Internet-Draft            DNS Session Signaling             October 2016
    client MUST respect the indicated delay before attempting to
    reconnect.
 
+
+
+
+Bellis, et al.             Expires May 1, 2017                 [Page 14]
+
+Internet-Draft            DNS Session Signaling             October 2016
+
+
    If a server is low on resources it MAY simply terminate a client
    connection with a TCP RST.  However, the likely behaviour of the
    client may be simply to reconnect immediately, putting more burden on
@@ -778,13 +794,6 @@ Internet-Draft            DNS Session Signaling             October 2016
    Upon reception of the Termination TLV the client is expected to close
    the connection, and if it does not then the server will abort the
    connection five seconds later.
-
-
-
-Bellis, et al.             Expires May 1, 2017                 [Page 14]
-
-Internet-Draft            DNS Session Signaling             October 2016
-
 
 7.  IANA Considerations
 
@@ -823,6 +832,16 @@ Internet-Draft            DNS Session Signaling             October 2016
    |     65535 |                                |          |           |
    +-----------+--------------------------------+----------+-----------+
 
+
+
+
+
+
+Bellis, et al.             Expires May 1, 2017                 [Page 15]
+
+Internet-Draft            DNS Session Signaling             October 2016
+
+
    Registration of additional Session Signaling Type Codes requires
    publication of an appropriate IETF "Standards Action" or "IESG
    Approval" document [RFC5226].
@@ -833,14 +852,6 @@ Internet-Draft            DNS Session Signaling             October 2016
    messages are subject to the same constraints as any other DNS over
    TLS messages and MUST NOT be sent in the clear before the TLS session
    is established.
-
-
-
-
-Bellis, et al.             Expires May 1, 2017                 [Page 15]
-
-Internet-Draft            DNS Session Signaling             October 2016
-
 
 9.  Acknowledgements
 
@@ -877,17 +888,6 @@ Internet-Draft            DNS Session Signaling             October 2016
               DOI 10.17487/RFC5226, May 2008,
               <http://www.rfc-editor.org/info/rfc5226>.
 
-   [RFC6891]  Damas, J., Graff, M., and P. Vixie, "Extension Mechanisms
-              for DNS (EDNS(0))", STD 75, RFC 6891,
-              DOI 10.17487/RFC6891, April 2013,
-              <http://www.rfc-editor.org/info/rfc6891>.
-
-   [RFC7766]  Dickinson, J., Dickinson, S., Bellis, R., Mankin, A., and
-              D. Wessels, "DNS Transport over TCP - Implementation
-              Requirements", RFC 7766, DOI 10.17487/RFC7766, March 2016,
-              <http://www.rfc-editor.org/info/rfc7766>.
-
-
 
 
 
@@ -897,6 +897,16 @@ Bellis, et al.             Expires May 1, 2017                 [Page 16]
 
 Internet-Draft            DNS Session Signaling             October 2016
 
+
+   [RFC6891]  Damas, J., Graff, M., and P. Vixie, "Extension Mechanisms
+              for DNS (EDNS(0))", STD 75, RFC 6891,
+              DOI 10.17487/RFC6891, April 2013,
+              <http://www.rfc-editor.org/info/rfc6891>.
+
+   [RFC7766]  Dickinson, J., Dickinson, S., Bellis, R., Mankin, A., and
+              D. Wessels, "DNS Transport over TCP - Implementation
+              Requirements", RFC 7766, DOI 10.17487/RFC7766, March 2016,
+              <http://www.rfc-editor.org/info/rfc7766>.
 
    [RFC7828]  Wouters, P., Abley, J., Dickinson, S., and R. Bellis, "The
               edns-tcp-keepalive EDNS0 Option", RFC 7828,
@@ -936,6 +946,14 @@ Authors' Addresses
    Email: cheshire@apple.com
 
 
+
+
+
+Bellis, et al.             Expires May 1, 2017                 [Page 17]
+
+Internet-Draft            DNS Session Signaling             October 2016
+
+
    John Dickinson
    Sinodun Internet Technologies
    Magadalen Centre
@@ -944,14 +962,6 @@ Authors' Addresses
    United Kingdom
 
    Email: jad@sinodun.com
-
-
-
-
-
-Bellis, et al.             Expires May 1, 2017                 [Page 17]
-
-Internet-Draft            DNS Session Signaling             October 2016
 
 
    Sara Dickinson
@@ -975,16 +985,6 @@ Internet-Draft            DNS Session Signaling             October 2016
 
    Phone: +1 843 473 7394
    Email: pusateri@bangj.com
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -513,7 +513,14 @@ unilaterally informs the client of the new idle timeout this point forward
 in this connection. In a client response to a server-initiated message,
 there is no SSOP-DATA. SSOP-LENGTH is zero.</t>
 
-<t>The server MUST NOT send a Idle Timeout message
+<t>Note that the lower the IDLE TIMEOUT value, the higher the load on client
+and server. For example, an IDLE TIMEOUT value of 200ms would result in a
+continuous stream of at least ten messages per second, in both directions,
+to keep the connection alive. And, in this example, a single packet loss and
+retransmission could introduce a momentary pause in the stream of messages,
+long enough to cause the server to overzealously abort the connection.</t>
+
+<t>Because of this concern, the server MUST NOT send a Idle Timeout message
 (either a response to a client-initiated request, or a server-initiated message)
 with an IDLE TIMEOUT value less than ten seconds.
 If a client receives an Idle Timeout message specifying an IDLE TIMEOUT value
