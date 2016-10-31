@@ -409,10 +409,8 @@ Internet-Draft            DNS Session Signaling             October 2016
    The MESSAGE ID, QR, Opcode and RCODE fields have their usual meanings
    [RFC1035].
 
-   In a request message (QR=0) the RCODE MUST be zero.  If a client or
-   server receives a request message (QR=0) where the RCODE is not zero,
-   this is a fatal error and it MUST immediately terminate the
-   connection with a TCP RST (or equivalent for other protocols).
+   In a request message (QR=0) the RCODE MUST be set to zero on
+   transmission, and silently ignored on reception.
 
    The Z bits are currently unused, and in both requests and responses
    the Z bits SHOULD be set to zero (0) on transmission and silently
@@ -441,6 +439,8 @@ Internet-Draft            DNS Session Signaling             October 2016
    a previous request with the same SSOP-TYPE.  For a long-lived
    operation, such as a DNS Push Notification subscription
    [I-D.ietf-dnssd-push] the MESSAGE ID for the operation MUST NOT be
+   reused for a new subscription as long as the existing subscription is
+   active.
 
 
 
@@ -449,9 +449,6 @@ Bellis, et al.             Expires May 1, 2017                  [Page 8]
 
 Internet-Draft            DNS Session Signaling             October 2016
 
-
-   reused for a new subscription as long as the existing subscription is
-   active.
 
    The namespaces of 16-bit MESSAGE IDs are disjoint in each direction.
    For example, it is _not_ an error for both client and server to send
@@ -496,6 +493,9 @@ Internet-Draft            DNS Session Signaling             October 2016
       /                                                               /
       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
+   SSOP-TYPE:  A 16 bit field in network order giving the type of the
+      current Session Signaling TLV per the IANA DNS Session Signaling
+      Type Codes Registry.
 
 
 
@@ -505,10 +505,6 @@ Bellis, et al.             Expires May 1, 2017                  [Page 9]
 
 Internet-Draft            DNS Session Signaling             October 2016
 
-
-   SSOP-TYPE:  A 16 bit field in network order giving the type of the
-      current Session Signaling TLV per the IANA DNS Session Signaling
-      Type Codes Registry.
 
    SSOP-LENGTH:  A 16 bit field in network order giving the size in
       octets of SSOP-DATA.
@@ -553,7 +549,11 @@ Internet-Draft            DNS Session Signaling             October 2016
       after half this interval the client MUST take action to either
       preserve the connection, or close it if it is no longer needed.
 
-
+   In a client-initiated Session Signaling Idle Timeout message, the
+   IDLE TIMEOUT contains the client's requested value for the idle
+   timeout.  In a server response to a client-initiated message, the
+   IDLE TIMEOUT contains the server's chosen value for the idle timeout,
+   which the client MUST respect.  This is modeled after the DHCP
 
 
 
@@ -562,11 +562,6 @@ Bellis, et al.             Expires May 1, 2017                 [Page 10]
 Internet-Draft            DNS Session Signaling             October 2016
 
 
-   In a client-initiated Session Signaling Idle Timeout message, the
-   IDLE TIMEOUT contains the client's requested value for the idle
-   timeout.  In a server response to a client-initiated message, the
-   IDLE TIMEOUT contains the server's chosen value for the idle timeout,
-   which the client MUST respect.  This is modeled after the DHCP
    protocol, where the client requests a certain lease lifetime using
    DHCP option 51 [RFC2132], but the server is the ultimate authority
    for deciding what lease lifetime is actually granted.
@@ -610,6 +605,11 @@ Internet-Draft            DNS Session Signaling             October 2016
    automatically close the connection.  An error relating to one
    particular operation on a connection does not necessarily imply that
    all other operations on that connection have also failed, or that
+   future operations will fail.  The client should assume that the
+   server will make its own decision about whether or not to close the
+   connection, based on the server's determination of whether the error
+   condition pertains to this particular operation, or would also apply
+   to any subsequent operations.  If the server does not close the
 
 
 
@@ -618,11 +618,6 @@ Bellis, et al.             Expires May 1, 2017                 [Page 11]
 Internet-Draft            DNS Session Signaling             October 2016
 
 
-   future operations will fail.  The client should assume that the
-   server will make its own decision about whether or not to close the
-   connection, based on the server's determination of whether the error
-   condition pertains to this particular operation, or would also apply
-   to any subsequent operations.  If the server does not close the
    connection then the client SHOULD continue to use that connection for
    subsequent operations.
 
@@ -667,17 +662,17 @@ Internet-Draft            DNS Session Signaling             October 2016
    then close the connection by sending a Terminate Session TLV, as
    described below.
 
+   There may be rare cases where a server is overloaded and wishes to
+   shed load.  If the server handles this by simply closing connections,
+   the likely behaviour of clients is to detect this as a network
+   failure, and reconnect.
+
 
 
 Bellis, et al.             Expires May 1, 2017                 [Page 12]
 
 Internet-Draft            DNS Session Signaling             October 2016
 
-
-   There may be rare cases where a server is overloaded and wishes to
-   shed load.  If the server handles this by simply closing connections,
-   the likely behaviour of clients is to detect this as a network
-   failure, and reconnect.
 
    To avoid this reconnection implosion, the server sends a Terminate
    Session TLV (0) to inform the client of the overload situation.
@@ -722,6 +717,11 @@ Internet-Draft            DNS Session Signaling             October 2016
    When appended to a DNS response message for some client request, the
    Terminate TLV (0) is considered a modifier TLV.
 
+   When sent in a DNS request message, the Terminate Session TLV (0) is
+   considered an operation TLV.  The RCODE MUST indicate the reason for
+   the termination.  RCODE NOERROR indicates a routine shutdown.  RCODE
+   SERVFAIL indicates that the server is overloaded due to resource
+   exhaustion.  RCODE REFUSED indicates that the server has been
 
 
 
@@ -730,11 +730,6 @@ Bellis, et al.             Expires May 1, 2017                 [Page 13]
 Internet-Draft            DNS Session Signaling             October 2016
 
 
-   When sent in a DNS request message, the Terminate Session TLV (0) is
-   considered an operation TLV.  The RCODE MUST indicate the reason for
-   the termination.  RCODE NOERROR indicates a routine shutdown.  RCODE
-   SERVFAIL indicates that the server is overloaded due to resource
-   exhaustion.  RCODE REFUSED indicates that the server has been
    reconfigured and is no longer accepting DNS Push Notification
    requests for one or more of the currently subscribed names.
 
@@ -778,6 +773,11 @@ Internet-Draft            DNS Session Signaling             October 2016
    client MUST respect the indicated delay before attempting to
    reconnect.
 
+   If a server is low on resources it MAY simply terminate a client
+   connection with a TCP RST.  However, the likely behaviour of the
+   client may be simply to reconnect immediately, putting more burden on
+   the server.  Therefore, a server SHOULD instead choose to shed client
+   load by sending a Terminate Session message, as described above.
 
 
 
@@ -786,11 +786,6 @@ Bellis, et al.             Expires May 1, 2017                 [Page 14]
 Internet-Draft            DNS Session Signaling             October 2016
 
 
-   If a server is low on resources it MAY simply terminate a client
-   connection with a TCP RST.  However, the likely behaviour of the
-   client may be simply to reconnect immediately, putting more burden on
-   the server.  Therefore, a server SHOULD instead choose to shed client
-   load by sending a Terminate Session message, as described above.
    Upon reception of the Termination TLV the client is expected to close
    the connection, and if it does not then the server will abort the
    connection five seconds later.
@@ -832,6 +827,11 @@ Internet-Draft            DNS Session Signaling             October 2016
    |     65535 |                                |          |           |
    +-----------+--------------------------------+----------+-----------+
 
+   Registration of additional Session Signaling Type Codes requires
+   publication of an appropriate IETF "Standards Action" or "IESG
+   Approval" document [RFC5226].
+
+
 
 
 
@@ -841,10 +841,6 @@ Bellis, et al.             Expires May 1, 2017                 [Page 15]
 
 Internet-Draft            DNS Session Signaling             October 2016
 
-
-   Registration of additional Session Signaling Type Codes requires
-   publication of an appropriate IETF "Standards Action" or "IESG
-   Approval" document [RFC5226].
 
 8.  Security Considerations
 
@@ -888,6 +884,10 @@ Internet-Draft            DNS Session Signaling             October 2016
               DOI 10.17487/RFC5226, May 2008,
               <http://www.rfc-editor.org/info/rfc5226>.
 
+   [RFC6891]  Damas, J., Graff, M., and P. Vixie, "Extension Mechanisms
+              for DNS (EDNS(0))", STD 75, RFC 6891,
+              DOI 10.17487/RFC6891, April 2013,
+              <http://www.rfc-editor.org/info/rfc6891>.
 
 
 
@@ -897,11 +897,6 @@ Bellis, et al.             Expires May 1, 2017                 [Page 16]
 
 Internet-Draft            DNS Session Signaling             October 2016
 
-
-   [RFC6891]  Damas, J., Graff, M., and P. Vixie, "Extension Mechanisms
-              for DNS (EDNS(0))", STD 75, RFC 6891,
-              DOI 10.17487/RFC6891, April 2013,
-              <http://www.rfc-editor.org/info/rfc6891>.
 
    [RFC7766]  Dickinson, J., Dickinson, S., Bellis, R., Mankin, A., and
               D. Wessels, "DNS Transport over TCP - Implementation
@@ -944,6 +939,11 @@ Authors' Addresses
 
    Phone: +1 408 974 3207
    Email: cheshire@apple.com
+
+
+
+
+
 
 
 

@@ -322,10 +322,8 @@ but messages may contain other EDNS(0) options where appropriate.
 
 The MESSAGE ID, QR, Opcode and RCODE fields have their usual meanings {{!RFC1035}}.
 
-In a request message (QR=0) the RCODE MUST be zero. If a client or server
-receives a request message (QR=0) where the RCODE is not zero, this is a
-fatal error and it MUST immediately terminate the connection with a TCP RST
-(or equivalent for other protocols).
+In a request message (QR=0) the RCODE MUST be set to zero on transmission,
+and silently ignored on reception.
 
 The Z bits are currently unused, and in both requests and responses the
 Z bits SHOULD be set to zero (0) on transmission and silently ignored

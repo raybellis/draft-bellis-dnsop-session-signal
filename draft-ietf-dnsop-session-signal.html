@@ -579,7 +579,7 @@
    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 </pre>
 <p id="rfc.section.3.3.p.5">The MESSAGE ID, QR, Opcode and RCODE fields have their usual meanings <a href="#RFC1035">[RFC1035]</a>.</p>
-<p id="rfc.section.3.3.p.6">In a request message (QR=0) the RCODE MUST be zero. If a client or server receives a request message (QR=0) where the RCODE is not zero, this is a fatal error and it MUST immediately terminate the connection with a TCP RST (or equivalent for other protocols).</p>
+<p id="rfc.section.3.3.p.6">In a request message (QR=0) the RCODE MUST be set to zero on transmission, and silently ignored on reception.</p>
 <p id="rfc.section.3.3.p.7">The Z bits are currently unused, and in both requests and responses the Z bits SHOULD be set to zero (0) on transmission and silently ignored on reception, unless a future document specifies otherwise.</p>
 <h1 id="rfc.section.3.4"><a href="#rfc.section.3.4">3.4.</a> <a href="#message-handling" id="message-handling">Message Handling</a></h1>
 <p id="rfc.section.3.4.p.1">On a connection between a client and server that support Session Signaling, once the client has sent at least one Session Signaling message (or it is known in advance by other means that the client supports Session Signaling) either end may unilaterally send Session Signaling messages at any time, and therefore either client or server may be the initiator of a message.  The initiator MUST set the value of the QR bit in the DNS header to zero (0), and the responder MUST set it to one (1).</p>
