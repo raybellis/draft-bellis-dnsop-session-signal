@@ -86,14 +86,14 @@ defines an initial set of TLVs used to manage session timeouts and termination.
 
 # Introduction
 
-The use of transports other than UDP for DNS is being increasingly specified,
+The use of transports for DNS other than UDP is being increasingly specified,
 for example, DNS over TCP {{!RFC1035}}{{!RFC7766}} and DNS over TLS {{?RFC7858}}.
 Such transports can offer persistent, long-lived sessions and therefore when
 using them for transporting DNS messages it is of benefit to have a mechanism
 that can establish parameters associated with those sessions, such as timeouts.
 In such situations it is also advantageous to support server initiated messages.
 
-The EDNS(0) Extension Mechanism for DNS {{!RFC6891}} is explicitly
+The existing EDNS(0) Extension Mechanism for DNS {{!RFC6891}} is explicitly
 defined to only have "per-message" semantics. Whilst EDNS(0) has been used to
 signal at least one session related parameter (the EDNS(0) TCP KeepAlive option
 {{?RFC7828}}) the result is less than optimal due to the restrictions
@@ -126,9 +126,12 @@ corresponding sections are empty.
 The actual data pertaining to Session Signaling operations is
 appended to the end of the DNS message, following the four (empty)
 data sections.
-When displayed using current packet analyser tools, this will result
+When displayed using today's packet analyser tools that have not been updated
+to recognize the DNS Session Signaling format, this will result
 in the Session Signaling data being displayed as unknown additional
-data after the end of the DNS message.
+data after the end of the DNS message. It is likely that future updates
+to these tools will add the ability to recognize, decode, and display the
+Session Signaling data.
 
 # Terminology
 
@@ -144,18 +147,20 @@ The term "client" means the software which initiates a connection
 to the server's listening socket.
 
 The terms "initiator" and "responder" correspond respectively to the
-initial sender and subsequent receiver of a Session Signaling TLV,
+initial sender and subsequent receiver of a Session Signaling request message,
 regardless of which was the "client" and "server" in the usual DNS sense.
 
-The term "sender" may apply to either an initiator or responder.
+The term "sender" may apply to either an initiator
+(when sending a Session Signaling request message)
+or responder (when sending a Session Signaling response message).
 
 The term "session" in the context of this document means the exchange of
 DNS messages using an end-to-end transport protocol where:
 
 - The connection between client and server is persistent and relatively
   long-lived (i.e., minutes or hours, rather than seconds).
-- Either end of the connection may initiate messages to the other
-- Messages are delivered in order
+- Either end of the connection may initiate messages to the other.
+- Messages are delivered in order.
 
 # Protocol Details
 
@@ -169,12 +174,12 @@ with short UDP timeouts, it fails to provide a persistent bi-directional
 communication channel unless an excessive amount of keepalive traffic is used.
 
 Session Signaling messages relate only to the specific session in which
-they are being carried.  Where a middle box (e.g., a DNS proxy,
+they are being carried.  Where an application-layer middle box (e.g., a DNS proxy,
 forwarder, or session multiplexer) is in the path the middle box
 MUST NOT blindly forward the message in either direction.  This does
-not preclude the use of these messages in the presence of a NAT box that
-rewrites IP-layer or transport-layer headers but otherwise maintains the
-effect of a single session.
+not preclude the use of these messages in the presence of an IP-layer middle box
+such as a NAT that rewrites IP-layer and/or transport-layer headers,
+but otherwise preserves the effect of a single session.
 
 A client MAY attempt to initiate Session Signaling messages at any time
 on a connection; receiving a NOTIMP response in reply indicates that the
@@ -189,7 +194,7 @@ This requirement is to ensure that the clients that do not support
 Session Signaling do not receive unsolicited inbound Session Signaling
 messages that they would not know how to handle.
 
-## Session Lifecycle {#lifecycle}
+## Session Lifecycle and Timers {#lifecycle}
 
 A session begins when a client makes a new connection to a server.
 
@@ -205,13 +210,38 @@ Keepalive message exchange, the default value for both timers is 15 seconds.
 
 At both servers and clients, the generation or reception of any complete
 DNS message, including DNS requests, responses, updates, or Session Signaling
-messages, resets both timers for that session {{!RFC7766}}.
+messages, resets both timers for that session {{!RFC7766}}, with the exception
+that a Session Signaling Keepalive message resets only the keepalive interval timer,
+not the idle timeout timer.
+
+In addition, for as long as the client is has an outstanding operation in progress,
+the idle timeout timer remains fixed at zero, and an idle timeout cannot occur.
+
+For short-lived DNS operations like traditional queries and updates,
+an operation is considered in progress for the time between request and response,
+typically a period of a few hundred milliseconds at most.
+At the client, the idle timeout timer is set to zero upon transmission of a request
+and remains at zero until reception of the corresponding response.
+At the server, the idle timeout timer is set to zero upon reception of a request
+and remains at zero until transmission of the corresponding response.
+
+For long-lived DNS operations like Push Notification subscriptions
+{{?I-D.ietf-dnssd-push}}, an operation is considered in progress for
+as long as the subscription is active, until it is cancelled.
+This means that connection can exist, with a Push Notification subscription active,
+with no messages flowing in either direction, for far longer than the idle timeout,
+and this is not an error.
+This is why there are two separate timers: the idle timeout, and the keepalive interval.
+Just because a session has no traffic for an extended period of time
+does not automatically make that session "idle", if it has an active
+Push Notification subscription that is awaiting notification events.
 
 The first timer value, the idle timeout, is the maximum time for which
 a client may speculatively keep a session open in the expectation that
-it may have future communications with that server.
+it may have future requests to send to that server.
 
-The purpose of the idle timeout is for the server to manage its session load.
+The purpose of the idle timeout is for the server to balance its trade off between
+the costs of setting up new connections and the costs of maintaining idle connections.
 A server with abundant session capacity can offer a high idle timeout, to
 permit clients to keep a speculative session open for a long time, to save the
 cost of establishing a new session for future communications with that server.
@@ -229,15 +259,18 @@ or firewalls) and for the client and server to periodically verify that they
 still have connectivity to each other. This allows them to clean up state
 when connectivity is lost, and attempt re-connection if appropriate.
 
-For both timers, lower values of the timer result in higher traffic and CPU
-load on the server, either in the form of more rapid
-session teardown and re-establishment for lower values of the idle timeout,
-or increased keepalive traffic for lower values of the keepalive interval.
+For both timers, lower values of the timer result in higher network traffic
+and higher CPU load on the server.
 
-Higher values of the idle timeout result in lower traffic and CPU
+For the idle timeout value, lower values result in
+more frequent session teardown and re-establishment.
+Higher values result in lower traffic and CPU
 load on the server, but a larger memory burden to maintain state for idle sessions.
 
-Higher values of the keepalive interval have minimal effect on the memory burden
+For the keepalive interval value, lower values result in
+higher volume keepalive traffic.
+Higher values of the keepalive interval reduce traffic and CPU load, but
+have minimal effect on the memory burden
 at the server, because clients keep a session open for the same length of time
 (determined by the idle timeout) regardless of the level of keepalive traffic required.
 
@@ -248,7 +281,10 @@ though in most cases the idle timeout is expected to be shorter than the keepali
 A shorter idle timeout with a longer keepalive interval signals to the client that
 it should not speculatively keep idle sessions open for very long for no reason,
 but when it does have an active reason to keep a session open, it doesn't need to
-be sending an agressive level of keepalive traffic.
+be sending an agressive level of keepalive traffic. Only when the client has
+a very long-lived low-traffic operation outstanding like a Push Notification subscription,
+does the keepalive interval timer come into play, to ensure that a sufficient residual
+amount of traffic is generated to maintain NAT and firewall state.
 
 A longer idle timeout with a shorter keepalive interval signals to the client
 that it may speculatively keep idle sessions open for a long time, but it
@@ -275,7 +311,9 @@ SO_LINGER option to zero before closing the socket.)
 In this context, an operation being active on a session includes
 a query waiting for a response, an update waiting for a response,
 or an outstanding Push Notification subscription {{?I-D.ietf-dnssd-push}},
-but not a Session Signaling Keepalive message.
+but not a Session Signaling Keepalive message exchange itself.
+A Session Signaling Keepalive message exchange resets only the keepalive
+interval timer, not the idle timeout timer.
 
 If, at any time during the life of the session,
 the keepalive interval value (i.e., 15 seconds by default) elapses
@@ -283,11 +321,14 @@ without any DNS messages being sent or received on a session,
 the client MUST take action to keep the session alive.
 To keep the session alive the client MUST send a
 Session Signaling Keepalive message (see {{keepalive}}).
-A Session Signaling Keepalive message resets the keepalive timer
-but not the idle timer.
+A Session Signaling Keepalive message exchange resets only the keepalive
+interval timer, not the idle timeout timer.
 
-If a client disconnects from the network abruptly, without cleanly
-closing its session, the server learns of this after failing to
+If a client disconnects from the network abruptly,
+without cleanly closing its session,
+leaving long-lived outstanding operations like
+Push Notification subscriptions uncancelled,
+the server learns of this after failing to
 receive the required keepalive traffic from that client.
 If, at any time during the life of the session,
 twice the keepalive interval value (i.e., 30 seconds by default) elapses
@@ -302,7 +343,7 @@ longer timeout values, as described in {{keepalive}}.
 
 ### Client-Initiated Termination
 
-A client is not required to wait until the idle-timeout value
+A client is NOT required to wait until the idle-timeout timer expires
 before closing a session. A client SHOULD close a session at any time,
 at the client’s discretion, if it determines that, at that time, it has no
 current or reasonably anticipated imminent future need for the session.
@@ -325,41 +366,40 @@ that only affect the single operation in question, the server SHOULD return an
 error response to the client and leave the session open for further operations.
 For error conditions that are likely to make all operations unsuccessful in the
 immediate future, the server SHOULD return an error response to the client and then
-close the session by sending a Terminate Session request message,
-as described in {{terminate}}.
+close the session by sending a Retry Delay request message, as described in {{delay}}.
 
 There may be rare cases where a server is overloaded and wishes to shed load.
 If the server handles this by simply closing connections, the likely behaviour
 of clients is to detect this as a network failure, and reconnect.
 
 To avoid this reconnection implosion, in this situation the server also
-sends a Terminate Session request message, with an RCODE of SERVFAIL,
+sends a Retry Delay request message, with an RCODE of SERVFAIL,
 to inform the client of the overload situation.
 
-After sending a Terminate Session request message, the server MUST NOT
+After sending a Retry Delay request message, the server MUST NOT
 send any further messages on that session.
 
-A Terminate Session request message MUST NOT be initiated by a client.
-If a server receives a Terminate Session request message this is an error
+A Retry Delay request message MUST NOT be initiated by a client.
+If a server receives a Retry Delay request message this is an error
 and the server MUST immediately terminate the connection with a TCP RST
 (or equivalent for other protocols).
 
-Upon receipt of a Terminate Session request from the server, the client MUST
+Upon receipt of a Retry Delay request from the server, the client MUST
 make note of the reconnect delay for this server, and then immediately
 close the connection.
 This is to place the burden of TCP's TIME-WAIT state on the client.
 
-After sending the Terminate Session request the server SHOULD allow the
+After sending the Retry Delay request the server SHOULD allow the
 client five seconds to close the connection, and if the client has not
 closed the connection after five seconds then the server SHOULD abort
 the connection with a TCP RST (or equivalent for other protocols).
 
-In the case where the server is canceling some, but not all,
-of the existing operations on a session, with a REFUSED (5) RCODE
-(perhaps because it has been reconfigured and is no longer authoritative for those names),
-the RECONNECT DELAY MAY be zero, indicating that the client SHOULD immediately
-attempt to re-establish its operations.
-It is likely that some of the new attempts will be successful and some will not.
+In the case where some, but not all, of the existing operations on a session have become invalid
+(perhaps because the server has been reconfigured and is no longer authoritative for some of the names),
+but the server is terminating all sessions en masse with a REFUSED (5) RCODE,
+the RECONNECT DELAY MAY be zero, indicating that the clients SHOULD immediately
+attempt to re-establish operations.
+It is likely that some of the attempts will be successful and some will not.
 
 In the case where a server is terminating a large number of sessions at once
 (e.g., if the system is restarting) and the server doesn't want to be inundated with a flood
@@ -375,7 +415,7 @@ A server only closes a session under exceptional circumstances, such as
 when the server application software or underlying operating system is
 restarting, the server application terminated unexpectedly (perhaps due to a
 bug that makes it crash), or the server is undergoing maintenance procedures.
-When possible, a server SHOULD send a Terminate Session message informing the
+When possible, a server SHOULD send a Retry Delay message informing the
 client of the reason for the session being closed, and allow the client
 five seconds to receive it before the server resorts to forcibly aborting the connection.
 
@@ -388,7 +428,7 @@ If a server is low on resources it MAY simply terminate a client connection with
 TCP RST (or equivalent for other protocols).
 However, the likely behaviour of the client may be simply to reconnect
 immediately, putting more burden on the server. Therefore, a server SHOULD instead
-choose to shed client load by sending a Terminate Session message, as described above.
+choose to shed client load by sending a Retry Delay message, as described above.
 Upon reception of the Termination TLV the client is expected to close the session,
 and if it does not then the server will abort the session five seconds later.
 
@@ -433,13 +473,18 @@ not zero, then data in the corresponding section MUST be silently skipped by the
 receiver (unless specified otherwise by a future update to this specification).
 
 The twelve-octet header and the four (usually) empty sections
-are followed by a single Session Signaling operation TLV.
-The single operation TLV may be followed by one or more modifier TLVs, such as
-the Terminate TLV (0), which, in error responses, indicates the time interval
+are followed by at most one Session Signaling operation TLV.
+The (optional) operation TLV may be followed by one or more modifier TLVs, such as
+the Retry Delay TLV (0), which, in error responses, indicates the time interval
 during which the client SHOULD NOT re-attempt a failed operation.
 Future specifications may define additional modifier TLVs that may be used in
 addition to the operation TLV.
-A Session Signaling message MUST contain exactly one operation TLV.
+A Session Signaling message MUST contain at most one operation TLV.
+In most cases a Session Signaling request message contains one operation TLV,
+indicating the operation to be performed.
+In many cases a Session Signaling response message contains no operation TLV,
+because it is simply a response to a previous request message,
+and the message ID in the header is sufficient to identify the request in question.
 
 Since the ARCOUNT field MUST be zero, a Session Signaling message
 MUST NOT contain an EDNS(0) option in the additional records section.
@@ -465,7 +510,7 @@ and those messages can carry EDNS(0) and TSIG records.
 This specification explicitly prohibits use of the
 EDNS(0) TCP Keepalive Option {{!RFC7828}}
 in messages sent on a Session Signaling session (because it duplicates
-the functionality provided by the Session Signaling Keepalive TLV),
+the functionality provided by the Session Signaling Keepalive operation),
 but messages may contain other EDNS(0) options as appropriate.
 
                                                  1   1   1   1   1   1
@@ -484,7 +529,7 @@ but messages may contain other EDNS(0) options as appropriate.
        |                     ARCOUNT (MUST BE ZERO)                    |
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
        |                                                               |
-       /                           TLV-DATA                            /
+       /                     Session Signaling Data                    /
        /                                                               /
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
@@ -492,8 +537,7 @@ The MESSAGE ID, QR, Opcode and RCODE fields have their usual meanings {{!RFC1035
 
 In a request message (QR=0) the RCODE is generally set to zero on transmission,
 and silently ignored on reception, except where specified otherwise
-(for example, the Terminate Session operation,
-where the RCODE indicates the reason for termination).
+(for example, the Retry Delay operation, where the RCODE indicates the reason for termination).
 
 The Z bits are currently unused, and in both requests and responses the
 Z bits SHOULD be set to zero (0) on transmission and silently ignored
@@ -514,10 +558,10 @@ MUST have the same MESSAGE ID in the DNS message header as in the corresponding 
 
 An initiator MUST NOT reuse a MESSAGE ID that is already in use for an outstanding
 request, unless specified otherwise by the relevant specification for the
-Session Signaling TLV in question.
+Session Signaling operation in question.
 At the very least, this means that a MESSAGE ID MUST NOT be reused for a particular SSOP-TYPE
 while the initiator is waiting for a response to a previous request with the same SSOP-TYPE,
-unless specified otherwise by the relevant specification for the Session Signaling TLV in question.
+unless specified otherwise by the relevant specification for the Session Signaling operation in question.
 (For a long-lived operation, such as a DNS Push Notification
 subscription {{?I-D.ietf-dnssd-push}} the MESSAGE ID for the operation
 MUST NOT be reused for a new subscription as long as the
@@ -538,17 +582,11 @@ The RCODE value in a response may be one of the following values:
 
 | Code | Mnemonic | Description |
 |-----:|----------|-------------|
-| 0 | NOERROR | TLV processed successfully |
-| 1 | FORMERR | TLV format error |
+| 0 | NOERROR | Operation processed successfully |
+| 1 | FORMERR | Format error |
 | 4 | NOTIMP | Session Signaling not supported |
-| 5 | REFUSED | TLV declined for policy reasons |
+| 5 | REFUSED | Operation declined for policy reasons |
 | 11 | SSOPNOTIMP | Session Signaling operation Type Code not supported |
-
-~~~
-
-
-
-~~~
 
 ## TLV Format
 
@@ -574,30 +612,6 @@ SSOP-DATA.
 
 SSOP-DATA:
 : Type-code specific.
-
-~~~
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-~~~
 
 # Keepalive TLV {#keepalive}
 
@@ -645,41 +659,62 @@ twice this interval the server will forcibly terminate the connection
 with a TCP RST (or equivalent for other protocols).
 
 In a client-initiated Session Signaling Keepalive message,
-the IDLE TIMEOUT and KEEPALIVE INTERVAL
+the idle timeout and keepalive interval
 contain the client’s requested values.
 In a server response to a client-initiated message,
-the IDLE TIMEOUT and KEEPALIVE INTERVAL
+the idle timeout and keepalive interval
 contain the server’s chosen values, which the client MUST respect.
 This is modeled after the DHCP protocol, where the client
 requests a certain lease lifetime using DHCP option 51 {{!RFC2132}},
 but the server is the ultimate authority
 for deciding what lease lifetime is actually granted.
 
-In a server-initiated Session Signaling Keepalive message, the IDLE TIMEOUT and KEEPALIVE INTERVAL
-unilaterally inform the client of the new values from this point forward
-in this session. In a client response to a server-initiated message,
-there is no SSOP-DATA. SSOP-LENGTH is zero. The RCODE MUST be zero.
+In a server-initiated Session Signaling Keepalive message, the idle timeout and keepalive interval
+unilaterally inform the client of the new values from this point forward in this session.
+The client MUST generate a response to the server-initiated Session Signaling Keepalive message.
+The Message ID in the response message MUST match the ID from the server-initiated Session
+Signaling Keepalive message, and the response message MUST NOT contain any operation TLV.
 
-<< SC: Do we even need a client response to this server-initiated message?
-The response conveys no information.
-On the other hand, it may simplify the specification
-if we say that *all* request messages elicit exactly one response message.
-Please weigh in with opinions. We need to decide this.
-Currently draft-ietf-dnssd-push says that push notification messages from
-server to client do not elicit any response message from the client.
-We need to decide if this is allowed. >>
+It may be appropriate for clients and servers to select different keepalive interval values
+depending on the nature of the network they are on.
 
-Note that the lower the IDLE TIMEOUT value, the higher the load on client
-and server. For example, an IDLE TIMEOUT value of 200ms would result in a
+A corporate DNS server that knows it is serving only clients on the internal network,
+with no intervening NAT gateways or firewalls, can impose a higher keepalive interval,
+because frequent keepalive traffic is not required.
+
+A public DNS server that is serving primarily residential consumer clients, where
+it is likely there will be a NAT gateway on the path, may impose a lower keepalive interval,
+to generate more frequent keepalive traffic.
+
+A smart client may be adaptive to its environment. A client using
+a private IPv4 address {{!RFC1918}} to communicate with a DNS server
+at an address that is not in the same IPv4 private address block,
+may conclude that there is likely to be a NAT gateway on the path,
+and accordingly request a lower keepalive interval.
+
+For environments where there is a NAT gateway or firewalls on the path, it is
+RECOMMENDED that clients request, and servers grant, a keepalive interval of 15 minutes.
+In other environments it is RECOMMENDED that clients request, and servers grant,
+a keepalive interval of 60 minutes.
+
+Note that the lower the keepalive interval value, the higher the load on client
+and server. For example, an keepalive interval value of 100ms would result in a
 continuous stream of at least ten messages per second, in both directions,
-to keep the session alive. And, in this example, a single packet loss and
-retransmission could introduce a momentary pause in the stream of messages,
+to keep the session alive. And, in this extreme example, a single packet loss and
+retransmission over a long path could introduce a momentary pause in the stream of messages,
 long enough to cause the server to overzealously abort the connection.
 
 Because of this concern, the server MUST NOT send a Keepalive message
 (either a response to a client-initiated request, or a server-initiated message)
-with an IDLE TIMEOUT value less than ten seconds.
-If a client receives an Keepalive message specifying an IDLE TIMEOUT value
+with an keepalive interval value less than ten seconds.
+If a client receives an Keepalive message specifying an keepalive interval value
+less than ten seconds this is an error and the client MUST immediately
+terminate the connection with a TCP RST (or equivalent for other protocols).
+
+Similarly, the server MUST NOT send a Keepalive message
+(either a response to a client-initiated request, or a server-initiated message)
+with an idle timeout value less than ten seconds.
+If a client receives an Keepalive message specifying an idle timeout value
 less than ten seconds this is an error and the client MUST immediately
 terminate the connection with a TCP RST (or equivalent for other protocols).
 
@@ -694,66 +729,53 @@ EDNS(0) TCP KeepAlive option, this is an error and the receiver of the
 EDNS(0) TCP KeepAlive option MUST immediately
 terminate the connection with a TCP RST (or equivalent for other protocols).
 
-~~~
+# Retry Delay TLV {#delay}
 
-
-
-
-
-
-
-
-~~~
-
-# Terminate TLV {#terminate}
-
-The Terminate TLV (0) is be used by a server to request that a client
+The Retry Delay TLV (0) is be used by a server to request that a client
 close the session, and not to reconnect for the indicated time interval.
 It is also used as a modifier on error responses, to indicate how long the
 client should wait before retrying that particular operation.
 
-<< SC: Perhaps we should change the name of TLV (0) to be "retry delay" instead of "Terminate"? >>
-
-The SSOP-DATA for the the Terminate TLV is as follows:
+The SSOP-DATA for the the Retry Delay TLV is as follows:
 
                             1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
         0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-       |                   RECONNECT DELAY (32 bits)                   |
+       |                     RETRY DELAY (32 bits)                     |
        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
-RECONNECT DELAY:
+RETRY DELAY:
 : a time value, specified as a 32 bit word in network order in units of milliseconds,
-within which the client MUST NOT establish a new session to the current server.
+within which the client MUST NOT retry this operation, or retry connecting to this server.
 
 The RECOMMENDED value is 10 seconds.
 
 In the case of a client request that returns a nonzero RCODE value, the server MAY
-append a Terminate TLV (0) to the response, indicating the time interval
+append a Retry Delay TLV (0) to the response, indicating the time interval
 during which the client SHOULD NOT attempt this operation again.
 
 When appended to a DNS response message for some client request,
-the Terminate TLV (0) is considered a modifier TLV.
+the Retry Delay TLV (0) is considered a modifier TLV.
 The indicated time interval during which the client SHOULD NOT retry
 applies only to the failed operation, not to the session as a whole.
 
-When sent in a DNS request message, from server to client, the Terminate Session TLV (0)
+When sent in a DNS request message, from server to client, the Retry Delay TLV (0)
 is considered an operation TLV. It applies to the session as a whole,
 and the client MUST close the session, as described previously.
 The RCODE MUST indicate the reason for the termination.
 RCODE NOERROR indicates a routine shutdown.
 RCODE SERVFAIL indicates that the server is overloaded due to resource exhaustion.
 RCODE REFUSED indicates that the server has been reconfigured and is no longer
-able to perform one of the functions currently being performed on this session
+able to perform one or more of the functions currently being performed on this session
 (for example, a DNS Push Notification server could be reconfigured such that
 is is no longer accepting DNS Push Notification requests for one or more of
 the currently subscribed names).
 
-This document specifies only these three RCODE values for Terminate Session request.
-Servers sending Terminate Session requests SHOULD use one of these three values.
+This document specifies only these three RCODE values for Retry Delay request.
+Servers sending Retry Delay requests SHOULD use one of these three values.
 However, future circumstances may create situations where other RCODE values
-are appropriate in Terminate Session requests, so clients MUST be prepared
-to accept Terminate Session requests with any RCODE value.
+are appropriate in Retry Delay requests, so clients MUST be prepared
+to accept Retry Delay requests with any RCODE value.
 
 # IANA Considerations
 
@@ -774,8 +796,8 @@ Registry, with initial values as follows:
 
 | Type | Name | Status | Reference |
 |--:|------|--------|-----------|
-| 0 | SSOP-Terminate | Standard | RFC-TBD |
-| 1 | SSOP-Keepalive | Standard | RFC-TBD |
+| 0 | SSOP-RetryDelay | Standard | RFC-TBD |
+| 1 | SSOP-KeepAlive | Standard | RFC-TBD |
 | 3 - 63 | Unassigned, reserved for session management TLVs | | |
 | 64 - 63487 | Unassigned | | |
 | 63488 - 64511 | Reserved for local / experimental use | | |

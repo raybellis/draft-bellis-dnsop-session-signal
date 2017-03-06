@@ -377,7 +377,7 @@
 <link href="#rfc.section.1" rel="Chapter" title="1 Introduction"/>
 <link href="#rfc.section.2" rel="Chapter" title="2 Terminology"/>
 <link href="#rfc.section.3" rel="Chapter" title="3 Protocol Details"/>
-<link href="#rfc.section.3.1" rel="Chapter" title="3.1 Session Lifecycle"/>
+<link href="#rfc.section.3.1" rel="Chapter" title="3.1 Session Lifecycle and Timers"/>
 <link href="#rfc.section.3.1.1" rel="Chapter" title="3.1.1 Client-Initiated Termination"/>
 <link href="#rfc.section.3.1.2" rel="Chapter" title="3.1.2 Server-Initiated Termination"/>
 <link href="#rfc.section.3.2" rel="Chapter" title="3.2 Connection Sharing"/>
@@ -385,7 +385,7 @@
 <link href="#rfc.section.3.4" rel="Chapter" title="3.4 Message Handling"/>
 <link href="#rfc.section.3.5" rel="Chapter" title="3.5 TLV Format"/>
 <link href="#rfc.section.4" rel="Chapter" title="4 Keepalive TLV"/>
-<link href="#rfc.section.5" rel="Chapter" title="5 Terminate TLV"/>
+<link href="#rfc.section.5" rel="Chapter" title="5 Retry Delay TLV"/>
 <link href="#rfc.section.6" rel="Chapter" title="6 IANA Considerations"/>
 <link href="#rfc.section.6.1" rel="Chapter" title="6.1 DNS Session Signaling Opcode Registration"/>
 <link href="#rfc.section.6.2" rel="Chapter" title="6.2 DNS Session Signaling RCODE Registration"/>
@@ -495,7 +495,7 @@
   	<li>1.   <a href="#rfc.section.1">Introduction</a></li>
 <li>2.   <a href="#rfc.section.2">Terminology</a></li>
 <li>3.   <a href="#rfc.section.3">Protocol Details</a></li>
-<ul><li>3.1.   <a href="#rfc.section.3.1">Session Lifecycle</a></li>
+<ul><li>3.1.   <a href="#rfc.section.3.1">Session Lifecycle and Timers</a></li>
 <ul><li>3.1.1.   <a href="#rfc.section.3.1.1">Client-Initiated Termination</a></li>
 <li>3.1.2.   <a href="#rfc.section.3.1.2">Server-Initiated Termination</a></li>
 </ul><li>3.2.   <a href="#rfc.section.3.2">Connection Sharing</a></li>
@@ -503,7 +503,7 @@
 <li>3.4.   <a href="#rfc.section.3.4">Message Handling</a></li>
 <li>3.5.   <a href="#rfc.section.3.5">TLV Format</a></li>
 </ul><li>4.   <a href="#rfc.section.4">Keepalive TLV</a></li>
-<li>5.   <a href="#rfc.section.5">Terminate TLV</a></li>
+<li>5.   <a href="#rfc.section.5">Retry Delay TLV</a></li>
 <li>6.   <a href="#rfc.section.6">IANA Considerations</a></li>
 <ul><li>6.1.   <a href="#rfc.section.6.1">DNS Session Signaling Opcode Registration</a></li>
 <li>6.2.   <a href="#rfc.section.6.2">DNS Session Signaling RCODE Registration</a></li>
@@ -519,79 +519,82 @@
   </ul>
 
   <h1 id="rfc.section.1"><a href="#rfc.section.1">1.</a> <a href="#introduction" id="introduction">Introduction</a></h1>
-<p id="rfc.section.1.p.1">The use of transports other than UDP for DNS is being increasingly specified, for example, DNS over TCP <a href="#RFC1035">[RFC1035]</a><a href="#RFC7766">[RFC7766]</a> and DNS over TLS <a href="#RFC7858">[RFC7858]</a>.  Such transports can offer persistent, long-lived sessions and therefore when using them for transporting DNS messages it is of benefit to have a mechanism that can establish parameters associated with those sessions, such as timeouts.  In such situations it is also advantageous to support server initiated messages.</p>
-<p id="rfc.section.1.p.2">The EDNS(0) Extension Mechanism for DNS <a href="#RFC6891">[RFC6891]</a> is explicitly defined to only have &#8220;per-message&#8221; semantics. Whilst EDNS(0) has been used to signal at least one session related parameter (the EDNS(0) TCP KeepAlive option <a href="#RFC7828">[RFC7828]</a>) the result is less than optimal due to the restrictions imposed by the EDNS(0) semantics and the lack of server-initiated signalling.  This document defines a new Session Signaling Opcode used to carry persistent &#8220;per-session&#8221; operations, expressed using type-length-value (TLV) syntax, and defines an initial set of TLVs used to manage session timeouts and termination.</p>
+<p id="rfc.section.1.p.1">The use of transports for DNS other than UDP is being increasingly specified, for example, DNS over TCP <a href="#RFC1035">[RFC1035]</a><a href="#RFC7766">[RFC7766]</a> and DNS over TLS <a href="#RFC7858">[RFC7858]</a>.  Such transports can offer persistent, long-lived sessions and therefore when using them for transporting DNS messages it is of benefit to have a mechanism that can establish parameters associated with those sessions, such as timeouts.  In such situations it is also advantageous to support server initiated messages.</p>
+<p id="rfc.section.1.p.2">The existing EDNS(0) Extension Mechanism for DNS <a href="#RFC6891">[RFC6891]</a> is explicitly defined to only have &#8220;per-message&#8221; semantics. Whilst EDNS(0) has been used to signal at least one session related parameter (the EDNS(0) TCP KeepAlive option <a href="#RFC7828">[RFC7828]</a>) the result is less than optimal due to the restrictions imposed by the EDNS(0) semantics and the lack of server-initiated signalling.  This document defines a new Session Signaling Opcode used to carry persistent &#8220;per-session&#8221; operations, expressed using type-length-value (TLV) syntax, and defines an initial set of TLVs used to manage session timeouts and termination.</p>
 <p id="rfc.section.1.p.3">With EDNS(0), multiple options may be packed into a single OPT pseudo-RR, and there is no generalized mechanism for a client to be able to tell whether a server has processed or otherwise acted upon each individual option within the combined OPT RR.  The specifications for each individual option need to define how each different option is to be acknowledged, if necessary.</p>
 <p id="rfc.section.1.p.4">With Session Signaling, in contrast, there is no compelling motivation to pack multiple operations into a single message for efficiency reasons.  Each Session Signaling operation is communicated in its own separate DNS message, and the transport protocol can take care of packing separate DNS messages into a single IP packet if appropriate.  For example, TCP can pack multiple small DNS messages into a single TCP segment.  The RCODE in each response message indicates the success or failure of the operation in question.</p>
-<p id="rfc.section.1.p.5">It should be noted that the message format for Session Signaling operations (see <a href="#format">Section 3.3</a>) differs from the traditional DNS packet format used for standard queries and responses.  The standard twelve-octet header is used, but the four count fields (QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT) are set to zero and the corresponding sections are empty.  The actual data pertaining to Session Signaling operations is appended to the end of the DNS message, following the four (empty) data sections.  When displayed using current packet analyser tools, this will result in the Session Signaling data being displayed as unknown additional data after the end of the DNS message.</p>
+<p id="rfc.section.1.p.5">It should be noted that the message format for Session Signaling operations (see <a href="#format">Section 3.3</a>) differs from the traditional DNS packet format used for standard queries and responses.  The standard twelve-octet header is used, but the four count fields (QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT) are set to zero and the corresponding sections are empty.  The actual data pertaining to Session Signaling operations is appended to the end of the DNS message, following the four (empty) data sections.  When displayed using today&#8217;s packet analyser tools that have not been updated to recognize the DNS Session Signaling format, this will result in the Session Signaling data being displayed as unknown additional data after the end of the DNS message. It is likely that future updates to these tools will add the ability to recognize, decode, and display the Session Signaling data.</p>
 <h1 id="rfc.section.2"><a href="#rfc.section.2">2.</a> <a href="#terminology" id="terminology">Terminology</a></h1>
 <p id="rfc.section.2.p.1">The key words &#8220;MUST&#8221;, &#8220;MUST NOT&#8221;, &#8220;REQUIRED&#8221;, &#8220;SHALL&#8221;, &#8220;SHALL NOT&#8221;, &#8220;SHOULD&#8221;, &#8220;SHOULD NOT&#8221;, &#8220;RECOMMENDED&#8221;, &#8220;NOT RECOMMENDED&#8221;, &#8220;MAY&#8221;, and &#8220;OPTIONAL&#8221; in this document are to be interpreted as described in &#8220;Key words for use in RFCs to Indicate Requirement Levels&#8221; <a href="#RFC2119">[RFC2119]</a>.</p>
 <p id="rfc.section.2.p.2">The term &#8220;server&#8221; means the software with a listening socket, awaiting incoming connection requests.</p>
 <p id="rfc.section.2.p.3">The term &#8220;client&#8221; means the software which initiates a connection to the server&#8217;s listening socket.</p>
-<p id="rfc.section.2.p.4">The terms &#8220;initiator&#8221; and &#8220;responder&#8221; correspond respectively to the initial sender and subsequent receiver of a Session Signaling TLV, regardless of which was the &#8220;client&#8221; and &#8220;server&#8221; in the usual DNS sense.</p>
-<p id="rfc.section.2.p.5">The term &#8220;sender&#8221; may apply to either an initiator or responder.</p>
+<p id="rfc.section.2.p.4">The terms &#8220;initiator&#8221; and &#8220;responder&#8221; correspond respectively to the initial sender and subsequent receiver of a Session Signaling request message, regardless of which was the &#8220;client&#8221; and &#8220;server&#8221; in the usual DNS sense.</p>
+<p id="rfc.section.2.p.5">The term &#8220;sender&#8221; may apply to either an initiator (when sending a Session Signaling request message) or responder (when sending a Session Signaling response message).</p>
 <p id="rfc.section.2.p.6">The term &#8220;session&#8221; in the context of this document means the exchange of DNS messages using an end-to-end transport protocol where:</p>
 <p/>
 
 <ul>
   <li>The connection between client and server is persistent and relatively long-lived (i.e., minutes or hours, rather than seconds).</li>
-  <li>Either end of the connection may initiate messages to the other</li>
-  <li>Messages are delivered in order</li>
+  <li>Either end of the connection may initiate messages to the other.</li>
+  <li>Messages are delivered in order.</li>
 </ul>
 <h1 id="rfc.section.3"><a href="#rfc.section.3">3.</a> <a href="#protocol-details" id="protocol-details">Protocol Details</a></h1>
 <p id="rfc.section.3.p.1">Session Signaling messages MUST only be carried in protocols and in environments where a session may be established according to the definition above.  Standard DNS over TCP <a href="#RFC1035">[RFC1035]</a><a href="#RFC7766">[RFC7766]</a>, and DNS over TLS <a href="#RFC7858">[RFC7858]</a> are suitable protocols.  DNS over plain UDP is not appropriate since it fails on the requirement for in-order message delivery, and, in the presence of NAT gateways and firewalls with short UDP timeouts, it fails to provide a persistent bi-directional communication channel unless an excessive amount of keepalive traffic is used.</p>
-<p id="rfc.section.3.p.2">Session Signaling messages relate only to the specific session in which they are being carried.  Where a middle box (e.g., a DNS proxy, forwarder, or session multiplexer) is in the path the middle box MUST NOT blindly forward the message in either direction.  This does not preclude the use of these messages in the presence of a NAT box that rewrites IP-layer or transport-layer headers but otherwise maintains the effect of a single session.</p>
+<p id="rfc.section.3.p.2">Session Signaling messages relate only to the specific session in which they are being carried.  Where an application-layer middle box (e.g., a DNS proxy, forwarder, or session multiplexer) is in the path the middle box MUST NOT blindly forward the message in either direction.  This does not preclude the use of these messages in the presence of an IP-layer middle box such as a NAT that rewrites IP-layer and/or transport-layer headers, but otherwise preserves the effect of a single session.</p>
 <p id="rfc.section.3.p.3">A client MAY attempt to initiate Session Signaling messages at any time on a connection; receiving a NOTIMP response in reply indicates that the server does not implement Session Signaling, and the client SHOULD NOT issue further Session Signaling messages on that connection.</p>
 <p id="rfc.section.3.p.4">A server SHOULD NOT initiate Session Signaling messages until a client-initiated Session Signaling message is received first, unless in an environment where it is known in advance by other means that the client supports Session Signaling.  This requirement is to ensure that the clients that do not support Session Signaling do not receive unsolicited inbound Session Signaling messages that they would not know how to handle.</p>
-<h1 id="rfc.section.3.1"><a href="#rfc.section.3.1">3.1.</a> <a href="#lifecycle" id="lifecycle">Session Lifecycle</a></h1>
+<h1 id="rfc.section.3.1"><a href="#rfc.section.3.1">3.1.</a> <a href="#lifecycle" id="lifecycle">Session Lifecycle and Timers</a></h1>
 <p id="rfc.section.3.1.p.1">A session begins when a client makes a new connection to a server.</p>
 <p id="rfc.section.3.1.p.2">The client may perform as many DNS operations as it wishes using the newly created session. Operations SHOULD be pipelined (i.e., the client doesn&#8217;t need wait for a reply before sending the next message).  The server MUST act on messages in the order they are received, but responses to those messages MAY be sent out of order, if appropriate.</p>
 <p id="rfc.section.3.1.p.3">Two timer values are associated with a session: the idle timeout, and the keepalive interval. On a new session, before any explicit Session Signaling Keepalive message exchange, the default value for both timers is 15 seconds.</p>
-<p id="rfc.section.3.1.p.4">At both servers and clients, the generation or reception of any complete DNS message, including DNS requests, responses, updates, or Session Signaling messages, resets both timers for that session <a href="#RFC7766">[RFC7766]</a>.</p>
-<p id="rfc.section.3.1.p.5">The first timer value, the idle timeout, is the maximum time for which a client may speculatively keep a session open in the expectation that it may have future communications with that server.</p>
-<p id="rfc.section.3.1.p.6">The purpose of the idle timeout is for the server to manage its session load.  A server with abundant session capacity can offer a high idle timeout, to permit clients to keep a speculative session open for a long time, to save the cost of establishing a new session for future communications with that server.  A server with scarse memory resources can offer a low idle timeout, to cause clients to promptly close sessions whenever they have no outstanding operations with that server, and then create a new session later when needed.</p>
-<p id="rfc.section.3.1.p.7">The second timer value, the keepalive interval, is the maximum permitted interval between client messages to the server if the client wishes to keep the session alive.</p>
-<p id="rfc.section.3.1.p.8">The purpose of the keepalive interval is to manage the generation of sufficient messages to maintain state in middleboxes (such at NAT gateways or firewalls) and for the client and server to periodically verify that they still have connectivity to each other. This allows them to clean up state when connectivity is lost, and attempt re-connection if appropriate.</p>
-<p id="rfc.section.3.1.p.9">For both timers, lower values of the timer result in higher traffic and CPU load on the server, either in the form of more rapid session teardown and re-establishment for lower values of the idle timeout, or increased keepalive traffic for lower values of the keepalive interval.</p>
-<p id="rfc.section.3.1.p.10">Higher values of the idle timeout result in lower traffic and CPU load on the server, but a larger memory burden to maintain state for idle sessions.</p>
-<p id="rfc.section.3.1.p.11">Higher values of the keepalive interval have minimal effect on the memory burden at the server, because clients keep a session open for the same length of time (determined by the idle timeout) regardless of the level of keepalive traffic required.</p>
-<p id="rfc.section.3.1.p.12">The two timer values are independent.  The idle timeout may be lower, the same, or higher than the keepalive interval, though in most cases the idle timeout is expected to be shorter than the keepalive interval.</p>
-<p id="rfc.section.3.1.p.13">A shorter idle timeout with a longer keepalive interval signals to the client that it should not speculatively keep idle sessions open for very long for no reason, but when it does have an active reason to keep a session open, it doesn&#8217;t need to be sending an agressive level of keepalive traffic.</p>
-<p id="rfc.section.3.1.p.14">A longer idle timeout with a shorter keepalive interval signals to the client that it may speculatively keep idle sessions open for a long time, but it should be sending a lot of keepalive traffic on those idle sessions.  This configuration is expected to be less common.</p>
-<p id="rfc.section.3.1.p.15">If, at any time during the life of the session, the idle timeout value (i.e., 15 seconds by default) elapses without there being any operation active on the session, the client MUST gracefully close the connection with a TCP FIN (or equivalent for other protocols).</p>
-<p id="rfc.section.3.1.p.16">If, at any time during the life of the session, twice the idle timeout value (i.e., 30 seconds by default) elapses without there being any operation active on the session, the server SHOULD consider the client delinquent, and forcibly abort the session.  For sessions over TCP (or over TLS over TCP), to avoid the burden of having a connection in TIME-WAIT state, instead of closing the connection gracefully with a TCP FIN the server SHOULD abort the connection with a TCP RST.  (In the BSD Sockets API this is achieved by setting the SO_LINGER option to zero before closing the socket.)</p>
-<p id="rfc.section.3.1.p.17">In this context, an operation being active on a session includes a query waiting for a response, an update waiting for a response, or an outstanding Push Notification subscription <a href="#I-D.ietf-dnssd-push">[I-D.ietf-dnssd-push]</a>, but not a Session Signaling Keepalive message.</p>
-<p id="rfc.section.3.1.p.18">If, at any time during the life of the session, the keepalive interval value (i.e., 15 seconds by default) elapses without any DNS messages being sent or received on a session, the client MUST take action to keep the session alive.  To keep the session alive the client MUST send a Session Signaling Keepalive message (see <a href="#keepalive">Section 4</a>).  A Session Signaling Keepalive message resets the keepalive timer but not the idle timer.</p>
-<p id="rfc.section.3.1.p.19">If a client disconnects from the network abruptly, without cleanly closing its session, the server learns of this after failing to receive the required keepalive traffic from that client.  If, at any time during the life of the session, twice the keepalive interval value (i.e., 30 seconds by default) elapses without any DNS messages being sent or received on a session, the server SHOULD consider the client delinquent, and forcibly abort the connection with a TCP RST (or equivalent for other protocols).</p>
-<p id="rfc.section.3.1.p.20">If the client wishes to keep an idle session open for longer than the default duration without having to send traffic every 15 seconds, then it uses the Session Signaling Keepalive message to request longer timeout values, as described in <a href="#keepalive">Section 4</a>.</p>
+<p id="rfc.section.3.1.p.4">At both servers and clients, the generation or reception of any complete DNS message, including DNS requests, responses, updates, or Session Signaling messages, resets both timers for that session <a href="#RFC7766">[RFC7766]</a>, with the exception that a Session Signaling Keepalive message resets only the keepalive interval timer, not the idle timeout timer.</p>
+<p id="rfc.section.3.1.p.5">In addition, for as long as the client is has an outstanding operation in progress, the idle timeout timer remains fixed at zero, and an idle timeout cannot occur.</p>
+<p id="rfc.section.3.1.p.6">For short-lived DNS operations like traditional queries and updates, an operation is considered in progress for the time between request and response, typically a period of a few hundred milliseconds at most.  At the client, the idle timeout timer is set to zero upon transmission of a request and remains at zero until reception of the corresponding response.  At the server, the idle timeout timer is set to zero upon reception of a request and remains at zero until transmission of the corresponding response.</p>
+<p id="rfc.section.3.1.p.7">For long-lived DNS operations like Push Notification subscriptions <a href="#I-D.ietf-dnssd-push">[I-D.ietf-dnssd-push]</a>, an operation is considered in progress for as long as the subscription is active, until it is cancelled.  This means that connection can exist, with a Push Notification subscription active, with no messages flowing in either direction, for far longer than the idle timeout, and this is not an error.  This is why there are two separate timers: the idle timeout, and the keepalive interval.  Just because a session has no traffic for an extended period of time does not automatically make that session &#8220;idle&#8221;, if it has an active Push Notification subscription that is awaiting notification events.</p>
+<p id="rfc.section.3.1.p.8">The first timer value, the idle timeout, is the maximum time for which a client may speculatively keep a session open in the expectation that it may have future requests to send to that server.</p>
+<p id="rfc.section.3.1.p.9">The purpose of the idle timeout is for the server to balance its trade off between the costs of setting up new connections and the costs of maintaining idle connections.  A server with abundant session capacity can offer a high idle timeout, to permit clients to keep a speculative session open for a long time, to save the cost of establishing a new session for future communications with that server.  A server with scarse memory resources can offer a low idle timeout, to cause clients to promptly close sessions whenever they have no outstanding operations with that server, and then create a new session later when needed.</p>
+<p id="rfc.section.3.1.p.10">The second timer value, the keepalive interval, is the maximum permitted interval between client messages to the server if the client wishes to keep the session alive.</p>
+<p id="rfc.section.3.1.p.11">The purpose of the keepalive interval is to manage the generation of sufficient messages to maintain state in middleboxes (such at NAT gateways or firewalls) and for the client and server to periodically verify that they still have connectivity to each other. This allows them to clean up state when connectivity is lost, and attempt re-connection if appropriate.</p>
+<p id="rfc.section.3.1.p.12">For both timers, lower values of the timer result in higher network traffic and higher CPU load on the server.</p>
+<p id="rfc.section.3.1.p.13">For the idle timeout value, lower values result in more frequent session teardown and re-establishment.  Higher values result in lower traffic and CPU load on the server, but a larger memory burden to maintain state for idle sessions.</p>
+<p id="rfc.section.3.1.p.14">For the keepalive interval value, lower values result in higher volume keepalive traffic.  Higher values of the keepalive interval reduce traffic and CPU load, but have minimal effect on the memory burden at the server, because clients keep a session open for the same length of time (determined by the idle timeout) regardless of the level of keepalive traffic required.</p>
+<p id="rfc.section.3.1.p.15">The two timer values are independent.  The idle timeout may be lower, the same, or higher than the keepalive interval, though in most cases the idle timeout is expected to be shorter than the keepalive interval.</p>
+<p id="rfc.section.3.1.p.16">A shorter idle timeout with a longer keepalive interval signals to the client that it should not speculatively keep idle sessions open for very long for no reason, but when it does have an active reason to keep a session open, it doesn&#8217;t need to be sending an agressive level of keepalive traffic. Only when the client has a very long-lived low-traffic operation outstanding like a Push Notification subscription, does the keepalive interval timer come into play, to ensure that a sufficient residual amount of traffic is generated to maintain NAT and firewall state.</p>
+<p id="rfc.section.3.1.p.17">A longer idle timeout with a shorter keepalive interval signals to the client that it may speculatively keep idle sessions open for a long time, but it should be sending a lot of keepalive traffic on those idle sessions.  This configuration is expected to be less common.</p>
+<p id="rfc.section.3.1.p.18">If, at any time during the life of the session, the idle timeout value (i.e., 15 seconds by default) elapses without there being any operation active on the session, the client MUST gracefully close the connection with a TCP FIN (or equivalent for other protocols).</p>
+<p id="rfc.section.3.1.p.19">If, at any time during the life of the session, twice the idle timeout value (i.e., 30 seconds by default) elapses without there being any operation active on the session, the server SHOULD consider the client delinquent, and forcibly abort the session.  For sessions over TCP (or over TLS over TCP), to avoid the burden of having a connection in TIME-WAIT state, instead of closing the connection gracefully with a TCP FIN the server SHOULD abort the connection with a TCP RST.  (In the BSD Sockets API this is achieved by setting the SO_LINGER option to zero before closing the socket.)</p>
+<p id="rfc.section.3.1.p.20">In this context, an operation being active on a session includes a query waiting for a response, an update waiting for a response, or an outstanding Push Notification subscription <a href="#I-D.ietf-dnssd-push">[I-D.ietf-dnssd-push]</a>, but not a Session Signaling Keepalive message exchange itself.  A Session Signaling Keepalive message exchange resets only the keepalive interval timer, not the idle timeout timer.</p>
+<p id="rfc.section.3.1.p.21">If, at any time during the life of the session, the keepalive interval value (i.e., 15 seconds by default) elapses without any DNS messages being sent or received on a session, the client MUST take action to keep the session alive.  To keep the session alive the client MUST send a Session Signaling Keepalive message (see <a href="#keepalive">Section 4</a>).  A Session Signaling Keepalive message exchange resets only the keepalive interval timer, not the idle timeout timer.</p>
+<p id="rfc.section.3.1.p.22">If a client disconnects from the network abruptly, without cleanly closing its session, leaving long-lived outstanding operations like Push Notification subscriptions uncancelled, the server learns of this after failing to receive the required keepalive traffic from that client.  If, at any time during the life of the session, twice the keepalive interval value (i.e., 30 seconds by default) elapses without any DNS messages being sent or received on a session, the server SHOULD consider the client delinquent, and forcibly abort the connection with a TCP RST (or equivalent for other protocols).</p>
+<p id="rfc.section.3.1.p.23">If the client wishes to keep an idle session open for longer than the default duration without having to send traffic every 15 seconds, then it uses the Session Signaling Keepalive message to request longer timeout values, as described in <a href="#keepalive">Section 4</a>.</p>
 <h1 id="rfc.section.3.1.1"><a href="#rfc.section.3.1.1">3.1.1.</a> <a href="#client-initiated-termination" id="client-initiated-termination">Client-Initiated Termination</a></h1>
-<p id="rfc.section.3.1.1.p.1">A client is not required to wait until the idle-timeout value before closing a session. A client SHOULD close a session at any time, at the client&#8217;s discretion, if it determines that, at that time, it has no current or reasonably anticipated imminent future need for the session.</p>
+<p id="rfc.section.3.1.1.p.1">A client is NOT required to wait until the idle-timeout timer expires before closing a session. A client SHOULD close a session at any time, at the client&#8217;s discretion, if it determines that, at that time, it has no current or reasonably anticipated imminent future need for the session.</p>
 <p id="rfc.section.3.1.1.p.2">Upon receiving an error response from the server, a client SHOULD NOT automatically close the session. An error relating to one particular operation on a session does not necessarily imply that all other operations on that session have also failed, or that future operations will fail. The client should assume that the server will make its own decision about whether or not to close the session, based on the server&#8217;s determination of whether the error condition pertains to this particular operation, or would also apply to any subsequent operations. If the server does not close the session then the client SHOULD continue to use that session for subsequent operations.</p>
 <h1 id="rfc.section.3.1.2"><a href="#rfc.section.3.1.2">3.1.2.</a> <a href="#server-initiated-termination" id="server-initiated-termination">Server-Initiated Termination</a></h1>
-<p id="rfc.section.3.1.2.p.1">After sending an error response to a client, the server MAY close the session, or may allow the session to remain open. For error conditions that only affect the single operation in question, the server SHOULD return an error response to the client and leave the session open for further operations.  For error conditions that are likely to make all operations unsuccessful in the immediate future, the server SHOULD return an error response to the client and then close the session by sending a Terminate Session request message, as described in <a href="#terminate">Section 5</a>.</p>
+<p id="rfc.section.3.1.2.p.1">After sending an error response to a client, the server MAY close the session, or may allow the session to remain open. For error conditions that only affect the single operation in question, the server SHOULD return an error response to the client and leave the session open for further operations.  For error conditions that are likely to make all operations unsuccessful in the immediate future, the server SHOULD return an error response to the client and then close the session by sending a Retry Delay request message, as described in <a href="#delay">Section 5</a>.</p>
 <p id="rfc.section.3.1.2.p.2">There may be rare cases where a server is overloaded and wishes to shed load.  If the server handles this by simply closing connections, the likely behaviour of clients is to detect this as a network failure, and reconnect.</p>
-<p id="rfc.section.3.1.2.p.3">To avoid this reconnection implosion, in this situation the server also sends a Terminate Session request message, with an RCODE of SERVFAIL, to inform the client of the overload situation.</p>
-<p id="rfc.section.3.1.2.p.4">After sending a Terminate Session request message, the server MUST NOT send any further messages on that session.</p>
-<p id="rfc.section.3.1.2.p.5">A Terminate Session request message MUST NOT be initiated by a client.  If a server receives a Terminate Session request message this is an error and the server MUST immediately terminate the connection with a TCP RST (or equivalent for other protocols).</p>
-<p id="rfc.section.3.1.2.p.6">Upon receipt of a Terminate Session request from the server, the client MUST make note of the reconnect delay for this server, and then immediately close the connection.  This is to place the burden of TCP&#8217;s TIME-WAIT state on the client.</p>
-<p id="rfc.section.3.1.2.p.7">After sending the Terminate Session request the server SHOULD allow the client five seconds to close the connection, and if the client has not closed the connection after five seconds then the server SHOULD abort the connection with a TCP RST (or equivalent for other protocols).</p>
-<p id="rfc.section.3.1.2.p.8">In the case where the server is canceling some, but not all, of the existing operations on a session, with a REFUSED (5) RCODE (perhaps because it has been reconfigured and is no longer authoritative for those names), the RECONNECT DELAY MAY be zero, indicating that the client SHOULD immediately attempt to re-establish its operations.  It is likely that some of the new attempts will be successful and some will not.</p>
+<p id="rfc.section.3.1.2.p.3">To avoid this reconnection implosion, in this situation the server also sends a Retry Delay request message, with an RCODE of SERVFAIL, to inform the client of the overload situation.</p>
+<p id="rfc.section.3.1.2.p.4">After sending a Retry Delay request message, the server MUST NOT send any further messages on that session.</p>
+<p id="rfc.section.3.1.2.p.5">A Retry Delay request message MUST NOT be initiated by a client.  If a server receives a Retry Delay request message this is an error and the server MUST immediately terminate the connection with a TCP RST (or equivalent for other protocols).</p>
+<p id="rfc.section.3.1.2.p.6">Upon receipt of a Retry Delay request from the server, the client MUST make note of the reconnect delay for this server, and then immediately close the connection.  This is to place the burden of TCP&#8217;s TIME-WAIT state on the client.</p>
+<p id="rfc.section.3.1.2.p.7">After sending the Retry Delay request the server SHOULD allow the client five seconds to close the connection, and if the client has not closed the connection after five seconds then the server SHOULD abort the connection with a TCP RST (or equivalent for other protocols).</p>
+<p id="rfc.section.3.1.2.p.8">In the case where some, but not all, of the existing operations on a session have become invalid (perhaps because the server has been reconfigured and is no longer authoritative for some of the names), but the server is terminating all sessions en masse with a REFUSED (5) RCODE, the RECONNECT DELAY MAY be zero, indicating that the clients SHOULD immediately attempt to re-establish operations.  It is likely that some of the attempts will be successful and some will not.</p>
 <p id="rfc.section.3.1.2.p.9">In the case where a server is terminating a large number of sessions at once (e.g., if the system is restarting) and the server doesn&#8217;t want to be inundated with a flood of simultaneous retries, it SHOULD send different RECONNECT delay values to each client.  These adjustments MAY be selected randomly, pseudorandomly, or deterministically (e.g., incrementing the time value by one tenth of a second for each successive client, yielding a post-restart reconnection rate of ten clients per second).</p>
-<p id="rfc.section.3.1.2.p.10">Apart from the cases described above, a server MUST NOT close a session with a client, except in extraordinary error conditions. Closing the session is the client&#8217;s responsibility, to be done at the client&#8217;s discretion, when it so chooses.  A server only closes a session under exceptional circumstances, such as when the server application software or underlying operating system is restarting, the server application terminated unexpectedly (perhaps due to a bug that makes it crash), or the server is undergoing maintenance procedures.  When possible, a server SHOULD send a Terminate Session message informing the client of the reason for the session being closed, and allow the client five seconds to receive it before the server resorts to forcibly aborting the connection.</p>
+<p id="rfc.section.3.1.2.p.10">Apart from the cases described above, a server MUST NOT close a session with a client, except in extraordinary error conditions. Closing the session is the client&#8217;s responsibility, to be done at the client&#8217;s discretion, when it so chooses.  A server only closes a session under exceptional circumstances, such as when the server application software or underlying operating system is restarting, the server application terminated unexpectedly (perhaps due to a bug that makes it crash), or the server is undergoing maintenance procedures.  When possible, a server SHOULD send a Retry Delay message informing the client of the reason for the session being closed, and allow the client five seconds to receive it before the server resorts to forcibly aborting the connection.</p>
 <p id="rfc.section.3.1.2.p.11">After a session is closed by the server, the client SHOULD try to reconnect, to that server, or to another suitable server, if more than one is available.  If reconnecting to the same server, the client MUST respect the indicated delay before attempting to reconnect.</p>
-<p id="rfc.section.3.1.2.p.12">If a server is low on resources it MAY simply terminate a client connection with a TCP RST (or equivalent for other protocols).  However, the likely behaviour of the client may be simply to reconnect immediately, putting more burden on the server. Therefore, a server SHOULD instead choose to shed client load by sending a Terminate Session message, as described above.  Upon reception of the Termination TLV the client is expected to close the session, and if it does not then the server will abort the session five seconds later.</p>
+<p id="rfc.section.3.1.2.p.12">If a server is low on resources it MAY simply terminate a client connection with a TCP RST (or equivalent for other protocols).  However, the likely behaviour of the client may be simply to reconnect immediately, putting more burden on the server. Therefore, a server SHOULD instead choose to shed client load by sending a Retry Delay message, as described above.  Upon reception of the Termination TLV the client is expected to close the session, and if it does not then the server will abort the session five seconds later.</p>
 <h1 id="rfc.section.3.2"><a href="#rfc.section.3.2">3.2.</a> <a href="#sharing" id="sharing">Connection Sharing</a></h1>
 <p id="rfc.section.3.2.p.1">A client that supports Session Signaling SHOULD NOT make multiple connections to the same DNS server.</p>
 <p id="rfc.section.3.2.p.2">A single server may support multiple services, including DNS Updates <a href="#RFC2136">[RFC2136]</a>, DNS Push Notifications <a href="#I-D.ietf-dnssd-push">[I-D.ietf-dnssd-push]</a>, and other services, for one or more DNS zones.  When a client discovers that the target server for several different operations is the same target hostname and port, the client SHOULD use a single shared session for all those operations.  A client SHOULD NOT open multiple connections to the same target host and port just because the names being operated on are different or happen to fall within different zones.  This is to reduce unnecessary connection load on the DNS server.</p>
 <p id="rfc.section.3.2.p.3">However, server implementers and operators should be aware that connection sharing may not be possible in all cases.  A single client device may be home to multiple independent client software instances that don&#8217;t coordinate with each other.  Similarly, multiple independent client devices behind the same NAT gateway will also typically appear to the DNS server as different source ports on the same client IP address.  Because of these constraints, a DNS server MUST be prepared to accept multiple connections from different source ports on the same client IP address.</p>
 <h1 id="rfc.section.3.3"><a href="#rfc.section.3.3">3.3.</a> <a href="#format" id="format">Message Format</a></h1>
 <p id="rfc.section.3.3.p.1">A Session Signaling message begins with the standard twelve-octet DNS message header <a href="#RFC1035">[RFC1035]</a> with the Opcode field set to the Session Signaling Opcode (tentatively 6).  However, unlike standard DNS messages, the question section, answer section, authority records section and additional records sections are all empty.  The corresponding count fields (QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT) MUST be set to zero on transmission.  If a Session Signaling message is received where any of the count fields are not zero, then data in the corresponding section MUST be silently skipped by the receiver (unless specified otherwise by a future update to this specification).</p>
-<p id="rfc.section.3.3.p.2">The twelve-octet header and the four (usually) empty sections are followed by a single Session Signaling operation TLV.  The single operation TLV may be followed by one or more modifier TLVs, such as the Terminate TLV (0), which, in error responses, indicates the time interval during which the client SHOULD NOT re-attempt a failed operation.  Future specifications may define additional modifier TLVs that may be used in addition to the operation TLV.  A Session Signaling message MUST contain exactly one operation TLV.</p>
+<p id="rfc.section.3.3.p.2">The twelve-octet header and the four (usually) empty sections are followed by at most one Session Signaling operation TLV.  The (optional) operation TLV may be followed by one or more modifier TLVs, such as the Retry Delay TLV (0), which, in error responses, indicates the time interval during which the client SHOULD NOT re-attempt a failed operation.  Future specifications may define additional modifier TLVs that may be used in addition to the operation TLV.  A Session Signaling message MUST contain at most one operation TLV.  In most cases a Session Signaling request message contains one operation TLV, indicating the operation to be performed.  In many cases a Session Signaling response message contains no operation TLV, because it is simply a response to a previous request message, and the message ID in the header is sufficient to identify the request in question.</p>
 <p id="rfc.section.3.3.p.3">Since the ARCOUNT field MUST be zero, a Session Signaling message MUST NOT contain an EDNS(0) option in the additional records section.  If functionality provided by current or future EDNS(0) options is desired for Session Signaling messages, a Session Signaling operation TLV or modifier TLV needs to be defined to carry the necessary information.</p>
 <p id="rfc.section.3.3.p.4">For example, the EDNS(0) Padding Option used for security purposes <a href="#RFC7830">[RFC7830]</a> is not permitted in a Session Signaling message, so if message padding is desired for Session Signaling messages, a Session Signaling modifier TLV needs to be defined to perform this function.</p>
 <p id="rfc.section.3.3.p.5">Similarly, a Session Signaling message MUST NOT contain a TSIG record.  If use of TSIG with Session Signaling messages becomes necessary in the future, a Session Signaling modifier TLV needs to be defined to perform this function.</p>
 <p id="rfc.section.3.3.p.6">Note however that, while Session Signaling <em>messages</em> cannot include EDNS(0) or TSIG records, a Session Signaling <em>session</em> is typically used to carry a whole series of DNS messages of different kinds, including Session Signaling messages, and other DNS message types like Query <a href="#RFC1034">[RFC1034]</a><a href="#RFC1035">[RFC1035]</a> and Update <a href="#RFC2136">[RFC2136]</a>, and those messages can carry EDNS(0) and TSIG records.</p>
-<p id="rfc.section.3.3.p.7">This specification explicitly prohibits use of the EDNS(0) TCP Keepalive Option <a href="#RFC7828">[RFC7828]</a> in messages sent on a Session Signaling session (because it duplicates the functionality provided by the Session Signaling Keepalive TLV), but messages may contain other EDNS(0) options as appropriate.</p>
+<p id="rfc.section.3.3.p.7">This specification explicitly prohibits use of the EDNS(0) TCP Keepalive Option <a href="#RFC7828">[RFC7828]</a> in messages sent on a Session Signaling session (because it duplicates the functionality provided by the Session Signaling Keepalive operation), but messages may contain other EDNS(0) options as appropriate.</p>
 <pre>
                                              1   1   1   1   1   1
      0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
@@ -609,17 +612,17 @@
    |                     ARCOUNT (MUST BE ZERO)                    |
    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
    |                                                               |
-   /                           TLV-DATA                            /
+   /                     Session Signaling Data                    /
    /                                                               /
    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 </pre>
 <p id="rfc.section.3.3.p.8">The MESSAGE ID, QR, Opcode and RCODE fields have their usual meanings <a href="#RFC1035">[RFC1035]</a>.</p>
-<p id="rfc.section.3.3.p.9">In a request message (QR=0) the RCODE is generally set to zero on transmission, and silently ignored on reception, except where specified otherwise (for example, the Terminate Session operation, where the RCODE indicates the reason for termination).</p>
+<p id="rfc.section.3.3.p.9">In a request message (QR=0) the RCODE is generally set to zero on transmission, and silently ignored on reception, except where specified otherwise (for example, the Retry Delay operation, where the RCODE indicates the reason for termination).</p>
 <p id="rfc.section.3.3.p.10">The Z bits are currently unused, and in both requests and responses the Z bits SHOULD be set to zero (0) on transmission and silently ignored on reception, unless a future document specifies otherwise.</p>
 <h1 id="rfc.section.3.4"><a href="#rfc.section.3.4">3.4.</a> <a href="#message-handling" id="message-handling">Message Handling</a></h1>
 <p id="rfc.section.3.4.p.1">On a session between a client and server that support Session Signaling, once the client has sent at least one Session Signaling message (or it is known in advance by other means that the client supports Session Signaling) either end may unilaterally send Session Signaling messages at any time, and therefore either client or server may be the initiator of a message.  The initiator MUST set the value of the QR bit in the DNS header to zero (0), and the responder MUST set it to one (1).</p>
 <p id="rfc.section.3.4.p.2">Every Session Signaling request message (QR=0) MUST elicit a response (QR=1), which MUST have the same MESSAGE ID in the DNS message header as in the corresponding request.</p>
-<p id="rfc.section.3.4.p.3">An initiator MUST NOT reuse a MESSAGE ID that is already in use for an outstanding request, unless specified otherwise by the relevant specification for the Session Signaling TLV in question.  At the very least, this means that a MESSAGE ID MUST NOT be reused for a particular SSOP-TYPE while the initiator is waiting for a response to a previous request with the same SSOP-TYPE, unless specified otherwise by the relevant specification for the Session Signaling TLV in question.  (For a long-lived operation, such as a DNS Push Notification subscription <a href="#I-D.ietf-dnssd-push">[I-D.ietf-dnssd-push]</a> the MESSAGE ID for the operation MUST NOT be reused for a new subscription as long as the existing subscription is active.)</p>
+<p id="rfc.section.3.4.p.3">An initiator MUST NOT reuse a MESSAGE ID that is already in use for an outstanding request, unless specified otherwise by the relevant specification for the Session Signaling operation in question.  At the very least, this means that a MESSAGE ID MUST NOT be reused for a particular SSOP-TYPE while the initiator is waiting for a response to a previous request with the same SSOP-TYPE, unless specified otherwise by the relevant specification for the Session Signaling operation in question.  (For a long-lived operation, such as a DNS Push Notification subscription <a href="#I-D.ietf-dnssd-push">[I-D.ietf-dnssd-push]</a> the MESSAGE ID for the operation MUST NOT be reused for a new subscription as long as the existing subscription is active.)</p>
 <p id="rfc.section.3.4.p.4">The namespaces of 16-bit MESSAGE IDs are disjoint in each direction.  For example, it is <em>not</em> an error for both client and server to send a request message with the same ID.  In effect, the 16-bit MESSAGE ID combined with the identity of the initiator (client or server) serves as a 17-bit unique identifier for a particular operation on a session.</p>
 <p id="rfc.section.3.4.p.5">If a client or server receives a response (QR=1) where the MESSAGE ID does not match any of its outstanding operations, this is a fatal error and it MUST immediately terminate the connection with a TCP RST (or equivalent for other protocols).</p>
 <p id="rfc.section.3.4.p.6">The RCODE value in a response may be one of the following values:</p>
@@ -635,12 +638,12 @@
     <tr>
       <td class="right">0</td>
       <td class="left">NOERROR</td>
-      <td class="left">TLV processed successfully</td>
+      <td class="left">Operation processed successfully</td>
     </tr>
     <tr>
       <td class="right">1</td>
       <td class="left">FORMERR</td>
-      <td class="left">TLV format error</td>
+      <td class="left">Format error</td>
     </tr>
     <tr>
       <td class="right">4</td>
@@ -650,7 +653,7 @@
     <tr>
       <td class="right">5</td>
       <td class="left">REFUSED</td>
-      <td class="left">TLV declined for policy reasons</td>
+      <td class="left">Operation declined for policy reasons</td>
     </tr>
     <tr>
       <td class="right">11</td>
@@ -659,10 +662,6 @@
     </tr>
   </tbody>
 </table>
-<pre>
-
-
-</pre>
 <h1 id="rfc.section.3.5"><a href="#rfc.section.3.5">3.5.</a> <a href="#tlv-format" id="tlv-format">TLV Format</a></h1>
 <pre>
                                              1   1   1   1   1   1
@@ -687,28 +686,6 @@
   <dt>SSOP-DATA:</dt>
   <dd style="margin-left: 8">Type-code specific.</dd>
 </dl>
-<pre>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-</pre>
 <h1 id="rfc.section.4"><a href="#rfc.section.4">4.</a> <a href="#keepalive" id="keepalive">Keepalive TLV</a></h1>
 <p id="rfc.section.4.p.1">The Keepalive TLV (1) is be used by a client to reset a session&#8217;s keepalive timer, and at the same time to request what the timeout values should be from this point forward in the session.</p>
 <p id="rfc.section.4.p.2">Once the client has sent at least one Session Signaling message (or it is known in advance by other means that the client supports Session Signaling) the Keepalive TLV also MAY be initiated by a server, to unilaterally inform the client of new timeout values from this point forward in this session.</p>
@@ -731,43 +708,38 @@
   <dt>KEEPALIVE INTERVAL:</dt>
   <dd style="margin-left: 8">the idle timeout for the current session, specified as a 32-bit word, in network (big endian) order, in units of milliseconds.  This is the interval at which a client MUST generate keepalive traffic to maintain connection state.  If the client does not generate the necessary keepalive traffic then at twice this interval the server will forcibly terminate the connection with a TCP RST (or equivalent for other protocols).</dd>
 </dl>
-<p id="rfc.section.4.p.6">In a client-initiated Session Signaling Keepalive message, the IDLE TIMEOUT and KEEPALIVE INTERVAL contain the client&#8217;s requested values.  In a server response to a client-initiated message, the IDLE TIMEOUT and KEEPALIVE INTERVAL contain the server&#8217;s chosen values, which the client MUST respect.  This is modeled after the DHCP protocol, where the client requests a certain lease lifetime using DHCP option 51 <a href="#RFC2132">[RFC2132]</a>, but the server is the ultimate authority for deciding what lease lifetime is actually granted.</p>
-<p id="rfc.section.4.p.7">In a server-initiated Session Signaling Keepalive message, the IDLE TIMEOUT and KEEPALIVE INTERVAL unilaterally inform the client of the new values from this point forward in this session. In a client response to a server-initiated message, there is no SSOP-DATA. SSOP-LENGTH is zero. The RCODE MUST be zero.</p>
-<p id="rfc.section.4.p.8">&#171;&#160;SC: Do we even need a client response to this server-initiated message? The response conveys no information.  On the other hand, it may simplify the specification if we say that <em>all</em> request messages elicit exactly one response message.  Please weigh in with opinions. We need to decide this.  Currently draft-ietf-dnssd-push says that push notification messages from server to client do not elicit any response message from the client.  We need to decide if this is allowed.&#160;&#187;</p>
-<p id="rfc.section.4.p.9">Note that the lower the IDLE TIMEOUT value, the higher the load on client and server. For example, an IDLE TIMEOUT value of 200ms would result in a continuous stream of at least ten messages per second, in both directions, to keep the session alive. And, in this example, a single packet loss and retransmission could introduce a momentary pause in the stream of messages, long enough to cause the server to overzealously abort the connection.</p>
-<p id="rfc.section.4.p.10">Because of this concern, the server MUST NOT send a Keepalive message (either a response to a client-initiated request, or a server-initiated message) with an IDLE TIMEOUT value less than ten seconds.  If a client receives an Keepalive message specifying an IDLE TIMEOUT value less than ten seconds this is an error and the client MUST immediately terminate the connection with a TCP RST (or equivalent for other protocols).</p>
-<p id="rfc.section.4.p.11">The Keepalive TLV (1) has similar intent to the EDNS(0) TCP Keepalive Option <a href="#RFC7828">[RFC7828]</a>.  A client/server pair that supports Session Signaling MUST NOT use the EDNS(0) TCP KeepAlive option within any message on a session once bi-directional Session Signaling support has been confirmed.  Once bi-directional Session Signaling support has been confirmed, if either client or server receives a DNS message over the session that contains an EDNS(0) TCP KeepAlive option, this is an error and the receiver of the EDNS(0) TCP KeepAlive option MUST immediately terminate the connection with a TCP RST (or equivalent for other protocols).</p>
-<pre>
-
-
-
-
-
-
-
-</pre>
-<h1 id="rfc.section.5"><a href="#rfc.section.5">5.</a> <a href="#terminate" id="terminate">Terminate TLV</a></h1>
-<p id="rfc.section.5.p.1">The Terminate TLV (0) is be used by a server to request that a client close the session, and not to reconnect for the indicated time interval.  It is also used as a modifier on error responses, to indicate how long the client should wait before retrying that particular operation.</p>
-<p id="rfc.section.5.p.2">&#171;&#160;SC: Perhaps we should change the name of TLV (0) to be &#8220;retry delay&#8221; instead of &#8220;Terminate&#8221;?&#160;&#187;</p>
-<p id="rfc.section.5.p.3">The SSOP-DATA for the the Terminate TLV is as follows:</p>
+<p id="rfc.section.4.p.6">In a client-initiated Session Signaling Keepalive message, the idle timeout and keepalive interval contain the client&#8217;s requested values.  In a server response to a client-initiated message, the idle timeout and keepalive interval contain the server&#8217;s chosen values, which the client MUST respect.  This is modeled after the DHCP protocol, where the client requests a certain lease lifetime using DHCP option 51 <a href="#RFC2132">[RFC2132]</a>, but the server is the ultimate authority for deciding what lease lifetime is actually granted.</p>
+<p id="rfc.section.4.p.7">In a server-initiated Session Signaling Keepalive message, the idle timeout and keepalive interval unilaterally inform the client of the new values from this point forward in this session.  The client MUST generate a response to the server-initiated Session Signaling Keepalive message.  The Message ID in the response message MUST match the ID from the server-initiated Session Signaling Keepalive message, and the response message MUST NOT contain any operation TLV.</p>
+<p id="rfc.section.4.p.8">It may be appropriate for clients and servers to select different keepalive interval values depending on the nature of the network they are on.</p>
+<p id="rfc.section.4.p.9">A corporate DNS server that knows it is serving only clients on the internal network, with no intervening NAT gateways or firewalls, can impose a higher keepalive interval, because frequent keepalive traffic is not required.</p>
+<p id="rfc.section.4.p.10">A public DNS server that is serving primarily residential consumer clients, where it is likely there will be a NAT gateway on the path, may impose a lower keepalive interval, to generate more frequent keepalive traffic.</p>
+<p id="rfc.section.4.p.11">A smart client may be adaptive to its environment. A client using a private IPv4 address <a href="#RFC1918">[RFC1918]</a> to communicate with a DNS server at an address that is not in the same IPv4 private address block, may conclude that there is likely to be a NAT gateway on the path, and accordingly request a lower keepalive interval.</p>
+<p id="rfc.section.4.p.12">For environments where there is a NAT gateway or firewalls on the path, it is RECOMMENDED that clients request, and servers grant, a keepalive interval of 15 minutes.  In other environments it is RECOMMENDED that clients request, and servers grant, a keepalive interval of 60 minutes.</p>
+<p id="rfc.section.4.p.13">Note that the lower the keepalive interval value, the higher the load on client and server. For example, an keepalive interval value of 100ms would result in a continuous stream of at least ten messages per second, in both directions, to keep the session alive. And, in this extreme example, a single packet loss and retransmission over a long path could introduce a momentary pause in the stream of messages, long enough to cause the server to overzealously abort the connection.</p>
+<p id="rfc.section.4.p.14">Because of this concern, the server MUST NOT send a Keepalive message (either a response to a client-initiated request, or a server-initiated message) with an keepalive interval value less than ten seconds.  If a client receives an Keepalive message specifying an keepalive interval value less than ten seconds this is an error and the client MUST immediately terminate the connection with a TCP RST (or equivalent for other protocols).</p>
+<p id="rfc.section.4.p.15">Similarly, the server MUST NOT send a Keepalive message (either a response to a client-initiated request, or a server-initiated message) with an idle timeout value less than ten seconds.  If a client receives an Keepalive message specifying an idle timeout value less than ten seconds this is an error and the client MUST immediately terminate the connection with a TCP RST (or equivalent for other protocols).</p>
+<p id="rfc.section.4.p.16">The Keepalive TLV (1) has similar intent to the EDNS(0) TCP Keepalive Option <a href="#RFC7828">[RFC7828]</a>.  A client/server pair that supports Session Signaling MUST NOT use the EDNS(0) TCP KeepAlive option within any message on a session once bi-directional Session Signaling support has been confirmed.  Once bi-directional Session Signaling support has been confirmed, if either client or server receives a DNS message over the session that contains an EDNS(0) TCP KeepAlive option, this is an error and the receiver of the EDNS(0) TCP KeepAlive option MUST immediately terminate the connection with a TCP RST (or equivalent for other protocols).</p>
+<h1 id="rfc.section.5"><a href="#rfc.section.5">5.</a> <a href="#delay" id="delay">Retry Delay TLV</a></h1>
+<p id="rfc.section.5.p.1">The Retry Delay TLV (0) is be used by a server to request that a client close the session, and not to reconnect for the indicated time interval.  It is also used as a modifier on error responses, to indicate how long the client should wait before retrying that particular operation.</p>
+<p id="rfc.section.5.p.2">The SSOP-DATA for the the Retry Delay TLV is as follows:</p>
 <pre>
                         1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                   RECONNECT DELAY (32 bits)                   |
+   |                     RETRY DELAY (32 bits)                     |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 </pre>
 <p/>
 
 <dl>
-  <dt>RECONNECT DELAY:</dt>
-  <dd style="margin-left: 8">a time value, specified as a 32 bit word in network order in units of milliseconds, within which the client MUST NOT establish a new session to the current server.</dd>
+  <dt>RETRY DELAY:</dt>
+  <dd style="margin-left: 8">a time value, specified as a 32 bit word in network order in units of milliseconds, within which the client MUST NOT retry this operation, or retry connecting to this server.</dd>
 </dl>
-<p id="rfc.section.5.p.5">The RECOMMENDED value is 10 seconds.</p>
-<p id="rfc.section.5.p.6">In the case of a client request that returns a nonzero RCODE value, the server MAY append a Terminate TLV (0) to the response, indicating the time interval during which the client SHOULD NOT attempt this operation again.</p>
-<p id="rfc.section.5.p.7">When appended to a DNS response message for some client request, the Terminate TLV (0) is considered a modifier TLV.  The indicated time interval during which the client SHOULD NOT retry applies only to the failed operation, not to the session as a whole.</p>
-<p id="rfc.section.5.p.8">When sent in a DNS request message, from server to client, the Terminate Session TLV (0) is considered an operation TLV. It applies to the session as a whole, and the client MUST close the session, as described previously.  The RCODE MUST indicate the reason for the termination.  RCODE NOERROR indicates a routine shutdown.  RCODE SERVFAIL indicates that the server is overloaded due to resource exhaustion.  RCODE REFUSED indicates that the server has been reconfigured and is no longer able to perform one of the functions currently being performed on this session (for example, a DNS Push Notification server could be reconfigured such that is is no longer accepting DNS Push Notification requests for one or more of the currently subscribed names).</p>
-<p id="rfc.section.5.p.9">This document specifies only these three RCODE values for Terminate Session request.  Servers sending Terminate Session requests SHOULD use one of these three values.  However, future circumstances may create situations where other RCODE values are appropriate in Terminate Session requests, so clients MUST be prepared to accept Terminate Session requests with any RCODE value.</p>
+<p id="rfc.section.5.p.4">The RECOMMENDED value is 10 seconds.</p>
+<p id="rfc.section.5.p.5">In the case of a client request that returns a nonzero RCODE value, the server MAY append a Retry Delay TLV (0) to the response, indicating the time interval during which the client SHOULD NOT attempt this operation again.</p>
+<p id="rfc.section.5.p.6">When appended to a DNS response message for some client request, the Retry Delay TLV (0) is considered a modifier TLV.  The indicated time interval during which the client SHOULD NOT retry applies only to the failed operation, not to the session as a whole.</p>
+<p id="rfc.section.5.p.7">When sent in a DNS request message, from server to client, the Retry Delay TLV (0) is considered an operation TLV. It applies to the session as a whole, and the client MUST close the session, as described previously.  The RCODE MUST indicate the reason for the termination.  RCODE NOERROR indicates a routine shutdown.  RCODE SERVFAIL indicates that the server is overloaded due to resource exhaustion.  RCODE REFUSED indicates that the server has been reconfigured and is no longer able to perform one or more of the functions currently being performed on this session (for example, a DNS Push Notification server could be reconfigured such that is is no longer accepting DNS Push Notification requests for one or more of the currently subscribed names).</p>
+<p id="rfc.section.5.p.8">This document specifies only these three RCODE values for Retry Delay request.  Servers sending Retry Delay requests SHOULD use one of these three values.  However, future circumstances may create situations where other RCODE values are appropriate in Retry Delay requests, so clients MUST be prepared to accept Retry Delay requests with any RCODE value.</p>
 <h1 id="rfc.section.6"><a href="#rfc.section.6">6.</a> <a href="#iana-considerations" id="iana-considerations">IANA Considerations</a></h1>
 <h1 id="rfc.section.6.1"><a href="#rfc.section.6.1">6.1.</a> <a href="#dns-session-signaling-opcode-registration" id="dns-session-signaling-opcode-registration">DNS Session Signaling Opcode Registration</a></h1>
 <p id="rfc.section.6.1.p.1">IANA are directed to assign a value (tentatively 6) in the DNS Opcodes Registry for the Session Signaling Opcode.</p>
@@ -787,13 +759,13 @@
   <tbody>
     <tr>
       <td class="right">0</td>
-      <td class="left">SSOP-Terminate</td>
+      <td class="left">SSOP-RetryDelay</td>
       <td class="left">Standard</td>
       <td class="left">RFC-TBD</td>
     </tr>
     <tr>
       <td class="right">1</td>
-      <td class="left">SSOP-Keepalive</td>
+      <td class="left">SSOP-KeepAlive</td>
       <td class="left">Standard</td>
       <td class="left">RFC-TBD</td>
     </tr>
@@ -843,6 +815,12 @@
         <b id="RFC1035">[RFC1035]</b>
       </td>
       <td class="top"><a>Mockapetris, P.</a>, "<a href="http://tools.ietf.org/html/rfc1035">Domain names - implementation and specification</a>", STD 13, RFC 1035, DOI 10.17487/RFC1035, November 1987.</td>
+    </tr>
+    <tr>
+      <td class="reference">
+        <b id="RFC1918">[RFC1918]</b>
+      </td>
+      <td class="top"><a>Rekhter, Y.</a>, <a>Moskowitz, B.</a>, <a>Karrenberg, D.</a>, <a>de Groot, G.</a> and <a>E. Lear</a>, "<a href="http://tools.ietf.org/html/rfc1918">Address Allocation for Private Internets</a>", BCP 5, RFC 1918, DOI 10.17487/RFC1918, February 1996.</td>
     </tr>
     <tr>
       <td class="reference">
