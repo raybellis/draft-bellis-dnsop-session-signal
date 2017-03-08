@@ -340,7 +340,7 @@ and forcibly abort the session.
 For sessions over TCP (or over TLS over TCP),
 to avoid the burden of having a connection in TIME-WAIT state, instead of
 closing the connection gracefully with a TCP FIN the server SHOULD abort
-the connection with a TCP RST.
+the connection with a TCP RST (or equivalent for other protocols).
 (In the BSD Sockets API this is achieved by setting the
 SO_LINGER option to zero before closing the socket.)</t>
 
