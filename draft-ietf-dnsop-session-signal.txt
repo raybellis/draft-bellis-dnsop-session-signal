@@ -484,20 +484,20 @@ Internet-Draft            DNS Session Signaling               March 2017
    any further messages on that session.
 
    At the moment a server chooses to initiate a Retry Delay request
-   message there may be requests already in flight from client to
-   server, which will arrive at the server after its Retry Delay request
-   message has been sent.  The server MUST silently ignore such incoming
-   requests, and not generate any response messages for them.  When the
-   Retry Delay request message from the server arrives at the client,
-   the client will determine that any DNS requests it previously sent,
-   that have not yet received a response, now will certainly not be
-   receiving any response.  Such requests should be considered failed,
-   and should be retried at a later time, as appropriate.
+   message there may be DNS requests already in flight from client to
+   server on this session, which will arrive at the server after its
+   Retry Delay request message has been sent.  The server MUST silently
+   ignore such incoming requests, and MUST NOT generate any response
+   messages for them.  When the Retry Delay request message from the
+   server arrives at the client, the client will determine that any DNS
+   requests it previously sent on this session, that have not yet
+   received a response, now will certainly not be receiving any
+   response.  Such requests should be considered failed, and should be
+   retried at a later time, as appropriate.
 
    A Retry Delay request message MUST NOT be initiated by a client.  If
    a server receives a Retry Delay request message this is an error and
-   the server MUST immediately terminate the connection with a TCP RST
-   (or equivalent for other protocols).
+
 
 
 
@@ -505,6 +505,9 @@ Bellis, et al.         Expires September 11, 2017               [Page 9]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
+
+   the server MUST immediately terminate the connection with a TCP RST
+   (or equivalent for other protocols).
 
    Upon receipt of a Retry Delay request from the server, the client
    MUST make note of the reconnect delay for this server, and then
@@ -551,9 +554,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    After a session is closed by the server, the client SHOULD try to
    reconnect, to that server, or to another suitable server, if more
    than one is available.  If reconnecting to the same server, the
-   client MUST respect the indicated delay before attempting to
-   reconnect.
-
 
 
 
@@ -561,6 +561,9 @@ Bellis, et al.         Expires September 11, 2017              [Page 10]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
+
+   client MUST respect the indicated delay before attempting to
+   reconnect.
 
    If a server is low on resources it MAY simply terminate a client
    connection with a TCP RST (or equivalent for other protocols).
@@ -607,9 +610,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    be set to zero on transmission.  If a Session Signaling message is
    received where any of the count fields are not zero, then data in the
    corresponding section MUST be silently skipped by the receiver
-   (unless specified otherwise by a future update to this
-   specification).  The skipped data is silently ignored.  Any skipped
-
 
 
 
@@ -618,6 +618,8 @@ Bellis, et al.         Expires September 11, 2017              [Page 11]
 Internet-Draft            DNS Session Signaling               March 2017
 
 
+   (unless specified otherwise by a future update to this
+   specification).  The skipped data is silently ignored.  Any skipped
    data in a Session Signaling request is discarded, and not copied to
    the corresponding sections in the Session Signaling response.
 
@@ -663,9 +665,7 @@ Internet-Draft            DNS Session Signaling               March 2017
    message padding is desired for Session Signaling messages, a Session
    Signaling modifier TLV needs to be defined to perform this function.
 
-   Similarly, a Session Signaling message MUST NOT contain a TSIG
-   record.  A TSIG record in a conventional DNS message is added as the
-   last record in the additional records section, and carries a
+
 
 
 
@@ -674,6 +674,9 @@ Bellis, et al.         Expires September 11, 2017              [Page 12]
 Internet-Draft            DNS Session Signaling               March 2017
 
 
+   Similarly, a Session Signaling message MUST NOT contain a TSIG
+   record.  A TSIG record in a conventional DNS message is added as the
+   last record in the additional records section, and carries a
    signature computed over the preceding message content.  Since Session
    Signaling data appears after the additional records section, it would
    not be included in the signature calculation.  If use of signatures
@@ -719,9 +722,6 @@ Internet-Draft            DNS Session Signaling               March 2017
 
    In a request message (QR=0) the RCODE is generally set to zero on
    transmission, and silently ignored on reception, except where
-   specified otherwise (for example, the Retry Delay operation, where
-   the RCODE indicates the reason for termination).
-
 
 
 
@@ -729,6 +729,9 @@ Bellis, et al.         Expires September 11, 2017              [Page 13]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
+
+   specified otherwise (for example, the Retry Delay operation, where
+   the RCODE indicates the reason for termination).
 
    The Z bits are currently unused, and in both requests and responses
    the Z bits SHOULD be set to zero (0) on transmission and silently
@@ -776,15 +779,14 @@ Internet-Draft            DNS Session Signaling               March 2017
    error and it MUST immediately terminate the connection with a TCP RST
    (or equivalent for other protocols).
 
-   The RCODE value in a response may be one of the following values:
-
-
 
 
 Bellis, et al.         Expires September 11, 2017              [Page 14]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
+
+   The RCODE value in a response may be one of the following values:
 
    +------+------------+-----------------------------------------------+
    | Code | Mnemonic   | Description                                   |
@@ -831,9 +833,7 @@ Internet-Draft            DNS Session Signaling               March 2017
    requests what the idle timeout and keepalive interval should be from
    this point forward in the session.
 
-   Once the client has sent at least one Session Signaling message (or
-   it is known in advance by other means that the client supports
-   Session Signaling) the Keepalive TLV also MAY be initiated by a
+
 
 
 
@@ -842,6 +842,9 @@ Bellis, et al.         Expires September 11, 2017              [Page 15]
 Internet-Draft            DNS Session Signaling               March 2017
 
 
+   Once the client has sent at least one Session Signaling message (or
+   it is known in advance by other means that the client supports
+   Session Signaling) the Keepalive TLV also MAY be initiated by a
    server.  When sent by a server, it resets a session's keepalive
    timer, and unilaterally informs the client of the new idle timeout
    and keepalive interval to use from this point forward in this
@@ -887,9 +890,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    and keepalive interval contain the server's chosen values, which the
    client MUST respect.  This is modeled after the DHCP protocol, where
    the client requests a certain lease lifetime using DHCP option 51
-   [RFC2132], but the server is the ultimate authority for deciding what
-   lease lifetime is actually granted.
-
 
 
 
@@ -897,6 +897,9 @@ Bellis, et al.         Expires September 11, 2017              [Page 16]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
+
+   [RFC2132], but the server is the ultimate authority for deciding what
+   lease lifetime is actually granted.
 
    In a server-initiated Session Signaling Keepalive message, the idle
    timeout and keepalive interval unilaterally inform the client of the
@@ -943,9 +946,6 @@ Internet-Draft            DNS Session Signaling               March 2017
 
    Because of this concern, the server MUST NOT send a Keepalive message
    (either a response to a client-initiated request, or a server-
-   initiated message) with an keepalive interval value less than ten
-   seconds.  If a client receives an Keepalive message specifying an
-   keepalive interval value less than ten seconds this is an error and
 
 
 
@@ -954,6 +954,9 @@ Bellis, et al.         Expires September 11, 2017              [Page 17]
 Internet-Draft            DNS Session Signaling               March 2017
 
 
+   initiated message) with an keepalive interval value less than ten
+   seconds.  If a client receives an Keepalive message specifying an
+   keepalive interval value less than ten seconds this is an error and
    the client MUST immediately terminate the connection with a TCP RST
    (or equivalent for other protocols).
 
@@ -998,9 +1001,6 @@ Internet-Draft            DNS Session Signaling               March 2017
       |                     RETRY DELAY (32 bits)                     |
       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
-   RETRY DELAY:  a time value, specified as a 32 bit word in network
-      order in units of milliseconds, within which the client MUST NOT
-      retry this operation, or retry connecting to this server.
 
 
 
@@ -1009,6 +1009,10 @@ Bellis, et al.         Expires September 11, 2017              [Page 18]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
+
+   RETRY DELAY:  a time value, specified as a 32 bit word in network
+      order in units of milliseconds, within which the client MUST NOT
+      retry this operation, or retry connecting to this server.
 
    The RECOMMENDED value is 10 seconds.
 
@@ -1053,10 +1057,6 @@ Internet-Draft            DNS Session Signaling               March 2017
 
    IANA are directed to assign a value (tentatively 11) in the DNS RCODE
    Registry for the SSOPNOTIMP error code.
-
-
-
-
 
 
 

@@ -390,12 +390,12 @@ After sending a Retry Delay request message, the server MUST NOT
 send any further messages on that session.
 
 At the moment a server chooses to initiate a Retry Delay request message
-there may be requests already in flight from client to server, which will
-arrive at the server after its Retry Delay request message has been sent.
-The server MUST silently ignore such incoming requests, and not generate
+there may be DNS requests already in flight from client to server on this session,
+which will arrive at the server after its Retry Delay request message has been sent.
+The server MUST silently ignore such incoming requests, and MUST NOT generate
 any response messages for them. When the Retry Delay request message from the
 server arrives at the client, the client will determine that any DNS requests
-it previously sent, that have not yet received a response, now will
+it previously sent on this session, that have not yet received a response, now will
 certainly not be receiving any response. Such requests should be considered
 failed, and should be retried at a later time, as appropriate.
 
