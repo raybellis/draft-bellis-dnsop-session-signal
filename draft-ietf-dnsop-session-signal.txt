@@ -78,7 +78,7 @@ Table of Contents
        3.1.2.  Server-Initiated Termination  . . . . . . . . . . . .   9
      3.2.  Connection Sharing  . . . . . . . . . . . . . . . . . . .  11
      3.3.  Message Format  . . . . . . . . . . . . . . . . . . . . .  11
-     3.4.  Message Handling  . . . . . . . . . . . . . . . . . . . .  13
+     3.4.  Message Handling  . . . . . . . . . . . . . . . . . . . .  14
      3.5.  TLV Format  . . . . . . . . . . . . . . . . . . . . . . .  15
    4.  Keepalive TLV . . . . . . . . . . . . . . . . . . . . . . . .  15
    5.  Retry Delay TLV . . . . . . . . . . . . . . . . . . . . . . .  18
@@ -483,10 +483,28 @@ Internet-Draft            DNS Session Signaling               March 2017
    After sending a Retry Delay request message, the server MUST NOT send
    any further messages on that session.
 
+   At the moment a server chooses to initiate a Retry Delay request
+   message there may be requests already in flight from client to
+   server, which will arrive at the server after its Retry Delay request
+   message has been sent.  The server MUST silently ignore such incoming
+   requests, and not generate any response messages for them.  When the
+   Retry Delay request message from the server arrives at the client,
+   the client will determine that any DNS requests it previously sent,
+   that have not yet received a response, now will certainly not be
+   receiving any response.  Such requests should be considered failed,
+   and should be retried at a later time, as appropriate.
+
    A Retry Delay request message MUST NOT be initiated by a client.  If
    a server receives a Retry Delay request message this is an error and
    the server MUST immediately terminate the connection with a TCP RST
    (or equivalent for other protocols).
+
+
+
+Bellis, et al.         Expires September 11, 2017               [Page 9]
+
+Internet-Draft            DNS Session Signaling               March 2017
+
 
    Upon receipt of a Retry Delay request from the server, the client
    MUST make note of the reconnect delay for this server, and then
@@ -498,13 +516,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    not closed the connection after five seconds then the server SHOULD
    abort the connection with a TCP RST (or equivalent for other
    protocols).
-
-
-
-Bellis, et al.         Expires September 11, 2017               [Page 9]
-
-Internet-Draft            DNS Session Signaling               March 2017
-
 
    In the case where some, but not all, of the existing operations on a
    session have become invalid (perhaps because the server has been
@@ -543,6 +554,14 @@ Internet-Draft            DNS Session Signaling               March 2017
    client MUST respect the indicated delay before attempting to
    reconnect.
 
+
+
+
+Bellis, et al.         Expires September 11, 2017              [Page 10]
+
+Internet-Draft            DNS Session Signaling               March 2017
+
+
    If a server is low on resources it MAY simply terminate a client
    connection with a TCP RST (or equivalent for other protocols).
    However, the likely behaviour of the client may be simply to
@@ -551,16 +570,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    Delay message, as described above.  Upon reception of the Termination
    TLV the client is expected to close the session, and if it does not
    then the server will abort the session five seconds later.
-
-
-
-
-
-
-Bellis, et al.         Expires September 11, 2017              [Page 10]
-
-Internet-Draft            DNS Session Signaling               March 2017
-
 
 3.2.  Connection Sharing
 
@@ -600,6 +609,15 @@ Internet-Draft            DNS Session Signaling               March 2017
    corresponding section MUST be silently skipped by the receiver
    (unless specified otherwise by a future update to this
    specification).  The skipped data is silently ignored.  Any skipped
+
+
+
+
+Bellis, et al.         Expires September 11, 2017              [Page 11]
+
+Internet-Draft            DNS Session Signaling               March 2017
+
+
    data in a Session Signaling request is discarded, and not copied to
    the corresponding sections in the Session Signaling response.
 
@@ -609,14 +627,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    TLVs, such as the Retry Delay TLV (0), which, in error responses,
    indicates the time interval during which the client SHOULD NOT re-
    attempt a failed operation.
-
-
-
-
-Bellis, et al.         Expires September 11, 2017              [Page 11]
-
-Internet-Draft            DNS Session Signaling               March 2017
-
 
    Future specifications may define additional modifier TLVs.
 
@@ -656,6 +666,14 @@ Internet-Draft            DNS Session Signaling               March 2017
    Similarly, a Session Signaling message MUST NOT contain a TSIG
    record.  A TSIG record in a conventional DNS message is added as the
    last record in the additional records section, and carries a
+
+
+
+Bellis, et al.         Expires September 11, 2017              [Page 12]
+
+Internet-Draft            DNS Session Signaling               March 2017
+
+
    signature computed over the preceding message content.  Since Session
    Signaling data appears after the additional records section, it would
    not be included in the signature calculation.  If use of signatures
@@ -666,14 +684,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    Note however that, while Session Signaling _messages_ cannot include
    EDNS(0) or TSIG records, a Session Signaling _session_ is typically
    used to carry a whole series of DNS messages of different kinds,
-
-
-
-Bellis, et al.         Expires September 11, 2017              [Page 12]
-
-Internet-Draft            DNS Session Signaling               March 2017
-
-
    including Session Signaling messages, and other DNS message types
    like Query [RFC1034][RFC1035] and Update [RFC2136], and those
    messages can carry EDNS(0) and TSIG records.
@@ -712,6 +722,14 @@ Internet-Draft            DNS Session Signaling               March 2017
    specified otherwise (for example, the Retry Delay operation, where
    the RCODE indicates the reason for termination).
 
+
+
+
+Bellis, et al.         Expires September 11, 2017              [Page 13]
+
+Internet-Draft            DNS Session Signaling               March 2017
+
+
    The Z bits are currently unused, and in both requests and responses
    the Z bits SHOULD be set to zero (0) on transmission and silently
    ignored on reception, unless a future document specifies otherwise.
@@ -722,14 +740,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    Signaling, once the client has sent at least one Session Signaling
    message (or it is known in advance by other means that the client
    supports Session Signaling) either end may unilaterally send Session
-
-
-
-Bellis, et al.         Expires September 11, 2017              [Page 13]
-
-Internet-Draft            DNS Session Signaling               March 2017
-
-
    Signaling messages at any time, and therefore either client or server
    may be the initiator of a message.  The initiator MUST set the value
    of the QR bit in the DNS header to zero (0), and the responder MUST
@@ -767,16 +777,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    (or equivalent for other protocols).
 
    The RCODE value in a response may be one of the following values:
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1017,19 +1017,19 @@ Internet-Draft            DNS Session Signaling               March 2017
    indicating the time interval during which the client SHOULD NOT
    attempt this operation again.
 
-   When appended to a DNS response message for some client request, the
-   Retry Delay TLV (0) is considered a modifier TLV.  The indicated time
-   interval during which the client SHOULD NOT retry applies only to the
-   failed operation, not to the session as a whole.
+   When appended to a Session Signaling response message for some client
+   request, the Retry Delay TLV (0) is considered a modifier TLV.  The
+   indicated time interval during which the client SHOULD NOT retry
+   applies only to the failed operation, not to the session as a whole.
 
-   When sent in a DNS request message, from server to client, the Retry
-   Delay TLV (0) is considered an operation TLV.  It applies to the
-   session as a whole, and the client MUST close the session, as
-   described previously.  The RCODE MUST indicate the reason for the
-   termination.  RCODE NOERROR indicates a routine shutdown.  RCODE
-   SERVFAIL indicates that the server is overloaded due to resource
-   exhaustion.  RCODE REFUSED indicates that the server has been
-   reconfigured and is no longer able to perform one or more of the
+   When sent in a Session Signaling request message, from server to
+   client, the Retry Delay TLV (0) is considered an operation TLV.  It
+   applies to the session as a whole, and the client MUST close the
+   session, as described previously.  The RCODE MUST indicate the reason
+   for the termination.  RCODE NOERROR indicates a routine shutdown.
+   RCODE SERVFAIL indicates that the server is overloaded due to
+   resource exhaustion.  RCODE REFUSED indicates that the server has
+   been reconfigured and is no longer able to perform one or more of the
    functions currently being performed on this session (for example, a
    DNS Push Notification server could be reconfigured such that is is no
    longer accepting DNS Push Notification requests for one or more of
