@@ -608,8 +608,8 @@ Internet-Draft            DNS Session Signaling               March 2017
    (optional) operation TLV may be followed by one or more modifier
    TLVs, such as the Retry Delay TLV (0), which, in error responses,
    indicates the time interval during which the client SHOULD NOT re-
-   attempt a failed operation.  Future specifications may define
-   additional modifier TLVs.  A Session Signaling message MUST contain
+   attempt a failed operation.
+
 
 
 
@@ -618,12 +618,23 @@ Bellis, et al.         Expires September 11, 2017              [Page 11]
 Internet-Draft            DNS Session Signaling               March 2017
 
 
-   at most one operation TLV.  In most cases a Session Signaling request
-   message contains one operation TLV, indicating the operation to be
-   performed.  In many cases a Session Signaling response message
-   contains no operation TLV, because it is simply a response to a
-   previous request message, and the message ID in the header is
-   sufficient to identify the request in question.
+   Future specifications may define additional modifier TLVs.
+
+   A Session Signaling message MUST contain at most one operation TLV.
+   In all cases a Session Signaling request message MUST contain exactly
+   one operation TLV, indicating the operation to be performed.  In some
+   cases a Session Signaling response message MAY contain no operation
+   TLV, because it is simply a response to a previous request message,
+   and the message ID in the header is sufficient to identify the
+   request in question.  The specification for each Session Signaling
+   operation type determines whether a response for that operation type
+   is required to carry the operation TLV.
+
+   If a Session Signaling message (request or response) is received
+   containing one or more unrecognized modifier TLVs, the unrecognized
+   modifier TLVs MUST be silently ignored, and the remainder of the
+   message is interpreted and handled as if the unrecognized parts were
+   not present.
 
    Since the ARCOUNT field MUST be zero, a Session Signaling message
    MUST NOT contain an EDNS(0) option in the additional records section.
@@ -654,17 +665,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    like Query [RFC1034][RFC1035] and Update [RFC2136], and those
    messages can carry EDNS(0) and TSIG records.
 
-   This specification explicitly prohibits use of the EDNS(0) TCP
-   Keepalive Option [RFC7828] in messages sent on a Session Signaling
-   session (because it duplicates the functionality provided by the
-   Session Signaling Keepalive operation), but messages may contain
-   other EDNS(0) options as appropriate.
-
-
-
-
-
-
 
 
 
@@ -673,6 +673,12 @@ Bellis, et al.         Expires September 11, 2017              [Page 12]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
+
+   This specification explicitly prohibits use of the EDNS(0) TCP
+   Keepalive Option [RFC7828] in _any_ messages sent on a Session
+   Signaling session (because it duplicates the functionality provided
+   by the Session Signaling Keepalive operation), but messages may
+   contain other EDNS(0) options as appropriate.
 
                                                 1   1   1   1   1   1
         0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
@@ -717,12 +723,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    of the QR bit in the DNS header to zero (0), and the responder MUST
    set it to one (1).
 
-   Every Session Signaling request message (QR=0) MUST elicit a response
-   (QR=1), which MUST have the same MESSAGE ID in the DNS message header
-   as in the corresponding request.  Session Signaling request messages
-   sent by the client elicit a response from the server, and Session
-
-
 
 
 Bellis, et al.         Expires September 11, 2017              [Page 13]
@@ -730,6 +730,10 @@ Bellis, et al.         Expires September 11, 2017              [Page 13]
 Internet-Draft            DNS Session Signaling               March 2017
 
 
+   Every Session Signaling request message (QR=0) MUST elicit a response
+   (QR=1), which MUST have the same MESSAGE ID in the DNS message header
+   as in the corresponding request.  Session Signaling request messages
+   sent by the client elicit a response from the server, and Session
    Signaling request messages sent by the server elicit a response from
    the client.
 
@@ -773,10 +777,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    |   11 | SSOPNOTIMP | Session Signaling operation Type Code not     |
    |      |            | supported                                     |
    +------+------------+-----------------------------------------------+
-
-
-
-
 
 
 

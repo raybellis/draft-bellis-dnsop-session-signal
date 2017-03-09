@@ -529,14 +529,23 @@ to the corresponding sections in the Session Signaling response.</t>
 are followed by at most one Session Signaling operation TLV.
 The (optional) operation TLV may be followed by one or more modifier TLVs, such as
 the Retry Delay TLV (0), which, in error responses, indicates the time interval
-during which the client SHOULD NOT re-attempt a failed operation.
-Future specifications may define additional modifier TLVs.
-A Session Signaling message MUST contain at most one operation TLV.
-In most cases a Session Signaling request message contains one operation TLV,
+during which the client SHOULD NOT re-attempt a failed operation.</t>
+
+<t>Future specifications may define additional modifier TLVs.</t>
+
+<t>A Session Signaling message MUST contain at most one operation TLV.
+In all cases a Session Signaling request message MUST contain exactly one operation TLV,
 indicating the operation to be performed.
-In many cases a Session Signaling response message contains no operation TLV,
+In some cases a Session Signaling response message MAY contain no operation TLV,
 because it is simply a response to a previous request message,
-and the message ID in the header is sufficient to identify the request in question.</t>
+and the message ID in the header is sufficient to identify the request in question.
+The specification for each Session Signaling operation type determines whether
+a response for that operation type is required to carry the operation TLV.</t>
+
+<t>If a Session Signaling message (request or response) is received
+containing one or more unrecognized modifier TLVs, the unrecognized
+modifier TLVs MUST be silently ignored, and the remainder of the message
+is interpreted and handled as if the unrecognized parts were not present.</t>
 
 <t>Since the ARCOUNT field MUST be zero, a Session Signaling message
 MUST NOT contain an EDNS(0) option in the additional records section.
@@ -566,7 +575,7 @@ and those messages can carry EDNS(0) and TSIG records.</t>
 
 <t>This specification explicitly prohibits use of the
 EDNS(0) TCP Keepalive Option <xref target="RFC7828"/>
-in messages sent on a Session Signaling session (because it duplicates
+in <spanx style="emph">any</spanx> messages sent on a Session Signaling session (because it duplicates
 the functionality provided by the Session Signaling Keepalive operation),
 but messages may contain other EDNS(0) options as appropriate.</t>
 

@@ -171,7 +171,6 @@ A Session Signaling message MUST contain at most one operation TLV.
 A "Session Signaling modifier TLV" specifies additional parameters relating to the operation.
 A Session Signaling message MAY contain zero or more modifier TLVs.
 
-
 # Protocol Details
 
 Session Signaling messages MUST only be carried in protocols and in
@@ -491,13 +490,22 @@ are followed by at most one Session Signaling operation TLV.
 The (optional) operation TLV may be followed by one or more modifier TLVs, such as
 the Retry Delay TLV (0), which, in error responses, indicates the time interval
 during which the client SHOULD NOT re-attempt a failed operation.
+
 Future specifications may define additional modifier TLVs.
+
 A Session Signaling message MUST contain at most one operation TLV.
-In most cases a Session Signaling request message contains one operation TLV,
+In all cases a Session Signaling request message MUST contain exactly one operation TLV,
 indicating the operation to be performed.
-In many cases a Session Signaling response message contains no operation TLV,
+In some cases a Session Signaling response message MAY contain no operation TLV,
 because it is simply a response to a previous request message,
 and the message ID in the header is sufficient to identify the request in question.
+The specification for each Session Signaling operation type determines whether
+a response for that operation type is required to carry the operation TLV.
+
+If a Session Signaling message (request or response) is received
+containing one or more unrecognized modifier TLVs, the unrecognized
+modifier TLVs MUST be silently ignored, and the remainder of the message
+is interpreted and handled as if the unrecognized parts were not present.
 
 Since the ARCOUNT field MUST be zero, a Session Signaling message
 MUST NOT contain an EDNS(0) option in the additional records section.
@@ -527,7 +535,7 @@ and those messages can carry EDNS(0) and TSIG records.
 
 This specification explicitly prohibits use of the
 EDNS(0) TCP Keepalive Option {{!RFC7828}}
-in messages sent on a Session Signaling session (because it duplicates
+in *any* messages sent on a Session Signaling session (because it duplicates
 the functionality provided by the Session Signaling Keepalive operation),
 but messages may contain other EDNS(0) options as appropriate.
 
