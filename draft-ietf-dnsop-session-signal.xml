@@ -542,6 +542,11 @@ and the message ID in the header is sufficient to identify the request in questi
 The specification for each Session Signaling operation type determines whether
 a response for that operation type is required to carry the operation TLV.</t>
 
+<t>If a Session Signaling request is received containing an unrecognized
+operation TLV, the receiver MUST send a response with matching
+MESSAGE ID, and RCODE SSOPNOTIMP (tentatively 11).
+The response MUST NOT contain an operation TLV.</t>
+
 <t>If a Session Signaling message (request or response) is received
 containing one or more unrecognized modifier TLVs, the unrecognized
 modifier TLVs MUST be silently ignored, and the remainder of the message
