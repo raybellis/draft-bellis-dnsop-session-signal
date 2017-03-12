@@ -166,10 +166,28 @@ The term "sender" may apply to either an initiator
 or responder (when sending a Session Signaling response message).
 
 Session Signaling operations are expressed using type-length-value (TLV) syntax.
+
 A "Session Signaling Operation TLV" specifies the operation to be performed.
-A Session Signaling message MUST contain at most one Operation TLV.
-A "Session Signaling Modifier TLV" specifies additional parameters relating to the operation.
-A Session Signaling message MAY contain zero or more Modifier TLVs.
+A Session Signaling request message MUST contain exactly one Operation TLV.
+Depending on the operation, the corresponding Session Signaling response
+message MAY contain no Operation TLV, or it may contain a single corresponding
+response Operation TLV, with the same SSOP-TYPE as in the request message.
+
+A "Session Signaling Modifier TLV" specifies additional parameters
+relating to the operation. Immediately following the Operation TLV, if present,
+a Session Signaling message MAY contain one or more Modifier TLVs.
+
+The first TLV in a Session Signaling request message
+(and its counterpart in the corresponding Session Signaling response message, if present)
+is the Operation TLV.
+Any subsequent TLVs after this initial Operation TLV (if present) are Modifier TLVs.
+
+If a Session Signaling request is received containing an unrecognized Operation TLV
+then an error response with RCODE SSOPNOTIMP (tentatively 11) is returned.
+
+If a Session Signaling message (request or response) is received
+containing one or more unrecognized Modifier TLVs, the unrecognized
+Modifier TLVs are silently ignored.
 
 # Protocol Details
 
@@ -516,6 +534,12 @@ If a Session Signaling request is received containing an unrecognized
 Operation TLV, the receiver MUST send a response with matching
 MESSAGE ID, and RCODE SSOPNOTIMP (tentatively 11).
 The response MUST NOT contain an Operation TLV.
+
+If a Session Signaling response is received for an operation which requires
+that the response carry an Operation TLV, and the required Operation TLV is not
+the first Session Signaling TLV in the response message, then this is a fatal error
+and the recipient of the defective response message MUST immediately
+terminate the connection with a TCP RST (or equivalent for other protocols).
 
 If a Session Signaling message (request or response) is received
 containing one or more unrecognized Modifier TLVs, the unrecognized

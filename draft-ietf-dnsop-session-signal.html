@@ -524,6 +524,12 @@
 <p id="rfc.section.1.p.3">With EDNS(0), multiple options may be packed into a single OPT pseudo-RR, and there is no generalized mechanism for a client to be able to tell whether a server has processed or otherwise acted upon each individual option within the combined OPT RR.  The specifications for each individual option need to define how each different option is to be acknowledged, if necessary.</p>
 <p id="rfc.section.1.p.4">With Session Signaling, in contrast, there is no compelling motivation to pack multiple operations into a single message for efficiency reasons.  Each Session Signaling operation is communicated in its own separate DNS message, and the transport protocol can take care of packing separate DNS messages into a single IP packet if appropriate.  For example, TCP can pack multiple small DNS messages into a single TCP segment.  The RCODE in each response message indicates the success or failure of the operation in question.</p>
 <p id="rfc.section.1.p.5">It should be noted that the message format for Session Signaling operations (see <a href="#format">Section 3.3</a>) differs from the traditional DNS packet format used for standard queries and responses.  The standard twelve-octet header is used, but the four count fields (QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT) are set to zero and the corresponding sections are empty.  The actual data pertaining to Session Signaling operations is appended to the end of the DNS message, following the four (empty) data sections.  When displayed using today&#8217;s packet analyser tools that have not been updated to recognize the DNS Session Signaling format, this will result in the Session Signaling data being displayed as unknown additional data after the end of the DNS message. It is likely that future updates to these tools will add the ability to recognize, decode, and display the Session Signaling data.</p>
+<pre>
+
+
+
+
+</pre>
 <h1 id="rfc.section.2"><a href="#rfc.section.2">2.</a> <a href="#terminology" id="terminology">Terminology</a></h1>
 <p id="rfc.section.2.p.1">The key words &#8220;MUST&#8221;, &#8220;MUST NOT&#8221;, &#8220;REQUIRED&#8221;, &#8220;SHALL&#8221;, &#8220;SHALL NOT&#8221;, &#8220;SHOULD&#8221;, &#8220;SHOULD NOT&#8221;, &#8220;RECOMMENDED&#8221;, &#8220;NOT RECOMMENDED&#8221;, &#8220;MAY&#8221;, and &#8220;OPTIONAL&#8221; in this document are to be interpreted as described in &#8220;Key words for use in RFCs to Indicate Requirement Levels&#8221; <a href="#RFC2119">[RFC2119]</a>.</p>
 <p id="rfc.section.2.p.2">The term &#8220;connection&#8221; means a bidirectional stream of reliable, in-order messages, such as provided by using DNS over TCP <a href="#RFC1035">[RFC1035]</a><a href="#RFC7766">[RFC7766]</a> or DNS over TLS <a href="#RFC7858">[RFC7858]</a>.</p>
@@ -538,7 +544,12 @@
 <p id="rfc.section.2.p.6">The term &#8220;client&#8221; means the software which initiates a connection to the server&#8217;s listening socket.</p>
 <p id="rfc.section.2.p.7">The terms &#8220;initiator&#8221; and &#8220;responder&#8221; correspond respectively to the initial sender and subsequent receiver of a Session Signaling request message, regardless of which was the &#8220;client&#8221; and &#8220;server&#8221; in the usual DNS sense.</p>
 <p id="rfc.section.2.p.8">The term &#8220;sender&#8221; may apply to either an initiator (when sending a Session Signaling request message) or responder (when sending a Session Signaling response message).</p>
-<p id="rfc.section.2.p.9">Session Signaling operations are expressed using type-length-value (TLV) syntax.  A &#8220;Session Signaling Operation TLV&#8221; specifies the operation to be performed.  A Session Signaling message MUST contain at most one Operation TLV.  A &#8220;Session Signaling Modifier TLV&#8221; specifies additional parameters relating to the operation.  A Session Signaling message MAY contain zero or more Modifier TLVs.</p>
+<p id="rfc.section.2.p.9">Session Signaling operations are expressed using type-length-value (TLV) syntax.</p>
+<p id="rfc.section.2.p.10">A &#8220;Session Signaling Operation TLV&#8221; specifies the operation to be performed.  A Session Signaling request message MUST contain exactly one Operation TLV.  Depending on the operation, the corresponding Session Signaling response message MAY contain no Operation TLV, or it may contain a single corresponding response Operation TLV, with the same SSOP-TYPE as in the request message.</p>
+<p id="rfc.section.2.p.11">A &#8220;Session Signaling Modifier TLV&#8221; specifies additional parameters relating to the operation. Immediately following the Operation TLV, if present, a Session Signaling message MAY contain one or more Modifier TLVs.</p>
+<p id="rfc.section.2.p.12">The first TLV in a Session Signaling request message (and its counterpart in the corresponding Session Signaling response message, if present) is the Operation TLV.  Any subsequent TLVs after this initial Operation TLV (if present) are Modifier TLVs.</p>
+<p id="rfc.section.2.p.13">If a Session Signaling request is received containing an unrecognized Operation TLV then an error response with RCODE SSOPNOTIMP (tentatively 11) is returned.</p>
+<p id="rfc.section.2.p.14">If a Session Signaling message (request or response) is received containing one or more unrecognized Modifier TLVs, the unrecognized Modifier TLVs are silently ignored.</p>
 <h1 id="rfc.section.3"><a href="#rfc.section.3">3.</a> <a href="#protocol-details" id="protocol-details">Protocol Details</a></h1>
 <p id="rfc.section.3.p.1">Session Signaling messages MUST only be carried in protocols and in environments where a session may be established according to the definition above.  Standard DNS over TCP <a href="#RFC1035">[RFC1035]</a><a href="#RFC7766">[RFC7766]</a>, and DNS over TLS <a href="#RFC7858">[RFC7858]</a> are suitable protocols.  DNS over plain UDP is not appropriate since it fails on the requirement for in-order message delivery, and, in the presence of NAT gateways and firewalls with short UDP timeouts, it fails to provide a persistent bi-directional communication channel unless an excessive amount of keepalive traffic is used.</p>
 <p id="rfc.section.3.p.2">Session Signaling messages relate only to the specific session in which they are being carried.  Where an application-layer middle box (e.g., a DNS proxy, forwarder, or session multiplexer) is in the path the middle box MUST NOT blindly forward the message in either direction.  This does not preclude the use of these messages in the presence of an IP-layer middle box such as a NAT that rewrites IP-layer and/or transport-layer headers, but otherwise preserves the effect of a single session.</p>
@@ -595,12 +606,13 @@
 <p id="rfc.section.3.3.p.3">Future specifications may define additional Modifier TLVs.</p>
 <p id="rfc.section.3.3.p.4">A Session Signaling message MUST contain at most one Operation TLV.  In all cases a Session Signaling request message MUST contain exactly one Operation TLV, indicating the operation to be performed.  In some cases a Session Signaling response message MAY contain no Operation TLV, because it is simply a response to a previous request message, and the message ID in the header is sufficient to identify the request in question.  The specification for each Session Signaling operation type determines whether a response for that operation type is required to carry the Operation TLV.</p>
 <p id="rfc.section.3.3.p.5">If a Session Signaling request is received containing an unrecognized Operation TLV, the receiver MUST send a response with matching MESSAGE ID, and RCODE SSOPNOTIMP (tentatively 11).  The response MUST NOT contain an Operation TLV.</p>
-<p id="rfc.section.3.3.p.6">If a Session Signaling message (request or response) is received containing one or more unrecognized Modifier TLVs, the unrecognized Modifier TLVs MUST be silently ignored, and the remainder of the message is interpreted and handled as if the unrecognized parts were not present.</p>
-<p id="rfc.section.3.3.p.7">Since the ARCOUNT field MUST be zero, a Session Signaling message MUST NOT contain an EDNS(0) option in the additional records section.  If functionality provided by current or future EDNS(0) options is desired for Session Signaling messages, a Session Signaling Operation TLV or Modifier TLV needs to be defined to carry the necessary information.</p>
-<p id="rfc.section.3.3.p.8">For example, the EDNS(0) Padding Option used for security purposes <a href="#RFC7830">[RFC7830]</a> is not permitted in a Session Signaling message, so if message padding is desired for Session Signaling messages, a Session Signaling Modifier TLV needs to be defined to perform this function.</p>
-<p id="rfc.section.3.3.p.9">Similarly, a Session Signaling message MUST NOT contain a TSIG record.  A TSIG record in a conventional DNS message is added as the last record in the additional records section, and carries a signature computed over the preceding message content. Since Session Signaling data appears after the additional records section, it would not be included in the signature calculation.  If use of signatures with Session Signaling messages becomes necessary in the future, an explicit Session Signaling Modifier TLV needs to be defined to perform this function.</p>
-<p id="rfc.section.3.3.p.10">Note however that, while Session Signaling <em>messages</em> cannot include EDNS(0) or TSIG records, a Session Signaling <em>session</em> is typically used to carry a whole series of DNS messages of different kinds, including Session Signaling messages, and other DNS message types like Query <a href="#RFC1034">[RFC1034]</a><a href="#RFC1035">[RFC1035]</a> and Update <a href="#RFC2136">[RFC2136]</a>, and those messages can carry EDNS(0) and TSIG records.</p>
-<p id="rfc.section.3.3.p.11">This specification explicitly prohibits use of the EDNS(0) TCP Keepalive Option <a href="#RFC7828">[RFC7828]</a> in <em>any</em> messages sent on a Session Signaling session (because it duplicates the functionality provided by the Session Signaling Keepalive operation), but messages may contain other EDNS(0) options as appropriate.</p>
+<p id="rfc.section.3.3.p.6">If a Session Signaling response is received for an operation which requires that the response carry an Operation TLV, and the required Operation TLV is not the first Session Signaling TLV in the response message, then this is a fatal error and the recipient of the defective response message MUST immediately terminate the connection with a TCP RST (or equivalent for other protocols).</p>
+<p id="rfc.section.3.3.p.7">If a Session Signaling message (request or response) is received containing one or more unrecognized Modifier TLVs, the unrecognized Modifier TLVs MUST be silently ignored, and the remainder of the message is interpreted and handled as if the unrecognized parts were not present.</p>
+<p id="rfc.section.3.3.p.8">Since the ARCOUNT field MUST be zero, a Session Signaling message MUST NOT contain an EDNS(0) option in the additional records section.  If functionality provided by current or future EDNS(0) options is desired for Session Signaling messages, a Session Signaling Operation TLV or Modifier TLV needs to be defined to carry the necessary information.</p>
+<p id="rfc.section.3.3.p.9">For example, the EDNS(0) Padding Option used for security purposes <a href="#RFC7830">[RFC7830]</a> is not permitted in a Session Signaling message, so if message padding is desired for Session Signaling messages, a Session Signaling Modifier TLV needs to be defined to perform this function.</p>
+<p id="rfc.section.3.3.p.10">Similarly, a Session Signaling message MUST NOT contain a TSIG record.  A TSIG record in a conventional DNS message is added as the last record in the additional records section, and carries a signature computed over the preceding message content. Since Session Signaling data appears after the additional records section, it would not be included in the signature calculation.  If use of signatures with Session Signaling messages becomes necessary in the future, an explicit Session Signaling Modifier TLV needs to be defined to perform this function.</p>
+<p id="rfc.section.3.3.p.11">Note however that, while Session Signaling <em>messages</em> cannot include EDNS(0) or TSIG records, a Session Signaling <em>session</em> is typically used to carry a whole series of DNS messages of different kinds, including Session Signaling messages, and other DNS message types like Query <a href="#RFC1034">[RFC1034]</a><a href="#RFC1035">[RFC1035]</a> and Update <a href="#RFC2136">[RFC2136]</a>, and those messages can carry EDNS(0) and TSIG records.</p>
+<p id="rfc.section.3.3.p.12">This specification explicitly prohibits use of the EDNS(0) TCP Keepalive Option <a href="#RFC7828">[RFC7828]</a> in <em>any</em> messages sent on a Session Signaling session (because it duplicates the functionality provided by the Session Signaling Keepalive operation), but messages may contain other EDNS(0) options as appropriate.</p>
 <pre>
                                              1   1   1   1   1   1
      0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
@@ -622,9 +634,9 @@
    /                                                               /
    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 </pre>
-<p id="rfc.section.3.3.p.12">The MESSAGE ID, QR, Opcode and RCODE fields have their usual meanings <a href="#RFC1035">[RFC1035]</a>.</p>
-<p id="rfc.section.3.3.p.13">In a request message (QR=0) the RCODE is generally set to zero on transmission, and silently ignored on reception, except where specified otherwise (for example, the Retry Delay operation, where the RCODE indicates the reason for termination).</p>
-<p id="rfc.section.3.3.p.14">The Z bits are currently unused, and in both requests and responses the Z bits SHOULD be set to zero (0) on transmission and silently ignored on reception, unless a future document specifies otherwise.</p>
+<p id="rfc.section.3.3.p.13">The MESSAGE ID, QR, Opcode and RCODE fields have their usual meanings <a href="#RFC1035">[RFC1035]</a>.</p>
+<p id="rfc.section.3.3.p.14">In a request message (QR=0) the RCODE is generally set to zero on transmission, and silently ignored on reception, except where specified otherwise (for example, the Retry Delay operation, where the RCODE indicates the reason for termination).</p>
+<p id="rfc.section.3.3.p.15">The Z bits are currently unused, and in both requests and responses the Z bits SHOULD be set to zero (0) on transmission and silently ignored on reception, unless a future document specifies otherwise.</p>
 <h1 id="rfc.section.3.4"><a href="#rfc.section.3.4">3.4.</a> <a href="#message-handling" id="message-handling">Message Handling</a></h1>
 <p id="rfc.section.3.4.p.1">On a session between a client and server that support Session Signaling, once the client has sent at least one Session Signaling message (or it is known in advance by other means that the client supports Session Signaling) either end may unilaterally send Session Signaling messages at any time, and therefore either client or server may be the initiator of a message.  The initiator MUST set the value of the QR bit in the DNS header to zero (0), and the responder MUST set it to one (1).</p>
 <p id="rfc.section.3.4.p.2">Every Session Signaling request message (QR=0) MUST elicit a response (QR=1), which MUST have the same MESSAGE ID in the DNS message header as in the corresponding request.  Session Signaling request messages sent by the client elicit a response from the server, and Session Signaling request messages sent by the server elicit a response from the client.</p>
@@ -692,6 +704,28 @@
   <dt>SSOP-DATA:</dt>
   <dd style="margin-left: 8">Type-code specific.</dd>
 </dl>
+<pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
 <h1 id="rfc.section.4"><a href="#rfc.section.4">4.</a> <a href="#keepalive" id="keepalive">Keepalive TLV</a></h1>
 <p id="rfc.section.4.p.1">The Keepalive TLV (1) performs three functions.  When sent by a client, it resets a session&#8217;s keepalive timer, and at the same time requests what the idle timeout and keepalive interval should be from this point forward in the session.</p>
 <p id="rfc.section.4.p.2">Once the client has sent at least one Session Signaling message (or it is known in advance by other means that the client supports Session Signaling) the Keepalive TLV also MAY be initiated by a server.  When sent by a server, it resets a session&#8217;s keepalive timer, and unilaterally informs the client of the new idle timeout and keepalive interval to use from this point forward in this session.</p>
@@ -726,6 +760,14 @@
 <p id="rfc.section.4.p.15">Similarly, the server MUST NOT send a Keepalive message (either a response to a client-initiated request, or a server-initiated message) with an idle timeout value less than ten seconds.  If a client receives an Keepalive message specifying an idle timeout value less than ten seconds this is an error and the client MUST immediately terminate the connection with a TCP RST (or equivalent for other protocols).</p>
 <p id="rfc.section.4.p.16">When a client is sending its second and subsequent Keepalive Session Signaling request to the server, the client SHOULD continue to request its preferred values each time.  This allows flexibility, so that if conditions change during the lifefime of a session, the server can adapt its responses to better fit the client&#8217;s needs.</p>
 <p id="rfc.section.4.p.17">The Keepalive TLV (1) has similar intent to the EDNS(0) TCP Keepalive Option <a href="#RFC7828">[RFC7828]</a>.  A client/server pair that supports Session Signaling MUST NOT use the EDNS(0) TCP KeepAlive option within any message on a session once bi-directional Session Signaling support has been confirmed.  Once bi-directional Session Signaling support has been confirmed, if either client or server receives a DNS message over the session that contains an EDNS(0) TCP KeepAlive option, this is an error and the receiver of the EDNS(0) TCP KeepAlive option MUST immediately terminate the connection with a TCP RST (or equivalent for other protocols).</p>
+<pre>
+
+
+
+
+
+
+</pre>
 <h1 id="rfc.section.5"><a href="#rfc.section.5">5.</a> <a href="#delay" id="delay">Retry Delay TLV</a></h1>
 <p id="rfc.section.5.p.1">The Retry Delay TLV (0) is used by a server to request that a client close the session, and not to reconnect for the indicated time interval.  It is also used as a modifier on error responses, to indicate how long the client should wait before retrying that particular operation.</p>
 <p id="rfc.section.5.p.2">The SSOP-DATA for the the Retry Delay TLV is as follows:</p>
