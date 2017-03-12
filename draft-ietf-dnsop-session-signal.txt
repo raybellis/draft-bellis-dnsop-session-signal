@@ -71,26 +71,26 @@ Internet-Draft            DNS Session Signaling               March 2017
 Table of Contents
 
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
-   2.  Terminology . . . . . . . . . . . . . . . . . . . . . . . . .   4
+   2.  Terminology . . . . . . . . . . . . . . . . . . . . . . . . .   3
    3.  Protocol Details  . . . . . . . . . . . . . . . . . . . . . .   5
-     3.1.  Session Lifecycle and Timers  . . . . . . . . . . . . . .   6
+     3.1.  Session Lifecycle and Timers  . . . . . . . . . . . . . .   5
        3.1.1.  Client-Initiated Termination  . . . . . . . . . . . .   9
        3.1.2.  Server-Initiated Termination  . . . . . . . . . . . .   9
      3.2.  Connection Sharing  . . . . . . . . . . . . . . . . . . .  11
      3.3.  Message Format  . . . . . . . . . . . . . . . . . . . . .  12
      3.4.  Message Handling  . . . . . . . . . . . . . . . . . . . .  14
      3.5.  TLV Format  . . . . . . . . . . . . . . . . . . . . . . .  16
-   4.  Keepalive TLV . . . . . . . . . . . . . . . . . . . . . . . .  17
-   5.  Retry Delay TLV . . . . . . . . . . . . . . . . . . . . . . .  20
-   6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  21
-     6.1.  DNS Session Signaling Opcode Registration . . . . . . . .  21
-     6.2.  DNS Session Signaling RCODE Registration  . . . . . . . .  21
-     6.3.  DNS Session Signaling Type Codes Registry . . . . . . . .  21
-   7.  Security Considerations . . . . . . . . . . . . . . . . . . .  22
-   8.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  22
-   9.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  22
-     9.1.  Normative References  . . . . . . . . . . . . . . . . . .  22
-     9.2.  Informative References  . . . . . . . . . . . . . . . . .  23
+   4.  Keepalive TLV . . . . . . . . . . . . . . . . . . . . . . . .  16
+   5.  Retry Delay TLV . . . . . . . . . . . . . . . . . . . . . . .  19
+   6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  20
+     6.1.  DNS Session Signaling Opcode Registration . . . . . . . .  20
+     6.2.  DNS Session Signaling RCODE Registration  . . . . . . . .  20
+     6.3.  DNS Session Signaling Type Codes Registry . . . . . . . .  20
+   7.  Security Considerations . . . . . . . . . . . . . . . . . . .  21
+   8.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  21
+   9.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  21
+     9.1.  Normative References  . . . . . . . . . . . . . . . . . .  21
+     9.2.  Informative References  . . . . . . . . . . . . . . . . .  22
    Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  23
 
 1.  Introduction
@@ -153,12 +153,12 @@ Internet-Draft            DNS Session Signaling               March 2017
    the ability to recognize, decode, and display the Session Signaling
    data.
 
+2.  Terminology
 
-
-
-
-
-
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+   "OPTIONAL" in this document are to be interpreted as described in
+   "Key words for use in RFCs to Indicate Requirement Levels" [RFC2119].
 
 
 
@@ -169,13 +169,6 @@ Bellis, et al.         Expires September 11, 2017               [Page 3]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
-
-2.  Terminology
-
-   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
-   "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
-   "OPTIONAL" in this document are to be interpreted as described in
-   "Key words for use in RFCs to Indicate Requirement Levels" [RFC2119].
 
    The term "connection" means a bidirectional stream of reliable, in-
    order messages, such as provided by using DNS over TCP
@@ -217,6 +210,13 @@ Internet-Draft            DNS Session Signaling               March 2017
 
    A "Session Signaling Modifier TLV" specifies additional parameters
    relating to the operation.  Immediately following the Operation TLV,
+   if present, a Session Signaling message MAY contain one or more
+   Modifier TLVs.
+
+   The first TLV in a Session Signaling request message (and its
+   counterpart in the corresponding Session Signaling response message,
+   if present) is the Operation TLV.  Any subsequent TLVs after this
+   initial Operation TLV (if present) are Modifier TLVs.
 
 
 
@@ -225,14 +225,6 @@ Bellis, et al.         Expires September 11, 2017               [Page 4]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
-
-   if present, a Session Signaling message MAY contain one or more
-   Modifier TLVs.
-
-   The first TLV in a Session Signaling request message (and its
-   counterpart in the corresponding Session Signaling response message,
-   if present) is the Operation TLV.  Any subsequent TLVs after this
-   initial Operation TLV (if present) are Modifier TLVs.
 
    If a Session Signaling request is received containing an unrecognized
    Operation TLV then an error response with RCODE SSOPNOTIMP
@@ -274,6 +266,14 @@ Internet-Draft            DNS Session Signaling               March 2017
    in an environment where it is known in advance by other means that
    the client supports Session Signaling.  This requirement is to ensure
    that the clients that do not support Session Signaling do not receive
+   unsolicited inbound Session Signaling messages that they would not
+   know how to handle.
+
+3.1.  Session Lifecycle and Timers
+
+   A session begins when a client makes a new connection to a server.
+
+
 
 
 
@@ -281,13 +281,6 @@ Bellis, et al.         Expires September 11, 2017               [Page 5]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
-
-   unsolicited inbound Session Signaling messages that they would not
-   know how to handle.
-
-3.1.  Session Lifecycle and Timers
-
-   A session begins when a client makes a new connection to a server.
 
    The client may perform as many DNS operations as it wishes using the
    newly created session.  Operations SHOULD be pipelined (i.e., the
@@ -330,6 +323,13 @@ Internet-Draft            DNS Session Signaling               March 2017
    are two separate timers: the idle timeout, and the keepalive
    interval.  Just because a session has no traffic for an extended
    period of time does not automatically make that session "idle", if it
+   has an active Push Notification subscription that is awaiting
+   notification events.
+
+   The first timer value, the idle timeout, is the maximum time for
+   which a client may speculatively keep a session open in the
+   expectation that it may have future requests to send to that server.
+
 
 
 
@@ -337,13 +337,6 @@ Bellis, et al.         Expires September 11, 2017               [Page 6]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
-
-   has an active Push Notification subscription that is awaiting
-   notification events.
-
-   The first timer value, the idle timeout, is the maximum time for
-   which a client may speculatively keep a session open in the
-   expectation that it may have future requests to send to that server.
 
    The purpose of the idle timeout is for the server to balance its
    trade off between the costs of setting up new sessions and the costs
@@ -387,6 +380,13 @@ Internet-Draft            DNS Session Signaling               March 2017
    the idle timeout is expected to be shorter than the keepalive
    interval.
 
+   A shorter idle timeout with a longer keepalive interval signals to
+   the client that it should not speculatively keep idle sessions open
+   for very long for no reason, but when it does have an active reason
+   to keep a session open, it doesn't need to be sending an agressive
+   level of keepalive traffic.  Only when the client has a very long-
+   lived low-traffic operation outstanding like a Push Notification
+
 
 
 Bellis, et al.         Expires September 11, 2017               [Page 7]
@@ -394,12 +394,6 @@ Bellis, et al.         Expires September 11, 2017               [Page 7]
 Internet-Draft            DNS Session Signaling               March 2017
 
 
-   A shorter idle timeout with a longer keepalive interval signals to
-   the client that it should not speculatively keep idle sessions open
-   for very long for no reason, but when it does have an active reason
-   to keep a session open, it doesn't need to be sending an agressive
-   level of keepalive traffic.  Only when the client has a very long-
-   lived low-traffic operation outstanding like a Push Notification
    subscription, does the keepalive interval timer come into play, to
    ensure that a sufficient residual amount of traffic is generated to
    maintain NAT and firewall state.
@@ -441,7 +435,13 @@ Internet-Draft            DNS Session Signaling               March 2017
    Section 4).  A Session Signaling Keepalive message exchange resets
    only the keepalive interval timer, not the idle timeout timer.
 
-
+   If a client disconnects from the network abruptly, without cleanly
+   closing its session, leaving long-lived outstanding operations like
+   Push Notification subscriptions uncanceled, the server learns of this
+   after failing to receive the required keepalive traffic from that
+   client.  If, at any time during the life of the session, twice the
+   keepalive interval value (i.e., 30 seconds by default) elapses
+   without any DNS messages being sent or received on a session, the
 
 
 
@@ -450,13 +450,6 @@ Bellis, et al.         Expires September 11, 2017               [Page 8]
 Internet-Draft            DNS Session Signaling               March 2017
 
 
-   If a client disconnects from the network abruptly, without cleanly
-   closing its session, leaving long-lived outstanding operations like
-   Push Notification subscriptions uncanceled, the server learns of this
-   after failing to receive the required keepalive traffic from that
-   client.  If, at any time during the life of the session, twice the
-   keepalive interval value (i.e., 30 seconds by default) elapses
-   without any DNS messages being sent or received on a session, the
    server SHOULD consider the client delinquent, and forcibly abort the
    connection with a TCP RST (or equivalent for other protocols).
 
@@ -497,15 +490,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    close the session by sending a Retry Delay request message, as
    described in Section 5.
 
-
-
-
-
-Bellis, et al.         Expires September 11, 2017               [Page 9]
-
-Internet-Draft            DNS Session Signaling               March 2017
-
-
    There may be rare cases where a server is overloaded and wishes to
    shed load.  If the server handles this by simply closing connections,
    the likely behaviour of clients is to detect this as a network
@@ -514,6 +498,13 @@ Internet-Draft            DNS Session Signaling               March 2017
    To avoid this reconnection implosion, in this situation the server
    also sends a Retry Delay request message, with an RCODE of SERVFAIL,
    to inform the client of the overload situation.
+
+
+
+Bellis, et al.         Expires September 11, 2017               [Page 9]
+
+Internet-Draft            DNS Session Signaling               March 2017
+
 
    After sending a Retry Delay request message, the server MUST NOT send
    any further messages on that session.
@@ -555,13 +546,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    likely that some of the attempts will be successful and some will
    not.
 
-
-
-Bellis, et al.         Expires September 11, 2017              [Page 10]
-
-Internet-Draft            DNS Session Signaling               March 2017
-
-
    In the case where a server is terminating a large number of sessions
    at once (e.g., if the system is restarting) and the server doesn't
    want to be inundated with a flood of simultaneous retries, it SHOULD
@@ -570,6 +554,13 @@ Internet-Draft            DNS Session Signaling               March 2017
    deterministically (e.g., incrementing the time value by one tenth of
    a second for each successive client, yielding a post-restart
    reconnection rate of ten clients per second).
+
+
+
+Bellis, et al.         Expires September 11, 2017              [Page 10]
+
+Internet-Draft            DNS Session Signaling               March 2017
+
 
    Apart from the cases described above, a server MUST NOT close a
    session with a client, except in extraordinary error conditions.
@@ -610,14 +601,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    the target server for several different operations is the same target
    hostname and port, the client SHOULD use a single shared session for
    all those operations.  A client SHOULD NOT open multiple connections
-
-
-
-Bellis, et al.         Expires September 11, 2017              [Page 11]
-
-Internet-Draft            DNS Session Signaling               March 2017
-
-
    to the same target host and port just because the names being
    operated on are different or happen to fall within different zones.
    This is to reduce unnecessary connection load on the DNS server.
@@ -627,6 +610,14 @@ Internet-Draft            DNS Session Signaling               March 2017
    device may be home to multiple independent client software instances
    that don't coordinate with each other.  Similarly, multiple
    independent client devices behind the same NAT gateway will also
+
+
+
+Bellis, et al.         Expires September 11, 2017              [Page 11]
+
+Internet-Draft            DNS Session Signaling               March 2017
+
+
    typically appear to the DNS server as different source ports on the
    same client IP address.  Because of these constraints, a DNS server
    MUST be prepared to accept multiple connections from different source
@@ -667,13 +658,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    operation type determines whether a response for that operation type
    is required to carry the Operation TLV.
 
-
-
-Bellis, et al.         Expires September 11, 2017              [Page 12]
-
-Internet-Draft            DNS Session Signaling               March 2017
-
-
    If a Session Signaling request is received containing an unrecognized
    Operation TLV, the receiver MUST send a response with matching
    MESSAGE ID, and RCODE SSOPNOTIMP (tentatively 11).  The response MUST
@@ -682,6 +666,14 @@ Internet-Draft            DNS Session Signaling               March 2017
    If a Session Signaling response is received for an operation which
    requires that the response carry an Operation TLV, and the required
    Operation TLV is not the first Session Signaling TLV in the response
+
+
+
+Bellis, et al.         Expires September 11, 2017              [Page 12]
+
+Internet-Draft            DNS Session Signaling               March 2017
+
+
    message, then this is a fatal error and the recipient of the
    defective response message MUST immediately terminate the connection
    with a TCP RST (or equivalent for other protocols).
@@ -721,6 +713,14 @@ Internet-Draft            DNS Session Signaling               March 2017
    like Query [RFC1034][RFC1035] and Update [RFC2136], and those
    messages can carry EDNS(0) and TSIG records.
 
+   This specification explicitly prohibits use of the EDNS(0) TCP
+   Keepalive Option [RFC7828] in _any_ messages sent on a Session
+   Signaling session (because it duplicates the functionality provided
+   by the Session Signaling Keepalive operation), but messages may
+   contain other EDNS(0) options as appropriate.
+
+
+
 
 
 
@@ -729,12 +729,6 @@ Bellis, et al.         Expires September 11, 2017              [Page 13]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
-
-   This specification explicitly prohibits use of the EDNS(0) TCP
-   Keepalive Option [RFC7828] in _any_ messages sent on a Session
-   Signaling session (because it duplicates the functionality provided
-   by the Session Signaling Keepalive operation), but messages may
-   contain other EDNS(0) options as appropriate.
 
                                                 1   1   1   1   1   1
         0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
@@ -779,6 +773,12 @@ Internet-Draft            DNS Session Signaling               March 2017
    of the QR bit in the DNS header to zero (0), and the responder MUST
    set it to one (1).
 
+   Every Session Signaling request message (QR=0) MUST elicit a response
+   (QR=1), which MUST have the same MESSAGE ID in the DNS message header
+   as in the corresponding request.  Session Signaling request messages
+   sent by the client elicit a response from the server, and Session
+
+
 
 
 Bellis, et al.         Expires September 11, 2017              [Page 14]
@@ -786,10 +786,6 @@ Bellis, et al.         Expires September 11, 2017              [Page 14]
 Internet-Draft            DNS Session Signaling               March 2017
 
 
-   Every Session Signaling request message (QR=0) MUST elicit a response
-   (QR=1), which MUST have the same MESSAGE ID in the DNS message header
-   as in the corresponding request.  Session Signaling request messages
-   sent by the client elicit a response from the server, and Session
    Signaling request messages sent by the server elicit a response from
    the client.
 
@@ -837,6 +833,10 @@ Internet-Draft            DNS Session Signaling               March 2017
 
 
 
+
+
+
+
 Bellis, et al.         Expires September 11, 2017              [Page 15]
 
 Internet-Draft            DNS Session Signaling               March 2017
@@ -865,39 +865,6 @@ Internet-Draft            DNS Session Signaling               March 2017
 
    SSOP-DATA:  Type-code specific.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Bellis, et al.         Expires September 11, 2017              [Page 16]
-
-Internet-Draft            DNS Session Signaling               March 2017
-
-
 4.  Keepalive TLV
 
    The Keepalive TLV (1) performs three functions.  When sent by a
@@ -923,6 +890,14 @@ Internet-Draft            DNS Session Signaling               March 2017
 
    The SSOP-DATA for the the Keepalive TLV is as follows:
 
+
+
+
+Bellis, et al.         Expires September 11, 2017              [Page 16]
+
+Internet-Draft            DNS Session Signaling               March 2017
+
+
                            1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -947,13 +922,6 @@ Internet-Draft            DNS Session Signaling               March 2017
       after twice this interval the server will forcibly terminate the
       connection with a TCP RST (or equivalent for other protocols).
 
-
-
-Bellis, et al.         Expires September 11, 2017              [Page 17]
-
-Internet-Draft            DNS Session Signaling               March 2017
-
-
    In a client-initiated Session Signaling Keepalive message, the idle
    timeout and keepalive interval contain the client's requested values.
    In a server response to a client-initiated message, the idle timeout
@@ -977,6 +945,15 @@ Internet-Draft            DNS Session Signaling               March 2017
 
    A corporate DNS server that knows it is serving only clients on the
    internal network, with no intervening NAT gateways or firewalls, can
+
+
+
+
+Bellis, et al.         Expires September 11, 2017              [Page 17]
+
+Internet-Draft            DNS Session Signaling               March 2017
+
+
    impose a higher keepalive interval, because frequent keepalive
    traffic is not required.
 
@@ -1002,14 +979,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    100ms would result in a continuous stream of at least ten messages
    per second, in both directions, to keep the session alive.  And, in
    this extreme example, a single packet loss and retransmission over a
-
-
-
-Bellis, et al.         Expires September 11, 2017              [Page 18]
-
-Internet-Draft            DNS Session Signaling               March 2017
-
-
    long path could introduce a momentary pause in the stream of
    messages, long enough to cause the server to overzealously abort the
    connection.
@@ -1033,6 +1002,14 @@ Internet-Draft            DNS Session Signaling               March 2017
    When a client is sending its second and subsequent Keepalive Session
    Signaling request to the server, the client SHOULD continue to
    request its preferred values each time.  This allows flexibility, so
+
+
+
+Bellis, et al.         Expires September 11, 2017              [Page 18]
+
+Internet-Draft            DNS Session Signaling               March 2017
+
+
    that if conditions change during the lifefime of a session, the
    server can adapt its responses to better fit the client's needs.
 
@@ -1046,25 +1023,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    is an error and the receiver of the EDNS(0) TCP KeepAlive option MUST
    immediately terminate the connection with a TCP RST (or equivalent
    for other protocols).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Bellis, et al.         Expires September 11, 2017              [Page 19]
-
-Internet-Draft            DNS Session Signaling               March 2017
-
 
 5.  Retry Delay TLV
 
@@ -1100,6 +1058,14 @@ Internet-Draft            DNS Session Signaling               March 2017
 
    When sent in a Session Signaling request message, from server to
    client, the Retry Delay TLV (0) is considered an Operation TLV.  It
+
+
+
+Bellis, et al.         Expires September 11, 2017              [Page 19]
+
+Internet-Draft            DNS Session Signaling               March 2017
+
+
    applies to the session as a whole, and the client MUST close the
    session, as described previously.  The RCODE MUST indicate the reason
    for the termination.  RCODE NOERROR indicates a routine shutdown.
@@ -1114,14 +1080,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    This document specifies only these three RCODE values for Retry Delay
    request.  Servers sending Retry Delay requests SHOULD use one of
    these three values.  However, future circumstances may create
-
-
-
-Bellis, et al.         Expires September 11, 2017              [Page 20]
-
-Internet-Draft            DNS Session Signaling               March 2017
-
-
    situations where other RCODE values are appropriate in Retry Delay
    requests, so clients MUST be prepared to accept Retry Delay requests
    with any RCODE value.
@@ -1142,6 +1100,27 @@ Internet-Draft            DNS Session Signaling               March 2017
 
    IANA are directed to create the DNS Session Signaling Type Codes
    Registry, with initial values as follows:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Bellis, et al.         Expires September 11, 2017              [Page 20]
+
+Internet-Draft            DNS Session Signaling               March 2017
+
 
    +-----------+--------------------------------+----------+-----------+
    |      Type | Name                           | Status   | Reference |
@@ -1167,17 +1146,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    publication of an appropriate IETF "Standards Action" or "IESG
    Approval" document [RFC5226].
 
-
-
-
-
-
-
-Bellis, et al.         Expires September 11, 2017              [Page 21]
-
-Internet-Draft            DNS Session Signaling               March 2017
-
-
 7.  Security Considerations
 
    If this mechanism is to be used with DNS over TLS, then these
@@ -1187,7 +1155,8 @@ Internet-Draft            DNS Session Signaling               March 2017
 
 8.  Acknowledgements
 
-   TBW
+   Thanks to Tim Chown, Ralph Droms, Jan Komissar, and Manju Shankar Rao
+   for their helpful contributions to this document.
 
 9.  References
 
@@ -1200,6 +1169,14 @@ Internet-Draft            DNS Session Signaling               March 2017
    [RFC1035]  Mockapetris, P., "Domain names - implementation and
               specification", STD 13, RFC 1035, DOI 10.17487/RFC1035,
               November 1987, <http://www.rfc-editor.org/info/rfc1035>.
+
+
+
+
+Bellis, et al.         Expires September 11, 2017              [Page 21]
+
+Internet-Draft            DNS Session Signaling               March 2017
+
 
    [RFC1918]  Rekhter, Y., Moskowitz, B., Karrenberg, D., de Groot, G.,
               and E. Lear, "Address Allocation for Private Internets",
@@ -1224,15 +1201,6 @@ Internet-Draft            DNS Session Signaling               March 2017
               IANA Considerations Section in RFCs", BCP 26, RFC 5226,
               DOI 10.17487/RFC5226, May 2008,
               <http://www.rfc-editor.org/info/rfc5226>.
-
-
-
-
-
-Bellis, et al.         Expires September 11, 2017              [Page 22]
-
-Internet-Draft            DNS Session Signaling               March 2017
-
 
    [RFC6891]  Damas, J., Graff, M., and P. Vixie, "Extension Mechanisms
               for DNS (EDNS(0))", STD 75, RFC 6891,
@@ -1259,6 +1227,13 @@ Internet-Draft            DNS Session Signaling               March 2017
               Pusateri, T. and S. Cheshire, "DNS Push Notifications",
               draft-ietf-dnssd-push-09 (work in progress), October 2016.
 
+
+
+Bellis, et al.         Expires September 11, 2017              [Page 22]
+
+Internet-Draft            DNS Session Signaling               March 2017
+
+
    [RFC7858]  Hu, Z., Zhu, L., Heidemann, J., Mankin, A., Wessels, D.,
               and P. Hoffman, "Specification for DNS over Transport
               Layer Security (TLS)", RFC 7858, DOI 10.17487/RFC7858, May
@@ -1274,20 +1249,6 @@ Authors' Addresses
 
    Phone: +1 650 423 1200
    Email: ray@isc.org
-
-
-
-
-
-
-
-
-
-
-
-Bellis, et al.         Expires September 11, 2017              [Page 23]
-
-Internet-Draft            DNS Session Signaling               March 2017
 
 
    Stuart Cheshire
@@ -1320,6 +1281,15 @@ Internet-Draft            DNS Session Signaling               March 2017
    Email: sara@sinodun.com
 
 
+
+
+
+
+Bellis, et al.         Expires September 11, 2017              [Page 23]
+
+Internet-Draft            DNS Session Signaling               March 2017
+
+
    Allison Mankin
    Salesforce
 
@@ -1331,6 +1301,36 @@ Internet-Draft            DNS Session Signaling               March 2017
 
    Phone: +1 843 473 7394
    Email: pusateri@bangj.com
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

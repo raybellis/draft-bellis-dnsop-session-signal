@@ -165,13 +165,6 @@ data after the end of the DNS message. It is likely that future updates
 to these tools will add the ability to recognize, decode, and display the
 Session Signaling data.</t>
 
-<figure><artwork><![CDATA[
-
-
-
-
-]]></artwork></figure>
-
 </section>
 <section anchor="terminology" title="Terminology">
 
@@ -747,29 +740,6 @@ SSOP-DATA.</t>
   Type-code specific.</t>
 </list></t>
 
-<figure><artwork><![CDATA[
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-]]></artwork></figure>
-
 </section>
 </section>
 <section anchor="keepalive" title="Keepalive TLV">
@@ -900,15 +870,6 @@ EDNS(0) TCP KeepAlive option, this is an error and the receiver of the
 EDNS(0) TCP KeepAlive option MUST immediately
 terminate the connection with a TCP RST (or equivalent for other protocols).</t>
 
-<figure><artwork><![CDATA[
-
-
-
-
-
-
-]]></artwork></figure>
-
 </section>
 <section anchor="delay" title="Retry Delay TLV">
 
@@ -1027,7 +988,12 @@ and MUST NOT be sent in the clear before the TLS session is established.</t>
 </section>
 <section anchor="acknowledgements" title="Acknowledgements">
 
-<t>TBW</t>
+<t>Thanks to
+Tim Chown,
+Ralph Droms,
+Jan Komissar,
+and Manju Shankar Rao
+for their helpful contributions to this document.</t>
 
 </section>
 

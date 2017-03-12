@@ -891,6 +891,11 @@ and MUST NOT be sent in the clear before the TLS session is established.
 
 # Acknowledgements
 
-TBW
+Thanks to
+Tim Chown,
+Ralph Droms,
+Jan Komissar,
+and Manju Shankar Rao
+for their helpful contributions to this document.
 
 --- back
