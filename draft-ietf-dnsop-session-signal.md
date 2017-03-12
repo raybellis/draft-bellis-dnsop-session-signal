@@ -166,10 +166,10 @@ The term "sender" may apply to either an initiator
 or responder (when sending a Session Signaling response message).
 
 Session Signaling operations are expressed using type-length-value (TLV) syntax.
-A "Session Signaling operation TLV" specifies the operation to be performed.
-A Session Signaling message MUST contain at most one operation TLV.
-A "Session Signaling modifier TLV" specifies additional parameters relating to the operation.
-A Session Signaling message MAY contain zero or more modifier TLVs.
+A "Session Signaling Operation TLV" specifies the operation to be performed.
+A Session Signaling message MUST contain at most one Operation TLV.
+A "Session Signaling Modifier TLV" specifies additional parameters relating to the operation.
+A Session Signaling message MAY contain zero or more Modifier TLVs.
 
 # Protocol Details
 
@@ -496,42 +496,42 @@ Any skipped data in a Session Signaling request is discarded, and not copied
 to the corresponding sections in the Session Signaling response.
 
 The twelve-octet header and the four (usually) empty sections
-are followed by at most one Session Signaling operation TLV.
-The (optional) operation TLV may be followed by one or more modifier TLVs, such as
+are followed by at most one Session Signaling Operation TLV.
+The (optional) Operation TLV may be followed by one or more Modifier TLVs, such as
 the Retry Delay TLV (0), which, in error responses, indicates the time interval
 during which the client SHOULD NOT re-attempt a failed operation.
 
-Future specifications may define additional modifier TLVs.
+Future specifications may define additional Modifier TLVs.
 
-A Session Signaling message MUST contain at most one operation TLV.
-In all cases a Session Signaling request message MUST contain exactly one operation TLV,
+A Session Signaling message MUST contain at most one Operation TLV.
+In all cases a Session Signaling request message MUST contain exactly one Operation TLV,
 indicating the operation to be performed.
-In some cases a Session Signaling response message MAY contain no operation TLV,
+In some cases a Session Signaling response message MAY contain no Operation TLV,
 because it is simply a response to a previous request message,
 and the message ID in the header is sufficient to identify the request in question.
 The specification for each Session Signaling operation type determines whether
-a response for that operation type is required to carry the operation TLV.
+a response for that operation type is required to carry the Operation TLV.
 
 If a Session Signaling request is received containing an unrecognized
-operation TLV, the receiver MUST send a response with matching
+Operation TLV, the receiver MUST send a response with matching
 MESSAGE ID, and RCODE SSOPNOTIMP (tentatively 11).
-The response MUST NOT contain an operation TLV.
+The response MUST NOT contain an Operation TLV.
 
 If a Session Signaling message (request or response) is received
-containing one or more unrecognized modifier TLVs, the unrecognized
-modifier TLVs MUST be silently ignored, and the remainder of the message
+containing one or more unrecognized Modifier TLVs, the unrecognized
+Modifier TLVs MUST be silently ignored, and the remainder of the message
 is interpreted and handled as if the unrecognized parts were not present.
 
 Since the ARCOUNT field MUST be zero, a Session Signaling message
 MUST NOT contain an EDNS(0) option in the additional records section.
 If functionality provided by current or future EDNS(0) options is desired
-for Session Signaling messages, a Session Signaling operation TLV or
-modifier TLV needs to be defined to carry the necessary information.
+for Session Signaling messages, a Session Signaling Operation TLV or
+Modifier TLV needs to be defined to carry the necessary information.
 
 For example, the EDNS(0) Padding Option used for security purposes
 {{!RFC7830}} is not permitted in a Session Signaling message,
 so if message padding is desired for Session Signaling messages,
-a Session Signaling modifier TLV needs to be defined to perform this function.
+a Session Signaling Modifier TLV needs to be defined to perform this function.
 
 Similarly, a Session Signaling message MUST NOT contain a TSIG record.
 A TSIG record in a conventional DNS message is added as the last record
@@ -540,7 +540,7 @@ the preceding message content. Since Session Signaling data appears
 after the additional records section, it would not be included in the
 signature calculation. 
 If use of signatures with Session Signaling messages becomes necessary in the future,
-an explicit Session Signaling modifier TLV needs to be defined to perform this function.
+an explicit Session Signaling Modifier TLV needs to be defined to perform this function.
 
 Note however that, while Session Signaling *messages* cannot include
 EDNS(0) or TSIG records, a Session Signaling *session* is typically used to carry
@@ -599,23 +599,24 @@ MUST have the same MESSAGE ID in the DNS message header as in the corresponding 
 Session Signaling request messages sent by the client elicit a response from the server, and
 Session Signaling request messages sent by the server elicit a response from the client.
 
-An initiator MUST NOT reuse a MESSAGE ID that is already in use for an outstanding
-request, unless specified otherwise by the relevant specification for the
-Session Signaling operation in question.
-At the very least, this means that a MESSAGE ID MUST NOT be reused for a particular SSOP-TYPE
-while the initiator is waiting for a response to a previous request with the same SSOP-TYPE,
-unless specified otherwise by the relevant specification for the Session Signaling operation in question.
-(For a long-lived operation, such as a DNS Push Notification
-subscription {{?I-D.ietf-dnssd-push}} the MESSAGE ID for the operation
-MUST NOT be reused for a new subscription as long as the
-existing subscription is active.)
-
 The namespaces of 16-bit MESSAGE IDs are disjoint in each direction.
 For example, it is *not* an error for both client and server to send a request
 message with the same ID.
 In effect, the 16-bit MESSAGE ID combined with the identity of the initiator
 (client or server) serves as a 17-bit unique identifier for a particular operation
 on a session.
+
+An initiator MUST NOT reuse a MESSAGE ID that is already in use for an outstanding
+request, unless specified otherwise by the relevant specification for the
+Session Signaling operation in question.
+At the very least, this means that a MESSAGE ID MUST NOT be reused in a particular direction
+on a particular session
+while the initiator is waiting for a response to a previous request on that session,
+unless specified otherwise by the relevant specification for the Session Signaling operation in question.
+(For a long-lived operation, such as a DNS Push Notification
+subscription {{?I-D.ietf-dnssd-push}} the MESSAGE ID for the operation
+MUST NOT be reused for a new subscription as long as the
+existing subscription using that MESSAGE ID remains active.)
 
 If a client or server receives a response (QR=1) where the MESSAGE ID does not
 match any of its outstanding operations, this is a fatal error and it MUST immediately
@@ -720,7 +721,7 @@ In a server-initiated Session Signaling Keepalive message, the idle timeout and 
 unilaterally inform the client of the new values from this point forward in this session.
 The client MUST generate a response to the server-initiated Session Signaling Keepalive message.
 The Message ID in the response message MUST match the ID from the server-initiated Session
-Signaling Keepalive message, and the response message MUST NOT contain any operation TLV.
+Signaling Keepalive message, and the response message MUST NOT contain any Operation TLV.
 
 It may be appropriate for clients and servers to select different keepalive interval values
 depending on the nature of the network they are on.
@@ -807,12 +808,12 @@ append a Retry Delay TLV (0) to the response, indicating the time interval
 during which the client SHOULD NOT attempt this operation again.
 
 When appended to a Session Signaling response message for some client request,
-the Retry Delay TLV (0) is considered a modifier TLV.
+the Retry Delay TLV (0) is considered a Modifier TLV.
 The indicated time interval during which the client SHOULD NOT retry
 applies only to the failed operation, not to the session as a whole.
 
 When sent in a Session Signaling request message, from server to client, the Retry Delay TLV (0)
-is considered an operation TLV. It applies to the session as a whole,
+is considered an Operation TLV. It applies to the session as a whole,
 and the client MUST close the session, as described previously.
 The RCODE MUST indicate the reason for the termination.
 RCODE NOERROR indicates a routine shutdown.

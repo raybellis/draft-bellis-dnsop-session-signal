@@ -199,11 +199,11 @@ Internet-Draft            DNS Session Signaling               March 2017
    Session Signaling response message).
 
    Session Signaling operations are expressed using type-length-value
-   (TLV) syntax.  A "Session Signaling operation TLV" specifies the
+   (TLV) syntax.  A "Session Signaling Operation TLV" specifies the
    operation to be performed.  A Session Signaling message MUST contain
-   at most one operation TLV.  A "Session Signaling modifier TLV"
+   at most one Operation TLV.  A "Session Signaling Modifier TLV"
    specifies additional parameters relating to the operation.  A Session
-   Signaling message MAY contain zero or more modifier TLVs.
+   Signaling message MAY contain zero or more Modifier TLVs.
 
 3.  Protocol Details
 
@@ -624,46 +624,46 @@ Internet-Draft            DNS Session Signaling               March 2017
    the corresponding sections in the Session Signaling response.
 
    The twelve-octet header and the four (usually) empty sections are
-   followed by at most one Session Signaling operation TLV.  The
-   (optional) operation TLV may be followed by one or more modifier
+   followed by at most one Session Signaling Operation TLV.  The
+   (optional) Operation TLV may be followed by one or more Modifier
    TLVs, such as the Retry Delay TLV (0), which, in error responses,
    indicates the time interval during which the client SHOULD NOT re-
    attempt a failed operation.
 
-   Future specifications may define additional modifier TLVs.
+   Future specifications may define additional Modifier TLVs.
 
-   A Session Signaling message MUST contain at most one operation TLV.
+   A Session Signaling message MUST contain at most one Operation TLV.
    In all cases a Session Signaling request message MUST contain exactly
-   one operation TLV, indicating the operation to be performed.  In some
-   cases a Session Signaling response message MAY contain no operation
+   one Operation TLV, indicating the operation to be performed.  In some
+   cases a Session Signaling response message MAY contain no Operation
    TLV, because it is simply a response to a previous request message,
    and the message ID in the header is sufficient to identify the
    request in question.  The specification for each Session Signaling
    operation type determines whether a response for that operation type
-   is required to carry the operation TLV.
+   is required to carry the Operation TLV.
 
    If a Session Signaling request is received containing an unrecognized
-   operation TLV, the receiver MUST send a response with matching
+   Operation TLV, the receiver MUST send a response with matching
    MESSAGE ID, and RCODE SSOPNOTIMP (tentatively 11).  The response MUST
-   NOT contain an operation TLV.
+   NOT contain an Operation TLV.
 
    If a Session Signaling message (request or response) is received
-   containing one or more unrecognized modifier TLVs, the unrecognized
-   modifier TLVs MUST be silently ignored, and the remainder of the
+   containing one or more unrecognized Modifier TLVs, the unrecognized
+   Modifier TLVs MUST be silently ignored, and the remainder of the
    message is interpreted and handled as if the unrecognized parts were
    not present.
 
    Since the ARCOUNT field MUST be zero, a Session Signaling message
    MUST NOT contain an EDNS(0) option in the additional records section.
    If functionality provided by current or future EDNS(0) options is
-   desired for Session Signaling messages, a Session Signaling operation
-   TLV or modifier TLV needs to be defined to carry the necessary
+   desired for Session Signaling messages, a Session Signaling Operation
+   TLV or Modifier TLV needs to be defined to carry the necessary
    information.
 
    For example, the EDNS(0) Padding Option used for security purposes
    [RFC7830] is not permitted in a Session Signaling message, so if
    message padding is desired for Session Signaling messages, a Session
-   Signaling modifier TLV needs to be defined to perform this function.
+   Signaling Modifier TLV needs to be defined to perform this function.
 
 
 
@@ -681,7 +681,7 @@ Internet-Draft            DNS Session Signaling               March 2017
    Signaling data appears after the additional records section, it would
    not be included in the signature calculation.  If use of signatures
    with Session Signaling messages becomes necessary in the future, an
-   explicit Session Signaling modifier TLV needs to be defined to
+   explicit Session Signaling Modifier TLV needs to be defined to
    perform this function.
 
    Note however that, while Session Signaling _messages_ cannot include
@@ -755,18 +755,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    Signaling request messages sent by the server elicit a response from
    the client.
 
-   An initiator MUST NOT reuse a MESSAGE ID that is already in use for
-   an outstanding request, unless specified otherwise by the relevant
-   specification for the Session Signaling operation in question.  At
-   the very least, this means that a MESSAGE ID MUST NOT be reused for a
-   particular SSOP-TYPE while the initiator is waiting for a response to
-   a previous request with the same SSOP-TYPE, unless specified
-   otherwise by the relevant specification for the Session Signaling
-   operation in question.  (For a long-lived operation, such as a DNS
-   Push Notification subscription [I-D.ietf-dnssd-push] the MESSAGE ID
-   for the operation MUST NOT be reused for a new subscription as long
-   as the existing subscription is active.)
-
    The namespaces of 16-bit MESSAGE IDs are disjoint in each direction.
    For example, it is _not_ an error for both client and server to send
    a request message with the same ID.  In effect, the 16-bit MESSAGE ID
@@ -774,10 +762,22 @@ Internet-Draft            DNS Session Signaling               March 2017
    as a 17-bit unique identifier for a particular operation on a
    session.
 
+   An initiator MUST NOT reuse a MESSAGE ID that is already in use for
+   an outstanding request, unless specified otherwise by the relevant
+   specification for the Session Signaling operation in question.  At
+   the very least, this means that a MESSAGE ID MUST NOT be reused in a
+   particular direction on a particular session while the initiator is
+   waiting for a response to a previous request on that session, unless
+   specified otherwise by the relevant specification for the Session
+   Signaling operation in question.  (For a long-lived operation, such
+   as a DNS Push Notification subscription [I-D.ietf-dnssd-push] the
+   MESSAGE ID for the operation MUST NOT be reused for a new
+   subscription as long as the existing subscription using that MESSAGE
+   ID remains active.)
+
    If a client or server receives a response (QR=1) where the MESSAGE ID
    does not match any of its outstanding operations, this is a fatal
-   error and it MUST immediately terminate the connection with a TCP RST
-   (or equivalent for other protocols).
+
 
 
 
@@ -785,6 +785,9 @@ Bellis, et al.         Expires September 11, 2017              [Page 14]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
+
+   error and it MUST immediately terminate the connection with a TCP RST
+   (or equivalent for other protocols).
 
    The RCODE value in a response may be one of the following values:
 
@@ -830,9 +833,6 @@ Internet-Draft            DNS Session Signaling               March 2017
 
    The Keepalive TLV (1) performs three functions.  When sent by a
    client, it resets a session's keepalive timer, and at the same time
-   requests what the idle timeout and keepalive interval should be from
-   this point forward in the session.
-
 
 
 
@@ -841,6 +841,9 @@ Bellis, et al.         Expires September 11, 2017              [Page 15]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
+
+   requests what the idle timeout and keepalive interval should be from
+   this point forward in the session.
 
    Once the client has sent at least one Session Signaling message (or
    it is known in advance by other means that the client supports
@@ -887,9 +890,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    In a client-initiated Session Signaling Keepalive message, the idle
    timeout and keepalive interval contain the client's requested values.
    In a server response to a client-initiated message, the idle timeout
-   and keepalive interval contain the server's chosen values, which the
-   client MUST respect.  This is modeled after the DHCP protocol, where
-   the client requests a certain lease lifetime using DHCP option 51
 
 
 
@@ -898,6 +898,9 @@ Bellis, et al.         Expires September 11, 2017              [Page 16]
 Internet-Draft            DNS Session Signaling               March 2017
 
 
+   and keepalive interval contain the server's chosen values, which the
+   client MUST respect.  This is modeled after the DHCP protocol, where
+   the client requests a certain lease lifetime using DHCP option 51
    [RFC2132], but the server is the ultimate authority for deciding what
    lease lifetime is actually granted.
 
@@ -907,7 +910,7 @@ Internet-Draft            DNS Session Signaling               March 2017
    generate a response to the server-initiated Session Signaling
    Keepalive message.  The Message ID in the response message MUST match
    the ID from the server-initiated Session Signaling Keepalive message,
-   and the response message MUST NOT contain any operation TLV.
+   and the response message MUST NOT contain any Operation TLV.
 
    It may be appropriate for clients and servers to select different
    keepalive interval values depending on the nature of the network they
@@ -944,9 +947,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    messages, long enough to cause the server to overzealously abort the
    connection.
 
-   Because of this concern, the server MUST NOT send a Keepalive message
-   (either a response to a client-initiated request, or a server-
-
 
 
 Bellis, et al.         Expires September 11, 2017              [Page 17]
@@ -954,6 +954,8 @@ Bellis, et al.         Expires September 11, 2017              [Page 17]
 Internet-Draft            DNS Session Signaling               March 2017
 
 
+   Because of this concern, the server MUST NOT send a Keepalive message
+   (either a response to a client-initiated request, or a server-
    initiated message) with an keepalive interval value less than ten
    seconds.  If a client receives an Keepalive message specifying an
    keepalive interval value less than ten seconds this is an error and
@@ -1003,8 +1005,6 @@ Internet-Draft            DNS Session Signaling               March 2017
 
 
 
-
-
 Bellis, et al.         Expires September 11, 2017              [Page 18]
 
 Internet-Draft            DNS Session Signaling               March 2017
@@ -1022,12 +1022,12 @@ Internet-Draft            DNS Session Signaling               March 2017
    attempt this operation again.
 
    When appended to a Session Signaling response message for some client
-   request, the Retry Delay TLV (0) is considered a modifier TLV.  The
+   request, the Retry Delay TLV (0) is considered a Modifier TLV.  The
    indicated time interval during which the client SHOULD NOT retry
    applies only to the failed operation, not to the session as a whole.
 
    When sent in a Session Signaling request message, from server to
-   client, the Retry Delay TLV (0) is considered an operation TLV.  It
+   client, the Retry Delay TLV (0) is considered an Operation TLV.  It
    applies to the session as a whole, and the client MUST close the
    session, as described previously.  The RCODE MUST indicate the reason
    for the termination.  RCODE NOERROR indicates a routine shutdown.
