@@ -600,19 +600,40 @@
 <p id="rfc.section.3.2.p.1">A client that supports Session Signaling SHOULD NOT make multiple connections to the same DNS server.</p>
 <p id="rfc.section.3.2.p.2">A single server may support multiple services, including DNS Updates <a href="#RFC2136">[RFC2136]</a>, DNS Push Notifications <a href="#I-D.ietf-dnssd-push">[I-D.ietf-dnssd-push]</a>, and other services, for one or more DNS zones.  When a client discovers that the target server for several different operations is the same target hostname and port, the client SHOULD use a single shared session for all those operations.  A client SHOULD NOT open multiple connections to the same target host and port just because the names being operated on are different or happen to fall within different zones.  This is to reduce unnecessary connection load on the DNS server.</p>
 <p id="rfc.section.3.2.p.3">However, server implementers and operators should be aware that connection sharing may not be possible in all cases.  A single client device may be home to multiple independent client software instances that don&#8217;t coordinate with each other.  Similarly, multiple independent client devices behind the same NAT gateway will also typically appear to the DNS server as different source ports on the same client IP address.  Because of these constraints, a DNS server MUST be prepared to accept multiple connections from different source ports on the same client IP address.</p>
+<pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
 <h1 id="rfc.section.3.3"><a href="#rfc.section.3.3">3.3.</a> <a href="#format" id="format">Message Format</a></h1>
 <p id="rfc.section.3.3.p.1">A Session Signaling message begins with the standard twelve-octet DNS message header <a href="#RFC1035">[RFC1035]</a> with the Opcode field set to the Session Signaling Opcode (tentatively 6).  However, unlike standard DNS messages, the question section, answer section, authority records section and additional records sections are all empty.  The corresponding count fields (QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT) MUST be set to zero on transmission.  If a Session Signaling message is received where any of the count fields are not zero, then data in the corresponding section MUST be silently skipped by the receiver (unless specified otherwise by a future update to this specification).  The skipped data is silently ignored.  Any skipped data in a Session Signaling request is discarded, and not copied to the corresponding sections in the Session Signaling response.</p>
-<p id="rfc.section.3.3.p.2">The twelve-octet header and the four (usually) empty sections are followed by at most one Session Signaling Operation TLV.  The (optional) Operation TLV may be followed by one or more Modifier TLVs, such as the Retry Delay TLV (0), which, in error responses, indicates the time interval during which the client SHOULD NOT re-attempt a failed operation.</p>
-<p id="rfc.section.3.3.p.3">Future specifications may define additional Modifier TLVs.</p>
-<p id="rfc.section.3.3.p.4">A Session Signaling message MUST contain at most one Operation TLV.  In all cases a Session Signaling request message MUST contain exactly one Operation TLV, indicating the operation to be performed.  In some cases a Session Signaling response message MAY contain no Operation TLV, because it is simply a response to a previous request message, and the message ID in the header is sufficient to identify the request in question.  The specification for each Session Signaling operation type determines whether a response for that operation type is required to carry the Operation TLV.</p>
-<p id="rfc.section.3.3.p.5">If a Session Signaling request is received containing an unrecognized Operation TLV, the receiver MUST send a response with matching MESSAGE ID, and RCODE SSOPNOTIMP (tentatively 11).  The response MUST NOT contain an Operation TLV.</p>
-<p id="rfc.section.3.3.p.6">If a Session Signaling response is received for an operation which requires that the response carry an Operation TLV, and the required Operation TLV is not the first Session Signaling TLV in the response message, then this is a fatal error and the recipient of the defective response message MUST immediately terminate the connection with a TCP RST (or equivalent for other protocols).</p>
-<p id="rfc.section.3.3.p.7">If a Session Signaling message (request or response) is received containing one or more unrecognized Modifier TLVs, the unrecognized Modifier TLVs MUST be silently ignored, and the remainder of the message is interpreted and handled as if the unrecognized parts were not present.</p>
-<p id="rfc.section.3.3.p.8">Since the ARCOUNT field MUST be zero, a Session Signaling message MUST NOT contain an EDNS(0) option in the additional records section.  If functionality provided by current or future EDNS(0) options is desired for Session Signaling messages, a Session Signaling Operation TLV or Modifier TLV needs to be defined to carry the necessary information.</p>
-<p id="rfc.section.3.3.p.9">For example, the EDNS(0) Padding Option used for security purposes <a href="#RFC7830">[RFC7830]</a> is not permitted in a Session Signaling message, so if message padding is desired for Session Signaling messages, a Session Signaling Modifier TLV needs to be defined to perform this function.</p>
-<p id="rfc.section.3.3.p.10">Similarly, a Session Signaling message MUST NOT contain a TSIG record.  A TSIG record in a conventional DNS message is added as the last record in the additional records section, and carries a signature computed over the preceding message content. Since Session Signaling data appears after the additional records section, it would not be included in the signature calculation.  If use of signatures with Session Signaling messages becomes necessary in the future, an explicit Session Signaling Modifier TLV needs to be defined to perform this function.</p>
-<p id="rfc.section.3.3.p.11">Note however that, while Session Signaling <em>messages</em> cannot include EDNS(0) or TSIG records, a Session Signaling <em>session</em> is typically used to carry a whole series of DNS messages of different kinds, including Session Signaling messages, and other DNS message types like Query <a href="#RFC1034">[RFC1034]</a><a href="#RFC1035">[RFC1035]</a> and Update <a href="#RFC2136">[RFC2136]</a>, and those messages can carry EDNS(0) and TSIG records.</p>
-<p id="rfc.section.3.3.p.12">This specification explicitly prohibits use of the EDNS(0) TCP Keepalive Option <a href="#RFC7828">[RFC7828]</a> in <em>any</em> messages sent on a Session Signaling session (because it duplicates the functionality provided by the Session Signaling Keepalive operation), but messages may contain other EDNS(0) options as appropriate.</p>
 <pre>
                                              1   1   1   1   1   1
      0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
@@ -634,15 +655,44 @@
    /                                                               /
    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 </pre>
-<p id="rfc.section.3.3.p.13">The MESSAGE ID, QR, Opcode and RCODE fields have their usual meanings <a href="#RFC1035">[RFC1035]</a>.</p>
-<p id="rfc.section.3.3.p.14">In a request message (QR=0) the RCODE is generally set to zero on transmission, and silently ignored on reception, except where specified otherwise (for example, the Retry Delay operation, where the RCODE indicates the reason for termination).</p>
-<p id="rfc.section.3.3.p.15">The Z bits are currently unused, and in both requests and responses the Z bits SHOULD be set to zero (0) on transmission and silently ignored on reception, unless a future document specifies otherwise.</p>
+<p id="rfc.section.3.3.p.2">In a request the DNS Header QR bit MUST be zero.  If the QR bit MUST is not zero the message is not a request.</p>
+<p id="rfc.section.3.3.p.3">In a response the DNS Header QR bit MUST be one.  If the QR bit is not one the message is not a response.</p>
+<p id="rfc.section.3.3.p.4">In a request the MESSAGE ID field MUST be set to a unique value, that the initiator is not using for any other active operation on this connection.  For the purposes here, a MESSAGE ID is in use on this connection if the initiator has used it in a request for which it has not yet received a response, or if if the client has used it for a subscription which it has not yet cancelled <a href="#I-D.ietf-dnssd-push">[I-D.ietf-dnssd-push]</a>.</p>
+<p id="rfc.section.3.3.p.5">In a response the MESSAGE ID field contain a copy of the value of the MESSAGE ID field in the request being responded to.</p>
+<p id="rfc.section.3.3.p.6">The DNS Header Opcode field holds the Session Signaling Opcode value (tentatively 6).</p>
+<p id="rfc.section.3.3.p.7">The Z bits are currently unused, and in both requests and responses the Z bits MUST be set to zero (0) on transmission and MUST be silently ignored on reception, unless a future document specifies otherwise.</p>
+<p id="rfc.section.3.3.p.8">In a request message (QR=0) the RCODE is generally set to zero on transmission, and silently ignored on reception, except where specified otherwise (for example, the Retry Delay operation, where the RCODE indicates the reason for termination).</p>
+<p id="rfc.section.3.3.p.9">The standard twelve-octet DNS message header and the four (usually) empty sections are followed by at most one Session Signaling Operation TLV.  The (optional) Operation TLV may be followed by one or more Modifier TLVs, such as the Retry Delay TLV (0), which, in error responses, indicates the time interval during which the client SHOULD NOT re-attempt a failed operation.</p>
+<p id="rfc.section.3.3.p.10">Future specifications may define additional Modifier TLVs.</p>
+<p id="rfc.section.3.3.p.11">A Session Signaling message MUST contain at most one Operation TLV.  In all cases a Session Signaling request message MUST contain exactly one Operation TLV, indicating the operation to be performed.  In some cases a Session Signaling response message MAY contain no Operation TLV, because it is simply a response to a previous request message, and the message ID in the header is sufficient to identify the request in question.  The specification for each Session Signaling operation type determines whether a response for that operation type is required to carry the Operation TLV.</p>
+<p id="rfc.section.3.3.p.12">If a Session Signaling request is received containing an unrecognized Operation TLV, the receiver MUST send a response with matching MESSAGE ID, and RCODE SSOPNOTIMP (tentatively 11).  The response MUST NOT contain an Operation TLV.</p>
+<p id="rfc.section.3.3.p.13">If a Session Signaling response is received for an operation which requires that the response carry an Operation TLV, and the required Operation TLV is not the first Session Signaling TLV in the response message, then this is a fatal error and the recipient of the defective response message MUST immediately terminate the connection with a TCP RST (or equivalent for other protocols).</p>
+<p id="rfc.section.3.3.p.14">If a Session Signaling message (request or response) is received containing one or more unrecognized Modifier TLVs, the unrecognized Modifier TLVs MUST be silently ignored, and the remainder of the message is interpreted and handled as if the unrecognized parts were not present.</p>
+<p id="rfc.section.3.3.p.15">Since the ARCOUNT field MUST be zero, a Session Signaling message MUST NOT contain an EDNS(0) option in the additional records section.  If functionality provided by current or future EDNS(0) options is desired for Session Signaling messages, a Session Signaling Operation TLV or Modifier TLV needs to be defined to carry the necessary information.</p>
+<p id="rfc.section.3.3.p.16">For example, the EDNS(0) Padding Option used for security purposes <a href="#RFC7830">[RFC7830]</a> is not permitted in a Session Signaling message, so if message padding is desired for Session Signaling messages, a Session Signaling Modifier TLV needs to be defined to perform this function.</p>
+<p id="rfc.section.3.3.p.17">Similarly, a Session Signaling message MUST NOT contain a TSIG record.  A TSIG record in a conventional DNS message is added as the last record in the additional records section, and carries a signature computed over the preceding message content. Since Session Signaling data appears after the additional records section, it would not be included in the signature calculation.  If use of signatures with Session Signaling messages becomes necessary in the future, an explicit Session Signaling Modifier TLV needs to be defined to perform this function.</p>
+<p id="rfc.section.3.3.p.18">Note however that, while Session Signaling <em>messages</em> cannot include EDNS(0) or TSIG records, a Session Signaling <em>session</em> is typically used to carry a whole series of DNS messages of different kinds, including Session Signaling messages, and other DNS message types like Query <a href="#RFC1034">[RFC1034]</a><a href="#RFC1035">[RFC1035]</a> and Update <a href="#RFC2136">[RFC2136]</a>, and those messages can carry EDNS(0) and TSIG records.</p>
+<p id="rfc.section.3.3.p.19">This specification explicitly prohibits use of the EDNS(0) TCP Keepalive Option <a href="#RFC7828">[RFC7828]</a> in <em>any</em> messages sent on a Session Signaling session (because it duplicates the functionality provided by the Session Signaling Keepalive operation), but messages may contain other EDNS(0) options as appropriate.</p>
 <h1 id="rfc.section.3.4"><a href="#rfc.section.3.4">3.4.</a> <a href="#message-handling" id="message-handling">Message Handling</a></h1>
 <p id="rfc.section.3.4.p.1">On a session between a client and server that support Session Signaling, once the client has sent at least one Session Signaling message (or it is known in advance by other means that the client supports Session Signaling) either end may unilaterally send Session Signaling messages at any time, and therefore either client or server may be the initiator of a message.  The initiator MUST set the value of the QR bit in the DNS header to zero (0), and the responder MUST set it to one (1).</p>
 <p id="rfc.section.3.4.p.2">Every Session Signaling request message (QR=0) MUST elicit a response (QR=1), which MUST have the same MESSAGE ID in the DNS message header as in the corresponding request.  Session Signaling request messages sent by the client elicit a response from the server, and Session Signaling request messages sent by the server elicit a response from the client.</p>
 <p id="rfc.section.3.4.p.3">The namespaces of 16-bit MESSAGE IDs are disjoint in each direction.  For example, it is <em>not</em> an error for both client and server to send a request message with the same ID.  In effect, the 16-bit MESSAGE ID combined with the identity of the initiator (client or server) serves as a 17-bit unique identifier for a particular operation on a session.</p>
 <p id="rfc.section.3.4.p.4">An initiator MUST NOT reuse a MESSAGE ID that is already in use for an outstanding request, unless specified otherwise by the relevant specification for the Session Signaling operation in question.  At the very least, this means that a MESSAGE ID MUST NOT be reused in a particular direction on a particular session while the initiator is waiting for a response to a previous request on that session, unless specified otherwise by the relevant specification for the Session Signaling operation in question.  (For a long-lived operation, such as a DNS Push Notification subscription <a href="#I-D.ietf-dnssd-push">[I-D.ietf-dnssd-push]</a> the MESSAGE ID for the operation MUST NOT be reused for a new subscription as long as the existing subscription using that MESSAGE ID remains active.)</p>
 <p id="rfc.section.3.4.p.5">If a client or server receives a response (QR=1) where the MESSAGE ID does not match any of its outstanding operations, this is a fatal error and it MUST immediately terminate the connection with a TCP RST (or equivalent for other protocols).</p>
+<pre>
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
 <p id="rfc.section.3.4.p.6">The RCODE value in a response may be one of the following values:</p>
 <table cellpadding="3" cellspacing="0" class="tt full center">
   <thead>

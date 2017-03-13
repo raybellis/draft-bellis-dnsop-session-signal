@@ -77,21 +77,21 @@ Table of Contents
        3.1.1.  Client-Initiated Termination  . . . . . . . . . . . .   9
        3.1.2.  Server-Initiated Termination  . . . . . . . . . . . .   9
      3.2.  Connection Sharing  . . . . . . . . . . . . . . . . . . .  11
-     3.3.  Message Format  . . . . . . . . . . . . . . . . . . . . .  12
-     3.4.  Message Handling  . . . . . . . . . . . . . . . . . . . .  14
-     3.5.  TLV Format  . . . . . . . . . . . . . . . . . . . . . . .  16
-   4.  Keepalive TLV . . . . . . . . . . . . . . . . . . . . . . . .  17
-   5.  Retry Delay TLV . . . . . . . . . . . . . . . . . . . . . . .  20
-   6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  21
-     6.1.  DNS Session Signaling Opcode Registration . . . . . . . .  21
-     6.2.  DNS Session Signaling RCODE Registration  . . . . . . . .  21
-     6.3.  DNS Session Signaling Type Codes Registry . . . . . . . .  21
-   7.  Security Considerations . . . . . . . . . . . . . . . . . . .  22
-   8.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  22
-   9.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  22
-     9.1.  Normative References  . . . . . . . . . . . . . . . . . .  22
-     9.2.  Informative References  . . . . . . . . . . . . . . . . .  23
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  23
+     3.3.  Message Format  . . . . . . . . . . . . . . . . . . . . .  13
+     3.4.  Message Handling  . . . . . . . . . . . . . . . . . . . .  15
+     3.5.  TLV Format  . . . . . . . . . . . . . . . . . . . . . . .  17
+   4.  Keepalive TLV . . . . . . . . . . . . . . . . . . . . . . . .  18
+   5.  Retry Delay TLV . . . . . . . . . . . . . . . . . . . . . . .  21
+   6.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  22
+     6.1.  DNS Session Signaling Opcode Registration . . . . . . . .  22
+     6.2.  DNS Session Signaling RCODE Registration  . . . . . . . .  22
+     6.3.  DNS Session Signaling Type Codes Registry . . . . . . . .  22
+   7.  Security Considerations . . . . . . . . . . . . . . . . . . .  23
+   8.  Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  23
+   9.  References  . . . . . . . . . . . . . . . . . . . . . . . . .  23
+     9.1.  Normative References  . . . . . . . . . . . . . . . . . .  23
+     9.2.  Informative References  . . . . . . . . . . . . . . . . .  24
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  24
 
 1.  Introduction
 
@@ -632,6 +632,48 @@ Internet-Draft            DNS Session Signaling               March 2017
    MUST be prepared to accept multiple connections from different source
    ports on the same client IP address.
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Bellis, et al.         Expires September 11, 2017              [Page 12]
+
+Internet-Draft            DNS Session Signaling               March 2017
+
+
 3.3.  Message Format
 
    A Session Signaling message begins with the standard twelve-octet DNS
@@ -648,12 +690,68 @@ Internet-Draft            DNS Session Signaling               March 2017
    data in a Session Signaling request is discarded, and not copied to
    the corresponding sections in the Session Signaling response.
 
-   The twelve-octet header and the four (usually) empty sections are
-   followed by at most one Session Signaling Operation TLV.  The
-   (optional) Operation TLV may be followed by one or more Modifier
-   TLVs, such as the Retry Delay TLV (0), which, in error responses,
-   indicates the time interval during which the client SHOULD NOT re-
-   attempt a failed operation.
+                                                1   1   1   1   1   1
+        0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
+      +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+      |                          MESSAGE ID                           |
+      +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+      |QR |    Opcode     |            Z              |     RCODE     |
+      +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+      |                     QDCOUNT (MUST BE ZERO)                    |
+      +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+      |                     ANCOUNT (MUST BE ZERO)                    |
+      +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+      |                     NSCOUNT (MUST BE ZERO)                    |
+      +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+      |                     ARCOUNT (MUST BE ZERO)                    |
+      +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+      |                                                               |
+      /                     Session Signaling Data                    /
+      /                                                               /
+      +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+
+   In a request the DNS Header QR bit MUST be zero.  If the QR bit MUST
+   is not zero the message is not a request.
+
+   In a response the DNS Header QR bit MUST be one.  If the QR bit is
+   not one the message is not a response.
+
+   In a request the MESSAGE ID field MUST be set to a unique value, that
+   the initiator is not using for any other active operation on this
+   connection.  For the purposes here, a MESSAGE ID is in use on this
+   connection if the initiator has used it in a request for which it has
+   not yet received a response, or if if the client has used it for a
+   subscription which it has not yet cancelled [I-D.ietf-dnssd-push].
+
+
+
+Bellis, et al.         Expires September 11, 2017              [Page 13]
+
+Internet-Draft            DNS Session Signaling               March 2017
+
+
+   In a response the MESSAGE ID field contain a copy of the value of the
+   MESSAGE ID field in the request being responded to.
+
+   The DNS Header Opcode field holds the Session Signaling Opcode value
+   (tentatively 6).
+
+   The Z bits are currently unused, and in both requests and responses
+   the Z bits MUST be set to zero (0) on transmission and MUST be
+   silently ignored on reception, unless a future document specifies
+   otherwise.
+
+   In a request message (QR=0) the RCODE is generally set to zero on
+   transmission, and silently ignored on reception, except where
+   specified otherwise (for example, the Retry Delay operation, where
+   the RCODE indicates the reason for termination).
+
+   The standard twelve-octet DNS message header and the four (usually)
+   empty sections are followed by at most one Session Signaling
+   Operation TLV.  The (optional) Operation TLV may be followed by one
+   or more Modifier TLVs, such as the Retry Delay TLV (0), which, in
+   error responses, indicates the time interval during which the client
+   SHOULD NOT re-attempt a failed operation.
 
    Future specifications may define additional Modifier TLVs.
 
@@ -667,13 +765,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    operation type determines whether a response for that operation type
    is required to carry the Operation TLV.
 
-
-
-Bellis, et al.         Expires September 11, 2017              [Page 12]
-
-Internet-Draft            DNS Session Signaling               March 2017
-
-
    If a Session Signaling request is received containing an unrecognized
    Operation TLV, the receiver MUST send a response with matching
    MESSAGE ID, and RCODE SSOPNOTIMP (tentatively 11).  The response MUST
@@ -685,6 +776,15 @@ Internet-Draft            DNS Session Signaling               March 2017
    message, then this is a fatal error and the recipient of the
    defective response message MUST immediately terminate the connection
    with a TCP RST (or equivalent for other protocols).
+
+
+
+
+
+Bellis, et al.         Expires September 11, 2017              [Page 14]
+
+Internet-Draft            DNS Session Signaling               March 2017
+
 
    If a Session Signaling message (request or response) is received
    containing one or more unrecognized Modifier TLVs, the unrecognized
@@ -721,52 +821,11 @@ Internet-Draft            DNS Session Signaling               March 2017
    like Query [RFC1034][RFC1035] and Update [RFC2136], and those
    messages can carry EDNS(0) and TSIG records.
 
-
-
-
-
-Bellis, et al.         Expires September 11, 2017              [Page 13]
-
-Internet-Draft            DNS Session Signaling               March 2017
-
-
    This specification explicitly prohibits use of the EDNS(0) TCP
    Keepalive Option [RFC7828] in _any_ messages sent on a Session
    Signaling session (because it duplicates the functionality provided
    by the Session Signaling Keepalive operation), but messages may
    contain other EDNS(0) options as appropriate.
-
-                                                1   1   1   1   1   1
-        0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
-      +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-      |                          MESSAGE ID                           |
-      +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-      |QR |    Opcode     |            Z              |     RCODE     |
-      +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-      |                     QDCOUNT (MUST BE ZERO)                    |
-      +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-      |                     ANCOUNT (MUST BE ZERO)                    |
-      +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-      |                     NSCOUNT (MUST BE ZERO)                    |
-      +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-      |                     ARCOUNT (MUST BE ZERO)                    |
-      +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-      |                                                               |
-      /                     Session Signaling Data                    /
-      /                                                               /
-      +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-
-   The MESSAGE ID, QR, Opcode and RCODE fields have their usual meanings
-   [RFC1035].
-
-   In a request message (QR=0) the RCODE is generally set to zero on
-   transmission, and silently ignored on reception, except where
-   specified otherwise (for example, the Retry Delay operation, where
-   the RCODE indicates the reason for termination).
-
-   The Z bits are currently unused, and in both requests and responses
-   the Z bits SHOULD be set to zero (0) on transmission and silently
-   ignored on reception, unless a future document specifies otherwise.
 
 3.4.  Message Handling
 
@@ -775,16 +834,17 @@ Internet-Draft            DNS Session Signaling               March 2017
    message (or it is known in advance by other means that the client
    supports Session Signaling) either end may unilaterally send Session
    Signaling messages at any time, and therefore either client or server
-   may be the initiator of a message.  The initiator MUST set the value
-   of the QR bit in the DNS header to zero (0), and the responder MUST
-   set it to one (1).
 
 
 
-Bellis, et al.         Expires September 11, 2017              [Page 14]
+Bellis, et al.         Expires September 11, 2017              [Page 15]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
+
+   may be the initiator of a message.  The initiator MUST set the value
+   of the QR bit in the DNS header to zero (0), and the responder MUST
+   set it to one (1).
 
    Every Session Signaling request message (QR=0) MUST elicit a response
    (QR=1), which MUST have the same MESSAGE ID in the DNS message header
@@ -818,6 +878,26 @@ Internet-Draft            DNS Session Signaling               March 2017
    error and it MUST immediately terminate the connection with a TCP RST
    (or equivalent for other protocols).
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Bellis, et al.         Expires September 11, 2017              [Page 16]
+
+Internet-Draft            DNS Session Signaling               March 2017
+
+
    The RCODE value in a response may be one of the following values:
 
    +------+------------+-----------------------------------------------+
@@ -834,13 +914,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    |   11 | SSOPNOTIMP | Session Signaling operation Type Code not     |
    |      |            | supported                                     |
    +------+------------+-----------------------------------------------+
-
-
-
-Bellis, et al.         Expires September 11, 2017              [Page 15]
-
-Internet-Draft            DNS Session Signaling               March 2017
-
 
 3.5.  TLV Format
 
@@ -876,24 +949,7 @@ Internet-Draft            DNS Session Signaling               March 2017
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Bellis, et al.         Expires September 11, 2017              [Page 16]
+Bellis, et al.         Expires September 11, 2017              [Page 17]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
@@ -949,7 +1005,7 @@ Internet-Draft            DNS Session Signaling               March 2017
 
 
 
-Bellis, et al.         Expires September 11, 2017              [Page 17]
+Bellis, et al.         Expires September 11, 2017              [Page 18]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
@@ -1005,7 +1061,7 @@ Internet-Draft            DNS Session Signaling               March 2017
 
 
 
-Bellis, et al.         Expires September 11, 2017              [Page 18]
+Bellis, et al.         Expires September 11, 2017              [Page 19]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
@@ -1061,7 +1117,7 @@ Internet-Draft            DNS Session Signaling               March 2017
 
 
 
-Bellis, et al.         Expires September 11, 2017              [Page 19]
+Bellis, et al.         Expires September 11, 2017              [Page 20]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
@@ -1117,7 +1173,7 @@ Internet-Draft            DNS Session Signaling               March 2017
 
 
 
-Bellis, et al.         Expires September 11, 2017              [Page 20]
+Bellis, et al.         Expires September 11, 2017              [Page 21]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
@@ -1173,7 +1229,7 @@ Internet-Draft            DNS Session Signaling               March 2017
 
 
 
-Bellis, et al.         Expires September 11, 2017              [Page 21]
+Bellis, et al.         Expires September 11, 2017              [Page 22]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
@@ -1229,7 +1285,7 @@ Internet-Draft            DNS Session Signaling               March 2017
 
 
 
-Bellis, et al.         Expires September 11, 2017              [Page 22]
+Bellis, et al.         Expires September 11, 2017              [Page 23]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
@@ -1285,7 +1341,7 @@ Authors' Addresses
 
 
 
-Bellis, et al.         Expires September 11, 2017              [Page 23]
+Bellis, et al.         Expires September 11, 2017              [Page 24]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
@@ -1341,4 +1397,4 @@ Internet-Draft            DNS Session Signaling               March 2017
 
 
 
-Bellis, et al.         Expires September 11, 2017              [Page 24]
+Bellis, et al.         Expires September 11, 2017              [Page 25]

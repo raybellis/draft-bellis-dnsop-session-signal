@@ -543,6 +543,39 @@ the same client IP address.
 Because of these constraints, a DNS server MUST be prepared to accept
 multiple connections from different source ports on the same client IP address.</t>
 
+<figure><artwork><![CDATA[
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+]]></artwork></figure>
+
 </section>
 <section anchor="format" title="Message Format">
 
@@ -560,7 +593,55 @@ The skipped data is silently ignored.
 Any skipped data in a Session Signaling request is discarded, and not copied
 to the corresponding sections in the Session Signaling response.</t>
 
-<t>The twelve-octet header and the four (usually) empty sections
+<figure><artwork><![CDATA[
+                                             1   1   1   1   1   1
+     0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
+   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+   |                          MESSAGE ID                           |
+   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+   |QR |    Opcode     |            Z              |     RCODE     |
+   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+   |                     QDCOUNT (MUST BE ZERO)                    |
+   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+   |                     ANCOUNT (MUST BE ZERO)                    |
+   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+   |                     NSCOUNT (MUST BE ZERO)                    |
+   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+   |                     ARCOUNT (MUST BE ZERO)                    |
+   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+   |                                                               |
+   /                     Session Signaling Data                    /
+   /                                                               /
+   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+]]></artwork></figure>
+
+<t>In a request the DNS Header QR bit MUST be zero.
+If the QR bit MUST is not zero the message is not a request.</t>
+
+<t>In a response the DNS Header QR bit MUST be one.
+If the QR bit is not one the message is not a response.</t>
+
+<t>In a request the MESSAGE ID field MUST be set to a unique value, that the
+initiator is not using for any other active operation on this connection.
+For the purposes here, a MESSAGE ID is in use on this connection if the
+initiator has used it in a request for which it has not yet received a
+response, or if if the client has used it for a subscription which it has
+not yet cancelled <xref target="I-D.ietf-dnssd-push"/>.</t>
+
+<t>In a response the MESSAGE ID field contain a copy of the value of the
+MESSAGE ID field in the request being responded to.</t>
+
+<t>The DNS Header Opcode field holds the Session Signaling Opcode value (tentatively 6).</t>
+
+<t>The Z bits are currently unused, and in both requests and responses the
+Z bits MUST be set to zero (0) on transmission and MUST be silently ignored
+on reception, unless a future document specifies otherwise.</t>
+
+<t>In a request message (QR=0) the RCODE is generally set to zero on transmission,
+and silently ignored on reception, except where specified otherwise
+(for example, the Retry Delay operation, where the RCODE indicates the reason for termination).</t>
+
+<t>The standard twelve-octet DNS message header and the four (usually) empty sections
 are followed by at most one Session Signaling Operation TLV.
 The (optional) Operation TLV may be followed by one or more Modifier TLVs, such as
 the Retry Delay TLV (0), which, in error responses, indicates the time interval
@@ -625,38 +706,6 @@ in <spanx style="emph">any</spanx> messages sent on a Session Signaling session 
 the functionality provided by the Session Signaling Keepalive operation),
 but messages may contain other EDNS(0) options as appropriate.</t>
 
-<figure><artwork><![CDATA[
-                                             1   1   1   1   1   1
-     0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
-   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-   |                          MESSAGE ID                           |
-   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-   |QR |    Opcode     |            Z              |     RCODE     |
-   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-   |                     QDCOUNT (MUST BE ZERO)                    |
-   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-   |                     ANCOUNT (MUST BE ZERO)                    |
-   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-   |                     NSCOUNT (MUST BE ZERO)                    |
-   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-   |                     ARCOUNT (MUST BE ZERO)                    |
-   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-   |                                                               |
-   /                     Session Signaling Data                    /
-   /                                                               /
-   +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-]]></artwork></figure>
-
-<t>The MESSAGE ID, QR, Opcode and RCODE fields have their usual meanings <xref target="RFC1035"/>.</t>
-
-<t>In a request message (QR=0) the RCODE is generally set to zero on transmission,
-and silently ignored on reception, except where specified otherwise
-(for example, the Retry Delay operation, where the RCODE indicates the reason for termination).</t>
-
-<t>The Z bits are currently unused, and in both requests and responses the
-Z bits SHOULD be set to zero (0) on transmission and silently ignored
-on reception, unless a future document specifies otherwise.</t>
-
 </section>
 <section anchor="message-handling" title="Message Handling">
 
@@ -695,6 +744,21 @@ existing subscription using that MESSAGE ID remains active.)</t>
 <t>If a client or server receives a response (QR=1) where the MESSAGE ID does not
 match any of its outstanding operations, this is a fatal error and it MUST immediately
 terminate the connection with a TCP RST (or equivalent for other protocols).</t>
+
+<figure><artwork><![CDATA[
+
+
+
+
+
+
+
+
+
+
+
+
+]]></artwork></figure>
 
 <t>The RCODE value in a response may be one of the following values:</t>
 
