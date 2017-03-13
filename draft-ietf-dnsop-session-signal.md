@@ -133,6 +133,14 @@ data after the end of the DNS message. It is likely that future updates
 to these tools will add the ability to recognize, decode, and display the
 Session Signaling data.
 
+~~~
+
+
+
+
+
+~~~
+
 # Terminology
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
@@ -681,6 +689,30 @@ SSOP-DATA.
 SSOP-DATA:
 : Type-code specific.
 
+~~~
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+~~~
+
 # Keepalive TLV {#keepalive}
 
 The Keepalive TLV (1) performs three functions.
@@ -805,6 +837,16 @@ client or server receives a DNS message over the session that contains an
 EDNS(0) TCP KeepAlive option, this is an error and the receiver of the
 EDNS(0) TCP KeepAlive option MUST immediately
 terminate the connection with a TCP RST (or equivalent for other protocols).
+
+~~~
+
+
+
+
+
+
+
+~~~
 
 # Retry Delay TLV {#delay}
 
