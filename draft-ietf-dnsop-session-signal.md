@@ -995,12 +995,12 @@ Registry, with initial values as follows:
 
 | Type | Name | Status | Reference |
 |--:|------|--------|-----------|
-| 0 | SSOP-RetryDelay | Standard | RFC-TBD |
-| 1 | SSOP-KeepAlive | Standard | RFC-TBD |
-| 3 - 63 | Unassigned, reserved for session management TLVs | | |
-| 64 - 63487 | Unassigned | | |
-| 63488 - 64511 | Reserved for local / experimental use | | |
-| 64512 - 65535 | Reserved for future expansion | | |
+| 0x0000 | SSOP-RetryDelay | Standard | RFC-TBD |
+| 0x0001 | SSOP-KeepAlive | Standard | RFC-TBD |
+| 0x0002 - 0x003F | Unassigned, reserved for session management TLVs | | |
+| 0x0040 - 0xF7FF | Unassigned | | |
+| 0xF800 - 0xFBFF | Reserved for local / experimental use | | |
+| 0xFC00 - 65535 | Reserved for future expansion | | |
 
 Registration of additional Session Signaling Type Codes requires publication
 of an appropriate IETF "Standards Action" or "IESG Approval" document {{!RFC5226}}.

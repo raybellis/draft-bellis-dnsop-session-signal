@@ -1055,27 +1055,27 @@ Registry, with initial values as follows:</t>
       <ttcol align='left'>Name</ttcol>
       <ttcol align='left'>Status</ttcol>
       <ttcol align='left'>Reference</ttcol>
-      <c>0</c>
+      <c>0x0000</c>
       <c>SSOP-RetryDelay</c>
       <c>Standard</c>
       <c>RFC-TBD</c>
-      <c>1</c>
+      <c>0x0001</c>
       <c>SSOP-KeepAlive</c>
       <c>Standard</c>
       <c>RFC-TBD</c>
-      <c>3 - 63</c>
+      <c>0x0002 - 0x003F</c>
       <c>Unassigned, reserved for session management TLVs</c>
       <c>&#160;</c>
       <c>&#160;</c>
-      <c>64 - 63487</c>
+      <c>0x0040 - 0xF7FF</c>
       <c>Unassigned</c>
       <c>&#160;</c>
       <c>&#160;</c>
-      <c>63488 - 64511</c>
+      <c>0xF800 - 0xFBFF</c>
       <c>Reserved for local / experimental use</c>
       <c>&#160;</c>
       <c>&#160;</c>
-      <c>64512 - 65535</c>
+      <c>0xFC00 - 65535</c>
       <c>Reserved for future expansion</c>
       <c>&#160;</c>
       <c>&#160;</c>

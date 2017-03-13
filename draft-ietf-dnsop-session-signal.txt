@@ -1199,25 +1199,25 @@ Internet-Draft            DNS Session Signaling               March 2017
    IANA are directed to create the DNS Session Signaling Type Codes
    Registry, with initial values as follows:
 
-   +-----------+--------------------------------+----------+-----------+
-   |      Type | Name                           | Status   | Reference |
-   +-----------+--------------------------------+----------+-----------+
-   |         0 | SSOP-RetryDelay                | Standard | RFC-TBD   |
-   |           |                                |          |           |
-   |         1 | SSOP-KeepAlive                 | Standard | RFC-TBD   |
-   |           |                                |          |           |
-   |    3 - 63 | Unassigned, reserved for       |          |           |
-   |           | session management TLVs        |          |           |
-   |           |                                |          |           |
-   |      64 - | Unassigned                     |          |           |
-   |     63487 |                                |          |           |
-   |           |                                |          |           |
-   |   63488 - | Reserved for local /           |          |           |
-   |     64511 | experimental use               |          |           |
-   |           |                                |          |           |
-   |   64512 - | Reserved for future expansion  |          |           |
-   |     65535 |                                |          |           |
-   +-----------+--------------------------------+----------+-----------+
+   +------------+-------------------------------+----------+-----------+
+   |       Type | Name                          | Status   | Reference |
+   +------------+-------------------------------+----------+-----------+
+   |     0x0000 | SSOP-RetryDelay               | Standard | RFC-TBD   |
+   |            |                               |          |           |
+   |     0x0001 | SSOP-KeepAlive                | Standard | RFC-TBD   |
+   |            |                               |          |           |
+   |   0x0002 - | Unassigned, reserved for      |          |           |
+   |     0x003F | session management TLVs       |          |           |
+   |            |                               |          |           |
+   |   0x0040 - | Unassigned                    |          |           |
+   |     0xF7FF |                               |          |           |
+   |            |                               |          |           |
+   |   0xF800 - | Reserved for local /          |          |           |
+   |     0xFBFF | experimental use              |          |           |
+   |            |                               |          |           |
+   |   0xFC00 - | Reserved for future expansion |          |           |
+   |      65535 |                               |          |           |
+   +------------+-------------------------------+----------+-----------+
 
    Registration of additional Session Signaling Type Codes requires
    publication of an appropriate IETF "Standards Action" or "IESG
