@@ -74,6 +74,15 @@ author:
     phone: +1 843 473 7394
     email: pusateri@bangj.com
 
+informative:
+  NagleDA:
+    target: http://www.stuartcheshire.org/papers/nagledelayedack/
+    title: TCP Performance problems caused by interaction between Nagle's Algorithm and Delayed ACK
+    author:
+      name: Stuart Cheshire
+      ins: S. Cheshire
+    date: 2005-05-20
+
 --- abstract
 
 The EDNS(0) Extension Mechanism for DNS is explicitly defined to only have
@@ -689,7 +698,8 @@ are all combined into a single packet, so in practice the requirement that every
 Session Signaling request message MUST elicit a 
 Session Signaling response incurs minimal extra cost on the network.
 Requiring that every request elicit a corresponding response also avoids
-performance problems caused by interaction between Delayed Ack and Nagle's Algorithm.
+performance problems caused by interaction between
+Nagle's Algorithm and Delayed Ack {{NagleDA}}.
 
 The namespaces of 16-bit MESSAGE IDs are disjoint in each direction.
 For example, it is *not* an error for both client and server to send a request

@@ -860,8 +860,8 @@ Internet-Draft            DNS Session Signaling               March 2017
    Signaling request message MUST elicit a Session Signaling response
    incurs minimal extra cost on the network.  Requiring that every
    request elicit a corresponding response also avoids performance
-   problems caused by interaction between Delayed Ack and Nagle's
-   Algorithm.
+   problems caused by interaction between Nagle's Algorithm and Delayed
+   Ack [NagleDA].
 
    The namespaces of 16-bit MESSAGE IDs are disjoint in each direction.
    For example, it is _not_ an error for both client and server to send
@@ -1315,6 +1315,11 @@ Internet-Draft            DNS Session Signaling               March 2017
               Pusateri, T. and S. Cheshire, "DNS Push Notifications",
               draft-ietf-dnssd-push-09 (work in progress), October 2016.
 
+   [NagleDA]  Cheshire, S., "TCP Performance problems caused by
+              interaction between Nagle's Algorithm and Delayed ACK",
+              May 2005,
+              <http://www.stuartcheshire.org/papers/nagledelayedack/>.
+
    [RFC7858]  Hu, Z., Zhu, L., Heidemann, J., Mankin, A., Wessels, D.,
               and P. Hoffman, "Specification for DNS over Transport
               Layer Security (TLS)", RFC 7858, DOI 10.17487/RFC7858, May
@@ -1330,11 +1335,6 @@ Authors' Addresses
 
    Phone: +1 650 423 1200
    Email: ray@isc.org
-
-
-
-
-
 
 
 

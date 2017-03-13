@@ -729,7 +729,8 @@ are all combined into a single packet, so in practice the requirement that every
 Session Signaling request message MUST elicit a 
 Session Signaling response incurs minimal extra cost on the network.
 Requiring that every request elicit a corresponding response also avoids
-performance problems caused by interaction between Delayed Ack and Nagle’s Algorithm.</t>
+performance problems caused by interaction between
+Nagle’s Algorithm and Delayed Ack <xref target="NagleDA"/>.</t>
 
 <t>The namespaces of 16-bit MESSAGE IDs are disjoint in each direction.
 For example, it is <spanx style="emph">not</spanx> an error for both client and server to send a request
@@ -1123,6 +1124,15 @@ for their helpful contributions to this document.</t>
 
     <references title='Informative References'>
 
+<reference anchor="NagleDA" target="http://www.stuartcheshire.org/papers/nagledelayedack/">
+  <front>
+    <title>TCP Performance problems caused by interaction between Nagle's Algorithm and Delayed ACK</title>
+    <author initials="S." surname="Cheshire" fullname="Stuart Cheshire">
+      <organization></organization>
+    </author>
+    <date year="2005" month="May" day="20"/>
+  </front>
+</reference>
 &RFC7858;
 &I-D.ietf-dnssd-push;
 
