@@ -202,8 +202,12 @@ Internet-Draft            DNS Session Signaling               March 2017
    usual DNS sense.
 
    The term "sender" may apply to either an initiator (when sending a
-   Session Signaling request message) or responder (when sending a
+   Session Signaling request message) or a responder (when sending a
    Session Signaling response message).
+
+   Likewise, the term "receiver" may apply to either a responder (when
+   receiving a Session Signaling request message) or an initiator (when
+   receiving a Session Signaling response message).
 
    Session Signaling operations are expressed using type-length-value
    (TLV) syntax.
@@ -215,10 +219,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    it may contain a single corresponding response Operation TLV, with
    the same SSOP-TYPE as in the request message.
 
-   A "Session Signaling Modifier TLV" specifies additional parameters
-   relating to the operation.  Immediately following the Operation TLV,
-
-
 
 
 Bellis, et al.         Expires September 11, 2017               [Page 4]
@@ -226,6 +226,8 @@ Bellis, et al.         Expires September 11, 2017               [Page 4]
 Internet-Draft            DNS Session Signaling               March 2017
 
 
+   A "Session Signaling Modifier TLV" specifies additional parameters
+   relating to the operation.  Immediately following the Operation TLV,
    if present, a Session Signaling message MAY contain one or more
    Modifier TLVs.
 
@@ -272,8 +274,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    A server SHOULD NOT initiate Session Signaling messages until a
    client-initiated Session Signaling message is received first, unless
    in an environment where it is known in advance by other means that
-   the client supports Session Signaling.  This requirement is to ensure
-   that the clients that do not support Session Signaling do not receive
 
 
 
@@ -282,6 +282,8 @@ Bellis, et al.         Expires September 11, 2017               [Page 5]
 Internet-Draft            DNS Session Signaling               March 2017
 
 
+   the client supports Session Signaling.  This requirement is to ensure
+   that the clients that do not support Session Signaling do not receive
    unsolicited inbound Session Signaling messages that they would not
    know how to handle.
 
@@ -328,8 +330,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    active, with no messages flowing in either direction, for far longer
    than the idle timeout, and this is not an error.  This is why there
    are two separate timers: the idle timeout, and the keepalive
-   interval.  Just because a session has no traffic for an extended
-   period of time does not automatically make that session "idle", if it
 
 
 
@@ -338,6 +338,8 @@ Bellis, et al.         Expires September 11, 2017               [Page 6]
 Internet-Draft            DNS Session Signaling               March 2017
 
 
+   interval.  Just because a session has no traffic for an extended
+   period of time does not automatically make that session "idle", if it
    has an active Push Notification subscription that is awaiting
    notification events.
 
@@ -384,8 +386,6 @@ Internet-Draft            DNS Session Signaling               March 2017
 
    The two timer values are independent.  The idle timeout may be lower,
    the same, or higher than the keepalive interval, though in most cases
-   the idle timeout is expected to be shorter than the keepalive
-   interval.
 
 
 
@@ -393,6 +393,9 @@ Bellis, et al.         Expires September 11, 2017               [Page 7]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
+
+   the idle timeout is expected to be shorter than the keepalive
+   interval.
 
    A shorter idle timeout with a longer keepalive interval signals to
    the client that it should not speculatively keep idle sessions open
@@ -438,9 +441,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    messages being sent or received on a session, the client MUST take
    action to keep the session alive.  To keep the session alive the
    client MUST send a Session Signaling Keepalive message (see
-   Section 4).  A Session Signaling Keepalive message exchange resets
-   only the keepalive interval timer, not the idle timeout timer.
-
 
 
 
@@ -449,6 +449,9 @@ Bellis, et al.         Expires September 11, 2017               [Page 8]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
+
+   Section 4).  A Session Signaling Keepalive message exchange resets
+   only the keepalive interval timer, not the idle timeout timer.
 
    If a client disconnects from the network abruptly, without cleanly
    closing its session, leaving long-lived outstanding operations like
@@ -494,9 +497,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    session open for further operations.  For error conditions that are
    likely to make all operations unsuccessful in the immediate future,
    the server SHOULD return an error response to the client and then
-   close the session by sending a Retry Delay request message, as
-   described in Section 5.
-
 
 
 
@@ -505,6 +505,9 @@ Bellis, et al.         Expires September 11, 2017               [Page 9]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
+
+   close the session by sending a Retry Delay request message, as
+   described in Section 5.
 
    There may be rare cases where a server is overloaded and wishes to
    shed load.  If the server handles this by simply closing connections,
@@ -551,9 +554,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    reconfigured and is no longer authoritative for some of the names),
    but the server is terminating all sessions en masse with a REFUSED
    (5) RCODE, the RECONNECT DELAY MAY be zero, indicating that the
-   clients SHOULD immediately attempt to re-establish operations.  It is
-   likely that some of the attempts will be successful and some will
-   not.
 
 
 
@@ -561,6 +561,10 @@ Bellis, et al.         Expires September 11, 2017              [Page 10]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
+
+   clients SHOULD immediately attempt to re-establish operations.  It is
+   likely that some of the attempts will be successful and some will
+   not.
 
    In the case where a server is terminating a large number of sessions
    at once (e.g., if the system is restarting) and the server doesn't
@@ -606,10 +610,6 @@ Internet-Draft            DNS Session Signaling               March 2017
 
    A single server may support multiple services, including DNS Updates
    [RFC2136], DNS Push Notifications [I-D.ietf-dnssd-push], and other
-   services, for one or more DNS zones.  When a client discovers that
-   the target server for several different operations is the same target
-   hostname and port, the client SHOULD use a single shared session for
-   all those operations.  A client SHOULD NOT open multiple connections
 
 
 
@@ -618,6 +618,10 @@ Bellis, et al.         Expires September 11, 2017              [Page 11]
 Internet-Draft            DNS Session Signaling               March 2017
 
 
+   services, for one or more DNS zones.  When a client discovers that
+   the target server for several different operations is the same target
+   hostname and port, the client SHOULD use a single shared session for
+   all those operations.  A client SHOULD NOT open multiple connections
    to the same target host and port just because the names being
    operated on are different or happen to fall within different zones.
    This is to reduce unnecessary connection load on the DNS server.
@@ -631,10 +635,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    same client IP address.  Because of these constraints, a DNS server
    MUST be prepared to accept multiple connections from different source
    ports on the same client IP address.
-
-
-
-
 
 
 

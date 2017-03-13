@@ -180,7 +180,11 @@ regardless of which was the "client" and "server" in the usual DNS sense.
 
 The term "sender" may apply to either an initiator
 (when sending a Session Signaling request message)
-or responder (when sending a Session Signaling response message).
+or a responder (when sending a Session Signaling response message).
+
+Likewise, the term "receiver" may apply to either a responder
+(when receiving a Session Signaling request message)
+or an initiator (when receiving a Session Signaling response message).
 
 Session Signaling operations are expressed using type-length-value (TLV) syntax.
 
