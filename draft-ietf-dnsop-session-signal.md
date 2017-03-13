@@ -1,7 +1,7 @@
 ---
 title: DNS Session Signaling
 docname: draft-ietf-dnsop-session-signal-02
-date: 2017-03-10
+date: 2017-03-13
 
 ipr: trust200902
 area: Internet
