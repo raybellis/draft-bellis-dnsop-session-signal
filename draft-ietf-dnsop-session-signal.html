@@ -402,8 +402,8 @@
   <link rel="schema.dct" href="http://purl.org/dc/terms/" />
 
   <meta name="dct.creator" content="Bellis, R., Cheshire, S., Dickinson, J., Dickinson, S., Mankin, A., and T. Pusateri" />
-  <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-dnsop-session-signal-02" />
-  <meta name="dct.issued" scheme="ISO8601" content="2017-3-13" />
+  <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-dnsop-session-signal-03" />
+  <meta name="dct.issued" scheme="ISO8601" content="2017-3-27" />
   <meta name="dct.abstract" content="The EDNS(0) Extension Mechanism for DNS is explicitly defined to only have &#8220;per-message&#8221; semantics.  This document defines a new Session Signaling Opcode used to communicate persistent &#8220;per-session&#8221; operations, expressed using type-length-value (TLV) syntax, and defines an initial set of TLVs used to manage session timeouts and termination." />
   <meta name="description" content="The EDNS(0) Extension Mechanism for DNS is explicitly defined to only have &#8220;per-message&#8221; semantics.  This document defines a new Session Signaling Opcode used to communicate persistent &#8220;per-session&#8221; operations, expressed using type-length-value (TLV) syntax, and defines an initial set of TLVs used to manage session timeouts and termination." />
 
@@ -431,7 +431,7 @@
   <td class="right">Apple Inc.</td>
 </tr>
 <tr>
-  <td class="left">Expires: September 14, 2017</td>
+  <td class="left">Expires: September 28, 2017</td>
   <td class="right">J. Dickinson</td>
 </tr>
 <tr>
@@ -460,7 +460,7 @@
 </tr>
 <tr>
   <td class="left"></td>
-  <td class="right">March 13, 2017</td>
+  <td class="right">March 27, 2017</td>
 </tr>
 
     	
@@ -468,7 +468,7 @@
   </table>
 
   <p class="title">DNS Session Signaling<br />
-  <span class="filename">draft-ietf-dnsop-session-signal-02</span></p>
+  <span class="filename">draft-ietf-dnsop-session-signal-03</span></p>
   
   <h1 id="rfc.abstract">
   <a href="#rfc.abstract">Abstract</a>
@@ -480,7 +480,7 @@
 <p>This Internet-Draft is submitted in full conformance with the provisions of BCP 78 and BCP 79.</p>
 <p>Internet-Drafts are working documents of the Internet Engineering Task Force (IETF).  Note that other groups may also distribute working documents as Internet-Drafts.  The list of current Internet-Drafts is at http://datatracker.ietf.org/drafts/current/.</p>
 <p>Internet-Drafts are draft documents valid for a maximum of six months and may be updated, replaced, or obsoleted by other documents at any time.  It is inappropriate to use Internet-Drafts as reference material or to cite them other than as "work in progress."</p>
-<p>This Internet-Draft will expire on September 14, 2017.</p>
+<p>This Internet-Draft will expire on September 28, 2017.</p>
 <h1 id="rfc.copyrightnotice">
   <a href="#rfc.copyrightnotice">Copyright Notice</a>
 </h1>
@@ -597,23 +597,15 @@
 <p id="rfc.section.3.1.2.p.11">Apart from the cases described above, a server MUST NOT close a session with a client, except in extraordinary error conditions. Closing the session is the client&#8217;s responsibility, to be done at the client&#8217;s discretion, when it so chooses.  A server only closes a session under exceptional circumstances, such as when the server application software or underlying operating system is restarting, the server application terminated unexpectedly (perhaps due to a bug that makes it crash), or the server is undergoing maintenance procedures.  When possible, a server SHOULD send a Retry Delay message informing the client of the reason for the session being closed, and allow the client five seconds to receive it before the server resorts to forcibly aborting the connection.</p>
 <p id="rfc.section.3.1.2.p.12">After a session is closed by the server, the client SHOULD try to reconnect, to that server, or to another suitable server, if more than one is available.  If reconnecting to the same server, the client MUST respect the indicated delay before attempting to reconnect.</p>
 <p id="rfc.section.3.1.2.p.13">If a server is low on resources it MAY simply terminate a client connection with a TCP RST (or equivalent for other protocols).  However, the likely behaviour of the client may be simply to reconnect immediately, putting more burden on the server. Therefore, a server SHOULD instead choose to shed client load by sending a Retry Delay message, as described above.  Upon reception of the Termination TLV the client is expected to close the session, and if it does not then the server will abort the session five seconds later.</p>
+<pre>
+
+
+</pre>
 <h1 id="rfc.section.3.2"><a href="#rfc.section.3.2">3.2.</a> <a href="#sharing" id="sharing">Connection Sharing</a></h1>
 <p id="rfc.section.3.2.p.1">A client that supports Session Signaling SHOULD NOT make multiple connections to the same DNS server.</p>
 <p id="rfc.section.3.2.p.2">A single server may support multiple services, including DNS Updates <a href="#RFC2136">[RFC2136]</a>, DNS Push Notifications <a href="#I-D.ietf-dnssd-push">[I-D.ietf-dnssd-push]</a>, and other services, for one or more DNS zones.  When a client discovers that the target server for several different operations is the same target hostname and port, the client SHOULD use a single shared session for all those operations.  A client SHOULD NOT open multiple connections to the same target host and port just because the names being operated on are different or happen to fall within different zones.  This is to reduce unnecessary connection load on the DNS server.</p>
 <p id="rfc.section.3.2.p.3">However, server implementers and operators should be aware that connection sharing may not be possible in all cases.  A single client device may be home to multiple independent client software instances that don&#8217;t coordinate with each other.  Similarly, multiple independent client devices behind the same NAT gateway will also typically appear to the DNS server as different source ports on the same client IP address.  Because of these constraints, a DNS server MUST be prepared to accept multiple connections from different source ports on the same client IP address.</p>
 <pre>
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -674,16 +666,16 @@
 <p id="rfc.section.3.3.p.17">Similarly, a Session Signaling message MUST NOT contain a TSIG record.  A TSIG record in a conventional DNS message is added as the last record in the additional records section, and carries a signature computed over the preceding message content. Since Session Signaling data appears after the additional records section, it would not be included in the signature calculation.  If use of signatures with Session Signaling messages becomes necessary in the future, an explicit Session Signaling Modifier TLV needs to be defined to perform this function.</p>
 <p id="rfc.section.3.3.p.18">Note however that, while Session Signaling <em>messages</em> cannot include EDNS(0) or TSIG records, a Session Signaling <em>session</em> is typically used to carry a whole series of DNS messages of different kinds, including Session Signaling messages, and other DNS message types like Query <a href="#RFC1034">[RFC1034]</a><a href="#RFC1035">[RFC1035]</a> and Update <a href="#RFC2136">[RFC2136]</a>, and those messages can carry EDNS(0) and TSIG records.</p>
 <p id="rfc.section.3.3.p.19">This specification explicitly prohibits use of the EDNS(0) TCP Keepalive Option <a href="#RFC7828">[RFC7828]</a> in <em>any</em> messages sent on a Session Signaling session (because it duplicates the functionality provided by the Session Signaling Keepalive operation), but messages may contain other EDNS(0) options as appropriate.</p>
+<pre>
+
+
+</pre>
 <h1 id="rfc.section.3.4"><a href="#rfc.section.3.4">3.4.</a> <a href="#message-handling" id="message-handling">Message Handling</a></h1>
 <p id="rfc.section.3.4.p.1">On a session between a client and server that support Session Signaling, once the client has sent at least one Session Signaling message (or it is known in advance by other means that the client supports Session Signaling) either end may unilaterally send Session Signaling messages at any time, and therefore either client or server may be the initiator of a message.  The initiator MUST set the value of the QR bit in the DNS header to zero (0), and the responder MUST set it to one (1).</p>
 <p id="rfc.section.3.4.p.2">Every Session Signaling request message (QR=0) MUST elicit a response (QR=1), which MUST have the same MESSAGE ID in the DNS message header as in the corresponding request.  Session Signaling request messages sent by the client elicit a response from the server, and Session Signaling request messages sent by the server elicit a response from the client.  With most TCP implementations, the TCP data acknowledgement (generated because data has been received by TCP), the TCP window update (generated because TCP has delivered that data to the receiving software) and the DNS Session Signaling response (generated by the receiving software itself) are all combined into a single packet, so in practice the requirement that every Session Signaling request message MUST elicit a Session Signaling response incurs minimal extra cost on the network.  Requiring that every request elicit a corresponding response also avoids performance problems caused by interaction between Nagle&#8217;s Algorithm and Delayed Ack <a href="#NagleDA">[NagleDA]</a>.</p>
 <p id="rfc.section.3.4.p.3">The namespaces of 16-bit MESSAGE IDs are disjoint in each direction.  For example, it is <em>not</em> an error for both client and server to send a request message with the same ID.  In effect, the 16-bit MESSAGE ID combined with the identity of the initiator (client or server) serves as a 17-bit unique identifier for a particular operation on a session.</p>
 <p id="rfc.section.3.4.p.4">An initiator MUST NOT reuse a MESSAGE ID that is already in use for an outstanding request, unless specified otherwise by the relevant specification for the Session Signaling operation in question.  At the very least, this means that a MESSAGE ID MUST NOT be reused in a particular direction on a particular session while the initiator is waiting for a response to a previous request on that session, unless specified otherwise by the relevant specification for the Session Signaling operation in question.  (For a long-lived operation, such as a DNS Push Notification subscription <a href="#I-D.ietf-dnssd-push">[I-D.ietf-dnssd-push]</a> the MESSAGE ID for the operation MUST NOT be reused for a new subscription as long as the existing subscription using that MESSAGE ID remains active.)</p>
 <p id="rfc.section.3.4.p.5">If a client or server receives a response (QR=1) where the MESSAGE ID does not match any of its outstanding operations, this is a fatal error and it MUST immediately terminate the connection with a TCP RST (or equivalent for other protocols).</p>
-<pre>
-
-
-</pre>
 <p id="rfc.section.3.4.p.6">The RCODE value in a response may be one of the following values:</p>
 <table cellpadding="3" cellspacing="0" class="tt full center">
   <thead>
@@ -745,28 +737,7 @@
   <dt>SSOP-DATA:</dt>
   <dd style="margin-left: 8">Type-code specific.</dd>
 </dl>
-<pre>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-</pre>
+<p id="rfc.section.3.5.p.2">Where domain names appear within SSOP-DATA, they SHOULD be compressed, if possible, using standard DNS name compression.</p>
 <h1 id="rfc.section.4"><a href="#rfc.section.4">4.</a> <a href="#keepalive" id="keepalive">Keepalive TLV</a></h1>
 <p id="rfc.section.4.p.1">The Keepalive TLV (1) performs three functions.  When sent by a client, it resets a session&#8217;s keepalive timer, and at the same time requests what the idle timeout and keepalive interval should be from this point forward in the session.</p>
 <p id="rfc.section.4.p.2">Once the client has sent at least one Session Signaling message (or it is known in advance by other means that the client supports Session Signaling) the Keepalive TLV also MAY be initiated by a server.  When sent by a server, it resets a session&#8217;s keepalive timer, and unilaterally informs the client of the new idle timeout and keepalive interval to use from this point forward in this session.</p>

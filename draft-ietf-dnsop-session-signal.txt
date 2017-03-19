@@ -6,18 +6,18 @@ DNSOP Working Group                                            R. Bellis
 Internet-Draft                                                       ISC
 Updates: RFC 7766 (if approved)                              S. Cheshire
 Intended status: Standards Track                              Apple Inc.
-Expires: September 14, 2017                                 J. Dickinson
+Expires: September 28, 2017                                 J. Dickinson
                                                             S. Dickinson
                                                                  Sinodun
                                                                A. Mankin
                                                               Salesforce
                                                              T. Pusateri
                                                             Unaffiliated
-                                                          March 13, 2017
+                                                          March 27, 2017
 
 
                          DNS Session Signaling
-                   draft-ietf-dnsop-session-signal-02
+                   draft-ietf-dnsop-session-signal-03
 
 Abstract
 
@@ -43,7 +43,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on September 14, 2017.
+   This Internet-Draft will expire on September 28, 2017.
 
 Copyright Notice
 
@@ -53,7 +53,7 @@ Copyright Notice
 
 
 
-Bellis, et al.         Expires September 14, 2017               [Page 1]
+Bellis, et al.         Expires September 28, 2017               [Page 1]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
@@ -76,9 +76,9 @@ Table of Contents
      3.1.  Session Lifecycle and Timers  . . . . . . . . . . . . . .   6
        3.1.1.  Client-Initiated Termination  . . . . . . . . . . . .   9
        3.1.2.  Server-Initiated Termination  . . . . . . . . . . . .   9
-     3.2.  Connection Sharing  . . . . . . . . . . . . . . . . . . .  11
+     3.2.  Connection Sharing  . . . . . . . . . . . . . . . . . . .  12
      3.3.  Message Format  . . . . . . . . . . . . . . . . . . . . .  13
-     3.4.  Message Handling  . . . . . . . . . . . . . . . . . . . .  15
+     3.4.  Message Handling  . . . . . . . . . . . . . . . . . . . .  16
      3.5.  TLV Format  . . . . . . . . . . . . . . . . . . . . . . .  17
    4.  Keepalive TLV . . . . . . . . . . . . . . . . . . . . . . . .  18
    5.  Retry Delay TLV . . . . . . . . . . . . . . . . . . . . . . .  21
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Bellis, et al.         Expires September 14, 2017               [Page 2]
+Bellis, et al.         Expires September 28, 2017               [Page 2]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
@@ -165,7 +165,7 @@ Internet-Draft            DNS Session Signaling               March 2017
 
 
 
-Bellis, et al.         Expires September 14, 2017               [Page 3]
+Bellis, et al.         Expires September 28, 2017               [Page 3]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
@@ -221,7 +221,7 @@ Internet-Draft            DNS Session Signaling               March 2017
 
 
 
-Bellis, et al.         Expires September 14, 2017               [Page 4]
+Bellis, et al.         Expires September 28, 2017               [Page 4]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
@@ -277,7 +277,7 @@ Internet-Draft            DNS Session Signaling               March 2017
 
 
 
-Bellis, et al.         Expires September 14, 2017               [Page 5]
+Bellis, et al.         Expires September 28, 2017               [Page 5]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
@@ -333,7 +333,7 @@ Internet-Draft            DNS Session Signaling               March 2017
 
 
 
-Bellis, et al.         Expires September 14, 2017               [Page 6]
+Bellis, et al.         Expires September 28, 2017               [Page 6]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
@@ -389,7 +389,7 @@ Internet-Draft            DNS Session Signaling               March 2017
 
 
 
-Bellis, et al.         Expires September 14, 2017               [Page 7]
+Bellis, et al.         Expires September 28, 2017               [Page 7]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
@@ -445,7 +445,7 @@ Internet-Draft            DNS Session Signaling               March 2017
 
 
 
-Bellis, et al.         Expires September 14, 2017               [Page 8]
+Bellis, et al.         Expires September 28, 2017               [Page 8]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
@@ -501,7 +501,7 @@ Internet-Draft            DNS Session Signaling               March 2017
 
 
 
-Bellis, et al.         Expires September 14, 2017               [Page 9]
+Bellis, et al.         Expires September 28, 2017               [Page 9]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
@@ -557,7 +557,7 @@ Internet-Draft            DNS Session Signaling               March 2017
 
 
 
-Bellis, et al.         Expires September 14, 2017              [Page 10]
+Bellis, et al.         Expires September 28, 2017              [Page 10]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
@@ -603,6 +603,21 @@ Internet-Draft            DNS Session Signaling               March 2017
    TLV the client is expected to close the session, and if it does not
    then the server will abort the session five seconds later.
 
+
+
+
+
+
+
+
+
+
+
+Bellis, et al.         Expires September 28, 2017              [Page 11]
+
+Internet-Draft            DNS Session Signaling               March 2017
+
+
 3.2.  Connection Sharing
 
    A client that supports Session Signaling SHOULD NOT make multiple
@@ -610,14 +625,6 @@ Internet-Draft            DNS Session Signaling               March 2017
 
    A single server may support multiple services, including DNS Updates
    [RFC2136], DNS Push Notifications [I-D.ietf-dnssd-push], and other
-
-
-
-Bellis, et al.         Expires September 14, 2017              [Page 11]
-
-Internet-Draft            DNS Session Signaling               March 2017
-
-
    services, for one or more DNS zones.  When a client discovers that
    the target server for several different operations is the same target
    hostname and port, the client SHOULD use a single shared session for
@@ -662,14 +669,7 @@ Internet-Draft            DNS Session Signaling               March 2017
 
 
 
-
-
-
-
-
-
-
-Bellis, et al.         Expires September 14, 2017              [Page 12]
+Bellis, et al.         Expires September 28, 2017              [Page 12]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
@@ -725,7 +725,7 @@ Internet-Draft            DNS Session Signaling               March 2017
 
 
 
-Bellis, et al.         Expires September 14, 2017              [Page 13]
+Bellis, et al.         Expires September 28, 2017              [Page 13]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
@@ -781,7 +781,7 @@ Internet-Draft            DNS Session Signaling               March 2017
 
 
 
-Bellis, et al.         Expires September 14, 2017              [Page 14]
+Bellis, et al.         Expires September 28, 2017              [Page 14]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
@@ -827,6 +827,21 @@ Internet-Draft            DNS Session Signaling               March 2017
    by the Session Signaling Keepalive operation), but messages may
    contain other EDNS(0) options as appropriate.
 
+
+
+
+
+
+
+
+
+
+
+Bellis, et al.         Expires September 28, 2017              [Page 15]
+
+Internet-Draft            DNS Session Signaling               March 2017
+
+
 3.4.  Message Handling
 
    On a session between a client and server that support Session
@@ -834,14 +849,6 @@ Internet-Draft            DNS Session Signaling               March 2017
    message (or it is known in advance by other means that the client
    supports Session Signaling) either end may unilaterally send Session
    Signaling messages at any time, and therefore either client or server
-
-
-
-Bellis, et al.         Expires September 14, 2017              [Page 15]
-
-Internet-Draft            DNS Session Signaling               March 2017
-
-
    may be the initiator of a message.  The initiator MUST set the value
    of the QR bit in the DNS header to zero (0), and the responder MUST
    set it to one (1).
@@ -883,20 +890,18 @@ Internet-Draft            DNS Session Signaling               March 2017
    subscription as long as the existing subscription using that MESSAGE
    ID remains active.)
 
+
+
+
+Bellis, et al.         Expires September 28, 2017              [Page 16]
+
+Internet-Draft            DNS Session Signaling               March 2017
+
+
    If a client or server receives a response (QR=1) where the MESSAGE ID
    does not match any of its outstanding operations, this is a fatal
    error and it MUST immediately terminate the connection with a TCP RST
    (or equivalent for other protocols).
-
-
-
-
-
-
-Bellis, et al.         Expires September 14, 2017              [Page 16]
-
-Internet-Draft            DNS Session Signaling               March 2017
-
 
    The RCODE value in a response may be one of the following values:
 
@@ -938,18 +943,13 @@ Internet-Draft            DNS Session Signaling               March 2017
 
    SSOP-DATA:  Type-code specific.
 
+   Where domain names appear within SSOP-DATA, they SHOULD be
+   compressed, if possible, using standard DNS name compression.
 
 
 
 
-
-
-
-
-
-
-
-Bellis, et al.         Expires September 14, 2017              [Page 17]
+Bellis, et al.         Expires September 28, 2017              [Page 17]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
@@ -1005,7 +1005,7 @@ Internet-Draft            DNS Session Signaling               March 2017
 
 
 
-Bellis, et al.         Expires September 14, 2017              [Page 18]
+Bellis, et al.         Expires September 28, 2017              [Page 18]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
@@ -1061,7 +1061,7 @@ Internet-Draft            DNS Session Signaling               March 2017
 
 
 
-Bellis, et al.         Expires September 14, 2017              [Page 19]
+Bellis, et al.         Expires September 28, 2017              [Page 19]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
@@ -1117,7 +1117,7 @@ Internet-Draft            DNS Session Signaling               March 2017
 
 
 
-Bellis, et al.         Expires September 14, 2017              [Page 20]
+Bellis, et al.         Expires September 28, 2017              [Page 20]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
@@ -1173,7 +1173,7 @@ Internet-Draft            DNS Session Signaling               March 2017
 
 
 
-Bellis, et al.         Expires September 14, 2017              [Page 21]
+Bellis, et al.         Expires September 28, 2017              [Page 21]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
@@ -1229,7 +1229,7 @@ Internet-Draft            DNS Session Signaling               March 2017
 
 
 
-Bellis, et al.         Expires September 14, 2017              [Page 22]
+Bellis, et al.         Expires September 28, 2017              [Page 22]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
@@ -1285,7 +1285,7 @@ Internet-Draft            DNS Session Signaling               March 2017
 
 
 
-Bellis, et al.         Expires September 14, 2017              [Page 23]
+Bellis, et al.         Expires September 28, 2017              [Page 23]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
@@ -1341,7 +1341,7 @@ Authors' Addresses
 
 
 
-Bellis, et al.         Expires September 14, 2017              [Page 24]
+Bellis, et al.         Expires September 28, 2017              [Page 24]
 
 Internet-Draft            DNS Session Signaling               March 2017
 
@@ -1397,4 +1397,4 @@ Internet-Draft            DNS Session Signaling               March 2017
 
 
 
-Bellis, et al.         Expires September 14, 2017              [Page 25]
+Bellis, et al.         Expires September 28, 2017              [Page 25]

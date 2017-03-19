@@ -1,7 +1,7 @@
 ---
 title: DNS Session Signaling
-docname: draft-ietf-dnsop-session-signal-02
-date: 2017-03-13
+docname: draft-ietf-dnsop-session-signal-03
+date: 2017-03-27
 
 ipr: trust200902
 area: Internet
@@ -491,6 +491,12 @@ choose to shed client load by sending a Retry Delay message, as described above.
 Upon reception of the Termination TLV the client is expected to close the session,
 and if it does not then the server will abort the session five seconds later.
 
+~~~
+
+
+
+~~~
+
 ## Connection Sharing {#sharing}
 
 A client that supports Session Signaling SHOULD NOT make multiple
@@ -519,18 +525,6 @@ Because of these constraints, a DNS server MUST be prepared to accept
 multiple connections from different source ports on the same client IP address.
 
 ~~~
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -680,6 +674,12 @@ in *any* messages sent on a Session Signaling session (because it duplicates
 the functionality provided by the Session Signaling Keepalive operation),
 but messages may contain other EDNS(0) options as appropriate.
 
+~~~
+
+
+
+~~~
+
 ## Message Handling
 
 On a session between a client and server that support Session Signaling,
@@ -728,12 +728,6 @@ If a client or server receives a response (QR=1) where the MESSAGE ID does not
 match any of its outstanding operations, this is a fatal error and it MUST immediately
 terminate the connection with a TCP RST (or equivalent for other protocols).
 
-~~~
-
-
-
-~~~
-
 The RCODE value in a response may be one of the following values:
 
 | Code | Mnemonic | Description |
@@ -769,29 +763,8 @@ SSOP-DATA.
 SSOP-DATA:
 : Type-code specific.
 
-~~~
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-~~~
+Where domain names appear within SSOP-DATA, they SHOULD be compressed,
+if possible, using standard DNS name compression.
 
 # Keepalive TLV {#keepalive}
 
