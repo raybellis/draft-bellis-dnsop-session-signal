@@ -1,7 +1,7 @@
 ---
 title: DNS Session Signaling
 docname: draft-ietf-dnsop-session-signal-03
-date: 2017-04-15
+date: 2017-04-17
 
 ipr: trust200902
 area: Internet
@@ -763,7 +763,7 @@ SSOP-DATA.
 SSOP-DATA:
 : Type-code specific.
 
-Where domain names appear within SSOP-DATA, they MUST NOT be compressed using standard DNS name compression. If future TLVs are defined where compression is beneficial, transport level compression is recommended.
+Where domain names appear within SSOP-DATA, they MUST NOT be compressed using standard DNS name compression.
 
 # Keepalive TLV {#keepalive}
 
