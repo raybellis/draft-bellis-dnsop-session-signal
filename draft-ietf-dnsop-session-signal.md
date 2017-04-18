@@ -1,7 +1,7 @@
 ---
 title: DNS Session Signaling
 docname: draft-ietf-dnsop-session-signal-03
-date: 2017-03-27
+date: 2017-04-18
 
 ipr: trust200902
 area: Internet
@@ -85,7 +85,7 @@ informative:
 
 --- abstract
 
-This document defines a new Session Signaling Opcode used to communicate 
+This document defines a new Session Signaling OPCODE used to communicate 
 persistent "per-session" operations, expressed using type-length-value (TLV) 
 syntax, and defines an initial set of TLVs used to manage session timeouts and termination. This mechanism is intended to reduce the overhead of existing “per-packet” signaling mechanisms with “per-message” semantics as well as defining new signaling operations not defined in EDNS(0). 
 
@@ -106,7 +106,7 @@ signal at least one session related parameter (the EDNS(0) TCP Keepalive option
 {{?RFC7828}}) the result is less than optimal due to the restrictions
 imposed by the EDNS(0) semantics and the lack of server-initiated signalling.
 
-This document defines a new Session Signaling Opcode used to carry persistent
+This document defines a new Session Signaling OPCODE used to carry persistent
 "per-session" operations, expressed using type-length-value (TLV) syntax, and
 defines an initial set of TLVs used to manage session timeouts and termination. 
 
@@ -130,10 +130,9 @@ operations (see {{format}}) differs from the traditional DNS packet
 format used for standard queries and responses.
 The standard twelve-octet header is used, but the four count fields
 (QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT) are set to zero and the
-corresponding sections are empty.
+corresponding sections are not present.
 The actual data pertaining to Session Signaling operations is
-appended to the end of the DNS message, following the four (empty)
-data sections.
+appended to the end of the DNS message header.
 When displayed using today's packet analyser tools that have not been updated
 to recognize the DNS Session Signaling format, this will result
 in the Session Signaling data being displayed as unknown additional
@@ -151,6 +150,9 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
 The term "connection" means a bidirectional stream of reliable,
 in-order messages, such as provided by using
 DNS over TCP {{!RFC1035}}{{!RFC7766}} or DNS over TLS {{?RFC7858}}.
+
+(QUESTION: Should we use a different term here instead of stream since QUIC 
+has 'streams'?)
 
 The term "session" in the context of this document means the exchange of
 DNS messages over a connection where:
@@ -179,18 +181,33 @@ or an initiator (when receiving a Session Signaling response message).
 
 Session Signaling operations are expressed using type-length-value (TLV) syntax.
 
+"SSOP" is used to mean Session Signalling Operation.
+
+(QUESTION: Since the same code is used in Operation and Modifier TLVs should
+we choose a different acronym e.g. "SS")
+
+(QUESTION: RFC7766 includes a definition of 'idle timeout' which is updated by 
+this document. I think we should include new definitions of a 'Session 
+Signalling session" and "Session Signalling idle timeout'?)
+
 Two timers are defined in this document: an idle timeout and a keepalive interval. The term "Session Timers" is used to refer to this pair of values.
 
 # Discussion
 
-TODO: Discuss a bit of detail of how Push subscriptions work in that they are 
-long-lived 'operations' and so do not behave with
-respect to RFC7766 idle timers as do traditional DNS transactions 
+TODO: Explicitly discuss how this updates RFC7766. 
 
-TODO: Discuss that this draft introduces 2 timers. That it also introduces a new
-SS operation (Keepalive) that does not behave with respect to timers as to 
-RFC7766 idle timers as do traditional DNS transactions. "Keepalive traffic" is 
-special.
+TODO: Discuss that this draft introduces 2 session timers and their functions. 
+Discuss that this draft introduces "Keepalive traffic" this is special because
+it does not reset the idle timeout. Possibly move some of the text from 
+"Session Lifestyle and Timers" here.
+
+TODO: Discuss DNS transactions (query/responses) compared to DNS operations 
+(e.g. DNS Push subscription) since DNS operations are not described in RFC7766 
+and change the meaning of idle time defined there. Perhaps we should add "DNS
+operations" to the terminology?
+
+TODO: Reference that DNS Push defines additional Operational TLVs. Future 
+specifications may define additional Modifier TLVs.
 
 
 # Protocol Details {#details}
@@ -204,6 +221,9 @@ in-order message delivery, and, in the presence of NAT gateways and firewalls
 with short UDP timeouts, it fails to provide a persistent bi-directional
 communication channel unless an excessive amount of keepalive traffic is used.
 
+(QUESTION: Given there are now two DNS-over-QUIC drafts should we include a
+statement here about the applicability to QUIC?)
+
 Session Signaling messages relate only to the specific session in which
 they are being carried.  Where an application-layer middle box (e.g., a DNS 
 proxy, forwarder, or session multiplexer) is in the path the middle box
@@ -211,6 +231,8 @@ MUST NOT blindly forward the message in either direction.  This does
 not preclude the use of these messages in the presence of an IP-layer middle box
 such as a NAT that rewrites IP-layer and/or transport-layer headers,
 but otherwise preserves the effect of a single session.
+
+TODO: State clearly what a proxy should do when in the path.
 
 A client MAY attempt to initiate Session Signaling messages at any time
 on a connection; receiving a NOTIMP response in reply indicates that the
@@ -231,7 +253,7 @@ known in advance by other means that the client supports Session Signaling)
 either end may unilaterally send Session Signaling messages at any time,
 and therefore either client or server may be the initiator of a message.
 
-From this point on it is considered that a "Session Signalling" session is in 
+From this point on it is considered that a "Session Signalling session"" is in 
 progress. Clients and servers should behave as described in this specification
 with regard to idle timeouts and connection close, not as prescribed in {{!RFC7766}}.
 
@@ -239,9 +261,9 @@ with regard to idle timeouts and connection close, not as prescribed in {{!RFC77
 
 A Session Signaling message begins with
 the standard twelve-octet DNS message header {{!RFC1035}}
-with the Opcode field set to the Session Signaling Opcode (tentatively 6).
+with the OPCODE field set to the Session Signaling OPCODE (tentatively 6).
 However, unlike standard DNS messages, the question section, answer section,
-authority records section and additional records sections are all empty.
+authority records section and additional records sections are not present.
 The corresponding count fields (QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT) MUST be
 set to zero on transmission.
 
@@ -254,15 +276,15 @@ not zero, then a FORMERR MUST be returned.
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
        |                          MESSAGE ID                           |
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-       |QR |    Opcode     |            Z              |     RCODE     |
+       |QR |    OPCODE     |            Z              |     RCODE     |
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-       |                     QDCOUNT (MUST BE ZERO)                    |
+       |                     QDCOUNT (MUST be zero)                    |
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-       |                     ANCOUNT (MUST BE ZERO)                    |
+       |                     ANCOUNT (MUST be zero)                    |
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-       |                     NSCOUNT (MUST BE ZERO)                    |
+       |                     NSCOUNT (MUST be zero)                    |
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-       |                     ARCOUNT (MUST BE ZERO)                    |
+       |                     ARCOUNT (MUST be zero)                    |
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
        |                                                               |
        /                     Session Signaling Data                    /
@@ -288,7 +310,7 @@ If the QR bit is not zero the message is not a request.
 In a response the DNS Header QR bit MUST be one (QR=1).
 If the QR bit is not one the message is not a response.
 
-The DNS Header Opcode field holds the Session Signaling Opcode value (tentatively 6).
+The DNS Header OPCODE field holds the Session Signaling OPCODE value (tentatively 6).
 
 The Z bits are currently unused, and in both requests and responses the
 Z bits MUST be set to zero (0) on transmission and MUST be silently ignored
@@ -296,7 +318,8 @@ on reception, unless a future document specifies otherwise.
 
 In a request message (QR=0) the RCODE is generally set to zero on transmission,
 and silently ignored on reception, except where specified otherwise
-(for example, the Retry Delay operation, where the RCODE indicates the reason for termination).
+(for example, the Retry Delay operation, where the RCODE indicates the reason 
+for termination).
 
 The RCODE value in a response may be one of the following values:
 
@@ -310,13 +333,20 @@ The RCODE value in a response may be one of the following values:
 
 ### Session Signaling Data
 
-The standard twelve-octet DNS message header and the four empty 
-sections are followed by the Session Signaling Data.
+The standard twelve-octet DNS message header is followed by the Session 
+Signaling Data.
 
-The first TLV in a Session Signaling request message (and its counterpart in the 
-corresponding Session Signaling response message, if present) is the Operation 
-TLV. Any subsequent TLVs after this initial Operation TLV (if present) are 
-Modifier TLVs.
+The first TLV in a Session Signaling request message is the Operation 
+TLV. Any subsequent TLVs after this initial Operation TLV are Modifier TLVs.
+
+Depending on the operation a Session Signaling response can contain:
+
+* No TLVs
+* Only an Operation TLV
+* An Operation TLV followed by one or more Modifier TLVs
+* Only Modifier TLVs
+
+(QUESTION: Should we include a count of TLVs now that there are multiple ones?)
 
 #### Operation TLVs
 
@@ -420,8 +450,8 @@ SSOP-DATA.
 SSOP-DATA:
 : Type-code specific.
 
-Where domain names appear within SSOP-DATA, they SHOULD be compressed,
-if possible, using standard DNS name compression.
+Where domain names appear within SSOP-DATA, they MUST NOT be compressed using 
+standard DNS name compression.
 
 
 ## Message Handling
@@ -518,6 +548,9 @@ If the client does not generate the necessary keepalive traffic then after
 twice this interval the server will forcibly terminate the connection
 with a TCP RST (or equivalent for other protocols).
 
+(QUESTION: Both these timers are defined in milliseconds. Does this make sense
+given that currently the minimum values are 10 seconds?)
+
 In a client-initiated Session Signaling Keepalive message,
 the idle timeout and keepalive interval contain the client's requested values.
 In a server response to a client-initiated message, the idle timeout and 
@@ -557,7 +590,7 @@ terminate the connection with a TCP RST (or equivalent for other protocols).
 
 # Retry Delay TLV {#delay}
 
-The Retry Delay TLV (SSOP-TYPE=0) can be used as both an Operation TLV and as
+The Retry Delay TLV (SSOP-TYPE=0) can be used as an Operation TLV or as
 a Modifier TLV. 
 
 The SSOP-DATA for the the Retry Delay TLV is as follows:
@@ -575,7 +608,7 @@ connecting to this server.
 
 The RECOMMENDED value is 10 seconds.
 
-## Operational TLV
+## Use as an Operational TLV
 
 When sent in a Session Signaling request message, from server to client, the 
 Retry Delay TLV (0) is considered an Operation TLV. It is used by a server 
@@ -600,7 +633,7 @@ However, future circumstances may create situations where other RCODE values
 are appropriate in Retry Delay requests, so clients MUST be prepared
 to accept Retry Delay requests with any RCODE value.
 
-## Modifier TLV
+## Use as a Modifier TLV
 
 When appended to a Session Signaling response message for some client request,
 the Retry Delay TLV (0) is considered a Modifier TLV.
@@ -670,6 +703,12 @@ At the client, the idle timeout timer is set to zero upon transmission of a
 request and remains at zero until reception of the corresponding response.
 At the server, the idle timeout timer is set to zero upon reception of a request
 and remains at zero until transmission of the corresponding response.
+
+(QUESTION: I would much prefer to use the phrase "the idle timer is unset" or
+something similar in place of "the idle timeout timer is set to zero" 
+throughout. A timer of zero could be interpreted as a timer which closes the 
+connection immediately, for example RFC7766 says "Servers MAY use zero timeouts 
+when they are experiencing heavy load or are under attack.")
 
 For long-lived DNS operations like Push Notification subscriptions
 {{?I-D.ietf-dnssd-push}}, an operation is considered in progress for
@@ -760,7 +799,6 @@ If a client receives an Keepalive message specifying an idle timeout value
 less than ten seconds this is an error and the client MUST immediately
 terminate the connection with a TCP RST (or equivalent for other protocols).
 
-
 ## The Keepalive Interval
 
 The purpose of the keepalive interval is to manage the generation of
@@ -820,9 +858,12 @@ may conclude that there is likely to be a NAT gateway on the path,
 and accordingly request a lower keepalive interval.
 
 For environments where there is a NAT gateway or firewalls on the path, it is
-RECOMMENDED that clients request, and servers grant, a keepalive interval of 15 minutes.
-In other environments it is RECOMMENDED that clients request, and servers grant,
-a keepalive interval of 60 minutes.
+RECOMMENDED that clients request, and servers grant, a keepalive interval of 15
+minutes. In other environments it is RECOMMENDED that clients request, and 
+servers grant, a keepalive interval of 60 minutes.
+
+(QUESTION: So this means the default value is 15s but the two RECOMMENDED values
+are both tens of minutes?)
 
 Note that the lower the keepalive interval value, the higher the load on client
 and server. For example, an keepalive interval value of 100ms would result in a
@@ -864,10 +905,10 @@ SHOULD continue to use that session for subsequent operations.
 
 ## Server-Initiated Termination on Overload
 
-Apart from the cases where
+Apart from the cases where:
 
-* Session Timer expire (see section..)
-* On error (see section..)
+* Session Timer expire (see Section xx)
+* On error (see Section xx)
 * When under load (see below)
  
 a server MUST NOT close a session with a client, except in extraordinary error 
@@ -941,7 +982,6 @@ These adjustments MAY be selected randomly, pseudorandomly, or deterministically
 (e.g., incrementing the time value by one tenth of a second for each successive
 client, yielding a post-restart reconnection rate of ten clients per second).
 
-
 ### Client Reconnection
 
 After a session is closed by the server, the client SHOULD try to reconnect,
@@ -949,7 +989,14 @@ to that server, or to another suitable server, if more than one is available.
 If reconnecting to the same server, the client MUST respect the indicated delay
 before attempting to reconnect.
 
+(QUESTION: Should we have a recommendation for a server that wanted to signal
+the client not to reconnect at all (if there is a use case for that)?)
+
 # Connection Sharing {#sharing}
+
+(QUESTION: RFC7766 already has Section 6.2.2 that specifies "Concurrent 
+Connections". I think we should align this section with that so any updates are
+explicit.)
 
 A client that supports Session Signaling SHOULD NOT make multiple
 connections to the same DNS server.
@@ -978,10 +1025,10 @@ multiple connections from different source ports on the same client IP address.
 
 # IANA Considerations
 
-## DNS Session Signaling Opcode Registration
+## DNS Session Signaling OPCODE Registration
 
 IANA are directed to assign a value (tentatively 6)
-in the DNS Opcodes Registry for the Session Signaling Opcode.
+in the DNS OPCODEs Registry for the Session Signaling OPCODE.
 
 ## DNS Session Signaling RCODE Registration
 
@@ -1000,7 +1047,7 @@ Registry, with initial values as follows:
 | 0x0002 - 0x003F | Unassigned, reserved for session management TLVs | | |
 | 0x0040 - 0xF7FF | Unassigned | | |
 | 0xF800 - 0xFBFF | Reserved for local / experimental use | | |
-| 0xFC00 - 65535 | Reserved for future expansion | | |
+| 0xFC00 - 0xFFFF | Reserved for future expansion | | |
 
 Registration of additional Session Signaling Type Codes requires publication
 of an appropriate IETF "Standards Action" or "IESG Approval" document {{!RFC5226}}.
