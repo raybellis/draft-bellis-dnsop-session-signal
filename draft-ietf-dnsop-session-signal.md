@@ -735,15 +735,11 @@ operations with that server, and then create a new session later when needed.
 
 ### Closing Idle Sessions
 
-<<<<<<< HEAD
 A client is NOT required to wait until the idle-timeout timer expires
 before closing a session.
 A client MAY close a session at any time, at the client's discretion.
 If a client determines that it has no current or reasonably anticipated
 future need for an idle session, then the client SHOULD close that connection.
-=======
-Where domain names appear within SSOP-DATA, they MUST NOT be compressed using standard DNS name compression.
->>>>>>> c43012921f7532c3736784c31ac592daa4810e35
 
 If, at any time during the life of the session,
 the idle timeout value (i.e., 15 seconds by default) elapses
