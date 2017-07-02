@@ -1,7 +1,7 @@
 ---
 title: DNS Session Signaling
 docname: draft-ietf-dnsop-session-signal-03
-date: 2017-04-18
+date: 2017-07-3
 ipr: trust200902
 area: Internet
 wg: DNSOP Working Group
@@ -146,12 +146,9 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
 "OPTIONAL" in this document are to be interpreted as described in
 "Key words for use in RFCs to Indicate Requirement Levels" {{!RFC2119}}.
 
-The term "connection" means a bidirectional stream of reliable,
+The term "connection" means a bidirectional byte stream of reliable,
 in-order messages, such as provided by using
 DNS over TCP {{!RFC1035}}{{!RFC7766}} or DNS over TLS {{?RFC7858}}.
-
-(QUESTION: Should we use a different term here instead of stream since QUIC 
-has 'streams'?)
 
 The term "session" in the context of this document means the exchange of
 DNS messages over a connection where:
@@ -182,12 +179,10 @@ Session Signaling operations are expressed using type-length-value (TLV) syntax.
 
 "SSOP" is used to mean Session Signalling Operation.
 
-(QUESTION: Since the same code is used in Operation and Modifier TLVs should
-we choose a different acronym e.g. "SS")
+A Session Signaling "Session" is maintained over a persistent DNS connection between two endpoints that acknowledge persistent DNS state over the connection.
 
 (QUESTION: RFC7766 includes a definition of 'idle timeout' which is updated by 
-this document. I think we should include new definitions of a 'Session 
-Signalling session" and "Session Signalling idle timeout'?)
+this document. I think we should include new definition of "Session Signalling idle timeout'?)
 
 Two timers are defined in this document: an idle timeout and a keepalive interval. The term "Session Timers" is used to refer to this pair of values.
 
@@ -344,8 +339,6 @@ Depending on the operation a Session Signaling response can contain:
 * Only an Operation TLV
 * An Operation TLV followed by one or more Modifier TLVs
 * Only Modifier TLVs
-
-(QUESTION: Should we include a count of TLVs now that there are multiple ones?)
 
 #### Operation TLVs
 
@@ -546,9 +539,6 @@ traffic to maintain connection state.
 If the client does not generate the necessary keepalive traffic then after
 twice this interval the server will forcibly terminate the connection
 with a TCP RST (or equivalent for other protocols).
-
-(QUESTION: Both these timers are defined in milliseconds. Does this make sense
-given that currently the minimum values are 10 seconds?)
 
 In a client-initiated Session Signaling Keepalive message,
 the idle timeout and keepalive interval contain the client's requested values.
@@ -861,9 +851,6 @@ RECOMMENDED that clients request, and servers grant, a keepalive interval of 15
 minutes. In other environments it is RECOMMENDED that clients request, and 
 servers grant, a keepalive interval of 60 minutes.
 
-(QUESTION: So this means the default value is 15s but the two RECOMMENDED values
-are both tens of minutes?)
-
 Note that the lower the keepalive interval value, the higher the load on client
 and server. For example, an keepalive interval value of 100ms would result in a
 continuous stream of at least ten messages per second, in both directions,
@@ -987,9 +974,6 @@ After a session is closed by the server, the client SHOULD try to reconnect,
 to that server, or to another suitable server, if more than one is available.
 If reconnecting to the same server, the client MUST respect the indicated delay
 before attempting to reconnect.
-
-(QUESTION: Should we have a recommendation for a server that wanted to signal
-the client not to reconnect at all (if there is a use case for that)?)
 
 # Connection Sharing {#sharing}
 
