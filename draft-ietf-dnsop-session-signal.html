@@ -590,14 +590,15 @@
 <p id="rfc.section.3.p.3">TODO: Discuss DNS transactions (query/responses) compared to DNS operations (e.g. DNS Push subscription) since DNS operations are not described in RFC7766. Perhaps we should add &#8220;DNS operations&#8221; to the terminology?</p>
 <p id="rfc.section.3.p.4">TODO: Reference that DNS Push defines additional Operational TLVs. Future specifications may define additional Modifier TLVs.</p>
 <h1 id="rfc.section.4"><a href="#rfc.section.4">4.</a> <a href="#details" id="details">Protocol Details</a></h1>
-<p id="rfc.section.4.p.1">Session Signaling messages MUST only be carried in protocols and in environments where a session may be established according to the definition above.  Standard DNS over TCP <a href="#RFC1035">[RFC1035]</a><a href="#RFC7766">[RFC7766]</a>, and DNS over TLS <a href="#RFC7858">[RFC7858]</a> are suitable protocols.  DNS over plain UDP is not appropriate since it fails on the requirement for in-order message delivery, and, in the presence of NAT gateways and firewalls with short UDP timeouts, it fails to provide a persistent bi-directional communication channel unless an excessive amount of keepalive traffic is used.</p>
-<p id="rfc.section.4.p.2">(QUESTION: Given there are now two DNS-over-QUIC drafts should we include a statement here about the applicability to QUIC?)</p>
-<p id="rfc.section.4.p.3">Session Signaling messages relate only to the specific session in which they are being carried.  Where an application-layer middle box (e.g., a DNS proxy, forwarder, or session multiplexer) is in the path the middle box MUST NOT blindly forward the message in either direction.  This does not preclude the use of these messages in the presence of an IP-layer middle box such as a NAT that rewrites IP-layer and/or transport-layer headers, but otherwise preserves the effect of a single session.</p>
-<p id="rfc.section.4.p.4">TODO: State clearly what a proxy should do when in the path.</p>
-<p id="rfc.section.4.p.5">A client MAY attempt to initiate Session Signaling messages at any time on a connection; receiving a NOTIMP response in reply indicates that the server does not implement Session Signaling, and the client SHOULD NOT issue further Session Signaling messages on that connection.</p>
-<p id="rfc.section.4.p.6">A server SHOULD NOT initiate Session Signaling messages until a client-initiated Session Signaling message is received first, unless in an environment where it is known in advance by other means that the client supports Session Signaling.  This requirement is to ensure that the clients that do not support Session Signaling do not receive unsolicited inbound Session Signaling messages that they would not know how to handle.</p>
-<p id="rfc.section.4.p.7">On a session between a client and server that support Session Signaling, once the client has sent at least one Session Signaling message (or it is known in advance by other means that the client supports Session Signaling) either end may unilaterally send Session Signaling messages at any time, and therefore either client or server may be the initiator of a message.</p>
-<p id="rfc.section.4.p.8">From this point on it is considered that a &#8220;Session Signalling session&#8221;&#8221; is in progress. Clients and servers should behave as described in this specification with regard to inactive timeouts and connection close, not as prescribed in <a href="#RFC7766">[RFC7766]</a>.</p>
+<p id="rfc.section.4.p.1">Session Signaling messages MUST only be carried in protocols and in environments where a session may be established according to the definition above.  Standard DNS over TCP <a href="#RFC1035">[RFC1035]</a><a href="#RFC7766">[RFC7766]</a>, and DNS over TLS <a href="#RFC7858">[RFC7858]</a> are suitable protocols.</p>
+<p id="rfc.section.4.p.2">DNS over plain UDP <a href="#RFC0768">[RFC0768]</a> is not appropriate since it fails on the requirement for in-order message delivery, and, in the presence of NAT gateways and firewalls with short UDP timeouts, it fails to provide a persistent bi-directional communication channel unless an excessive amount of keepalive traffic is used.</p>
+<p id="rfc.section.4.p.3">There are discussions about using DNS over the QUIC transport protocol <a href="#I-D.ietf-quic-transport">[I-D.ietf-quic-transport]</a>.  Specifications for DNS over QUIC are still preliminary and it is not yet known whether QUIC will provide a suitable transport for Session Signaling.</p>
+<p id="rfc.section.4.p.4">Session Signaling messages relate only to the specific session in which they are being carried.  Where an application-layer middle box (e.g., a DNS proxy, forwarder, or session multiplexer) is in the path the middle box MUST NOT blindly forward the message in either direction.  This does not preclude the use of these messages in the presence of an IP-layer middle box such as a NAT that rewrites IP-layer and/or transport-layer headers, but otherwise preserves the effect of a single session.</p>
+<p id="rfc.section.4.p.5">TODO: State clearly what a proxy should do when in the path.</p>
+<p id="rfc.section.4.p.6">A client MAY attempt to initiate Session Signaling messages at any time on a connection; receiving a NOTIMP response in reply indicates that the server does not implement Session Signaling, and the client SHOULD NOT issue further Session Signaling messages on that connection.</p>
+<p id="rfc.section.4.p.7">A server SHOULD NOT initiate Session Signaling messages until a client-initiated Session Signaling message is received first, unless in an environment where it is known in advance by other means that the client supports Session Signaling.  This requirement is to ensure that the clients that do not support Session Signaling do not receive unsolicited inbound Session Signaling messages that they would not know how to handle.</p>
+<p id="rfc.section.4.p.8">On a session between a client and server that support Session Signaling, once the client has sent at least one Session Signaling message (or it is known in advance by other means that the client supports Session Signaling) either end may unilaterally send Session Signaling messages at any time, and therefore either client or server may be the initiator of a message.</p>
+<p id="rfc.section.4.p.9">From this point on it is considered that a &#8220;Session Signalling session&#8221;&#8221; is in progress. Clients and servers should behave as described in this specification with regard to inactive timeouts and connection close, not as prescribed in <a href="#RFC7766">[RFC7766]</a>.</p>
 <h1 id="rfc.section.4.1"><a href="#rfc.section.4.1">4.1.</a> <a href="#format" id="format">Message Format</a></h1>
 <p id="rfc.section.4.1.p.1">A Session Signaling message begins with the standard twelve-octet DNS message header <a href="#RFC1035">[RFC1035]</a> with the OPCODE field set to the Session Signaling OPCODE (tentatively 6).  However, unlike standard DNS messages, the question section, answer section, authority records section and additional records sections are not present.  The corresponding count fields (QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT) MUST be set to zero on transmission.</p>
 <p id="rfc.section.4.1.p.2">If a Session Signaling message is received where any of the count fields are not zero, then a FORMERR MUST be returned.</p>
@@ -857,6 +858,7 @@
 <p id="rfc.section.7.9.1.p.3">In the case where a server is terminating a large number of sessions at once (e.g., if the system is restarting) and the server doesn&#8217;t want to be inundated with a flood of simultaneous retries, it SHOULD send different RECONNECT delay values to each client.  These adjustments MAY be selected randomly, pseudorandomly, or deterministically (e.g., incrementing the time value by one tenth of a second for each successive client, yielding a post-restart reconnection rate of ten clients per second).</p>
 <h1 id="rfc.section.7.9.2"><a href="#rfc.section.7.9.2">7.9.2.</a> <a href="#client-reconnection" id="client-reconnection">Client Reconnection</a></h1>
 <p id="rfc.section.7.9.2.p.1">After a session is closed by the server, the client SHOULD try to reconnect, to that server, or to another suitable server, if more than one is available.  If reconnecting to the same server, the client MUST respect the indicated delay before attempting to reconnect.</p>
+<p id="rfc.section.7.9.2.p.2">If a particular server does not want a client to reconnect (it is being de-commissioned), it SHOULD set the retry delay to the maximum value (which is approximately 497 days). If the server will only be out of service for a maintenance period, it should use a value closer to the expected maintenance window and not default to a very large delay value or clients may not attempt to reconnect after it resumes service.</p>
 <h1 id="rfc.section.8"><a href="#rfc.section.8">8.</a> <a href="#sharing" id="sharing">Connection Sharing</a></h1>
 <p id="rfc.section.8.p.1">(QUESTION: RFC7766 already has Section 6.2.2 that specifies &#8220;Concurrent Connections&#8221;. I think we should align this section with that so any updates are explicit.)</p>
 <p id="rfc.section.8.p.2">A client that supports Session Signaling SHOULD NOT make multiple connections to the same DNS server.</p>
@@ -1005,9 +1007,21 @@
     </tr>
     <tr>
       <td class="reference">
+        <b id="I-D.ietf-quic-transport">[I-D.ietf-quic-transport]</b>
+      </td>
+      <td class="top"><a>Iyengar, J.</a> and <a>M. Thomson</a>, "<a href="http://tools.ietf.org/html/draft-ietf-quic-transport-04">QUIC: A UDP-Based Multiplexed and Secure Transport</a>", Internet-Draft draft-ietf-quic-transport-04, June 2017.</td>
+    </tr>
+    <tr>
+      <td class="reference">
         <b id="NagleDA">[NagleDA]</b>
       </td>
       <td class="top"><a>Cheshire, S.</a>, "<a href="http://www.stuartcheshire.org/papers/nagledelayedack/">TCP Performance problems caused by interaction between Nagle's Algorithm and Delayed ACK</a>", May 2005.</td>
+    </tr>
+    <tr>
+      <td class="reference">
+        <b id="RFC0768">[RFC0768]</b>
+      </td>
+      <td class="top"><a>Postel, J.</a>, "<a href="http://tools.ietf.org/html/rfc768">User Datagram Protocol</a>", STD 6, RFC 768, DOI 10.17487/RFC0768, August 1980.</td>
     </tr>
     <tr>
       <td class="reference">

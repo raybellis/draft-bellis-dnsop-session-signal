@@ -117,12 +117,12 @@ Internet-Draft            DNS Session Signaling                July 2017
    8.  Connection Sharing  . . . . . . . . . . . . . . . . . . . . .  23
    9.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  23
      9.1.  DNS Session Signaling OPCODE Registration . . . . . . . .  23
-     9.2.  DNS Session Signaling RCODE Registration  . . . . . . . .  23
+     9.2.  DNS Session Signaling RCODE Registration  . . . . . . . .  24
      9.3.  DNS Session Signaling Type Codes Registry . . . . . . . .  24
    10. Security Considerations . . . . . . . . . . . . . . . . . . .  24
    11. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  24
-   12. References  . . . . . . . . . . . . . . . . . . . . . . . . .  24
-     12.1.  Normative References . . . . . . . . . . . . . . . . . .  24
+   12. References  . . . . . . . . . . . . . . . . . . . . . . . . .  25
+     12.1.  Normative References . . . . . . . . . . . . . . . . . .  25
      12.2.  Informative References . . . . . . . . . . . . . . . . .  26
    Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  26
 
@@ -271,9 +271,9 @@ Internet-Draft            DNS Session Signaling                July 2017
    Session Signaling messages MUST only be carried in protocols and in
    environments where a session may be established according to the
    definition above.  Standard DNS over TCP [RFC1035][RFC7766], and DNS
-   over TLS [RFC7858] are suitable protocols.  DNS over plain UDP is not
-   appropriate since it fails on the requirement for in-order message
-   delivery, and, in the presence of NAT gateways and firewalls with
+   over TLS [RFC7858] are suitable protocols.
+
+
 
 
 
@@ -282,12 +282,16 @@ Bellis, et al.           Expires January 4, 2018                [Page 5]
 Internet-Draft            DNS Session Signaling                July 2017
 
 
-   short UDP timeouts, it fails to provide a persistent bi-directional
-   communication channel unless an excessive amount of keepalive traffic
-   is used.
+   DNS over plain UDP [RFC0768] is not appropriate since it fails on the
+   requirement for in-order message delivery, and, in the presence of
+   NAT gateways and firewalls with short UDP timeouts, it fails to
+   provide a persistent bi-directional communication channel unless an
+   excessive amount of keepalive traffic is used.
 
-   (QUESTION: Given there are now two DNS-over-QUIC drafts should we
-   include a statement here about the applicability to QUIC?)
+   There are discussions about using DNS over the QUIC transport
+   protocol [I-D.ietf-quic-transport].  Specifications for DNS over QUIC
+   are still preliminary and it is not yet known whether QUIC will
+   provide a suitable transport for Session Signaling.
 
    Session Signaling messages relate only to the specific session in
    which they are being carried.  Where an application-layer middle box
@@ -325,10 +329,6 @@ Internet-Draft            DNS Session Signaling                July 2017
    session"" is in progress.  Clients and servers should behave as
    described in this specification with regard to inactive timeouts and
    connection close, not as prescribed in [RFC7766].
-
-
-
-
 
 
 
@@ -1237,6 +1237,14 @@ Internet-Draft            DNS Session Signaling                July 2017
    client MUST respect the indicated delay before attempting to
    reconnect.
 
+   If a particular server does not want a client to reconnect (it is
+   being de-commissioned), it SHOULD set the retry delay to the maximum
+   value (which is approximately 497 days).  If the server will only be
+   out of service for a maintenance period, it should use a value closer
+   to the expected maintenance window and not default to a very large
+   delay value or clients may not attempt to reconnect after it resumes
+   service.
+
 8.  Connection Sharing
 
    (QUESTION: RFC7766 already has Section 6.2.2 that specifies
@@ -1273,14 +1281,6 @@ Internet-Draft            DNS Session Signaling                July 2017
    IANA are directed to assign a value (tentatively 6) in the DNS
    OPCODEs Registry for the Session Signaling OPCODE.
 
-9.2.  DNS Session Signaling RCODE Registration
-
-   IANA are directed to assign a value (tentatively 11) in the DNS RCODE
-   Registry for the SSOPNOTIMP error code.
-
-
-
-
 
 
 
@@ -1289,6 +1289,11 @@ Bellis, et al.           Expires January 4, 2018               [Page 23]
 
 Internet-Draft            DNS Session Signaling                July 2017
 
+
+9.2.  DNS Session Signaling RCODE Registration
+
+   IANA are directed to assign a value (tentatively 11) in the DNS RCODE
+   Registry for the SSOPNOTIMP error code.
 
 9.3.  DNS Session Signaling Type Codes Registry
 
@@ -1331,13 +1336,8 @@ Internet-Draft            DNS Session Signaling                July 2017
    Thanks to Tim Chown, Ralph Droms, Jan Komissar, and Manju Shankar Rao
    for their helpful contributions to this document.
 
-12.  References
 
-12.1.  Normative References
 
-   [RFC1034]  Mockapetris, P., "Domain names - concepts and facilities",
-              STD 13, RFC 1034, DOI 10.17487/RFC1034, November 1987,
-              <http://www.rfc-editor.org/info/rfc1034>.
 
 
 
@@ -1345,6 +1345,14 @@ Bellis, et al.           Expires January 4, 2018               [Page 24]
 
 Internet-Draft            DNS Session Signaling                July 2017
 
+
+12.  References
+
+12.1.  Normative References
+
+   [RFC1034]  Mockapetris, P., "Domain names - concepts and facilities",
+              STD 13, RFC 1034, DOI 10.17487/RFC1034, November 1987,
+              <http://www.rfc-editor.org/info/rfc1034>.
 
    [RFC1035]  Mockapetris, P., "Domain names - implementation and
               specification", STD 13, RFC 1035, DOI 10.17487/RFC1035,
@@ -1384,14 +1392,6 @@ Internet-Draft            DNS Session Signaling                July 2017
               Requirements", RFC 7766, DOI 10.17487/RFC7766, March 2016,
               <http://www.rfc-editor.org/info/rfc7766>.
 
-   [RFC7828]  Wouters, P., Abley, J., Dickinson, S., and R. Bellis, "The
-              edns-tcp-keepalive EDNS0 Option", RFC 7828,
-              DOI 10.17487/RFC7828, April 2016,
-              <http://www.rfc-editor.org/info/rfc7828>.
-
-   [RFC7830]  Mayrhofer, A., "The EDNS(0) Padding Option", RFC 7830,
-              DOI 10.17487/RFC7830, May 2016,
-              <http://www.rfc-editor.org/info/rfc7830>.
 
 
 
@@ -1402,16 +1402,34 @@ Bellis, et al.           Expires January 4, 2018               [Page 25]
 Internet-Draft            DNS Session Signaling                July 2017
 
 
+   [RFC7828]  Wouters, P., Abley, J., Dickinson, S., and R. Bellis, "The
+              edns-tcp-keepalive EDNS0 Option", RFC 7828,
+              DOI 10.17487/RFC7828, April 2016,
+              <http://www.rfc-editor.org/info/rfc7828>.
+
+   [RFC7830]  Mayrhofer, A., "The EDNS(0) Padding Option", RFC 7830,
+              DOI 10.17487/RFC7830, May 2016,
+              <http://www.rfc-editor.org/info/rfc7830>.
+
 12.2.  Informative References
 
    [I-D.ietf-dnssd-push]
               Pusateri, T. and S. Cheshire, "DNS Push Notifications",
               draft-ietf-dnssd-push-11 (work in progress), June 2017.
 
+   [I-D.ietf-quic-transport]
+              Iyengar, J. and M. Thomson, "QUIC: A UDP-Based Multiplexed
+              and Secure Transport", draft-ietf-quic-transport-04 (work
+              in progress), June 2017.
+
    [NagleDA]  Cheshire, S., "TCP Performance problems caused by
               interaction between Nagle's Algorithm and Delayed ACK",
               May 2005,
               <http://www.stuartcheshire.org/papers/nagledelayedack/>.
+
+   [RFC0768]  Postel, J., "User Datagram Protocol", STD 6, RFC 768,
+              DOI 10.17487/RFC0768, August 1980,
+              <http://www.rfc-editor.org/info/rfc768>.
 
    [RFC7858]  Hu, Z., Zhu, L., Heidemann, J., Mankin, A., Wessels, D.,
               and P. Hoffman, "Specification for DNS over Transport
@@ -1428,6 +1446,16 @@ Authors' Addresses
 
    Phone: +1 650 423 1200
    Email: ray@isc.org
+
+
+
+
+
+
+
+Bellis, et al.           Expires January 4, 2018               [Page 26]
+
+Internet-Draft            DNS Session Signaling                July 2017
 
 
    Stuart Cheshire
@@ -1448,14 +1476,6 @@ Authors' Addresses
    United Kingdom
 
    Email: jad@sinodun.com
-
-
-
-
-
-Bellis, et al.           Expires January 4, 2018               [Page 26]
-
-Internet-Draft            DNS Session Signaling                July 2017
 
 
    Sara Dickinson
@@ -1479,26 +1499,6 @@ Internet-Draft            DNS Session Signaling                July 2017
 
    Phone: +1 843 473 7394
    Email: pusateri@bangj.com
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

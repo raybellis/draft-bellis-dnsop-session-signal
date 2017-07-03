@@ -205,13 +205,16 @@ Session Signaling messages MUST only be carried in protocols and in
 environments where a session may be established according to the definition above.
 Standard DNS over TCP {{!RFC1035}}{{!RFC7766}}, and DNS over TLS {{?RFC7858}}
 are suitable protocols.
-DNS over plain UDP is not appropriate since it fails on the requirement for
+
+DNS over plain UDP {{?RFC0768}} is not appropriate since it fails on the requirement for
 in-order message delivery, and, in the presence of NAT gateways and firewalls
 with short UDP timeouts, it fails to provide a persistent bi-directional
 communication channel unless an excessive amount of keepalive traffic is used.
 
-(QUESTION: Given there are now two DNS-over-QUIC drafts should we include a
-statement here about the applicability to QUIC?)
+There are discussions about using DNS over the QUIC transport protocol {{?I-D.ietf-quic-transport}}.
+Specifications for DNS over QUIC are still preliminary and it is not
+yet known whether QUIC will provide a suitable transport for Session
+Signaling.
 
 Session Signaling messages relate only to the specific session in which
 they are being carried.  Where an application-layer middle box (e.g., a DNS 
@@ -965,6 +968,13 @@ After a session is closed by the server, the client SHOULD try to reconnect,
 to that server, or to another suitable server, if more than one is available.
 If reconnecting to the same server, the client MUST respect the indicated delay
 before attempting to reconnect.
+
+If a particular server does not want a client to reconnect (it is being
+de-commissioned), it SHOULD set the retry delay to the maximum value (which is
+approximately 497 days). If the server will only be out of service for a maintenance
+period, it should use a value closer to the expected maintenance window and
+not default to a very large delay value or clients may not attempt to reconnect
+after it resumes service.
 
 # Connection Sharing {#sharing}
 
