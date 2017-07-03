@@ -185,19 +185,10 @@ Two timers are defined in this document: an inactive timeout and a keepalive int
 
 # Discussion
 
-TODO: Explicitly discuss how this updates RFC7766. 
-
 TODO: Discuss that this draft introduces 2 session timers and their functions. 
 Discuss that this draft introduces "Keepalive traffic" this is special because
 it does not reset the inactive timeout. Possibly move some of the text from 
 "Session Lifestyle and Timers" here.
-
-TODO: Discuss DNS transactions (query/responses) compared to DNS operations 
-(e.g. DNS Push subscription) since DNS operations are not described in RFC7766. Perhaps we should add "DNS operations" to the terminology?
-
-TODO: Reference that DNS Push defines additional Operational TLVs. Future 
-specifications may define additional Modifier TLVs.
-
 
 # Protocol Details {#details}
 
@@ -216,8 +207,14 @@ Specifications for DNS over QUIC are still preliminary and it is not
 yet known whether QUIC will provide a suitable transport for Session
 Signaling.
 
-Session Signaling messages relate only to the specific session in which
-they are being carried.  Where an application-layer middle box (e.g., a DNS 
+Session Signaling messages relate only to the specific "session" in which
+they are being carried. A "session" is established over a connection when
+either side of the connection sends the first session signaling operation
+TLV and it is acknowledged by the other side. While this specification defines
+and initial set of two operations, additional operations may be defined in
+additional specifications.
+
+Where an application-layer middle box (e.g., a DNS 
 proxy, forwarder, or session multiplexer) is in the path the middle box
 MUST NOT blindly forward the message in either direction.  This does
 not preclude the use of these messages in the presence of an IP-layer middle box

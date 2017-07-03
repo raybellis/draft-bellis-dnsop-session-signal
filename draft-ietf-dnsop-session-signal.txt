@@ -79,7 +79,7 @@ Table of Contents
    2.  Terminology . . . . . . . . . . . . . . . . . . . . . . . . .   4
    3.  Discussion  . . . . . . . . . . . . . . . . . . . . . . . . .   5
    4.  Protocol Details  . . . . . . . . . . . . . . . . . . . . . .   5
-     4.1.  Message Format  . . . . . . . . . . . . . . . . . . . . .   7
+     4.1.  Message Format  . . . . . . . . . . . . . . . . . . . . .   6
        4.1.1.  Header  . . . . . . . . . . . . . . . . . . . . . . .   7
        4.1.2.  Session Signaling Data  . . . . . . . . . . . . . . .   8
        4.1.3.  EDNS(0) and TSIG  . . . . . . . . . . . . . . . . . .  10
@@ -250,21 +250,11 @@ Internet-Draft            DNS Session Signaling                July 2017
 
 3.  Discussion
 
-   TODO: Explicitly discuss how this updates RFC7766.
-
    TODO: Discuss that this draft introduces 2 session timers and their
    functions.  Discuss that this draft introduces "Keepalive traffic"
    this is special because it does not reset the inactive timeout.
    Possibly move some of the text from "Session Lifestyle and Timers"
    here.
-
-   TODO: Discuss DNS transactions (query/responses) compared to DNS
-   operations (e.g.  DNS Push subscription) since DNS operations are not
-   described in RFC7766.  Perhaps we should add "DNS operations" to the
-   terminology?
-
-   TODO: Reference that DNS Push defines additional Operational TLVs.
-   Future specifications may define additional Modifier TLVs.
 
 4.  Protocol Details
 
@@ -272,15 +262,6 @@ Internet-Draft            DNS Session Signaling                July 2017
    environments where a session may be established according to the
    definition above.  Standard DNS over TCP [RFC1035][RFC7766], and DNS
    over TLS [RFC7858] are suitable protocols.
-
-
-
-
-
-Bellis, et al.           Expires January 4, 2018                [Page 5]
-
-Internet-Draft            DNS Session Signaling                July 2017
-
 
    DNS over plain UDP [RFC0768] is not appropriate since it fails on the
    requirement for in-order message delivery, and, in the presence of
@@ -293,14 +274,28 @@ Internet-Draft            DNS Session Signaling                July 2017
    are still preliminary and it is not yet known whether QUIC will
    provide a suitable transport for Session Signaling.
 
-   Session Signaling messages relate only to the specific session in
-   which they are being carried.  Where an application-layer middle box
-   (e.g., a DNS proxy, forwarder, or session multiplexer) is in the path
-   the middle box MUST NOT blindly forward the message in either
-   direction.  This does not preclude the use of these messages in the
-   presence of an IP-layer middle box such as a NAT that rewrites IP-
-   layer and/or transport-layer headers, but otherwise preserves the
-   effect of a single session.
+
+
+
+Bellis, et al.           Expires January 4, 2018                [Page 5]
+
+Internet-Draft            DNS Session Signaling                July 2017
+
+
+   Session Signaling messages relate only to the specific "session" in
+   which they are being carried.  A "session" is established over a
+   connection when either side of the connection sends the first session
+   signaling operation TLV and it is acknowledged by the other side.
+   While this specification defines and initial set of two operations,
+   additional operations may be defined in additional specifications.
+
+   Where an application-layer middle box (e.g., a DNS proxy, forwarder,
+   or session multiplexer) is in the path the middle box MUST NOT
+   blindly forward the message in either direction.  This does not
+   preclude the use of these messages in the presence of an IP-layer
+   middle box such as a NAT that rewrites IP-layer and/or transport-
+   layer headers, but otherwise preserves the effect of a single
+   session.
 
    TODO: State clearly what a proxy should do when in the path.
 
@@ -330,6 +325,11 @@ Internet-Draft            DNS Session Signaling                July 2017
    described in this specification with regard to inactive timeouts and
    connection close, not as prescribed in [RFC7766].
 
+4.1.  Message Format
+
+   A Session Signaling message begins with the standard twelve-octet DNS
+   message header [RFC1035] with the OPCODE field set to the Session
+   Signaling OPCODE (tentatively 6).  However, unlike standard DNS
 
 
 
@@ -338,11 +338,6 @@ Bellis, et al.           Expires January 4, 2018                [Page 6]
 Internet-Draft            DNS Session Signaling                July 2017
 
 
-4.1.  Message Format
-
-   A Session Signaling message begins with the standard twelve-octet DNS
-   message header [RFC1035] with the OPCODE field set to the Session
-   Signaling OPCODE (tentatively 6).  However, unlike standard DNS
    messages, the question section, answer section, authority records
    section and additional records sections are not present.  The
    corresponding count fields (QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT) MUST
@@ -386,6 +381,11 @@ Internet-Draft            DNS Session Signaling                July 2017
    In a request the DNS Header QR bit MUST be zero (QR=0).  If the QR
    bit is not zero the message is not a request.
 
+   In a response the DNS Header QR bit MUST be one (QR=1).  If the QR
+   bit is not one the message is not a response.
+
+   The DNS Header OPCODE field holds the Session Signaling OPCODE value
+   (tentatively 6).
 
 
 
@@ -393,12 +393,6 @@ Bellis, et al.           Expires January 4, 2018                [Page 7]
 
 Internet-Draft            DNS Session Signaling                July 2017
 
-
-   In a response the DNS Header QR bit MUST be one (QR=1).  If the QR
-   bit is not one the message is not a response.
-
-   The DNS Header OPCODE field holds the Session Signaling OPCODE value
-   (tentatively 6).
 
    The Z bits are currently unused, and in both requests and responses
    the Z bits MUST be set to zero (0) on transmission and MUST be
@@ -442,6 +436,12 @@ Internet-Draft            DNS Session Signaling                July 2017
 
    o  Only an Operation TLV
 
+   o  An Operation TLV followed by one or more Modifier TLVs
+
+   o  Only Modifier TLVs
+
+
+
 
 
 
@@ -449,10 +449,6 @@ Bellis, et al.           Expires January 4, 2018                [Page 8]
 
 Internet-Draft            DNS Session Signaling                July 2017
 
-
-   o  An Operation TLV followed by one or more Modifier TLVs
-
-   o  Only Modifier TLVs
 
 4.1.2.1.  Operation TLVs
 
@@ -497,6 +493,10 @@ Internet-Draft            DNS Session Signaling                July 2017
    If a Session Signaling message (request or response) is received
    containing one or more unrecognized Modifier TLVs, the unrecognized
    Modifier TLVs MUST be silently ignored, and the remainder of the
+   message is interpreted and handled as if the unrecognized parts were
+   not present.
+
+
 
 
 
@@ -505,9 +505,6 @@ Bellis, et al.           Expires January 4, 2018                [Page 9]
 
 Internet-Draft            DNS Session Signaling                July 2017
 
-
-   message is interpreted and handled as if the unrecognized parts were
-   not present.
 
 4.1.3.  EDNS(0) and TSIG
 
@@ -549,6 +546,9 @@ Internet-Draft            DNS Session Signaling                July 2017
 4.2.  TLV Format
 
    Operation and modifier TLVs both use the same encoding format.
+
+
+
 
 
 
