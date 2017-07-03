@@ -181,10 +181,7 @@ Session Signaling operations are expressed using type-length-value (TLV) syntax.
 
 A Session Signaling "Session" is established between two endpoints that acknowledge persistent DNS state via the exchange of Session Signalling messages over the connection. This is distinct from, for example a DNS-over-TCP session as described in RC7766.
 
-(QUESTION: RFC7766 includes a definition of 'idle timeout' which is updated by 
-this document. I think we should include new definition of "Session Signalling idle timeout'?)
-
-Two timers are defined in this document: an idle timeout and a keepalive interval. The term "Session Timers" is used to refer to this pair of values.
+Two timers are defined in this document: an inactive timeout and a keepalive interval. The term "Session Timers" is used to refer to this pair of values.
 
 # Discussion
 
@@ -192,13 +189,11 @@ TODO: Explicitly discuss how this updates RFC7766.
 
 TODO: Discuss that this draft introduces 2 session timers and their functions. 
 Discuss that this draft introduces "Keepalive traffic" this is special because
-it does not reset the idle timeout. Possibly move some of the text from 
+it does not reset the inactive timeout. Possibly move some of the text from 
 "Session Lifestyle and Timers" here.
 
 TODO: Discuss DNS transactions (query/responses) compared to DNS operations 
-(e.g. DNS Push subscription) since DNS operations are not described in RFC7766 
-and change the meaning of idle time defined there. Perhaps we should add "DNS
-operations" to the terminology?
+(e.g. DNS Push subscription) since DNS operations are not described in RFC7766. Perhaps we should add "DNS operations" to the terminology?
 
 TODO: Reference that DNS Push defines additional Operational TLVs. Future 
 specifications may define additional Modifier TLVs.
@@ -249,7 +244,7 @@ and therefore either client or server may be the initiator of a message.
 
 From this point on it is considered that a "Session Signalling session"" is in 
 progress. Clients and servers should behave as described in this specification
-with regard to idle timeouts and connection close, not as prescribed in {{!RFC7766}}.
+with regard to inactive timeouts and connection close, not as prescribed in {{!RFC7766}}.
 
 ## Message Format {#format}
 
@@ -511,7 +506,7 @@ While many Session Signaling operations
 (such as DNS Push Notifications {{?I-D.ietf-dnssd-push}})
 will be used in conjunction with a long-lived session,
 not all Session Signaling operations require a long-lived session,
-and in some cases the default 15-second value for both idle timeout
+and in some cases the default 15-second value for both inactive timeout
 and keepalive interval may be perfectly appropriate.
 
 The TYPE-DEPENDENT DATA for the the Keepalive TLV is as follows:
@@ -519,16 +514,16 @@ The TYPE-DEPENDENT DATA for the the Keepalive TLV is as follows:
                             1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
         0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-       |                    IDLE TIMEOUT (32 bits)                     |
+       |                  INACTIVE TIMEOUT (32 bits)                   |
        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
        |                 KEEPALIVE INTERVAL (32 bits)                  |
        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
-IDLE TIMEOUT:
-: the idle timeout for the current session, specified as a 32
+INACTIVE TIMEOUT:
+: the inactive timeout for the current session, specified as a 32
 bit word in network (big endian) order in units of milliseconds.
-This is the timeout at which the client MUST close an idle session.
-If the client does not gracefully close an idle session then after
+This is the timeout at which the client MUST close an inactive session.
+If the client does not gracefully close an inactive session then after
 twice this interval the server will forcibly terminate the connection
 with a TCP RST (or equivalent for other protocols).
 
@@ -542,15 +537,15 @@ twice this interval the server will forcibly terminate the connection
 with a TCP RST (or equivalent for other protocols).
 
 In a client-initiated Session Signaling Keepalive message,
-the idle timeout and keepalive interval contain the client's requested values.
-In a server response to a client-initiated message, the idle timeout and 
+the inactive timeout and keepalive interval contain the client's requested values.
+In a server response to a client-initiated message, the inactive timeout and 
 keepalive interval contain the server's chosen values, which the client MUST 
 respect. This is modeled after the DHCP protocol, where the client
 requests a certain lease lifetime using DHCP option 51 {{!RFC2132}},
 but the server is the ultimate authority
 for deciding what lease lifetime is actually granted.
 
-In a server-initiated Session Signaling Keepalive message, the idle timeout and 
+In a server-initiated Session Signaling Keepalive message, the inactive timeout and 
 keepalive interval unilaterally inform the client of the new values from this 
 point forward in this session. The client MUST generate a response to the 
 server-initiated Session Signaling Keepalive message.
@@ -566,8 +561,8 @@ client's needs.
 
 ## Relation to EDNS(0) TCP Keepalive Option
 
-The idle timeout value in the Keepalive TLV (SIGNALING-TYPE=1) has similar intent to 
-the EDNS(0) TCP Keepalive Option {{!RFC7828}}.
+The inactive timeout value in the Keepalive TLV (SIGNALING-TYPE=1) has similar
+intent to the EDNS(0) TCP Keepalive Option {{!RFC7828}}.
 A client/server pair that supports Session Signaling MUST NOT use the
 EDNS(0) TCP KeepAlive option within any message after a Session Signalling 
 session has been established.
@@ -650,10 +645,10 @@ responses to those messages MAY be sent out of order, if appropriate.
 
 ## Timers
 
-Two timer values are associated with a session: the idle timeout, and the
+Two timer values are associated with a session: the inactive timeout, and the
 keepalive interval. 
 
-The first timer value, the idle timeout, is the maximum time for which
+The first timer value, the inactive timeout, is the maximum time for which
 a client may speculatively keep a session open in the expectation that
 it may have future requests to send to that server.
 
@@ -661,8 +656,8 @@ The second timer value, the keepalive interval, is the maximum permitted
 interval between client messages to the server if the client wishes to keep
 the session alive.
 
-The two timer values are independent. The idle timeout may be lower, the same,
-or higher than the keepalive interval, though in most cases the idle timeout is 
+The two timer values are independent. The inactive timeout may be lower, the same,
+or higher than the keepalive interval, though in most cases the inactive timeout is 
 expected to be shorter than the keepalive interval.
 
 Only when the client has a very long-lived low-traffic operation outstanding 
@@ -675,70 +670,65 @@ Keepalive message exchange, the default value for both timers is 15 seconds.
 For both timers, lower values of the timer result in higher network traffic
 and higher CPU load on the server.
 
-## Idle Sessions
+## Inactive Sessions
 
 At both servers and clients, the generation or reception of any complete
 DNS message, including DNS requests, responses, updates, or Session Signaling
 messages, resets both timers for that session {{!RFC7766}}, with the exception
 that a Session Signaling Keepalive message resets only the keepalive interval 
-timer, not the idle timeout timer.
+timer, not the inactive timeout timer.
 
 In addition, for as long as the client has an outstanding operation in progress,
-the idle timeout timer remains fixed at zero, and an idle timeout cannot occur.
+the inactive timeout timer remains fixed at zero, and an inactive timeout cannot
+occur.
 
 For short-lived DNS operations like traditional queries and updates,
 an operation is considered in progress for the time between request and 
 response, typically a period of a few hundred milliseconds at most.
-At the client, the idle timeout timer is set to zero upon transmission of a 
-request and remains at zero until reception of the corresponding response.
-At the server, the idle timeout timer is set to zero upon reception of a request
-and remains at zero until transmission of the corresponding response.
-
-(QUESTION: I would much prefer to use the phrase "the idle timer is unset" or
-something similar in place of "the idle timeout timer is set to zero" 
-throughout. A timer of zero could be interpreted as a timer which closes the 
-connection immediately, for example RFC7766 says "Servers MAY use zero timeouts 
-when they are experiencing heavy load or are under attack.")
+At the client, the inactive timeout timer is cleared upon transmission of a 
+request and remains cleared until reception of the corresponding response.
+At the server, the inactive timeout timer is cleared upon reception of a request
+and remains cleared until transmission of the corresponding response.
 
 For long-lived DNS operations like Push Notification subscriptions
 {{?I-D.ietf-dnssd-push}}, an operation is considered in progress for
 as long as the subscription is active, until it is cancelled.
 This means that a session can exist, with a Push Notification subscription 
 active, with no messages flowing in either direction, for far longer than the 
-idle timeout, and this is not an error. This is why there are two separate 
-timers: the idle timeout, and the keepalive interval. Just because a session has 
+inactive timeout, and this is not an error. This is why there are two separate 
+timers: the inactive timeout, and the keepalive interval. Just because a session has 
 no traffic for an extended period of time
-does not automatically make that session "idle", if it has an active
+does not automatically make that session "inactive", if it has an active
 Push Notification subscription that is awaiting notification events.
 
 
-## The Idle Timeout
+## The Inactive Timeout
 
-The purpose of the idle timeout is for the server to balance its trade off 
-between the costs of setting up new sessions and the costs of maintaining idle 
-sessions. A server with abundant session capacity can offer a high idle timeout, 
+The purpose of the inactive timeout is for the server to balance its trade off 
+between the costs of setting up new sessions and the costs of maintaining inactive 
+sessions. A server with abundant session capacity can offer a high inactive timeout, 
 to permit clients to keep a speculative session open for a long time, to save 
 the cost of establishing a new session for future communications with that 
-server. A server with scarce memory resources can offer a low idle timeout,
+server. A server with scarce memory resources can offer a low inactive timeout,
 to cause clients to promptly close sessions whenever they have no outstanding
 operations with that server, and then create a new session later when needed.
 
 
-### Closing Idle Sessions
+### Closing Inactive Sessions
 
-A client is NOT required to wait until the idle-timeout timer expires
+A client is NOT required to wait until the inactive timeout timer expires
 before closing a session.
 A client MAY close a session at any time, at the client's discretion.
 If a client determines that it has no current or reasonably anticipated
-future need for an idle session, then the client SHOULD close that connection.
+future need for an inactive session, then the client SHOULD close that connection.
 
 If, at any time during the life of the session,
-the idle timeout value (i.e., 15 seconds by default) elapses
+the inactive timeout value (i.e., 15 seconds by default) elapses
 without there being any operation active on the session,
 the client MUST gracefully close the connection with a TCP FIN
 (or equivalent for other protocols).
 
-If, at any time during the life of the session, twice the idle timeout value
+If, at any time during the life of the session, twice the inactive timeout value
 (i.e., 30 seconds by default) elapses without there being any operation
 active on the session, the server SHOULD consider the client delinquent,
 and forcibly abort the session.
@@ -754,22 +744,22 @@ a query waiting for a response, an update waiting for a response,
 or an outstanding Push Notification subscription {{?I-D.ietf-dnssd-push}},
 but not a Session Signaling Keepalive message exchange itself.
 A Session Signaling Keepalive message exchange resets only the keepalive
-interval timer, not the idle timeout timer.
+interval timer, not the inactive timeout timer.
 
-If the client wishes to keep an idle session open for longer than
+If the client wishes to keep an inactive session open for longer than
 the default duration without having to send traffic every 15 seconds,
 then it uses the Session Signaling Keepalive message to request
 longer timeout values, as described in {{keepalive}}.
 
-### Values for the Idle Timeout
+### Values for the Inactive Timeout
 
-For the idle timeout value, lower values result in more frequent session 
+For the inactive timeout value, lower values result in more frequent session 
 teardown and re-establishment. Higher values result in lower traffic and CPU
-load on the server, but a larger memory burden to maintain state for idle 
+load on the server, but a larger memory burden to maintain state for inactive 
 sessions.
 
-A shorter idle timeout with a longer keepalive interval signals to the client 
-that it should not speculatively keep idle sessions open for very long for no 
+A shorter inactive timeout with a longer keepalive interval signals to the client 
+that it should not speculatively keep inactive sessions open for very long for no 
 reason, but when it does have an active reason to keep a session open, it 
 doesn't need to be sending an agressive level of keepalive traffic. Only when 
 the client has a very long-lived low-traffic operation outstanding like a Push 
@@ -777,15 +767,15 @@ Notification subscription, does the keepalive interval timer come into play, to
 ensure that a sufficient residual
 amount of traffic is generated to maintain NAT and firewall state.
 
-A longer idle timeout with a shorter keepalive interval signals to the client
-that it may speculatively keep idle sessions open for a long time, but it
-should be sending a lot of keepalive traffic on those idle sessions.
+A longer inactive timeout with a shorter keepalive interval signals to the client
+that it may speculatively keep inactive sessions open for a long time, but it
+should be sending a lot of keepalive traffic on those inactive sessions.
 This configuration is expected to be less common.
 
 To avoid excessive traffic the server MUST NOT send a Keepalive message
 (either a response to a client-initiated request, or a server-initiated message)
-with an idle timeout value less than ten seconds.
-If a client receives an Keepalive message specifying an idle timeout value
+with an inactive timeout value less than ten seconds.
+If a client receives an Keepalive message specifying an inactive timeout value
 less than ten seconds this is an error and the client MUST immediately
 terminate the connection with a TCP RST (or equivalent for other protocols).
 
@@ -806,7 +796,7 @@ the client MUST take action to keep the session alive.
 To keep the session alive the client MUST send a
 Session Signaling Keepalive message (see {{keepalive}}).
 A Session Signaling Keepalive message exchange resets only the keepalive
-interval timer, not the idle timeout timer.
+interval timer, not the inactive timeout timer.
 
 If a client disconnects from the network abruptly,
 without cleanly closing its session,
@@ -827,7 +817,7 @@ For the keepalive interval value, lower values result in higher volume keepalive
 traffic. Higher values of the keepalive interval reduce traffic and CPU load, 
 but have minimal effect on the memory burden
 at the server, because clients keep a session open for the same length of time
-(determined by the idle timeout) regardless of the level of keepalive traffic 
+(determined by the inactive timeout) regardless of the level of keepalive traffic 
 required.
 
 It may be appropriate for clients and servers to select different keepalive 
