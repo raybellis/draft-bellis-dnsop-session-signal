@@ -179,7 +179,7 @@ Session Signaling operations are expressed using type-length-value (TLV) syntax.
 
 "SSOP" is used to mean Session Signalling Operation.
 
-A Session Signaling "Session" is maintained over a persistent DNS connection between two endpoints that acknowledge persistent DNS state over the connection.
+A Session Signaling "Session" is established between two endpoints that acknowledge persistent DNS state via the exchange of Session Signalling messages over the connection. This is distinct from, for example a DNS-over-TCP session as described in RC7766.
 
 (QUESTION: RFC7766 includes a definition of 'idle timeout' which is updated by 
 this document. I think we should include new definition of "Session Signalling idle timeout'?)
@@ -323,7 +323,7 @@ The RCODE value in a response may be one of the following values:
 | 1 | FORMERR | Format error |
 | 4 | NOTIMP | Session Signaling not supported |
 | 5 | REFUSED | Operation declined for policy reasons |
-| 11 | SSOPNOTIMP | Session Signaling operation Type Code not supported |
+| 11 | SSOPNOTIMP | Session Signaling operation type code not supported |
 
 ### Session Signaling Data
 
@@ -353,7 +353,7 @@ Depending on the operation, a Session Signaling response message MAY contain no
 Operation TLV, because it is simply a response to a previous request message,
 and the message ID in the header is sufficient to identify the request in 
 question. Or it may contain a single corresponding response Operation TLV, with 
-the same SSOP-TYPE as in the request message. The specification for each Session 
+the same SIGNALING-TYPE as in the request message. The specification for each Session 
 Signaling operation type determines whether a response for that operation type 
 is required to carry the Operation TLV.
 
@@ -419,31 +419,32 @@ but messages may contain other EDNS(0) options as appropriate.
 
 ## TLV Format
 
+Operation and modifier TLVs both use the same encoding format.
+
                                                  1   1   1   1   1   1
          0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-       |                           SSOP-TYPE                           |
+       |                         SIGNALING-TYPE                        |
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-       |                          SSOP-LENGTH                          |
+       |                      SIGNALING DATA LENGTH                    |
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
        |                                                               |
-       /                           SSOP-DATA                           /
+       /                      TYPE-DEPENDENT DATA                      /
        /                                                               /
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
-SSOP-TYPE:
+SIGNALING-TYPE:
 : A 16 bit field in network order giving the type of the current Session
 Signaling TLV per the IANA DNS Session Signaling Type Codes Registry.
 
-SSOP-LENGTH:
+SIGNALING DATA LENGTH:
 : A 16 bit field in network order giving the size in octets of
-SSOP-DATA.
+the TYPE-DEPENDENT DATA.
 
-SSOP-DATA:
-: Type-code specific.
+TYPE-DEPENDENT DATA:
+: Type-code specific format.
 
-Where domain names appear within SSOP-DATA, they MUST NOT be compressed using 
-standard DNS name compression.
+Where domain names appear within TYPE-DEPENDENT DATA, they MUST NOT be compressed using standard DNS name compression.
 
 
 ## Message Handling
@@ -493,7 +494,7 @@ protocols).
 
 # Keepalive Operation TLV {#keepalive}
 
-The Keepalive Operation TLV (SSOP-TYPE=1) performs two functions: to reset the
+The Keepalive Operation TLV (SIGNALING-TYPE=1) performs two functions: to reset the
 keepalive timer for the session and to establish the values for the Session Timers. 
 
 When sent by a client, it resets a session's keepalive timer,
@@ -513,7 +514,7 @@ not all Session Signaling operations require a long-lived session,
 and in some cases the default 15-second value for both idle timeout
 and keepalive interval may be perfectly appropriate.
 
-The SSOP-DATA for the the Keepalive TLV is as follows:
+The TYPE-DEPENDENT DATA for the the Keepalive TLV is as follows:
 
                             1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
         0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -565,7 +566,7 @@ client's needs.
 
 ## Relation to EDNS(0) TCP Keepalive Option
 
-The idle timeout value in the Keepalive TLV (SSOP-TYPE=1) has similar intent to 
+The idle timeout value in the Keepalive TLV (SIGNALING-TYPE=1) has similar intent to 
 the EDNS(0) TCP Keepalive Option {{!RFC7828}}.
 A client/server pair that supports Session Signaling MUST NOT use the
 EDNS(0) TCP KeepAlive option within any message after a Session Signalling 
@@ -579,10 +580,10 @@ terminate the connection with a TCP RST (or equivalent for other protocols).
 
 # Retry Delay TLV {#delay}
 
-The Retry Delay TLV (SSOP-TYPE=0) can be used as an Operation TLV or as
+The Retry Delay TLV (SIGNALING-TYPE=0) can be used as an Operation TLV or as
 a Modifier TLV. 
 
-The SSOP-DATA for the the Retry Delay TLV is as follows:
+The TYPE-DEPENDENT DATA for the the Retry Delay TLV is as follows:
 
                             1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
         0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -1025,8 +1026,8 @@ Registry, with initial values as follows:
 
 | Type | Name | Status | Reference |
 |--:|------|--------|-----------|
-| 0x0000 | SSOP-RetryDelay | Standard | RFC-TBD |
-| 0x0001 | SSOP-KeepAlive | Standard | RFC-TBD |
+| 0x0000 | RetryDelay | Standard | RFC-TBD |
+| 0x0001 | KeepAlive | Standard | RFC-TBD |
 | 0x0002 - 0x003F | Unassigned, reserved for session management TLVs | | |
 | 0x0040 - 0xF7FF | Unassigned | | |
 | 0xF800 - 0xFBFF | Reserved for local / experimental use | | |
