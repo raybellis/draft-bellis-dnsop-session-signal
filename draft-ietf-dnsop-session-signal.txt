@@ -6,18 +6,18 @@ DNSOP Working Group                                            R. Bellis
 Internet-Draft                                                       ISC
 Updates: RFC 7766 (if approved)                              S. Cheshire
 Intended status: Standards Track                              Apple Inc.
-Expires: January 4, 2018                                    J. Dickinson
+Expires: January 19, 2018                                   J. Dickinson
                                                             S. Dickinson
                                                                  Sinodun
                                                                A. Mankin
                                                               Salesforce
                                                              T. Pusateri
                                                             Unaffiliated
-                                                           July 03, 2017
+                                                           July 18, 2017
 
 
                          DNS Session Signaling
-                   draft-ietf-dnsop-session-signal-03
+                   draft-ietf-dnsop-session-signal-04
 
 Abstract
 
@@ -44,7 +44,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on January 4, 2018.
+   This Internet-Draft will expire on January 19, 2018.
 
 
 
@@ -53,7 +53,7 @@ Status of This Memo
 
 
 
-Bellis, et al.           Expires January 4, 2018                [Page 1]
+Bellis, et al.          Expires January 19, 2018                [Page 1]
 
 Internet-Draft            DNS Session Signaling                July 2017
 
@@ -94,9 +94,9 @@ Table of Contents
      7.1.  Session Initiation  . . . . . . . . . . . . . . . . . . .  15
      7.2.  Timers  . . . . . . . . . . . . . . . . . . . . . . . . .  15
      7.3.  Inactive Sessions . . . . . . . . . . . . . . . . . . . .  16
-     7.4.  The Inactive Timeout  . . . . . . . . . . . . . . . . . .  17
+     7.4.  The Inactivity Timeout  . . . . . . . . . . . . . . . . .  17
        7.4.1.  Closing Inactive Sessions . . . . . . . . . . . . . .  17
-       7.4.2.  Values for the Inactive Timeout . . . . . . . . . . .  18
+       7.4.2.  Values for the Inactivity Timeout . . . . . . . . . .  18
      7.5.  The Keepalive Interval  . . . . . . . . . . . . . . . . .  18
        7.5.1.  Keepalive Interval Expiry . . . . . . . . . . . . . .  19
        7.5.2.  Values for the Keepalive Interval . . . . . . . . . .  19
@@ -105,22 +105,22 @@ Table of Contents
      7.8.  Server-Initiated Termination on Overload  . . . . . . . .  21
      7.9.  Retry Delay Operation TLV . . . . . . . . . . . . . . . .  21
        7.9.1.  Outstanding Operations  . . . . . . . . . . . . . . .  22
-       7.9.2.  Client Reconnection . . . . . . . . . . . . . . . . .  22
+       7.9.2.  Client Reconnection . . . . . . . . . . . . . . . . .  23
 
 
 
-Bellis, et al.           Expires January 4, 2018                [Page 2]
+Bellis, et al.          Expires January 19, 2018                [Page 2]
 
 Internet-Draft            DNS Session Signaling                July 2017
 
 
    8.  Connection Sharing  . . . . . . . . . . . . . . . . . . . . .  23
-   9.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  23
-     9.1.  DNS Session Signaling OPCODE Registration . . . . . . . .  23
+   9.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  24
+     9.1.  DNS Session Signaling OPCODE Registration . . . . . . . .  24
      9.2.  DNS Session Signaling RCODE Registration  . . . . . . . .  24
      9.3.  DNS Session Signaling Type Codes Registry . . . . . . . .  24
    10. Security Considerations . . . . . . . . . . . . . . . . . . .  24
-   11. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  24
+   11. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  25
    12. References  . . . . . . . . . . . . . . . . . . . . . . . . .  25
      12.1.  Normative References . . . . . . . . . . . . . . . . . .  25
      12.2.  Informative References . . . . . . . . . . . . . . . . .  26
@@ -165,7 +165,7 @@ Internet-Draft            DNS Session Signaling                July 2017
 
 
 
-Bellis, et al.           Expires January 4, 2018                [Page 3]
+Bellis, et al.          Expires January 19, 2018                [Page 3]
 
 Internet-Draft            DNS Session Signaling                July 2017
 
@@ -221,7 +221,7 @@ Internet-Draft            DNS Session Signaling                July 2017
 
 
 
-Bellis, et al.           Expires January 4, 2018                [Page 4]
+Bellis, et al.          Expires January 19, 2018                [Page 4]
 
 Internet-Draft            DNS Session Signaling                July 2017
 
@@ -244,7 +244,7 @@ Internet-Draft            DNS Session Signaling                July 2017
    Signalling messages over the connection.  This is distinct from, for
    example a DNS-over-TCP session as described in RC7766.
 
-   Two timers are defined in this document: an inactive timeout and a
+   Two timers are defined in this document: an inactivity timeout and a
    keepalive interval.  The term "Session Timers" is used to refer to
    this pair of values.
 
@@ -252,7 +252,7 @@ Internet-Draft            DNS Session Signaling                July 2017
 
    TODO: Discuss that this draft introduces 2 session timers and their
    functions.  Discuss that this draft introduces "Keepalive traffic"
-   this is special because it does not reset the inactive timeout.
+   this is special because it does not reset the inactivity timeout.
    Possibly move some of the text from "Session Lifestyle and Timers"
    here.
 
@@ -277,7 +277,7 @@ Internet-Draft            DNS Session Signaling                July 2017
 
 
 
-Bellis, et al.           Expires January 4, 2018                [Page 5]
+Bellis, et al.          Expires January 19, 2018                [Page 5]
 
 Internet-Draft            DNS Session Signaling                July 2017
 
@@ -322,8 +322,8 @@ Internet-Draft            DNS Session Signaling                July 2017
 
    From this point on it is considered that a "Session Signalling
    session"" is in progress.  Clients and servers should behave as
-   described in this specification with regard to inactive timeouts and
-   connection close, not as prescribed in [RFC7766].
+   described in this specification with regard to inactivity timeouts
+   and connection close, not as prescribed in [RFC7766].
 
 4.1.  Message Format
 
@@ -333,7 +333,7 @@ Internet-Draft            DNS Session Signaling                July 2017
 
 
 
-Bellis, et al.           Expires January 4, 2018                [Page 6]
+Bellis, et al.          Expires January 19, 2018                [Page 6]
 
 Internet-Draft            DNS Session Signaling                July 2017
 
@@ -389,7 +389,7 @@ Internet-Draft            DNS Session Signaling                July 2017
 
 
 
-Bellis, et al.           Expires January 4, 2018                [Page 7]
+Bellis, et al.          Expires January 19, 2018                [Page 7]
 
 Internet-Draft            DNS Session Signaling                July 2017
 
@@ -445,7 +445,7 @@ Internet-Draft            DNS Session Signaling                July 2017
 
 
 
-Bellis, et al.           Expires January 4, 2018                [Page 8]
+Bellis, et al.          Expires January 19, 2018                [Page 8]
 
 Internet-Draft            DNS Session Signaling                July 2017
 
@@ -501,7 +501,7 @@ Internet-Draft            DNS Session Signaling                July 2017
 
 
 
-Bellis, et al.           Expires January 4, 2018                [Page 9]
+Bellis, et al.          Expires January 19, 2018                [Page 9]
 
 Internet-Draft            DNS Session Signaling                July 2017
 
@@ -557,7 +557,7 @@ Internet-Draft            DNS Session Signaling                July 2017
 
 
 
-Bellis, et al.           Expires January 4, 2018               [Page 10]
+Bellis, et al.          Expires January 19, 2018               [Page 10]
 
 Internet-Draft            DNS Session Signaling                July 2017
 
@@ -613,7 +613,7 @@ Internet-Draft            DNS Session Signaling                July 2017
 
 
 
-Bellis, et al.           Expires January 4, 2018               [Page 11]
+Bellis, et al.          Expires January 19, 2018               [Page 11]
 
 Internet-Draft            DNS Session Signaling                July 2017
 
@@ -662,14 +662,14 @@ Internet-Draft            DNS Session Signaling                July 2017
    Notifications [I-D.ietf-dnssd-push]) will be used in conjunction with
    a long-lived session, not all Session Signaling operations require a
    long-lived session, and in some cases the default 15-second value for
-   both inactive timeout and keepalive interval may be perfectly
+   both the inactivity timeout and keepalive interval may be perfectly
    appropriate.
 
    The TYPE-DEPENDENT DATA for the the Keepalive TLV is as follows:
 
 
 
-Bellis, et al.           Expires January 4, 2018               [Page 12]
+Bellis, et al.          Expires January 19, 2018               [Page 12]
 
 Internet-Draft            DNS Session Signaling                July 2017
 
@@ -677,15 +677,15 @@ Internet-Draft            DNS Session Signaling                July 2017
                            1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-      |                  INACTIVE TIMEOUT (32 bits)                   |
+      |                 INACTIVITY TIMEOUT (32 bits)                  |
       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
       |                 KEEPALIVE INTERVAL (32 bits)                  |
       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
-   INACTIVE TIMEOUT:  the inactive timeout for the current session,
+   INACTIVITY TIMEOUT:  the inactivity timeout for the current session,
       specified as a 32 bit word in network (big endian) order in units
       of milliseconds.  This is the timeout at which the client MUST
-      close an inactive session.  If the client does not gracefully
+      close an inactivity session.  If the client does not gracefully
       close an inactive session then after twice this interval the
       server will forcibly terminate the connection with a TCP RST (or
       equivalent for other protocols).
@@ -699,9 +699,9 @@ Internet-Draft            DNS Session Signaling                July 2017
       connection with a TCP RST (or equivalent for other protocols).
 
    In a client-initiated Session Signaling Keepalive message, the
-   inactive timeout and keepalive interval contain the client's
+   inactivity timeout and keepalive interval contain the client's
    requested values.  In a server response to a client-initiated
-   message, the inactive timeout and keepalive interval contain the
+   message, the inactivity timeout and keepalive interval contain the
    server's chosen values, which the client MUST respect.  This is
    modeled after the DHCP protocol, where the client requests a certain
    lease lifetime using DHCP option 51 [RFC2132], but the server is the
@@ -709,7 +709,7 @@ Internet-Draft            DNS Session Signaling                July 2017
    granted.
 
    In a server-initiated Session Signaling Keepalive message, the
-   inactive timeout and keepalive interval unilaterally inform the
+   inactivity timeout and keepalive interval unilaterally inform the
    client of the new values from this point forward in this session.
    The client MUST generate a response to the server-initiated Session
    Signaling Keepalive message.  The Message ID in the response message
@@ -725,14 +725,14 @@ Internet-Draft            DNS Session Signaling                July 2017
 
 
 
-Bellis, et al.           Expires January 4, 2018               [Page 13]
+Bellis, et al.          Expires January 19, 2018               [Page 13]
 
 Internet-Draft            DNS Session Signaling                July 2017
 
 
 5.1.  Relation to EDNS(0) TCP Keepalive Option
 
-   The inactive timeout value in the Keepalive TLV (SIGNALING-TYPE=1)
+   The inactivity timeout value in the Keepalive TLV (SIGNALING-TYPE=1)
    has similar intent to the EDNS(0) TCP Keepalive Option [RFC7828].  A
    client/server pair that supports Session Signaling MUST NOT use the
    EDNS(0) TCP KeepAlive option within any message after a Session
@@ -781,7 +781,7 @@ Internet-Draft            DNS Session Signaling                July 2017
 
 
 
-Bellis, et al.           Expires January 4, 2018               [Page 14]
+Bellis, et al.          Expires January 19, 2018               [Page 14]
 
 Internet-Draft            DNS Session Signaling                July 2017
 
@@ -829,30 +829,30 @@ Internet-Draft            DNS Session Signaling                July 2017
 
 7.2.  Timers
 
-   Two timer values are associated with a session: the inactive timeout,
-   and the keepalive interval.
+   Two timer values are associated with a session: the inactivity
+   timeout, and the keepalive interval.
 
 
 
 
 
 
-Bellis, et al.           Expires January 4, 2018               [Page 15]
+Bellis, et al.          Expires January 19, 2018               [Page 15]
 
 Internet-Draft            DNS Session Signaling                July 2017
 
 
-   The first timer value, the inactive timeout, is the maximum time for
-   which a client may speculatively keep a session open in the
+   The first timer value, the inactivity timeout, is the maximum time
+   for which a client may speculatively keep a session open in the
    expectation that it may have future requests to send to that server.
 
    The second timer value, the keepalive interval, is the maximum
    permitted interval between client messages to the server if the
    client wishes to keep the session alive.
 
-   The two timer values are independent.  The inactive timeout may be
+   The two timer values are independent.  The inactivity timeout may be
    lower, the same, or higher than the keepalive interval, though in
-   most cases the inactive timeout is expected to be shorter than the
+   most cases the inactivity timeout is expected to be shorter than the
    keepalive interval.
 
    Only when the client has a very long-lived low-traffic operation
@@ -871,20 +871,20 @@ Internet-Draft            DNS Session Signaling                July 2017
    complete DNS message, including DNS requests, responses, updates, or
    Session Signaling messages, resets both timers for that session
    [RFC7766], with the exception that a Session Signaling Keepalive
-   message resets only the keepalive interval timer, not the inactive
+   message resets only the keepalive interval timer, not the inactivity
    timeout timer.
 
    In addition, for as long as the client has an outstanding operation
-   in progress, the inactive timeout timer remains fixed at zero, and an
-   inactive timeout cannot occur.
+   in progress, the inactivity timeout timer remains fixed at zero, and
+   an inactivity timeout cannot occur.
 
    For short-lived DNS operations like traditional queries and updates,
    an operation is considered in progress for the time between request
    and response, typically a period of a few hundred milliseconds at
-   most.  At the client, the inactive timeout timer is cleared upon
+   most.  At the client, the inactivity timeout timer is cleared upon
    transmission of a request and remains cleared until reception of the
-   corresponding response.  At the server, the inactive timeout timer is
-   cleared upon reception of a request and remains cleared until
+   corresponding response.  At the server, the inactivity timeout timer
+   is cleared upon reception of a request and remains cleared until
    transmission of the corresponding response.
 
    For long-lived DNS operations like Push Notification subscriptions
@@ -893,47 +893,48 @@ Internet-Draft            DNS Session Signaling                July 2017
 
 
 
-Bellis, et al.           Expires January 4, 2018               [Page 16]
+Bellis, et al.          Expires January 19, 2018               [Page 16]
 
 Internet-Draft            DNS Session Signaling                July 2017
 
 
    means that a session can exist, with a Push Notification subscription
    active, with no messages flowing in either direction, for far longer
-   than the inactive timeout, and this is not an error.  This is why
-   there are two separate timers: the inactive timeout, and the
+   than the inactivity timeout, and this is not an error.  This is why
+   there are two separate timers: the inactivity timeout, and the
    keepalive interval.  Just because a session has no traffic for an
    extended period of time does not automatically make that session
    "inactive", if it has an active Push Notification subscription that
    is awaiting notification events.
 
-7.4.  The Inactive Timeout
+7.4.  The Inactivity Timeout
 
-   The purpose of the inactive timeout is for the server to balance its
-   trade off between the costs of setting up new sessions and the costs
-   of maintaining inactive sessions.  A server with abundant session
-   capacity can offer a high inactive timeout, to permit clients to keep
-   a speculative session open for a long time, to save the cost of
-   establishing a new session for future communications with that
-   server.  A server with scarce memory resources can offer a low
-   inactive timeout, to cause clients to promptly close sessions
+   The purpose of the inactivity timeout is for the server to balance
+   its trade off between the costs of setting up new sessions and the
+   costs of maintaining inactive sessions.  A server with abundant
+   session capacity can offer a high inactivity timeout, to permit
+   clients to keep a speculative session open for a long time, to save
+   the cost of establishing a new session for future communications with
+   that server.  A server with scarce memory resources can offer a low
+   inactivity timeout, to cause clients to promptly close sessions
    whenever they have no outstanding operations with that server, and
    then create a new session later when needed.
 
 7.4.1.  Closing Inactive Sessions
 
-   A client is NOT required to wait until the inactive timeout timer
+   A client is NOT required to wait until the inactivity timeout timer
    expires before closing a session.  A client MAY close a session at
    any time, at the client's discretion.  If a client determines that it
    has no current or reasonably anticipated future need for an inactive
    session, then the client SHOULD close that connection.
 
-   If, at any time during the life of the session, the inactive timeout
-   value (i.e., 15 seconds by default) elapses without there being any
-   operation active on the session, the client MUST gracefully close the
-   connection with a TCP FIN (or equivalent for other protocols).
+   If, at any time during the life of the session, the inactivity
+   timeout value (i.e., 15 seconds by default) elapses without there
+   being any operation active on the session, the client MUST gracefully
+   close the connection with a TCP FIN (or equivalent for other
+   protocols).
 
-   If, at any time during the life of the session, twice the inactive
+   If, at any time during the life of the session, twice the inactivity
    timeout value (i.e., 30 seconds by default) elapses without there
    being any operation active on the session, the server SHOULD consider
    the client delinquent, and forcibly abort the session.  For sessions
@@ -944,34 +945,35 @@ Internet-Draft            DNS Session Signaling                July 2017
    API this is achieved by setting the SO_LINGER option to zero before
    closing the socket.)
 
-   In this context, an operation being active on a session includes a
-   query waiting for a response, an update waiting for a response, or an
 
 
 
-Bellis, et al.           Expires January 4, 2018               [Page 17]
+
+Bellis, et al.          Expires January 19, 2018               [Page 17]
 
 Internet-Draft            DNS Session Signaling                July 2017
 
 
+   In this context, an operation being active on a session includes a
+   query waiting for a response, an update waiting for a response, or an
    outstanding Push Notification subscription [I-D.ietf-dnssd-push], but
    not a Session Signaling Keepalive message exchange itself.  A Session
    Signaling Keepalive message exchange resets only the keepalive
-   interval timer, not the inactive timeout timer.
+   interval timer, not the inactivity timeout timer.
 
    If the client wishes to keep an inactive session open for longer than
    the default duration without having to send traffic every 15 seconds,
    then it uses the Session Signaling Keepalive message to request
    longer timeout values, as described in Section 5.
 
-7.4.2.  Values for the Inactive Timeout
+7.4.2.  Values for the Inactivity Timeout
 
-   For the inactive timeout value, lower values result in more frequent
-   session teardown and re-establishment.  Higher values result in lower
-   traffic and CPU load on the server, but a larger memory burden to
-   maintain state for inactive sessions.
+   For the inactivity timeout value, lower values result in more
+   frequent session teardown and re-establishment.  Higher values result
+   in lower traffic and CPU load on the server, but a larger memory
+   burden to maintain state for inactive sessions.
 
-   A shorter inactive timeout with a longer keepalive interval signals
+   A shorter inactivity timeout with a longer keepalive interval signals
    to the client that it should not speculatively keep inactive sessions
    open for very long for no reason, but when it does have an active
    reason to keep a session open, it doesn't need to be sending an
@@ -981,7 +983,7 @@ Internet-Draft            DNS Session Signaling                July 2017
    into play, to ensure that a sufficient residual amount of traffic is
    generated to maintain NAT and firewall state.
 
-   A longer inactive timeout with a shorter keepalive interval signals
+   A longer inactivity timeout with a shorter keepalive interval signals
    to the client that it may speculatively keep inactive sessions open
    for a long time, but it should be sending a lot of keepalive traffic
    on those inactive sessions.  This configuration is expected to be
@@ -989,27 +991,26 @@ Internet-Draft            DNS Session Signaling                July 2017
 
    To avoid excessive traffic the server MUST NOT send a Keepalive
    message (either a response to a client-initiated request, or a
-   server-initiated message) with an inactive timeout value less than
+   server-initiated message) with an inactivity timeout value less than
    ten seconds.  If a client receives an Keepalive message specifying an
-   inactive timeout value less than ten seconds this is an error and the
-   client MUST immediately terminate the connection with a TCP RST (or
-   equivalent for other protocols).
+   inactivity timeout value less than ten seconds this is an error and
+   the client MUST immediately terminate the connection with a TCP RST
+   (or equivalent for other protocols).
 
 7.5.  The Keepalive Interval
 
    The purpose of the keepalive interval is to manage the generation of
    sufficient messages to maintain state in middleboxes (such at NAT
    gateways or firewalls) and for the client and server to periodically
-   verify that they still have connectivity to each other.  This allows
 
 
 
-
-Bellis, et al.           Expires January 4, 2018               [Page 18]
+Bellis, et al.          Expires January 19, 2018               [Page 18]
 
 Internet-Draft            DNS Session Signaling                July 2017
 
 
+   verify that they still have connectivity to each other.  This allows
    them to clean up state when connectivity is lost, and attempt re-
    connection if appropriate.
 
@@ -1021,7 +1022,7 @@ Internet-Draft            DNS Session Signaling                July 2017
    action to keep the session alive.  To keep the session alive the
    client MUST send a Session Signaling Keepalive message (see
    Section 5).  A Session Signaling Keepalive message exchange resets
-   only the keepalive interval timer, not the inactive timeout timer.
+   only the keepalive interval timer, not the inactivity timeout timer.
 
    If a client disconnects from the network abruptly, without cleanly
    closing its session, leaving long-lived outstanding operations like
@@ -1039,7 +1040,7 @@ Internet-Draft            DNS Session Signaling                July 2017
    volume keepalive traffic.  Higher values of the keepalive interval
    reduce traffic and CPU load, but have minimal effect on the memory
    burden at the server, because clients keep a session open for the
-   same length of time (determined by the inactive timeout) regardless
+   same length of time (determined by the inactivity timeout) regardless
    of the level of keepalive traffic required.
 
    It may be appropriate for clients and servers to select different
@@ -1056,16 +1057,17 @@ Internet-Draft            DNS Session Signaling                July 2017
    may impose a lower keepalive interval, to generate more frequent
    keepalive traffic.
 
-   A smart client may be adaptive to its environment.  A client using a
-   private IPv4 address [RFC1918] to communicate with a DNS server at an
 
 
 
-Bellis, et al.           Expires January 4, 2018               [Page 19]
+
+Bellis, et al.          Expires January 19, 2018               [Page 19]
 
 Internet-Draft            DNS Session Signaling                July 2017
 
 
+   A smart client may be adaptive to its environment.  A client using a
+   private IPv4 address [RFC1918] to communicate with a DNS server at an
    address that is not in the same IPv4 private address block, may
    conclude that there is likely to be a NAT gateway on the path, and
    accordingly request a lower keepalive interval.
@@ -1112,16 +1114,16 @@ Internet-Draft            DNS Session Signaling                July 2017
    operation on a session does not necessarily imply that all other
    operations on that session have also failed, or that future
    operations will fail.  The client should assume that the server will
-   make its own decision about whether or not to close the session,
-   based on the server's determination of whether the error condition
 
 
 
-Bellis, et al.           Expires January 4, 2018               [Page 20]
+Bellis, et al.          Expires January 19, 2018               [Page 20]
 
 Internet-Draft            DNS Session Signaling                July 2017
 
 
+   make its own decision about whether or not to close the session,
+   based on the server's determination of whether the error condition
    pertains to this particular operation, or would also apply to any
    subsequent operations.  If the server does not close the session then
    the client SHOULD continue to use that session for subsequent
@@ -1168,15 +1170,16 @@ Internet-Draft            DNS Session Signaling                July 2017
    After sending the Retry Delay request the server SHOULD allow the
    client five seconds to close the connection, and if the client has
    not closed the connection after five seconds then the server SHOULD
-   abort the connection with a TCP RST (or equivalent for other
-   protocols).
 
 
 
-Bellis, et al.           Expires January 4, 2018               [Page 21]
+Bellis, et al.          Expires January 19, 2018               [Page 21]
 
 Internet-Draft            DNS Session Signaling                July 2017
 
+
+   abort the connection with a TCP RST (or equivalent for other
+   protocols).
 
    Upon receipt of a Retry Delay request from the server, the client
    MUST make note of the reconnect delay for this server, and then
@@ -1220,20 +1223,22 @@ Internet-Draft            DNS Session Signaling                July 2017
    a second for each successive client, yielding a post-restart
    reconnection rate of ten clients per second).
 
+
+
+
+
+
+
+Bellis, et al.          Expires January 19, 2018               [Page 22]
+
+Internet-Draft            DNS Session Signaling                July 2017
+
+
 7.9.2.  Client Reconnection
 
    After a session is closed by the server, the client SHOULD try to
    reconnect, to that server, or to another suitable server, if more
    than one is available.  If reconnecting to the same server, the
-
-
-
-
-Bellis, et al.           Expires January 4, 2018               [Page 22]
-
-Internet-Draft            DNS Session Signaling                July 2017
-
-
    client MUST respect the indicated delay before attempting to
    reconnect.
 
@@ -1274,21 +1279,23 @@ Internet-Draft            DNS Session Signaling                July 2017
    MUST be prepared to accept multiple connections from different source
    ports on the same client IP address.
 
+
+
+
+
+
+
+Bellis, et al.          Expires January 19, 2018               [Page 23]
+
+Internet-Draft            DNS Session Signaling                July 2017
+
+
 9.  IANA Considerations
 
 9.1.  DNS Session Signaling OPCODE Registration
 
    IANA are directed to assign a value (tentatively 6) in the DNS
    OPCODEs Registry for the Session Signaling OPCODE.
-
-
-
-
-
-Bellis, et al.           Expires January 4, 2018               [Page 23]
-
-Internet-Draft            DNS Session Signaling                July 2017
-
 
 9.2.  DNS Session Signaling RCODE Registration
 
@@ -1331,20 +1338,18 @@ Internet-Draft            DNS Session Signaling                July 2017
    TLS messages and MUST NOT be sent in the clear before the TLS session
    is established.
 
+
+
+
+Bellis, et al.          Expires January 19, 2018               [Page 24]
+
+Internet-Draft            DNS Session Signaling                July 2017
+
+
 11.  Acknowledgements
 
    Thanks to Tim Chown, Ralph Droms, Jan Komissar, and Manju Shankar Rao
    for their helpful contributions to this document.
-
-
-
-
-
-
-Bellis, et al.           Expires January 4, 2018               [Page 24]
-
-Internet-Draft            DNS Session Signaling                July 2017
-
 
 12.  References
 
@@ -1387,20 +1392,20 @@ Internet-Draft            DNS Session Signaling                July 2017
               DOI 10.17487/RFC6891, April 2013,
               <http://www.rfc-editor.org/info/rfc6891>.
 
+
+
+
+
+
+Bellis, et al.          Expires January 19, 2018               [Page 25]
+
+Internet-Draft            DNS Session Signaling                July 2017
+
+
    [RFC7766]  Dickinson, J., Dickinson, S., Bellis, R., Mankin, A., and
               D. Wessels, "DNS Transport over TCP - Implementation
               Requirements", RFC 7766, DOI 10.17487/RFC7766, March 2016,
               <http://www.rfc-editor.org/info/rfc7766>.
-
-
-
-
-
-
-Bellis, et al.           Expires January 4, 2018               [Page 25]
-
-Internet-Draft            DNS Session Signaling                July 2017
-
 
    [RFC7828]  Wouters, P., Abley, J., Dickinson, S., and R. Bellis, "The
               edns-tcp-keepalive EDNS0 Option", RFC 7828,
@@ -1415,7 +1420,7 @@ Internet-Draft            DNS Session Signaling                July 2017
 
    [I-D.ietf-dnssd-push]
               Pusateri, T. and S. Cheshire, "DNS Push Notifications",
-              draft-ietf-dnssd-push-11 (work in progress), June 2017.
+              draft-ietf-dnssd-push-12 (work in progress), July 2017.
 
    [I-D.ietf-quic-transport]
               Iyengar, J. and M. Thomson, "QUIC: A UDP-Based Multiplexed
@@ -1438,6 +1443,21 @@ Internet-Draft            DNS Session Signaling                July 2017
 
 Authors' Addresses
 
+
+
+
+
+
+
+
+
+
+
+Bellis, et al.          Expires January 19, 2018               [Page 26]
+
+Internet-Draft            DNS Session Signaling                July 2017
+
+
    Ray Bellis
    Internet Systems Consortium, Inc.
    950 Charter Street
@@ -1446,16 +1466,6 @@ Authors' Addresses
 
    Phone: +1 650 423 1200
    Email: ray@isc.org
-
-
-
-
-
-
-
-Bellis, et al.           Expires January 4, 2018               [Page 26]
-
-Internet-Draft            DNS Session Signaling                July 2017
 
 
    Stuart Cheshire
@@ -1494,6 +1504,16 @@ Internet-Draft            DNS Session Signaling                July 2017
    Email: allison.mankin@gmail.com
 
 
+
+
+
+
+
+Bellis, et al.          Expires January 19, 2018               [Page 27]
+
+Internet-Draft            DNS Session Signaling                July 2017
+
+
    Tom Pusateri
    Unaffiliated
 
@@ -1509,4 +1529,40 @@ Internet-Draft            DNS Session Signaling                July 2017
 
 
 
-Bellis, et al.           Expires January 4, 2018               [Page 27]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Bellis, et al.          Expires January 19, 2018               [Page 28]
