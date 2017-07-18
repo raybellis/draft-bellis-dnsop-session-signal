@@ -211,8 +211,8 @@ Session Signaling messages relate only to the specific "session" in which
 they are being carried. A "session" is established over a connection when
 either side of the connection sends the first session signaling operation
 TLV and it is acknowledged by the other side. While this specification defines
-and initial set of two operations, additional operations may be defined in
-additional specifications.
+and initial set of three TLVs, additional TLVs may be defined in
+additional specifications. All three of the TLVs defined are mandatory to implement.
 
 Where an application-layer middle box (e.g., a DNS 
 proxy, forwarder, or session multiplexer) is in the path the middle box
@@ -364,7 +364,7 @@ A "Session Signaling Modifier TLV" specifies additional parameters
 relating to the operation. Immediately following the Operation TLV, if present,
 a Session Signaling message MAY contain one or more Modifier TLVs.
 
-####  Unrecognised TLVs
+####  Unrecognized TLVs
 
 If a Session Signaling request is received containing an unrecognized
 Operation TLV, the receiver MUST send a response with matching
@@ -556,7 +556,7 @@ MUST NOT contain any Operation TLV.
 When a client is sending its second and subsequent Keepalive Session Signaling 
 request to the server, the client SHOULD continue to request its preferred 
 values each time. This allows flexibility, so that if conditions change during 
-the lifefime of a session, the server can adapt its responses to better fit the
+the lifetime of a session, the server can adapt its responses to better fit the
 client's needs.
 
 ## Relation to EDNS(0) TCP Keepalive Option
@@ -628,6 +628,38 @@ applies only to the failed operation, not to the session as a whole.
 In the case of a client request that returns a nonzero RCODE value, the server 
 MAY append a Retry Delay TLV (0) to the response, indicating the time interval
 during which the client SHOULD NOT attempt this operation again.
+
+# Encryption Padding TLV {#padding}
+
+The Encryption Padding TLV (SIGNALING-TYPE=2) can only be used as a Modifier TLV.
+It is only applicable when the Session Signaling Transport layer uses encryption
+such as TLS.
+
+The TYPE-DEPENDENT DATA for the the Padding TLV is optional and is a
+variable length field containing non-specified values. A DATA LENGTH
+of 0 essentially provides for 4 octets of padding (the minimum amount).
+The padding data values could be all zeros or could be random data as is
+appropriate for the one or more TLVs preceding it.
+
+If compression is used in the preceding TLVs, then non-zero
+values for the padding octets are encouraged to thwart traffic pattern
+analysis.
+
+                                                 1   1   1   1   1   1
+         0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+       /                                                               /
+       /                    VARIABLE LENGTH OCTETS                     /
+       /                                                               /
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+
+The Encryption Padding TLV may be included in either a Session Signaling
+request, response, or both. If a request is received with a Encryption
+Padding TLV, then the response SHOULD also include an Encryption Padding TLV.
+
+The length of padding is intentionally not specified in this document and
+is a function of current best practices with respect to the type and length
+of data in the preceding TLVs.
 
 # Session Lifecycle and Timers {#lifecycle}
 
@@ -782,7 +814,7 @@ terminate the connection with a TCP RST (or equivalent for other protocols).
 ## The Keepalive Interval
 
 The purpose of the keepalive interval is to manage the generation of
-sufficient messages to maintain state in middleboxes (such at NAT gateways
+sufficient messages to maintain state in middle-boxes (such at NAT gateways
 or firewalls) and for the client and server to periodically verify that they
 still have connectivity to each other. This allows them to clean up state
 when connectivity is lost, and attempt re-connection if appropriate.
@@ -1025,7 +1057,8 @@ Registry, with initial values as follows:
 |--:|------|--------|-----------|
 | 0x0000 | RetryDelay | Standard | RFC-TBD |
 | 0x0001 | KeepAlive | Standard | RFC-TBD |
-| 0x0002 - 0x003F | Unassigned, reserved for session management TLVs | | |
+| 0x0002 | Encryption Padding | Standard | RFC-TBD |
+| 0x0003 - 0x003F | Unassigned, reserved for session management TLVs | | |
 | 0x0040 - 0xF7FF | Unassigned | | |
 | 0xF800 - 0xFBFF | Reserved for local / experimental use | | |
 | 0xFC00 - 0xFFFF | Reserved for future expansion | | |
@@ -1038,6 +1071,8 @@ of an appropriate IETF "Standards Action" or "IESG Approval" document {{!RFC5226
 If this mechanism is to be used with DNS over TLS, then these messages
 are subject to the same constraints as any other DNS over TLS messages
 and MUST NOT be sent in the clear before the TLS session is established.
+
+The data field of the "Encryption Padding" TLV could be used as a covert channel.
 
 # Acknowledgements
 
