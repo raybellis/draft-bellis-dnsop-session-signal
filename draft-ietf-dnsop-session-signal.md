@@ -316,9 +316,12 @@ The RCODE value in a response may be one of the following values:
 |-----:|----------|-------------|
 | 0 | NOERROR | Operation processed successfully |
 | 1 | FORMERR | Format error |
-| 4 | NOTIMP | Session Signaling not supported |
+| 2 | SERVFAIL | Server failed to process request due to a problem with the server |
+| 3 | NXDOMAIN | TLV dependent |
+| 4 | NOTIMP | DNS Stateful Operations not supported |
 | 5 | REFUSED | Operation declined for policy reasons |
-| 11 | SSOPNOTIMP | Session Signaling operation type code not supported |
+| 9 | NOTAUTH | TLV dependent |
+| 11 | DSOPNOTIMP | DNS Stateful Operation type code not supported |
 
 ### Session Signaling Data
 
