@@ -1,6 +1,6 @@
 ---
-title: DNS Session Signaling
-docname: draft-ietf-dnsop-session-signal-04
+title: DNS Stateful Operations
+docname: draft-ietf-dnsop-stateful-operations-04
 date: 2017-07-18
 ipr: trust200902
 area: Internet
@@ -84,9 +84,12 @@ informative:
 
 --- abstract
 
-This document defines a new Session Signaling OPCODE used to communicate 
+This document defines a new DNS Stateful Operations OPCODE used to communicate 
 persistent "per-session" operations, expressed using type-length-value (TLV) 
-syntax, and defines an initial set of TLVs used to manage session timeouts and termination. This mechanism is intended to reduce the overhead of existing “per-packet” signaling mechanisms with “per-message” semantics as well as defining new signaling operations not defined in EDNS(0). 
+syntax, and defines an initial set of TLVs used to manage session timeouts and 
+termination. This mechanism is intended to reduce the overhead of existing 
+“per-packet” signaling mechanisms with “per-message” semantics as well as 
+defining new stateful operations not defined in EDNS(0). 
 
 --- middle
 
@@ -105,7 +108,7 @@ signal at least one session related parameter (the EDNS(0) TCP Keepalive option
 {{?RFC7828}}) the result is less than optimal due to the restrictions
 imposed by the EDNS(0) semantics and the lack of server-initiated signalling.
 
-This document defines a new Session Signaling OPCODE used to carry persistent
+This document defines a new DNS Stateful Operations OPCODE used to carry persistent
 "per-session" operations, expressed using type-length-value (TLV) syntax, and
 defines an initial set of TLVs used to manage session timeouts and termination. 
 
@@ -116,28 +119,28 @@ option within the combined OPT RR.
 The specifications for each individual option need to define how each
 different option is to be acknowledged, if necessary.
 
-With Session Signaling, in contrast, there is no compelling motivation
+With Stateful Operations, in contrast, there is no compelling motivation
 to pack multiple operations into a single message for efficiency reasons.
-Each Session Signaling operation is communicated in its own separate
+Each Stateful operation is communicated in its own separate
 DNS message, and the transport protocol can take care of packing
 separate DNS messages into a single IP packet if appropriate.
 For example, TCP can pack multiple small DNS messages into a single TCP segment.
 The RCODE in each response message indicates the success or failure of the operation in question.
 
-It should be noted that the message format for Session Signaling
-operations (see {{format}}) differs from the traditional DNS packet
+It should be noted that the message format for DNS Stateful Operations
+(see {{format}}) differs from the traditional DNS packet
 format used for standard queries and responses.
 The standard twelve-octet header is used, but the four count fields
-(QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT) are set to zero and the
+(QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT) are set to zero and their
 corresponding sections are not present.
-The actual data pertaining to Session Signaling operations is
+The actual data pertaining to DNS Stateful Operations is
 appended to the end of the DNS message header.
-When displayed using today's packet analyser tools that have not been updated
-to recognize the DNS Session Signaling format, this will result
-in the Session Signaling data being displayed as unknown additional
+When displayed using today's packet analyzer tools that have not been updated
+to recognize the DNS Stateful Operations format, this will result
+in the Stateful Operations data being displayed as unknown additional
 data after the end of the DNS message. It is likely that future updates
 to these tools will add the ability to recognize, decode, and display the
-Session Signaling data.
+Stateful Operations data.
 
 # Terminology
 
@@ -168,20 +171,24 @@ initial sender and subsequent receiver of a Session Signaling request message,
 regardless of which was the "client" and "server" in the usual DNS sense.
 
 The term "sender" may apply to either an initiator
-(when sending a Session Signaling request message)
-or a responder (when sending a Session Signaling response message).
+(when sending a DNS Stateful Operation request message)
+or a responder (when sending a DNS Stateful Operation response message).
 
 Likewise, the term "receiver" may apply to either a responder
-(when receiving a Session Signaling request message)
-or an initiator (when receiving a Session Signaling response message).
+(when receiving a DNS Stateful Operation request message)
+or an initiator (when receiving a DNS Stateful Operation response message).
 
-Session Signaling operations are expressed using type-length-value (TLV) syntax.
+DNS Stateful Operations are expressed using type-length-value (TLV) syntax.
 
-"SSOP" is used to mean Session Signalling Operation.
+"DSOP" is used to mean DNS Stateful Operation.
 
-A Session Signaling "Session" is established between two endpoints that acknowledge persistent DNS state via the exchange of Session Signalling messages over the connection. This is distinct from, for example a DNS-over-TCP session as described in RC7766.
+A DDSOP "Session" is established between two endpoints that 
+acknowledge persistent DNS state via the exchange of DSOP messages
+over the connection. This is distinct from, for example a DNS-over-TCP session
+as described in RC7766.
 
-Two timers are defined in this document: an inactivity timeout and a keepalive interval. The term "Session Timers" is used to refer to this pair of values.
+Two timers are defined in this document: an inactivity timeout and a keepalivee
+interval. The term "Session Timers" is used to refer to this pair of values.
 
 # Discussion
 
@@ -192,7 +199,7 @@ it does not reset the inactivity timeout. Possibly move some of the text from
 
 # Protocol Details {#details}
 
-Session Signaling messages MUST only be carried in protocols and in
+DSOP messages MUST only be carried in protocols and in
 environments where a session may be established according to the definition above.
 Standard DNS over TCP {{!RFC1035}}{{!RFC7766}}, and DNS over TLS {{?RFC7858}}
 are suitable protocols.
@@ -202,14 +209,9 @@ in-order message delivery, and, in the presence of NAT gateways and firewalls
 with short UDP timeouts, it fails to provide a persistent bi-directional
 communication channel unless an excessive amount of keepalive traffic is used.
 
-There are discussions about using DNS over the QUIC transport protocol {{?I-D.ietf-quic-transport}}.
-Specifications for DNS over QUIC are still preliminary and it is not
-yet known whether QUIC will provide a suitable transport for Session
-Signaling.
-
-Session Signaling messages relate only to the specific "session" in which
+DSOP messages relate only to the specific "session" in which
 they are being carried. A "session" is established over a connection when
-either side of the connection sends the first session signaling operation
+either side of the connection sends the first DSOP
 TLV and it is acknowledged by the other side. While this specification defines
 and initial set of three TLVs, additional TLVs may be defined in
 additional specifications. All three of the TLVs defined are mandatory to implement.
@@ -223,32 +225,32 @@ but otherwise preserves the effect of a single session.
 
 TODO: State clearly what a proxy should do when in the path.
 
-A client MAY attempt to initiate Session Signaling messages at any time
+A client MAY attempt to initiate DSOP messages at any time
 on a connection; receiving a NOTIMP response in reply indicates that the
-server does not implement Session Signaling, and the client SHOULD NOT
-issue further Session Signaling messages on that connection.
+server does not implement DSOP, and the client SHOULD NOT
+issue further DSOP messages on that connection.
 
-A server SHOULD NOT initiate Session Signaling messages until a
-client-initiated Session Signaling message is received first,
+A server SHOULD NOT initiate DSOP messages until a
+client-initiated DSOP message is received first,
 unless in an environment where it is known in advance by other
-means that the client supports Session Signaling.
+means that the client supports DSOP.
 This requirement is to ensure that the clients that do not support
-Session Signaling do not receive unsolicited inbound Session Signaling
+DSOP do not receive unsolicited inbound DSOP
 messages that they would not know how to handle.
 
-On a session between a client and server that support Session Signaling,
-once the client has sent at least one Session Signaling message (or it is
-known in advance by other means that the client supports Session Signaling)
+On a session between a client and server that support DSOP,
+once the client has sent at least one DSOP message (or it is
+known in advance by other means that the client supports DSOP)
 either end may unilaterally send Session Signaling messages at any time,
 and therefore either client or server may be the initiator of a message.
 
-From this point on it is considered that a "Session Signalling session"" is in 
+From this point on it is considered that a "DSOP session"" is in 
 progress. Clients and servers should behave as described in this specification
 with regard to inactivity timeouts and connection close, not as prescribed in {{!RFC7766}}.
 
 ## Message Format {#format}
 
-A Session Signaling message begins with
+A DSOP message begins with
 the standard twelve-octet DNS message header {{!RFC1035}}
 with the OPCODE field set to the Session Signaling OPCODE (tentatively 6).
 However, unlike standard DNS messages, the question section, answer section,
@@ -256,7 +258,7 @@ authority records section and additional records sections are not present.
 The corresponding count fields (QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT) MUST be
 set to zero on transmission.
 
-If a Session Signaling message is received where any of the count fields are
+If a DSOP message is received where any of the count fields are
 not zero, then a FORMERR MUST be returned. 
 
 
@@ -276,7 +278,7 @@ not zero, then a FORMERR MUST be returned.
        |                     ARCOUNT (MUST be zero)                    |
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
        |                                                               |
-       /                     Session Signaling Data                    /
+       /                           DSOP Data                           /
        /                                                               /
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
@@ -287,8 +289,8 @@ initiator is not currently using for any other active operation on this
 connection.
 For the purposes here, a MESSAGE ID is in use in this session if the
 initiator has used it in a request for which it has not yet received a
-response, or if the client has used it for a subscription which it has
-not yet cancelled {{?I-D.ietf-dnssd-push}}.
+response, or if the client has used it to setup state that it has not yet ready
+to delete.
 
 In a response the MESSAGE ID field MUST contain a copy of the value of the
 MESSAGE ID field in the request being responded to.
@@ -299,7 +301,7 @@ If the QR bit is not zero the message is not a request.
 In a response the DNS Header QR bit MUST be one (QR=1).
 If the QR bit is not one the message is not a response.
 
-The DNS Header OPCODE field holds the Session Signaling OPCODE value (tentatively 6).
+The DNS Header OPCODE field holds the DSOP OPCODE value (tentatively 6).
 
 The Z bits are currently unused, and in both requests and responses the
 Z bits MUST be set to zero (0) on transmission and MUST be silently ignored
@@ -318,20 +320,26 @@ The RCODE value in a response may be one of the following values:
 | 1 | FORMERR | Format error |
 | 2 | SERVFAIL | Server failed to process request due to a problem with the server |
 | 3 | NXDOMAIN | TLV dependent |
-| 4 | NOTIMP | DNS Stateful Operations not supported |
+| 4 | NOTIMP | DSOP not supported |
 | 5 | REFUSED | Operation declined for policy reasons |
 | 9 | NOTAUTH | TLV dependent |
-| 11 | DSOPNOTIMP | DNS Stateful Operation type code not supported |
+| 11 | DSOPNOTIMP | DSOP type code not supported |
 
-### Session Signaling Data
+Use of the above RCODE's is likely to be common in DSOP but 
+does not preclude the definition and use of other codes in future documents that 
+make use of DSOP.
 
-The standard twelve-octet DNS message header is followed by the Session 
-Signaling Data.
+If a document describing a DSOP makes use of either NXDOMAIN 
+or NOTAUTH then that document MUST explain the meaning.
 
-The first TLV in a Session Signaling request message is the Operation 
-TLV. Any subsequent TLVs after this initial Operation TLV are Modifier TLVs.
+### DSOP Data
 
-Depending on the operation a Session Signaling response can contain:
+The standard twelve-octet DNS message header is followed by the DSOP Data.
+
+The first TLV in a DSOP request message is called the Operation 
+TLV. Any subsequent TLVs after this initial Operation TLV are called Modifier TLVs.
+
+Depending on the operation a DSOP response can contain:
 
 * No TLVs
 * Only an Operation TLV
@@ -340,79 +348,79 @@ Depending on the operation a Session Signaling response can contain:
 
 #### Operation TLVs
 
-A "Session Signaling Operation TLV" specifies the operation to be performed.
+A "DSOP Operation TLV" specifies the operation to be performed.
 
-A Session Signaling message MUST contain at most one Operation TLV.
+A DSOP message MUST contain at most one Operation TLV.
 
-In all cases a Session Signaling request message MUST contain exactly one 
+In all cases a DSOP request message MUST contain exactly one 
 Operation TLV, indicating the operation to be performed.
 
-Depending on the operation, a Session Signaling response message MAY contain no 
+Depending on the operation, a DSOP response message MAY contain no 
 Operation TLV, because it is simply a response to a previous request message,
 and the message ID in the header is sufficient to identify the request in 
 question. Or it may contain a single corresponding response Operation TLV, with 
-the same SIGNALING-TYPE as in the request message. The specification for each Session 
-Signaling operation type determines whether a response for that operation type 
+the same DSOP-TYPE as in the request message. The specification for each DSOP
+type determines whether a response for that operation type 
 is required to carry the Operation TLV.
 
-If a Session Signaling response is received for an operation which requires
+If a DSOP response is received for an operation which requires
 that the response carry an Operation TLV, and the required Operation TLV is not
-the first Session Signaling TLV in the response message, then this is a fatal 
+the first DSOP TLV in the response message, then this is a fatal 
 error and the recipient of the defective response message MUST immediately
 terminate the connection with a TCP RST (or equivalent for other protocols).
 
 #### Modifier TLVs
 
-A "Session Signaling Modifier TLV" specifies additional parameters
+A "DSOP Modifier TLV" specifies additional parameters
 relating to the operation. Immediately following the Operation TLV, if present,
-a Session Signaling message MAY contain one or more Modifier TLVs.
+a DSOP message MAY contain one or more Modifier TLVs.
 
 ####  Unrecognized TLVs
 
-If a Session Signaling request is received containing an unrecognized
+If a DSOP request is received containing an unrecognized
 Operation TLV, the receiver MUST send a response with matching
-MESSAGE ID, and RCODE SSOPNOTIMP (tentatively 11). The response MUST NOT contain 
+MESSAGE ID, and RCODE DSOPNOTIMP (tentatively 11). The response MUST NOT contain 
 an Operation TLV.
 
-If a Session Signaling message (request or response) is received
+If a DSOP message (request or response) is received
 containing one or more unrecognized Modifier TLVs, the unrecognized
 Modifier TLVs MUST be silently ignored, and the remainder of the message
 is interpreted and handled as if the unrecognized parts were not present.
 
 ### EDNS(0) and TSIG
 
-Since the ARCOUNT field MUST be zero, a Session Signaling message
+Since the ARCOUNT field MUST be zero, a DSOP message
 MUST NOT contain an EDNS(0) option in the additional records section.
 If functionality provided by current or future EDNS(0) options is desired
-for Session Signaling messages, a Session Signaling Operation TLV or
+for DSOP messages, a DSOP Operation TLV or
 Modifier TLV needs to be defined to carry the necessary information.
 
 For example, the EDNS(0) Padding Option {{!RFC7830}} used for security purposes
-is not permitted in a Session Signaling message,
-so if message padding is desired for Session Signaling messages,
-a Session Signaling Modifier TLV needs to be defined to perform this function.
+is not permitted in a DSOP message,
+so if message padding is desired for DSOP messages
+then the Encryption Padding TLV described in {{#padding}} MSUST be used.
 
-Similarly, a Session Signaling message MUST NOT contain a TSIG record.
+Similarly, a DSOP message MUST NOT contain a TSIG record.
 A TSIG record in a conventional DNS message is added as the last record
 in the additional records section, and carries a signature computed over
-the preceding message content. Since Session Signaling data appears
+the preceding message content. Since DSOP data appears
 after the additional records section, it would not be included in the
 signature calculation. 
-If use of signatures with Session Signaling messages becomes necessary in the 
-future, an explicit Session Signaling Modifier TLV needs to be defined to 
+If use of signatures with DSOP messages becomes necessary in the 
+future, an explicit DSOP Modifier TLV needs to be defined to 
 perform this function.
 
-Note however that, while Session Signaling *messages* cannot include
-EDNS(0) or TSIG records, a Session Signaling *session* is typically used to 
-carry a whole series of DNS messages of different kinds, including Session 
-Signaling messages, and other DNS message types like Query {{!RFC1034}} 
+Note however that, while DSOP *messages* cannot include
+EDNS(0) or TSIG records, a DSOP *session* is typically used to 
+carry a whole series of DNS messages of different kinds, including DSOP
+messages, and other DNS message types like Query {{!RFC1034}} 
 {{!RFC1035}} and Update {{!RFC2136}}, and those messages can carry EDNS(0) and 
 TSIG records.
 
 This specification explicitly prohibits use of the
 EDNS(0) TCP Keepalive Option {{!RFC7828}}
-in *any* messages sent on a Session Signaling session (because it duplicates
-the functionality provided by the Session Signaling Keepalive operation),
+in *any* messages sent on a DSOP session (because it duplicates
+the functionality provided by the DSOP Keepalive operation),
 but messages may contain other EDNS(0) options as appropriate.
 
 ## TLV Format
@@ -422,46 +430,43 @@ Operation and modifier TLVs both use the same encoding format.
                                                  1   1   1   1   1   1
          0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-       |                         SIGNALING-TYPE                        |
+       |                           DSOP-TYPE                           |
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-       |                      SIGNALING DATA LENGTH                    |
+       |                       DSOP DATA LENGTH                        |
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
        |                                                               |
        /                      TYPE-DEPENDENT DATA                      /
        /                                                               /
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
-SIGNALING-TYPE:
-: A 16 bit field in network order giving the type of the current Session
-Signaling TLV per the IANA DNS Session Signaling Type Codes Registry.
+DSOP-TYPE:
+: A 16 bit field in network order giving the type of the current DSOP TLV per
+the IANA DSOP Type Codes Registry.
 
-SIGNALING DATA LENGTH:
+DSOP DATA LENGTH:
 : A 16 bit field in network order giving the size in octets of
 the TYPE-DEPENDENT DATA.
 
 TYPE-DEPENDENT DATA:
 : Type-code specific format.
 
-Where domain names appear within TYPE-DEPENDENT DATA, they MUST NOT be compressed using standard DNS name compression.
-
-
 ## Message Handling
 
 The initiator MUST set the value of the QR bit in the DNS header to zero
-(0), and the responder MUST set it to one (1). Every Session Signaling request 
+(0), and the responder MUST set it to one (1). Every DSOP request 
 message (QR=0) MUST elicit a response (QR=1), 
 which MUST have the same MESSAGE ID in the DNS message header as in the 
-corresponding request. Session Signaling request messages sent by the client 
-elicit a response from the server, and Session Signaling request messages sent 
+corresponding request. DSOP request messages sent by the client 
+elicit a response from the server, and DSOP request messages sent 
 the server elicit a response from the client.
 
 With most TCP implementations, the TCP data acknowledgement (generated because 
 data has been received by TCP), the TCP window update (generated because TCP has 
-delivered that data to the receiving software) and the DNS Session Signaling 
+delivered that data to the receiving software) and the DSOP 
 response (generated by the receiving software itself)
 are all combined into a single packet, so in practice the requirement that every
-Session Signaling request message MUST elicit a 
-Session Signaling response incurs minimal extra cost on the network.
+DSOP request message MUST elicit a 
+DSOP response incurs minimal extra cost on the network.
 Requiring that every request elicit a corresponding response also avoids
 performance problems caused by interaction between
 Nagle's Algorithm and Delayed Ack {{NagleDA}}.
@@ -475,15 +480,13 @@ identifier for a particular operation on a session.
 As described in {{header}} An initiator MUST NOT reuse a MESSAGE ID that is 
 already in use for an 
 outstanding request, unless specified otherwise by the relevant specification 
-for the Session Signaling operation in question. At the very least, this means 
+for the DSOP in question. At the very least, this means 
 that a MESSAGE ID MUST NOT be reused in a particular direction
 on a particular session while the initiator is waiting for a response to a 
 previous request on that session, unless specified otherwise by the relevant 
-specification for the Session Signaling operation in question.
-(For a long-lived operation, such as a DNS Push Notification
-subscription {{?I-D.ietf-dnssd-push}} the MESSAGE ID for the operation
-MUST NOT be reused for a new subscription as long as the
-existing subscription using that MESSAGE ID remains active.)
+specification for the DSOP in question.
+(For a long-lived state the MESSAGE ID for the operation
+MUST NOT be reused whilst that state remains active.)
 
 If a client or server receives a response (QR=1) where the MESSAGE ID does not
 match any of its outstanding operations, this is a fatal error and it MUST 
@@ -492,23 +495,22 @@ protocols).
 
 # Keepalive Operation TLV {#keepalive}
 
-The Keepalive Operation TLV (SIGNALING-TYPE=1) performs two functions: to reset the
+The Keepalive Operation TLV (DSOP-TYPE=1) performs two functions: to reset the
 keepalive timer for the session and to establish the values for the Session Timers. 
 
 When sent by a client, it resets a session's keepalive timer,
 and at the same time requests what the Session Timer values should be from this point forward in the session.
 
-Once a Session Signalling session is in progress (see {{details}})
+Once a DSOP session is in progress (see {{details}})
 the Keepalive TLV also MAY be initiated by a server.
 When sent by a server, it resets a session's keepalive timer,
 and unilaterally informs the client of the new Session Timer values to use from 
 this point forward in this session.
 
 It is not required that the Keepalive TLV be used in every session.
-While many Session Signaling operations
-(such as DNS Push Notifications {{?I-D.ietf-dnssd-push}})
-will be used in conjunction with a long-lived session,
-not all Session Signaling operations require a long-lived session,
+While many DSOP
+will be used in conjunction with a long-lived session state,
+not all DSOP operations require long-lived session state,
 and in some cases the default 15-second value for both the inactivity timeout
 and keepalive interval may be perfectly appropriate.
 
@@ -539,7 +541,7 @@ If the client does not generate the necessary keepalive traffic then after
 twice this interval the server will forcibly terminate the connection
 with a TCP RST (or equivalent for other protocols).
 
-In a client-initiated Session Signaling Keepalive message,
+In a client-initiated DSOP Keepalive message,
 the inactivity timeout and keepalive interval contain the client's requested values.
 In a server response to a client-initiated message, the inactivity timeout and 
 keepalive interval contain the server's chosen values, which the client MUST 
@@ -548,28 +550,28 @@ requests a certain lease lifetime using DHCP option 51 {{!RFC2132}},
 but the server is the ultimate authority
 for deciding what lease lifetime is actually granted.
 
-In a server-initiated Session Signaling Keepalive message, the inactivity timeout and 
+In a server-initiated DSOP Keepalive message, the inactivity timeout and 
 keepalive interval unilaterally inform the client of the new values from this 
 point forward in this session. The client MUST generate a response to the 
-server-initiated Session Signaling Keepalive message.
+server-initiated DSOP Keepalive message.
 The Message ID in the response message MUST match the ID from the 
-server-initiated Session Signaling Keepalive message, and the response message 
+server-initiated DSOP Keepalive message, and the response message 
 MUST NOT contain any Operation TLV.
 
-When a client is sending its second and subsequent Keepalive Session Signaling 
-request to the server, the client SHOULD continue to request its preferred 
+When a client is sending its second and subsequent Keepalive DSOP 
+requests to the server, the client SHOULD continue to request its preferred 
 values each time. This allows flexibility, so that if conditions change during 
 the lifetime of a session, the server can adapt its responses to better fit the
 client's needs.
 
 ## Relation to EDNS(0) TCP Keepalive Option
 
-The inactivity timeout value in the Keepalive TLV (SIGNALING-TYPE=1) has similar
+The inactivity timeout value in the Keepalive TLV (DSOP-TYPE=1) has similar
 intent to the EDNS(0) TCP Keepalive Option {{!RFC7828}}.
-A client/server pair that supports Session Signaling MUST NOT use the
-EDNS(0) TCP KeepAlive option within any message after a Session Signalling 
+A client/server pair that supports DSOP MUST NOT use the
+EDNS(0) TCP KeepAlive option within any message after a DSOP 
 session has been established.
-Once a Session Signalling session has been established, if either
+Once a DSOP session has been established, if either
 client or server receives a DNS message over the session that contains an
 EDNS(0) TCP Keepalive option, this is an error and the receiver of the
 EDNS(0) TCP Keepalive option MUST immediately
@@ -578,7 +580,7 @@ terminate the connection with a TCP RST (or equivalent for other protocols).
 
 # Retry Delay TLV {#delay}
 
-The Retry Delay TLV (SIGNALING-TYPE=0) can be used as an Operation TLV or as
+The Retry Delay TLV (DSOP-TYPE=0) can be used as an Operation TLV or as
 a Modifier TLV. 
 
 The TYPE-DEPENDENT DATA for the the Retry Delay TLV is as follows:
@@ -598,7 +600,7 @@ The RECOMMENDED value is 10 seconds.
 
 ## Use as an Operational TLV
 
-When sent in a Session Signaling request message, from server to client, the 
+When sent in a DSOP request message, from server to client, the 
 Retry Delay TLV (0) is considered an Operation TLV. It is used by a server 
 to request that a client close the session, and not to reconnect for the 
 indicated time interval.
@@ -623,7 +625,7 @@ to accept Retry Delay requests with any RCODE value.
 
 ## Use as a Modifier TLV
 
-When appended to a Session Signaling response message for some client request,
+When appended to a DSOP response message for some client request,
 the Retry Delay TLV (0) is considered a Modifier TLV.
 The indicated time interval during which the client SHOULD NOT retry
 applies only to the failed operation, not to the session as a whole.
@@ -634,8 +636,8 @@ during which the client SHOULD NOT attempt this operation again.
 
 # Encryption Padding TLV {#padding}
 
-The Encryption Padding TLV (SIGNALING-TYPE=2) can only be used as a Modifier TLV.
-It is only applicable when the Session Signaling Transport layer uses encryption
+The Encryption Padding TLV (DSOP-TYPE=2) can only be used as a Modifier TLV.
+It is only applicable when the DSOP Transport layer uses encryption
 such as TLS.
 
 The TYPE-DEPENDENT DATA for the the Padding TLV is optional and is a
@@ -656,7 +658,7 @@ analysis.
        /                                                               /
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
-The Encryption Padding TLV may be included in either a Session Signaling
+The Encryption Padding TLV may be included in either a DSOP
 request, response, or both. If a request is received with a Encryption
 Padding TLV, then the response SHOULD also include an Encryption Padding TLV.
 
@@ -670,7 +672,7 @@ of data in the preceding TLVs.
 
 A session begins when a client makes a new connection to a server.
 
-A Session Signalling session MAY begin as described in {{details}}.....
+A DSOP session MAY begin as described in {{details}}.....
 
 The client may perform as many DNS operations as it wishes using the
 newly created session. Operations SHOULD be pipelined (i.e., the
@@ -700,7 +702,7 @@ like a Push Notification subscription, does the keepalive interval timer come
 into play, to ensure that a sufficient residual
 amount of traffic is generated to maintain NAT and firewall state.
 
-On a new session, before any explicit Session Signaling
+On a new session, before any explicit DSOP
 Keepalive message exchange, the default value for both timers is 15 seconds.
 For both timers, lower values of the timer result in higher network traffic
 and higher CPU load on the server.
@@ -710,7 +712,7 @@ and higher CPU load on the server.
 At both servers and clients, the generation or reception of any complete
 DNS message, including DNS requests, responses, updates, or Session Signaling
 messages, resets both timers for that session {{!RFC7766}}, with the exception
-that a Session Signaling Keepalive message resets only the keepalive interval 
+that a DSOP Keepalive message resets only the keepalive interval 
 timer, not the inactivity timeout timer.
 
 In addition, for as long as the client has an outstanding operation in progress,
@@ -777,13 +779,13 @@ SO_LINGER option to zero before closing the socket.)
 In this context, an operation being active on a session includes
 a query waiting for a response, an update waiting for a response,
 or an outstanding Push Notification subscription {{?I-D.ietf-dnssd-push}},
-but not a Session Signaling Keepalive message exchange itself.
-A Session Signaling Keepalive message exchange resets only the keepalive
+but not a DSOP Keepalive message exchange itself.
+A DSOP Keepalive message exchange resets only the keepalive
 interval timer, not the inactivity timeout timer.
 
 If the client wishes to keep an inactive session open for longer than
 the default duration without having to send traffic every 15 seconds,
-then it uses the Session Signaling Keepalive message to request
+then it uses the DSOP Keepalive message to request
 longer timeout values, as described in {{keepalive}}.
 
 ### Values for the Inactivity Timeout
@@ -829,8 +831,8 @@ the keepalive interval value (i.e., 15 seconds by default) elapses
 without any DNS messages being sent or received on a session,
 the client MUST take action to keep the session alive.
 To keep the session alive the client MUST send a
-Session Signaling Keepalive message (see {{keepalive}}).
-A Session Signaling Keepalive message exchange resets only the keepalive
+DSOP Keepalive message (see {{keepalive}}).
+A DSOP Keepalive message exchange resets only the keepalive
 interval timer, not the inactivity timeout timer.
 
 If a client disconnects from the network abruptly,
@@ -940,7 +942,7 @@ connection.
 There may be rare cases where a server is overloaded and wishes to shed load.
 If a server is low on resources it MAY simply terminate a client connection with 
 a TCP RST (or equivalent for other protocols).
-However, the likely behaviour of the client may be simply to to treat this as a
+However, the likely behavior of the client may be simply to to treat this as a
 network failure and connect
 immediately, putting more burden on the server.
 
@@ -1014,7 +1016,7 @@ after it resumes service.
 Connections". I think we should align this section with that so any updates are
 explicit.)
 
-A client that supports Session Signaling SHOULD NOT make multiple
+A client that supports DSOP SHOULD NOT make multiple
 connections to the same DNS server.
 
 A single server may support multiple services, including DNS Updates 
@@ -1041,19 +1043,19 @@ multiple connections from different source ports on the same client IP address.
 
 # IANA Considerations
 
-## DNS Session Signaling OPCODE Registration
+## DSOP OPCODE Registration
 
 IANA are directed to assign a value (tentatively 6)
-in the DNS OPCODEs Registry for the Session Signaling OPCODE.
+in the DNS OPCODEs Registry for the DSOP OPCODE.
 
-## DNS Session Signaling RCODE Registration
+## DSOP RCODE Registration
 
 IANA are directed to assign a value (tentatively 11)
-in the DNS RCODE Registry for the SSOPNOTIMP error code.
+in the DNS RCODE Registry for the DSOPNOTIMP error code.
 
-## DNS Session Signaling Type Codes Registry
+## DSOP Type Codes Registry
 
-IANA are directed to create the DNS Session Signaling Type Codes
+IANA are directed to create the DSOP Type Codes
 Registry, with initial values as follows:
 
 | Type | Name | Status | Reference |
@@ -1066,7 +1068,7 @@ Registry, with initial values as follows:
 | 0xF800 - 0xFBFF | Reserved for local / experimental use | | |
 | 0xFC00 - 0xFFFF | Reserved for future expansion | | |
 
-Registration of additional Session Signaling Type Codes requires publication
+Registration of additional DSOP Type Codes requires publication
 of an appropriate IETF "Standards Action" or "IESG Approval" document {{!RFC5226}}.
 
 # Security Considerations
