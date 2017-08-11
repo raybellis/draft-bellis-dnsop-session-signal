@@ -182,7 +182,7 @@ DNS Stateful Operations are expressed using type-length-value (TLV) syntax.
 
 "DSOP" is used to mean DNS Stateful Operation.
 
-A DDSOP "Session" is established between two endpoints that 
+A DSOP "Session" is established between two endpoints that
 acknowledge persistent DNS state via the exchange of DSOP messages
 over the connection. This is distinct from, for example a DNS-over-TCP session
 as described in RC7766.
@@ -199,6 +199,8 @@ it does not reset the inactivity timeout. Possibly move some of the text from
 
 # Protocol Details {#details}
 
+## Session Establishment
+
 DSOP messages MUST only be carried in protocols and in
 environments where a session may be established according to the definition above.
 Standard DNS over TCP {{!RFC1035}}{{!RFC7766}}, and DNS over TLS {{?RFC7858}}
@@ -213,17 +215,8 @@ DSOP messages relate only to the specific "session" in which
 they are being carried. A "session" is established over a connection when
 either side of the connection sends the first DSOP
 TLV and it is acknowledged by the other side. While this specification defines
-and initial set of three TLVs, additional TLVs may be defined in
+an initial set of three TLVs, additional TLVs may be defined in
 additional specifications. All three of the TLVs defined are mandatory to implement.
-
-Where an application-layer middle box (e.g., a DNS 
-proxy, forwarder, or session multiplexer) is in the path the middle box
-MUST NOT blindly forward the message in either direction.  This does
-not preclude the use of these messages in the presence of an IP-layer middle box
-such as a NAT that rewrites IP-layer and/or transport-layer headers,
-but otherwise preserves the effect of a single session.
-
-TODO: State clearly what a proxy should do when in the path.
 
 A client MAY attempt to initiate DSOP messages at any time
 on a connection; receiving a NOTIMP response in reply indicates that the
@@ -244,9 +237,33 @@ known in advance by other means that the client supports DSOP)
 either end may unilaterally send Session Signaling messages at any time,
 and therefore either client or server may be the initiator of a message.
 
-From this point on it is considered that a "DSOP session"" is in 
+From this point on it is considered that a "DSOP session" is in
 progress. Clients and servers should behave as described in this specification
 with regard to inactivity timeouts and connection close, not as prescribed in {{!RFC7766}}.
+
+### Middle-box Considerations
+
+Where an application-layer middle box (e.g., a DNS proxy, forwarder, or
+session multiplexer) is in the path the middle box MUST NOT blindly
+forward DSOP messages in either direction, and MUST treat the inbound
+and outbound connections as separate sessions.  This does not preclude
+the use of DSOP messages in the presence of an IP-layer middle box such
+as a NAT that rewrites IP-layer and/or transport-layer headers, but
+otherwise preserves the effect of a single session between the client
+and the server.
+
+To illustrate the above, consider a network where a middle box
+terminates one or more TCP connections from clients and multiplexes the
+queries therein over a single TCP connection to an upstream server.  The
+DSOP messages and any associated state are specific to the individual
+TCP connections.  A DSOP-aware middle box MAY in some circumstances be
+able to retain associated state and pass it between the client and
+server (or vice versa) but this would be highly TLV-specific.  For
+example, the middle box may be able to maintain a list of which clients
+have made Push Notification subscriptions {{?I-D.ietf-dnssd-push}} and
+make its own subscription(s) on their behalf, relaying any subsequent
+notifications to the client (or clients) that have subscribed to that
+particular notification.
 
 ## Message Format {#format}
 
