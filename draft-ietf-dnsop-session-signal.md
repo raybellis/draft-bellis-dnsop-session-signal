@@ -187,7 +187,7 @@ acknowledge persistent DNS state via the exchange of DSOP messages
 over the connection. This is distinct from, for example a DNS-over-TCP session
 as described in RC7766.
 
-Two timers are defined in this document: an inactivity timeout and a keepalivee
+Two timers are defined in this document: an inactivity timeout and a keepalive
 interval. The term "Session Timers" is used to refer to this pair of values.
 
 # Discussion
