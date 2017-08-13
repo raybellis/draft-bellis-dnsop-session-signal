@@ -415,7 +415,7 @@ Modifier TLV needs to be defined to carry the necessary information.
 For example, the EDNS(0) Padding Option {{!RFC7830}} used for security purposes
 is not permitted in a DSOP message,
 so if message padding is desired for DSOP messages
-then the Encryption Padding TLV described in {{#padding}} MSUST be used.
+then the Encryption Padding TLV described in {{padding}} MSUST be used.
 
 Similarly, a DSOP message MUST NOT contain a TSIG record.
 A TSIG record in a conventional DNS message is added as the last record
