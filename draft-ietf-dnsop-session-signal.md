@@ -180,10 +180,10 @@ or an initiator (when receiving a DNS Stateful Operation response message).
 
 DNS Stateful Operations are expressed using type-length-value (TLV) syntax.
 
-"DSOP" is used to mean DNS Stateful Operation.
+"DSO" is used to mean DNS Stateful Operation.
 
-A DSOP "Session" is established between two endpoints that
-acknowledge persistent DNS state via the exchange of DSOP messages
+A DSO "Session" is established between two endpoints that
+acknowledge persistent DNS state via the exchange of DSO messages
 over the connection. This is distinct from, for example a DNS-over-TCP session
 as described in RC7766.
 
@@ -201,7 +201,7 @@ it does not reset the inactivity timeout. Possibly move some of the text from
 
 ## Session Establishment
 
-DSOP messages MUST only be carried in protocols and in
+DSO messages MUST only be carried in protocols and in
 environments where a session may be established according to the definition above.
 Standard DNS over TCP {{!RFC1035}}{{!RFC7766}}, and DNS over TLS {{?RFC7858}}
 are suitable protocols.
@@ -211,33 +211,33 @@ in-order message delivery, and, in the presence of NAT gateways and firewalls
 with short UDP timeouts, it fails to provide a persistent bi-directional
 communication channel unless an excessive amount of keepalive traffic is used.
 
-DSOP messages relate only to the specific "session" in which
+DSO messages relate only to the specific "session" in which
 they are being carried. A "session" is established over a connection when
-either side of the connection sends the first DSOP
+either side of the connection sends the first DSO
 TLV and it is acknowledged by the other side. While this specification defines
 an initial set of three TLVs, additional TLVs may be defined in
 additional specifications. All three of the TLVs defined are mandatory to implement.
 
-A client MAY attempt to initiate DSOP messages at any time
+A client MAY attempt to initiate DSO messages at any time
 on a connection; receiving a NOTIMP response in reply indicates that the
-server does not implement DSOP, and the client SHOULD NOT
-issue further DSOP messages on that connection.
+server does not implement DSO, and the client SHOULD NOT
+issue further DSO messages on that connection.
 
-A server SHOULD NOT initiate DSOP messages until a
-client-initiated DSOP message is received first,
+A server SHOULD NOT initiate DSO messages until a
+client-initiated DSO message is received first,
 unless in an environment where it is known in advance by other
-means that the client supports DSOP.
+means that the client supports DSO.
 This requirement is to ensure that the clients that do not support
-DSOP do not receive unsolicited inbound DSOP
+DSO do not receive unsolicited inbound DSO
 messages that they would not know how to handle.
 
-On a session between a client and server that support DSOP,
-once the client has sent at least one DSOP message (or it is
-known in advance by other means that the client supports DSOP)
+On a session between a client and server that support DSO,
+once the client has sent at least one DSO message (or it is
+known in advance by other means that the client supports DSO)
 either end may unilaterally send Session Signaling messages at any time,
 and therefore either client or server may be the initiator of a message.
 
-From this point on it is considered that a "DSOP session" is in
+From this point on it is considered that a "DSO session" is in
 progress. Clients and servers should behave as described in this specification
 with regard to inactivity timeouts and connection close, not as prescribed in {{!RFC7766}}.
 
@@ -267,7 +267,7 @@ particular notification.
 
 ## Message Format {#format}
 
-A DSOP message begins with
+A DSO message begins with
 the standard twelve-octet DNS message header {{!RFC1035}}
 with the OPCODE field set to the Session Signaling OPCODE (tentatively 6).
 However, unlike standard DNS messages, the question section, answer section,
@@ -275,7 +275,7 @@ authority records section and additional records sections are not present.
 The corresponding count fields (QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT) MUST be
 set to zero on transmission.
 
-If a DSOP message is received where any of the count fields are
+If a DSO message is received where any of the count fields are
 not zero, then a FORMERR MUST be returned. 
 
 
@@ -295,7 +295,7 @@ not zero, then a FORMERR MUST be returned.
        |                     ARCOUNT (MUST be zero)                    |
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
        |                                                               |
-       /                           DSOP Data                           /
+       /                           DSO Data                            /
        /                                                               /
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
@@ -307,7 +307,8 @@ connection.
 For the purposes here, a MESSAGE ID is in use in this session if the
 initiator has used it in a request for which it has not yet received a
 response, or if the client has used it to setup state that it has not yet ready
-to delete.
+to delete. For example state could be a subscription as defined in 
+{{?I-D.ietf-dnssd-push}}.
 
 In a response the MESSAGE ID field MUST contain a copy of the value of the
 MESSAGE ID field in the request being responded to.
@@ -318,7 +319,7 @@ If the QR bit is not zero the message is not a request.
 In a response the DNS Header QR bit MUST be one (QR=1).
 If the QR bit is not one the message is not a response.
 
-The DNS Header OPCODE field holds the DSOP OPCODE value (tentatively 6).
+The DNS Header OPCODE field holds the DSO OPCODE value (tentatively 6).
 
 The Z bits are currently unused, and in both requests and responses the
 Z bits MUST be set to zero (0) on transmission and MUST be silently ignored
@@ -337,26 +338,26 @@ The RCODE value in a response may be one of the following values:
 | 1 | FORMERR | Format error |
 | 2 | SERVFAIL | Server failed to process request due to a problem with the server |
 | 3 | NXDOMAIN | TLV dependent |
-| 4 | NOTIMP | DSOP not supported |
+| 4 | NOTIMP | DSO not supported |
 | 5 | REFUSED | Operation declined for policy reasons |
-| 9 | NOTAUTH | TLV dependent |
-| 11 | DSOPNOTIMP | DSOP type code not supported |
+| 9 | NOTAUTH | Not Authoritative (TLV dependent) |
+| 11 | DSONOTIMP | DSO type code not supported |
 
-Use of the above RCODE's is likely to be common in DSOP but 
+Use of the above RCODE's is likely to be common in DSO but 
 does not preclude the definition and use of other codes in future documents that 
-make use of DSOP.
+make use of DSO.
 
-If a document describing a DSOP makes use of either NXDOMAIN 
+If a document describing a DSO makes use of either NXDOMAIN 
 or NOTAUTH then that document MUST explain the meaning.
 
-### DSOP Data
+### DSO Data
 
-The standard twelve-octet DNS message header is followed by the DSOP Data.
+The standard twelve-octet DNS message header is followed by the DSO Data.
 
-The first TLV in a DSOP request message is called the Operation 
+The first TLV in a DSO request message is called the Operation 
 TLV. Any subsequent TLVs after this initial Operation TLV are called Modifier TLVs.
 
-Depending on the operation a DSOP response can contain:
+Depending on the operation a DSO response can contain:
 
 * No TLVs
 * Only an Operation TLV
@@ -365,79 +366,79 @@ Depending on the operation a DSOP response can contain:
 
 #### Operation TLVs
 
-A "DSOP Operation TLV" specifies the operation to be performed.
+An "Operation TLV" specifies the operation to be performed.
 
-A DSOP message MUST contain at most one Operation TLV.
+A DSO message MUST contain at most one Operation TLV.
 
-In all cases a DSOP request message MUST contain exactly one 
+In all cases a DSO request message MUST contain exactly one 
 Operation TLV, indicating the operation to be performed.
 
-Depending on the operation, a DSOP response message MAY contain no 
+Depending on the operation, a DSO response message MAY contain no 
 Operation TLV, because it is simply a response to a previous request message,
 and the message ID in the header is sufficient to identify the request in 
 question. Or it may contain a single corresponding response Operation TLV, with 
-the same DSOP-TYPE as in the request message. The specification for each DSOP
+the same DSO-TYPE as in the request message. The specification for each DSO
 type determines whether a response for that operation type 
 is required to carry the Operation TLV.
 
-If a DSOP response is received for an operation which requires
+If a DSO response is received for an operation which requires
 that the response carry an Operation TLV, and the required Operation TLV is not
-the first DSOP TLV in the response message, then this is a fatal 
+the first DSO TLV in the response message, then this is a fatal 
 error and the recipient of the defective response message MUST immediately
 terminate the connection with a TCP RST (or equivalent for other protocols).
 
 #### Modifier TLVs
 
-A "DSOP Modifier TLV" specifies additional parameters
+A "Modifier TLV" specifies additional parameters
 relating to the operation. Immediately following the Operation TLV, if present,
-a DSOP message MAY contain one or more Modifier TLVs.
+a DSO message MAY contain one or more Modifier TLVs.
 
 ####  Unrecognized TLVs
 
-If a DSOP request is received containing an unrecognized
+If a DSO request is received containing an unrecognized
 Operation TLV, the receiver MUST send a response with matching
-MESSAGE ID, and RCODE DSOPNOTIMP (tentatively 11). The response MUST NOT contain 
+MESSAGE ID, and RCODE DSONOTIMP (tentatively 11). The response MUST NOT contain 
 an Operation TLV.
 
-If a DSOP message (request or response) is received
+If a DSO message (request or response) is received
 containing one or more unrecognized Modifier TLVs, the unrecognized
 Modifier TLVs MUST be silently ignored, and the remainder of the message
 is interpreted and handled as if the unrecognized parts were not present.
 
 ### EDNS(0) and TSIG
 
-Since the ARCOUNT field MUST be zero, a DSOP message
+Since the ARCOUNT field MUST be zero, a DSO message
 MUST NOT contain an EDNS(0) option in the additional records section.
 If functionality provided by current or future EDNS(0) options is desired
-for DSOP messages, a DSOP Operation TLV or
+for DSO messages, an Operation TLV or
 Modifier TLV needs to be defined to carry the necessary information.
 
 For example, the EDNS(0) Padding Option {{!RFC7830}} used for security purposes
-is not permitted in a DSOP message,
-so if message padding is desired for DSOP messages
-then the Encryption Padding TLV described in {{padding}} MSUST be used.
+is not permitted in a DSO message,
+so if message padding is desired for DSO messages
+then the Encryption Padding TLV described in {{padding}} MUST be used.
 
-Similarly, a DSOP message MUST NOT contain a TSIG record.
+Similarly, a DSO message MUST NOT contain a TSIG record.
 A TSIG record in a conventional DNS message is added as the last record
 in the additional records section, and carries a signature computed over
-the preceding message content. Since DSOP data appears
+the preceding message content. Since DSO data appears
 after the additional records section, it would not be included in the
 signature calculation. 
-If use of signatures with DSOP messages becomes necessary in the 
-future, an explicit DSOP Modifier TLV needs to be defined to 
+If use of signatures with DSO messages becomes necessary in the 
+future, an explicit Modifier TLV needs to be defined to 
 perform this function.
 
-Note however that, while DSOP *messages* cannot include
-EDNS(0) or TSIG records, a DSOP *session* is typically used to 
-carry a whole series of DNS messages of different kinds, including DSOP
+Note however that, while DSO *messages* cannot include
+EDNS(0) or TSIG records, a DSO *session* is typically used to 
+carry a whole series of DNS messages of different kinds, including DSO
 messages, and other DNS message types like Query {{!RFC1034}} 
 {{!RFC1035}} and Update {{!RFC2136}}, and those messages can carry EDNS(0) and 
 TSIG records.
 
 This specification explicitly prohibits use of the
 EDNS(0) TCP Keepalive Option {{!RFC7828}}
-in *any* messages sent on a DSOP session (because it duplicates
-the functionality provided by the DSOP Keepalive operation),
+in *any* messages sent on a DSO session (because it duplicates
+the functionality provided by the DSO Keepalive operation),
 but messages may contain other EDNS(0) options as appropriate.
 
 ## TLV Format
@@ -447,43 +448,48 @@ Operation and modifier TLVs both use the same encoding format.
                                                  1   1   1   1   1   1
          0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-       |                           DSOP-TYPE                           |
+       |                            DSO-TYPE                           |
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-       |                       DSOP DATA LENGTH                        |
+       |                        DSO DATA LENGTH                        |
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
        |                                                               |
        /                      TYPE-DEPENDENT DATA                      /
        /                                                               /
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
-DSOP-TYPE:
-: A 16 bit field in network order giving the type of the current DSOP TLV per
-the IANA DSOP Type Codes Registry.
+DSO-TYPE:
+: A 16 bit field in network order giving the type of the current DSO TLV per
+the IANA DSO Type Codes Registry.
 
-DSOP DATA LENGTH:
+DSO DATA LENGTH:
 : A 16 bit field in network order giving the size in octets of
 the TYPE-DEPENDENT DATA.
 
 TYPE-DEPENDENT DATA:
 : Type-code specific format.
 
+Where domain names appear within TYPE-DEPENDENT DATA, they MAY be compressed 
+using standard DNS name compression. However, the compression MUST NOT point
+outside of the TYPE-DEPENDENT DATA section and offsets MUST be from the start
+of the TYPE-DEPENDENT DATA.
+
 ## Message Handling
 
 The initiator MUST set the value of the QR bit in the DNS header to zero
-(0), and the responder MUST set it to one (1). Every DSOP request 
+(0), and the responder MUST set it to one (1). Every DSO request 
 message (QR=0) MUST elicit a response (QR=1), 
 which MUST have the same MESSAGE ID in the DNS message header as in the 
-corresponding request. DSOP request messages sent by the client 
-elicit a response from the server, and DSOP request messages sent 
+corresponding request. DSO request messages sent by the client 
+elicit a response from the server, and DSO request messages sent 
 the server elicit a response from the client.
 
 With most TCP implementations, the TCP data acknowledgement (generated because 
 data has been received by TCP), the TCP window update (generated because TCP has 
-delivered that data to the receiving software) and the DSOP 
+delivered that data to the receiving software) and the DSO 
 response (generated by the receiving software itself)
 are all combined into a single packet, so in practice the requirement that every
-DSOP request message MUST elicit a 
-DSOP response incurs minimal extra cost on the network.
+DSO request message MUST elicit a 
+DSO response incurs minimal extra cost on the network.
 Requiring that every request elicit a corresponding response also avoids
 performance problems caused by interaction between
 Nagle's Algorithm and Delayed Ack {{NagleDA}}.
@@ -497,11 +503,11 @@ identifier for a particular operation on a session.
 As described in {{header}} An initiator MUST NOT reuse a MESSAGE ID that is 
 already in use for an 
 outstanding request, unless specified otherwise by the relevant specification 
-for the DSOP in question. At the very least, this means 
+for the DSO in question. At the very least, this means 
 that a MESSAGE ID MUST NOT be reused in a particular direction
 on a particular session while the initiator is waiting for a response to a 
 previous request on that session, unless specified otherwise by the relevant 
-specification for the DSOP in question.
+specification for the DSO in question.
 (For a long-lived state the MESSAGE ID for the operation
 MUST NOT be reused whilst that state remains active.)
 
@@ -512,7 +518,7 @@ protocols).
 
 # Keepalive Operation TLV {#keepalive}
 
-The Keepalive Operation TLV (DSOP-TYPE=1) performs two functions: to reset the
+The Keepalive Operation TLV (DSO-TYPE=1) performs two functions: to reset the
 keepalive timer for the session and to establish the values for the Session Timers. 
 
 The Keepalive Operation TLV resets only the keepalive timer, not the inactivity timer.
@@ -533,16 +539,16 @@ This is why merely sending a Keepalive Operation TLV does not reset the inactivi
 When sent by a client, the Keepalive Operation TLV resets a session's keepalive timer,
 and at the same time requests what the Session Timer timeout values should be from this point forward in the session.
 
-Once a DSOP session is in progress (see {{details}})
+Once a DSO session is in progress (see {{details}})
 the Keepalive TLV also MAY be initiated by a server.
 When sent by a server, it resets a session's keepalive timer,
 and unilaterally informs the client of the new Session Timer values to use from 
 this point forward in this session.
 
 It is not required that the Keepalive TLV be used in every session.
-While many DSOP
+While many DNS Stateful operations
 will be used in conjunction with a long-lived session state,
-not all DSOP operations require long-lived session state,
+not all DNS Stateful operations require long-lived session state,
 and in some cases the default 15-second value for both the inactivity timeout
 and keepalive interval may be perfectly appropriate.
 
@@ -573,7 +579,7 @@ If the client does not generate the necessary keepalive traffic then after
 twice this interval the server will forcibly terminate the connection
 with a TCP RST (or equivalent for other protocols).
 
-In a client-initiated DSOP Keepalive message,
+In a client-initiated DSO Keepalive message,
 the inactivity timeout and keepalive interval contain the client's requested values.
 In a server response to a client-initiated message, the inactivity timeout and 
 keepalive interval contain the server's chosen values, which the client MUST 
@@ -582,18 +588,18 @@ requests a certain lease lifetime using DHCP option 51 {{!RFC2132}},
 but the server is the ultimate authority
 for deciding what lease lifetime is actually granted.
 
-In a server-initiated DSOP Keepalive message, the inactivity timeout and 
+In a server-initiated DSO Keepalive message, the inactivity timeout and 
 keepalive interval unilaterally inform the client of the new values from this 
 point forward in this session. The client MUST generate a response to the 
-server-initiated DSOP Keepalive message.
+server-initiated DSO Keepalive message.
 The Message ID in the response message MUST match the ID from the 
-server-initiated DSOP Keepalive message, and the response message 
+server-initiated DSO Keepalive message, and the response message 
 MUST NOT contain any Operation TLV.
 
 TODO: We may wish to change this, now that we've decided that we don't need
 all requests to generate responses.
 
-When a client is sending its second and subsequent Keepalive DSOP 
+When a client is sending its second and subsequent Keepalive DSO 
 requests to the server, the client SHOULD continue to request its preferred 
 values each time. This allows flexibility, so that if conditions change during 
 the lifetime of a session, the server can adapt its responses to better fit the
@@ -641,12 +647,12 @@ the connection gracefully before the server resorts to terminating it forcibly.
 
 ## Relation to EDNS(0) TCP Keepalive Option
 
-The inactivity timeout value in the Keepalive TLV (DSOP-TYPE=1) has similar
+The inactivity timeout value in the Keepalive TLV (DSO-TYPE=1) has similar
 intent to the EDNS(0) TCP Keepalive Option {{!RFC7828}}.
-A client/server pair that supports DSOP MUST NOT use the
-EDNS(0) TCP KeepAlive option within any message after a DSOP 
+A client/server pair that supports DSO MUST NOT use the
+EDNS(0) TCP KeepAlive option within any message after a DSO 
 session has been established.
-Once a DSOP session has been established, if either
+Once a DSO session has been established, if either
 client or server receives a DNS message over the session that contains an
 EDNS(0) TCP Keepalive option, this is an error and the receiver of the
 EDNS(0) TCP Keepalive option MUST immediately
@@ -655,7 +661,7 @@ terminate the connection with a TCP RST (or equivalent for other protocols).
 
 # Retry Delay TLV {#delay}
 
-The Retry Delay TLV (DSOP-TYPE=0) can be used as an Operation TLV or as
+The Retry Delay TLV (DSO-TYPE=0) can be used as an Operation TLV or as
 a Modifier TLV. 
 
 The TYPE-DEPENDENT DATA for the the Retry Delay TLV is as follows:
@@ -675,7 +681,7 @@ The RECOMMENDED value is 10 seconds.
 
 ## Use as an Operational TLV
 
-When sent in a DSOP request message, from server to client, the 
+When sent in a DSO request message, from server to client, the 
 Retry Delay TLV (0) is considered an Operation TLV. It is used by a server 
 to request that a client close the session, and not to reconnect for the 
 indicated time interval.
@@ -700,7 +706,7 @@ to accept Retry Delay requests with any RCODE value.
 
 ## Use as a Modifier TLV
 
-When appended to a DSOP response message for some client request,
+When appended to a DSO response message for some client request,
 the Retry Delay TLV (0) is considered a Modifier TLV.
 The indicated time interval during which the client SHOULD NOT retry
 applies only to the failed operation, not to the session as a whole.
@@ -711,8 +717,8 @@ during which the client SHOULD NOT attempt this operation again.
 
 # Encryption Padding TLV {#padding}
 
-The Encryption Padding TLV (DSOP-TYPE=2) can only be used as a Modifier TLV.
-It is only applicable when the DSOP Transport layer uses encryption
+The Encryption Padding TLV (DSO-TYPE=2) can only be used as a Modifier TLV.
+It is only applicable when the DSO Transport layer uses encryption
 such as TLS.
 
 The TYPE-DEPENDENT DATA for the the Padding TLV is optional and is a
@@ -733,7 +739,7 @@ analysis.
        /                                                               /
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
-The Encryption Padding TLV may be included in either a DSOP
+The Encryption Padding TLV may be included in either a DSO
 request, response, or both. If a request is received with a Encryption
 Padding TLV, then the response SHOULD also include an Encryption Padding TLV.
 
@@ -747,7 +753,7 @@ of data in the preceding TLVs.
 
 A session begins when a client makes a new connection to a server.
 
-A DSOP session MAY begin as described in {{details}}.....
+A DSO session MAY begin as described in {{details}}.....
 
 The client may perform as many DNS operations as it wishes using the
 newly created session. Operations SHOULD be pipelined (i.e., the
@@ -772,12 +778,11 @@ The two timer values are independent. The inactivity timeout may be lower, the s
 or higher than the keepalive interval, though in most cases the inactivity timeout is 
 expected to be shorter than the keepalive interval.
 
-Only when the client has a very long-lived low-traffic operation outstanding 
-like a Push Notification subscription, does the keepalive interval timer come
-into play, to ensure that a sufficient residual
+Only when the client has a very long-lived low-traffic state does the 
+keepalive interval timer come into play, to ensure that a sufficient residual
 amount of traffic is generated to maintain NAT and firewall state.
 
-On a new session, before any explicit DSOP
+On a new session, before any explicit DSO
 Keepalive message exchange, the default value for both timers is 15 seconds.
 For both timers, lower values of the timer result in higher network traffic
 and higher CPU load on the server.
@@ -787,7 +792,7 @@ and higher CPU load on the server.
 At both servers and clients, the generation or reception of any complete
 DNS message, including DNS requests, responses, updates, or Session Signaling
 messages, resets both timers for that session {{!RFC7766}}, with the exception
-that a DSOP Keepalive message resets only the keepalive interval 
+that a DSO Keepalive message resets only the keepalive interval 
 timer, not the inactivity timeout timer.
 
 In addition, for as long as the client has an outstanding operation in progress,
@@ -802,16 +807,15 @@ request and remains cleared until reception of the corresponding response.
 At the server, the inactivity timeout timer is cleared upon reception of a request
 and remains cleared until transmission of the corresponding response.
 
-For long-lived DNS operations like Push Notification subscriptions
-{{?I-D.ietf-dnssd-push}}, an operation is considered in progress for
-as long as the subscription is active, until it is cancelled.
-This means that a session can exist, with a Push Notification subscription 
+For long-lived DNS Stateful operations, an operation is considered in progress for
+as long as the state is active, until it is cancelled.
+This means that a session can exist, with a state 
 active, with no messages flowing in either direction, for far longer than the 
 inactivity timeout, and this is not an error. This is why there are two separate 
 timers: the inactivity timeout, and the keepalive interval. Just because a session has 
 no traffic for an extended period of time
-does not automatically make that session "inactive", if it has an active
-Push Notification subscription that is awaiting notification events.
+does not automatically make that session "inactive", if it has an active state 
+that is awaiting for events.
 
 
 ## The Inactivity Timeout
@@ -853,14 +857,14 @@ SO_LINGER option to zero before closing the socket.)
 
 In this context, an operation being active on a session includes
 a query waiting for a response, an update waiting for a response,
-or an outstanding Push Notification subscription {{?I-D.ietf-dnssd-push}},
-but not a DSOP Keepalive message exchange itself.
-A DSOP Keepalive message exchange resets only the keepalive
+or active state,
+but not a DSO Keepalive message exchange itself.
+A DSO Keepalive message exchange resets only the keepalive
 interval timer, not the inactivity timeout timer.
 
 If the client wishes to keep an inactive session open for longer than
 the default duration without having to send traffic every 15 seconds,
-then it uses the DSOP Keepalive message to request
+then it uses the DSO Keepalive message to request
 longer timeout values, as described in {{keepalive}}.
 
 ### Values for the Inactivity Timeout
@@ -873,11 +877,7 @@ sessions.
 A shorter inactivity timeout with a longer keepalive interval signals to the client 
 that it should not speculatively keep inactive sessions open for very long for no 
 reason, but when it does have an active reason to keep a session open, it 
-doesn't need to be sending an agressive level of keepalive traffic. Only when 
-the client has a very long-lived low-traffic operation outstanding like a Push 
-Notification subscription, does the keepalive interval timer come into play, to 
-ensure that a sufficient residual
-amount of traffic is generated to maintain NAT and firewall state.
+doesn't need to be sending an agressive level of keepalive traffic.
 
 A longer inactivity timeout with a shorter keepalive interval signals to the client
 that it may speculatively keep inactive sessions open for a long time, but it
@@ -906,14 +906,13 @@ the keepalive interval value (i.e., 15 seconds by default) elapses
 without any DNS messages being sent or received on a session,
 the client MUST take action to keep the session alive.
 To keep the session alive the client MUST send a
-DSOP Keepalive message (see {{keepalive}}).
-A DSOP Keepalive message exchange resets only the keepalive
+DSO Keepalive message (see {{keepalive}}).
+A DSO Keepalive message exchange resets only the keepalive
 interval timer, not the inactivity timeout timer.
 
 If a client disconnects from the network abruptly,
 without cleanly closing its session,
-leaving long-lived outstanding operations like
-Push Notification subscriptions uncanceled,
+leaving long-lived state uncanceled,
 the server learns of this after failing to
 receive the required keepalive traffic from that client.
 If, at any time during the life of the session,
@@ -1091,7 +1090,7 @@ after it resumes service.
 Connections". I think we should align this section with that so any updates are
 explicit.)
 
-A client that supports DSOP SHOULD NOT make multiple
+A client that supports DSO SHOULD NOT make multiple
 connections to the same DNS server.
 
 A single server may support multiple services, including DNS Updates 
@@ -1118,19 +1117,19 @@ multiple connections from different source ports on the same client IP address.
 
 # IANA Considerations
 
-## DSOP OPCODE Registration
+## DSO OPCODE Registration
 
 IANA are directed to assign a value (tentatively 6)
-in the DNS OPCODEs Registry for the DSOP OPCODE.
+in the DNS OPCODEs Registry for the DSO OPCODE.
 
-## DSOP RCODE Registration
+## DSO RCODE Registration
 
 IANA are directed to assign a value (tentatively 11)
-in the DNS RCODE Registry for the DSOPNOTIMP error code.
+in the DNS RCODE Registry for the DSONOTIMP error code.
 
-## DSOP Type Codes Registry
+## DSO Type Codes Registry
 
-IANA are directed to create the DSOP Type Codes
+IANA are directed to create the DSO Type Codes
 Registry, with initial values as follows:
 
 | Type | Name | Status | Reference |
@@ -1143,7 +1142,7 @@ Registry, with initial values as follows:
 | 0xF800 - 0xFBFF | Reserved for local / experimental use | | |
 | 0xFC00 - 0xFFFF | Reserved for future expansion | | |
 
-Registration of additional DSOP Type Codes requires publication
+Registration of additional DSO Type Codes requires publication
 of an appropriate IETF "Standards Action" or "IESG Approval" document {{!RFC5226}}.
 
 # Security Considerations
