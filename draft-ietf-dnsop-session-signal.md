@@ -245,9 +245,9 @@ with regard to inactivity timeouts and connection close, not as prescribed in {{
 
 Where an application-layer middle box (e.g., a DNS proxy, forwarder, or
 session multiplexer) is in the path the middle box MUST NOT blindly
-forward DSOP messages in either direction, and MUST treat the inbound
+forward DSO messages in either direction, and MUST treat the inbound
 and outbound connections as separate sessions.  This does not preclude
-the use of DSOP messages in the presence of an IP-layer middle box such
+the use of DSO messages in the presence of an IP-layer middle box such
 as a NAT that rewrites IP-layer and/or transport-layer headers, but
 otherwise preserves the effect of a single session between the client
 and the server.
@@ -255,8 +255,8 @@ and the server.
 To illustrate the above, consider a network where a middle box
 terminates one or more TCP connections from clients and multiplexes the
 queries therein over a single TCP connection to an upstream server.  The
-DSOP messages and any associated state are specific to the individual
-TCP connections.  A DSOP-aware middle box MAY in some circumstances be
+DSO messages and any associated state are specific to the individual
+TCP connections.  A DSO-aware middle box MAY in some circumstances be
 able to retain associated state and pass it between the client and
 server (or vice versa) but this would be highly TLV-specific.  For
 example, the middle box may be able to maintain a list of which clients
@@ -607,24 +607,24 @@ client's needs.
 
 ## Client handling of received Session Timer values
 
-When a client receives a response to its client-initiated DSOP Keepalive message,
-or receives a server-initiated DSOP Keepalive message, the client has then received
+When a client receives a response to its client-initiated DSO Keepalive message,
+or receives a server-initiated DSO Keepalive message, the client has then received
 Session Timer values dictated by the server. The two time values contained in the
-DSOP Keepalive TLV from the server may each be higher, lower, or the same as the
+DSO Keepalive TLV from the server may each be higher, lower, or the same as the
 respective Session Timer values the client previously had for this session.
 
 In the case of the keepalive timer, the handling of the received value is straightforward.
-The act of receiving the message containing the DSOP Keepalive TLV itself resets
-the keepalive timer, and the keepalive interval given in the DSOP Keepalive TLV
+The act of receiving the message containing the DSO Keepalive TLV itself resets
+the keepalive timer, and the keepalive interval given in the DSO Keepalive TLV
 indicates the maximum time that may elapse before another message must be sent
 or received on this session, if the session is to remain alive.
 
 In the case of the inactivity timeout, the handling of the received value superficially
 appears a little more subtle, though the meaning of the inactivity timeout is unchanged --
 it still indicates the maximum permissible time allowed without activity on a session.
-The act of receiving the message containing the DSOP Keepalive TLV does not
+The act of receiving the message containing the DSO Keepalive TLV does not
 itself reset the inactivity timer. The time elapsed since the last useful
-activity on this session is unaffected by exchange of DSOP Keepalive messages.
+activity on this session is unaffected by exchange of DSO Keepalive messages.
 Upon reception of an inactivity timeout value from the server, that
 becomes the new maximum permissible time without activity on a session.
 
