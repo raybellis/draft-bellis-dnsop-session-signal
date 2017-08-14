@@ -596,6 +596,46 @@ values each time. This allows flexibility, so that if conditions change during
 the lifetime of a session, the server can adapt its responses to better fit the
 client's needs.
 
+## Client handling of received Session Timer values
+
+When a client receives a response to its client-initiated DSOP Keepalive message,
+or receives a server-initiated DSOP Keepalive message, the client has then received
+Session Timer values dictated by the server. The two time values contained in the
+DSOP Keepalive TLV from the server may each be higher, lower, or the same as the
+respective Session Timer values the client previously had for this session.
+
+In the case of the keepalive timer, the handling of the received value is straightforward.
+The act of receiving the message containing the DSOP Keepalive TLV itself resets
+the keepalive timer, and the keepalive interval given in the DSOP Keepalive TLV
+indicates the maximum time that may elapse before another message must be sent
+or received on this session, if the session is to remain alive.
+
+In the case of the inactivity timeout, the handling of the received value superficially
+appears a little more subtle, though the meaning of the inactivity timeout is unchanged --
+it still indicates the maximum permissible time allowed without activity on a session.
+The act of receiving the message containing the DSOP Keepalive TLV does not
+itself reset the inactivity timer. The time elapsed since the last useful
+activity on this session is unaffected by exchange of DSOP Keepalive messages.
+Upon reception of an inactivity timeout value from the server, that
+becomes the new maximum permissible time without activity on a session.
+
+* If the time since the last non-keepalive activity on this session is not
+greater than the inactivity timeout, then the session may remain open for now.
+When such time comes that the time since the last non-keepalive activity on this session exceeds
+the inactivity timeout dictated by the server, the client MUST then close the session,
+as described above.
+
+* If more than the maximum permissible time has already elapsed since the last
+non-keepalive activity on this session, then this session has already been inactive
+for longer than the server permits, and the client MUST immediately close this session.
+
+* If more than twice the new maximum permissible time has already elapsed since the last
+non-keepalive activity on this session, then this session is eligible to be
+forcibly terminated by the server, though if a server abruptly reduces the
+inactivity timeout in this way the server SHOULD give the client a grace period
+of one quarter of the new inactivity timeout, to give the client time to close
+the connection gracefully before the server resorts to terminating it forcibly.
+
 ## Relation to EDNS(0) TCP Keepalive Option
 
 The inactivity timeout value in the Keepalive TLV (DSOP-TYPE=1) has similar
