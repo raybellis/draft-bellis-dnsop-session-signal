@@ -544,7 +544,7 @@ The TYPE-DEPENDENT DATA for the the Keepalive TLV is as follows:
 INACTIVITY TIMEOUT:
 : the inactivity timeout for the current session, specified as a 32
 bit word in network (big endian) order in units of milliseconds.
-This is the timeout at which the client MUST close an inactivity session.
+This is the timeout at which the client MUST close an inactive session.
 If the client does not gracefully close an inactive session then after
 twice this interval the server will forcibly terminate the connection
 with a TCP RST (or equivalent for other protocols).
