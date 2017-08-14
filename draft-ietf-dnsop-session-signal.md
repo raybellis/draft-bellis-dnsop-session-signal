@@ -531,7 +531,7 @@ For a session to be considered active, it must be carrying something more than j
 This is why merely sending a Keepalive Operation TLV does not reset the inactivity timer.
 
 When sent by a client, the Keepalive Operation TLV resets a session's keepalive timer,
-and at the same time requests what the Session Timer values should be from this point forward in the session.
+and at the same time requests what the Session Timer timeout values should be from this point forward in the session.
 
 Once a DSOP session is in progress (see {{details}})
 the Keepalive TLV also MAY be initiated by a server.
@@ -589,6 +589,9 @@ server-initiated DSOP Keepalive message.
 The Message ID in the response message MUST match the ID from the 
 server-initiated DSOP Keepalive message, and the response message 
 MUST NOT contain any Operation TLV.
+
+TODO: We may wish to change this, now that we've decided that we don't need
+all requests to generate responses.
 
 When a client is sending its second and subsequent Keepalive DSOP 
 requests to the server, the client SHOULD continue to request its preferred 
@@ -788,7 +791,7 @@ that a DSOP Keepalive message resets only the keepalive interval
 timer, not the inactivity timeout timer.
 
 In addition, for as long as the client has an outstanding operation in progress,
-the inactivity timeout timer remains fixed at zero, and an inactivity timeout cannot
+the inactivity timeout timer remains conceptually fixed at zero, and an inactivity timeout cannot
 occur.
 
 For short-lived DNS operations like traditional queries and updates,
