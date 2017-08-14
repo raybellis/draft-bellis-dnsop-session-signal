@@ -515,7 +515,22 @@ protocols).
 The Keepalive Operation TLV (DSOP-TYPE=1) performs two functions: to reset the
 keepalive timer for the session and to establish the values for the Session Timers. 
 
-When sent by a client, it resets a session's keepalive timer,
+The Keepalive Operation TLV resets only the keepalive timer, not the inactivity timer.
+The reason for this is that periodic Keepalive Operation TLVs are sent for the
+sole purpose of keeping a session alive because that session has current or recent
+activity that warrants keeping the session alive.
+If sending keepalive traffic itself were to reset the inactivity timer, then that would
+create a circular livelock where keepalive traffic would be sent indefinitely to keep
+a session alive, where the only activity on that session would be keepalive traffic
+keeping the session alive so that further keepalive traffic can be sent.
+
+Sending keepalive traffic is considered a maintenance activity
+that is performed in service of other client activities.
+Sending keepalive traffic itself is not considered a client activity.
+For a session to be considered active, it must be carrying something more than just keepalive traffic.
+This is why merely sending a Keepalive Operation TLV does not reset the inactivity timer.
+
+When sent by a client, the Keepalive Operation TLV resets a session's keepalive timer,
 and at the same time requests what the Session Timer values should be from this point forward in the session.
 
 Once a DSOP session is in progress (see {{details}})
