@@ -7,7 +7,7 @@ area: Internet
 wg: DNSOP Working Group
 kw: Internet-Draft
 cat: std
-updates: RFC 7766
+updates: RFC 7766, RFC 1035
 
 coding: utf-8
 pi:
@@ -724,28 +724,27 @@ such as TLS.
 The TYPE-DEPENDENT DATA for the the Padding TLV is optional and is a
 variable length field containing non-specified values. A DATA LENGTH
 of 0 essentially provides for 4 octets of padding (the minimum amount).
-The padding data values could be all zeros or could be random data as is
-appropriate for the one or more TLVs preceding it.
-
-If compression is used in the preceding TLVs, then non-zero
-values for the padding octets are encouraged to thwart traffic pattern
-analysis.
 
                                                  1   1   1   1   1   1
          0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
        /                                                               /
-       /                    VARIABLE LENGTH OCTETS                     /
+       /                   VARIABLE NUMBER OF OCTETS                   /
        /                                                               /
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
+As in {{!RFC7830}} the PADDING octets SHOULD be set to 0x00.  Other values MAY be used,
+for example, in cases where there is a concern that the padded
+message could be subject to compression before encryption.
+PADDING octets of any value MUST be accepted in the messages received.
+   
 The Encryption Padding TLV may be included in either a DSO
 request, response, or both. If a request is received with a Encryption
 Padding TLV, then the response SHOULD also include an Encryption Padding TLV.
 
 The length of padding is intentionally not specified in this document and
 is a function of current best practices with respect to the type and length
-of data in the preceding TLVs.
+of data in the preceding TLVs. See {{?I-D.ietf-dprive-padding-policy}}
 
 # Session Lifecycle and Timers {#lifecycle}
 
@@ -1086,12 +1085,16 @@ after it resumes service.
 
 # Connection Sharing {#sharing}
 
-(QUESTION: RFC7766 already has Section 6.2.2 that specifies "Concurrent 
-Connections". I think we should align this section with that so any updates are
-explicit.)
-
-A client that supports DSO SHOULD NOT make multiple
-connections to the same DNS server.
+As in {{!RFC7766}}, to mitigate the risk of unintentional server overload, DNS clients
+MUST take care to minimize the number of concurrent TCP connections
+made to any individual server.  It is RECOMMENDED that for any given
+client/server interaction there SHOULD be no more than one connection
+for regular queries, one for zone transfers, and one for each
+protocol that is being used on top of TCP (for example, if the
+resolver was using TLS).  However, it is noted that certain primary/
+secondary configurations with many busy zones might need to use more
+than one TCP connection for zone transfers for operational reasons
+(for example, to support concurrent transfers of multiple zones).
 
 A single server may support multiple services, including DNS Updates 
 {{!RFC2136}}, DNS Push Notifications {{?I-D.ietf-dnssd-push}},
