@@ -1,7 +1,7 @@
 ---
 title: DNS Stateful Operations
 docname: draft-ietf-dnsop-session-signal-04
-date: 2017-07-18
+date: 2017-08-26
 ipr: trust200902
 area: Internet
 wg: DNSOP Working Group
@@ -70,7 +70,7 @@ author:
     ins: T. Pusateri
     name: Tom Pusateri
     org: Unaffiliated
-    phone: +1 843 473 7394
+    phone: +1 919 867 1330
     email: pusateri@bangj.com
 
 informative:
@@ -445,10 +445,18 @@ but messages may contain other EDNS(0) options as appropriate.
 
 Operation and modifier TLVs both use the same encoding format.
 
+Operation TLVs SHOULD normally require a response and, therefore, set the TLV
+Acknowledgement bit in a request. However, for some Operation TLVs, this may be
+undesirable and the TLV Acknowledgement bit MAY be cleared in the request. Each
+Operation TLV definition should stipulate whether an acknowledgement is
+REQUIRED. If the TLV Acknowledgement bit is cleared in a request, a response
+MUST NOT be sent. Modifier TLVs MUST NEVER set the Acknowledgement bit. The
+Acknowledgement bit is NEVER set in the response to an Operation TLV.
+
                                                  1   1   1   1   1   1
          0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-       |                            DSO-TYPE                           |
+       | A |                        DSO-TYPE                           |
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
        |                        DSO DATA LENGTH                        |
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
@@ -457,8 +465,11 @@ Operation and modifier TLVs both use the same encoding format.
        /                                                               /
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
+A:
+: A 1 bit TLV Response flag indicating whether or not an Operation TLV requires
+a response Acknowledgement.
 DSO-TYPE:
-: A 16 bit field in network order giving the type of the current DSO TLV per
+: A 15 bit field in network order giving the type of the current DSO TLV per
 the IANA DSO Type Codes Registry.
 
 DSO DATA LENGTH:
@@ -538,6 +549,10 @@ This is why merely sending a Keepalive Operation TLV does not reset the inactivi
 
 When sent by a client, the Keepalive Operation TLV resets a session's keepalive timer,
 and at the same time requests what the Session Timer timeout values should be from this point forward in the session.
+
+An acknowledgement is always required for a Keepalive Operation TLV and the TLV
+Acknowledgement bit MUST be set in the request when originated by either the
+client or the server.
 
 Once a DSO session is in progress (see {{details}})
 the Keepalive TLV also MAY be initiated by a server.
@@ -679,7 +694,7 @@ connecting to this server.
 
 The RECOMMENDED value is 10 seconds.
 
-## Use as an Operational TLV
+## Use as an Operation TLV
 
 When sent in a DSO request message, from server to client, the 
 Retry Delay TLV (0) is considered an Operation TLV. It is used by a server 
@@ -703,6 +718,9 @@ Servers sending Retry Delay requests SHOULD use one of these three values.
 However, future circumstances may create situations where other RCODE values
 are appropriate in Retry Delay requests, so clients MUST be prepared
 to accept Retry Delay requests with any RCODE value.
+
+An acknowledgement is not desired for a Retry Delay Operation TLV and the TLV
+Acknowledgement bit MUST be cleared in the request.
 
 ## Use as a Modifier TLV
 
