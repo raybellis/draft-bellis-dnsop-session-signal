@@ -1,7 +1,7 @@
 ---
 title: DNS Stateful Operations
 docname: draft-ietf-dnsop-session-signal-04
-date: 2017-09-01
+date: 2017-09-04
 ipr: trust200902
 area: Internet
 wg: DNSOP Working Group
@@ -85,7 +85,7 @@ informative:
 --- abstract
 
 This document defines a new DNS Stateful Operations OPCODE used to communicate 
-operations within persistent session, expressed using type-length-value (TLV) 
+operations within persistent stateful sessions, expressed using type-length-value (TLV) 
 syntax, and defines an initial set of TLVs used to manage session timeouts and 
 termination. This mechanism is intended to reduce the overhead of existing 
 “per-packet” signaling mechanisms with “per-message” semantics as well as 
@@ -106,11 +106,24 @@ The existing EDNS(0) Extension Mechanism for DNS {{!RFC6891}} is explicitly
 defined to only have "per-message" semantics. Whilst EDNS(0) has been used to
 signal at least one session related parameter (the EDNS(0) TCP Keepalive option
 {{?RFC7828}}) the result is less than optimal due to the restrictions
-imposed by the EDNS(0) semantics and the lack of server-initiated signalling.
+imposed by the EDNS(0) semantics and the lack of server-initiated signalling. 
+For example, a server cannot arbitrarily 
+instruct a client to close a connection because the server can only send EDNS(0) options 
+in responses to queries that contained EDNS(0) options.
 
-This document defines a new DNS Stateful Operations OPCODE used to carry persistent
-"per-session" operations, expressed using type-length-value (TLV) syntax, and
-defines an initial set of TLVs used to manage session timeouts and termination. 
+This document defines a new DNS Stateful Operations OPCODE used to carry
+operations within persistent stateful connections, expressed using type-length-value (TLV)
+syntax, and
+defines an initial set of TLVs including ones used to manage session timeouts and termination. 
+
+This new format has distinct advantages over the an RR based format because it
+is more generic, more flexible and more compact. Each TLV definition is specific
+to the use case, and as a result contains no redundant or overloaded fields.
+Importantly, it completely avoids conflating DNS Stateful Operations in anyway 
+with normal DNS operations or with existing EDNS(0) based functionality. A goal 
+of this approach is to avoid the operational
+issues that have befallen EDNS(0), particularly relating to middle-box 
+behaviour.
 
 With EDNS(0), multiple options may be packed into a single OPT pseudo-RR,
 and there is no generalized mechanism for a client to be able to tell
@@ -119,7 +132,7 @@ option within the combined OPT RR.
 The specifications for each individual option need to define how each
 different option is to be acknowledged, if necessary.
 
-With Stateful Operations, in contrast, there is no compelling motivation
+With DNS Stateful Operations, in contrast, there is no compelling motivation
 to pack multiple operations into a single message for efficiency reasons.
 Each Stateful operation is communicated in its own separate
 DNS message, and the transport protocol can take care of packing
@@ -194,10 +207,36 @@ interval. The term "Session Timers" is used to refer to this pair of values.
 
 # Discussion
 
-TODO: Discuss that this draft introduces 2 session timers and their functions. 
-Discuss that this draft introduces "Keepalive traffic" this is special because
-it does not reset the inactivity timeout. Possibly move some of the text from 
-"Session Lifestyle and Timers" here.
+There are several use cases for DNS Stateful operations that can 
+be described here. 
+
+Firstly, establishing session parameters such as server defined timeouts is of 
+great use in the 
+general management of persistent connections. For example, using DSO sessions 
+for stub to recursive DNS-over-TLS {{?RFC7858}} is more flexible for both the 
+client and the server than attempting to manage sessions using just the EDNS(0)
+TCP Keepalive option
+{{?RFC7828}}. The simple set of TLVs defined in this document is
+sufficient to greatly enhance connection management for this use case.
+
+Secondly, DNS-SD has evolved into a naturally session based mechanism where, for 
+example, long-lived subscriptions lend themselves to 'push' mechanisms as 
+opposed to polling. Long-lived stateful connections and server initiated 
+messages align with this use case as described in {{?I-D.ietf-dnssd-push}}.
+
+A general use case is that DNS traffic is often bursty but session establishment can be expensive. One 
+challenge with long-lived connections is to maintain sufficient traffic to 
+maintain NAT and firewall state. To mitigate this issue this document introduces a 
+new concept for the DNS, that is DSO "Keepalive traffic". This traffic carries 
+no DNS data and is not considered 'activity' in the classic DNS sense but serves 
+to reset a keepalive timer in order to avoid re-cycling a DSO session.
+
+There are a myriad of other potential use cases for DSO given the versatility 
+and extensibility of this specification.
+
+{{details}} of this document first describes the protocol details of DNS Stateful Operations including definitions of three TLVs for session management and encryption padding. {{lifecycle}} then presents a
+detailed discussion of the DSO Session lifecycle including an
+in-depth discussion of keepalive traffic and session termination.
 
 # Protocol Details {#details}
 
@@ -352,6 +391,7 @@ make use of DSO.
 If a document describing a DSO makes use of either NXDOMAIN 
 or NOTAUTH then that document MUST explain the meaning.
 
+
 ### DSO Data
 
 The standard twelve-octet DNS message header is followed by the DSO Data.
@@ -365,6 +405,49 @@ Depending on the operation a DSO response can contain:
 * Only an Operation TLV
 * An Operation TLV followed by one or more Modifier TLVs
 * Only Modifier TLVs
+
+#### TLV Format
+
+Operation and modifier TLVs both use the same encoding format.
+
+Operation TLVs SHOULD normally require a response and, therefore, set the TLV
+Acknowledgement bit in a request. However, for some Operation TLVs, this may be
+undesirable and the TLV Acknowledgement bit MAY be cleared in the request. Each
+Operation TLV definition should stipulate whether an acknowledgement is
+REQUIRED. If the TLV Acknowledgement bit is cleared in a request, a response
+MUST NOT be sent. Modifier TLVs MUST NEVER set the Acknowledgement bit. The
+Acknowledgement bit is NEVER set in the response to an Operation TLV.
+
+                                                 1   1   1   1   1   1
+         0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+       | A |                        DSO-TYPE                           |
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+       |                        DSO DATA LENGTH                        |
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+       |                                                               |
+       /                      TYPE-DEPENDENT DATA                      /
+       /                                                               /
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+
+A:
+: A 1 bit TLV Response flag indicating whether or not an Operation TLV requires
+a response Acknowledgement.
+DSO-TYPE:
+: A 15 bit field in network order giving the type of the current DSO TLV per
+the IANA DSO Type Codes Registry.
+
+DSO DATA LENGTH:
+: A 16 bit field in network order giving the size in octets of
+the TYPE-DEPENDENT DATA.
+
+TYPE-DEPENDENT DATA:
+: Type-code specific format.
+
+Where domain names appear within TYPE-DEPENDENT DATA, they MAY be compressed 
+using standard DNS name compression. However, the compression MUST NOT point
+outside of the TYPE-DEPENDENT DATA section and offsets MUST be from the start
+of the TYPE-DEPENDENT DATA.
 
 #### Operation TLVs
 
@@ -442,49 +525,6 @@ EDNS(0) TCP Keepalive Option {{!RFC7828}}
 in *any* messages sent on a DSO session (because it duplicates
 the functionality provided by the DSO Keepalive operation),
 but messages may contain other EDNS(0) options as appropriate.
-
-## TLV Format
-
-Operation and modifier TLVs both use the same encoding format.
-
-Operation TLVs SHOULD normally require a response and, therefore, set the TLV
-Acknowledgement bit in a request. However, for some Operation TLVs, this may be
-undesirable and the TLV Acknowledgement bit MAY be cleared in the request. Each
-Operation TLV definition should stipulate whether an acknowledgement is
-REQUIRED. If the TLV Acknowledgement bit is cleared in a request, a response
-MUST NOT be sent. Modifier TLVs MUST NEVER set the Acknowledgement bit. The
-Acknowledgement bit is NEVER set in the response to an Operation TLV.
-
-                                                 1   1   1   1   1   1
-         0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
-       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-       | A |                        DSO-TYPE                           |
-       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-       |                        DSO DATA LENGTH                        |
-       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-       |                                                               |
-       /                      TYPE-DEPENDENT DATA                      /
-       /                                                               /
-       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-
-A:
-: A 1 bit TLV Response flag indicating whether or not an Operation TLV requires
-a response Acknowledgement.
-DSO-TYPE:
-: A 15 bit field in network order giving the type of the current DSO TLV per
-the IANA DSO Type Codes Registry.
-
-DSO DATA LENGTH:
-: A 16 bit field in network order giving the size in octets of
-the TYPE-DEPENDENT DATA.
-
-TYPE-DEPENDENT DATA:
-: Type-code specific format.
-
-Where domain names appear within TYPE-DEPENDENT DATA, they MAY be compressed 
-using standard DNS name compression. However, the compression MUST NOT point
-outside of the TYPE-DEPENDENT DATA section and offsets MUST be from the start
-of the TYPE-DEPENDENT DATA.
 
 ## Message Handling
 
