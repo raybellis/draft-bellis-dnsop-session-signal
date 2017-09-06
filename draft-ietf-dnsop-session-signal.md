@@ -84,7 +84,7 @@ informative:
 
 --- abstract
 
-This document defines a new DNS Stateful Operations OPCODE used to communicate 
+This document defines a new DNS Stateful Operation OPCODE used to communicate 
 operations within persistent stateful sessions, expressed using type-length-value (TLV) 
 syntax, and defines an initial set of TLVs used to manage session timeouts and 
 termination. This mechanism is intended to reduce the overhead of existing 
@@ -111,13 +111,13 @@ For example, a server cannot arbitrarily
 instruct a client to close a connection because the server can only send EDNS(0) options 
 in responses to queries that contained EDNS(0) options.
 
-This document defines a new DNS Stateful Operations OPCODE used to carry
+This document defines a new DNS Stateful Operation OPCODE used to carry
 operations within persistent stateful connections, expressed using type-length-value (TLV)
 syntax, and
 defines an initial set of TLVs including ones used to manage session timeouts and termination. 
 
-This new format has distinct advantages over the an RR based format because it
-is more generic, more flexible and more compact. Each TLV definition is specific
+This new format has distinct advantages over an RR based format because it
+is more explicit and more compact. Each TLV definition is specific
 to the use case, and as a result contains no redundant or overloaded fields.
 Importantly, it completely avoids conflating DNS Stateful Operations in anyway 
 with normal DNS operations or with existing EDNS(0) based functionality. A goal 
