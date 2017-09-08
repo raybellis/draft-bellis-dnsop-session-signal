@@ -1,7 +1,7 @@
 ---
 title: DNS Stateful Operations
 docname: draft-ietf-dnsop-session-signal-04
-date: 2017-09-04
+date: 2017-09-08
 ipr: trust200902
 area: Internet
 wg: DNSOP Working Group
@@ -202,8 +202,18 @@ or an initiator (when receiving a DNS Stateful Operation response message).
 
 DNS Stateful Operations are expressed using type-length-value (TLV) syntax.
 
-Two timers are defined in this document: an inactivity timeout and a keepalive
-interval. The term "Session Timers" is used to refer to this pair of values.
+Two timers (elapsed time since an event) are defined in this document: 
+
+* an inactivity timer (see {{keepalive}} and {{inactivetimer}})
+* a keepalive timer (see {{keepalive}} and {{keepalivetimer}})
+
+The timeouts associated with these timers are called the inactivity timeout and 
+the keepalive interval respectively. 
+The term "Session Timeouts" is used to refer to this pair of timeout values.
+
+Reseting a timer means resetting the timer value to zero and starting the timer 
+again. Clearing a timer means resetting the timer value to zero but NOT starting 
+the time again. 
 
 # Discussion
 
@@ -224,9 +234,10 @@ example, long-lived subscriptions lend themselves to 'push' mechanisms as
 opposed to polling. Long-lived stateful connections and server initiated 
 messages align with this use case as described in {{?I-D.ietf-dnssd-push}}.
 
-A general use case is that DNS traffic is often bursty but session establishment can be expensive. One 
-challenge with long-lived connections is to maintain sufficient traffic to 
-maintain NAT and firewall state. To mitigate this issue this document introduces a 
+A general use case is that DNS traffic is often bursty but session establishment 
+can be expensive. One challenge with long-lived connections is to maintain 
+sufficient traffic to maintain NAT and firewall state. To mitigate this issue 
+this document introduces a 
 new concept for the DNS, that is DSO "Keepalive traffic". This traffic carries 
 no DNS data and is not considered 'activity' in the classic DNS sense but serves 
 to reset a keepalive timer in order to avoid re-cycling a DSO session.
@@ -255,9 +266,15 @@ communication channel unless an excessive amount of keepalive traffic is used.
 DSO messages relate only to the specific "DSO session" in which
 they are being carried. A "DSO session" is established over a connection when
 either side of the connection sends the first DSO
-TLV and it is acknowledged by the other side. While this specification defines
-an initial set of three TLVs, additional TLVs may be defined in
-additional specifications. All three of the TLVs defined are mandatory to implement.
+TLV and it is acknowledged by the other side. The DSO message format {{dsodata}} 
+includes an option to specify that a DSO request does not require a 
+response acknowledgement. Session establishment can only be performed using a 
+DSO message that requires a response acknowledgement. 
+
+While this 
+specification defines an initial set of three TLVs, additional TLVs may be 
+defined in additional specifications. All three of the TLVs defined here are 
+mandatory to implement. 
 
 A client MAY attempt to initiate DSO messages at any time
 on a connection; receiving a NOTIMP response in reply indicates that the
@@ -392,7 +409,7 @@ If a document describing a DSO makes use of either NXDOMAIN
 or NOTAUTH then that document MUST explain the meaning.
 
 
-### DSO Data
+### DSO Data {#dsodata}
 
 The standard twelve-octet DNS message header is followed by the DSO Data.
 
@@ -572,16 +589,17 @@ protocols).
 # Keepalive Operation TLV {#keepalive}
 
 The Keepalive Operation TLV (DSO-TYPE=1) performs two functions: to reset the
-keepalive timer for the DSO session and to establish the values for the Session Timers. 
+keepalive timer for the DSO session and to establish the values for the Session Timeouts. 
 
-The Keepalive Operation TLV resets only the keepalive timer, not the inactivity timer.
-The reason for this is that periodic Keepalive Operation TLVs are sent for the
-sole purpose of keeping a DSO session alive because that DSO session has current or recent
-activity that warrants keeping the DSO session alive.
-If sending keepalive traffic itself were to reset the inactivity timer, then that would
-create a circular livelock where keepalive traffic would be sent indefinitely to keep
-a DSO session alive, where the only activity on that DSO session would be keepalive traffic
-keeping the DSO session alive so that further keepalive traffic can be sent.
+The Keepalive Operation TLV resets only the keepalive timer, not the inactivity 
+timer. The reason for this is that periodic Keepalive Operation TLVs are sent 
+for the sole purpose of keeping a DSO session alive because that DSO session has 
+current or recent activity that warrants keeping the DSO session alive.
+If sending keepalive traffic itself were to reset the inactivity timer, then 
+that would create a circular livelock where keepalive traffic would be sent 
+indefinitely to keep a DSO session alive, where the only activity on that DSO 
+session would be keepalive traffic keeping the DSO session alive so that further 
+keepalive traffic can be sent.
 
 Sending keepalive traffic is considered a maintenance activity
 that is performed in service of other client activities.
@@ -590,7 +608,7 @@ For a DSO session to be considered active, it must be carrying something more th
 This is why merely sending a Keepalive Operation TLV does not reset the inactivity timer.
 
 When sent by a client, the Keepalive Operation TLV resets a DSO session's keepalive timer,
-and at the same time requests what the Session Timer timeout values should be from this point forward in the DSO session.
+and at the same time requests what the Session Timeout values should be from this point forward in the DSO session.
 
 An acknowledgement is always required for a Keepalive Operation TLV and the TLV
 Acknowledgement bit MUST be set in the request when originated by either the
@@ -599,15 +617,17 @@ client or the server.
 Once a DSO session is in progress (see {{details}})
 the Keepalive TLV also MAY be initiated by a server.
 When sent by a server, it resets a DSO session's keepalive timer,
-and unilaterally informs the client of the new Session Timer values to use from 
-this point forward in this DSO session.
+and unilaterally informs the client of the new Session Timeout values to use 
+from this point forward in this DSO session.
 
 It is not required that the Keepalive TLV be used in every DSO session.
 While many DNS Stateful operations
 will be used in conjunction with a long-lived session state,
 not all DNS Stateful operations require long-lived session state,
 and in some cases the default 15-second value for both the inactivity timeout
-and keepalive interval may be perfectly appropriate.
+and keepalive interval may be perfectly appropriate. However, it can be noted 
+that for clients that implement only the TLVs defined in this document it is
+the only way for a client to initiate a DSO session.
 
 The TYPE-DEPENDENT DATA for the the Keepalive TLV is as follows:
 
@@ -637,67 +657,68 @@ twice this interval the server will forcibly terminate the connection
 with a TCP RST (or equivalent for other protocols).
 
 In a client-initiated DSO Keepalive message,
-the inactivity timeout and keepalive interval contain the client's requested values.
-In a server response to a client-initiated message, the inactivity timeout and 
-keepalive interval contain the server's chosen values, which the client MUST 
+the Session Timeouts contain the client's requested values.
+In a server response to a client-initiated message, the Session Timeouts contain 
+the server's chosen values, which the client MUST 
 respect. This is modeled after the DHCP protocol, where the client
 requests a certain lease lifetime using DHCP option 51 {{!RFC2132}},
 but the server is the ultimate authority
 for deciding what lease lifetime is actually granted.
 
-In a server-initiated DSO Keepalive message, the inactivity timeout and 
-keepalive interval unilaterally inform the client of the new values from this 
+In a server-initiated DSO Keepalive message, the Session Timeouts unilaterally 
+inform the client of the new values from this 
 point forward in this DSO session. The client MUST generate a response to the 
 server-initiated DSO Keepalive message.
 The MESSAGE ID in the response message MUST match the ID from the 
 server-initiated DSO Keepalive message, and the response message 
 MUST NOT contain any Operation TLV.
 
-TODO: We may wish to change this, now that we've decided that we don't need
-all requests to generate responses.
-
 When a client is sending its second and subsequent Keepalive DSO 
 requests to the server, the client SHOULD continue to request its preferred 
 values each time. This allows flexibility, so that if conditions change during 
-the lifetime of a DSO session, the server can adapt its responses to better fit the
-client's needs.
+the lifetime of a DSO session, the server can adapt its responses to better fit 
+the client's needs.
 
-## Client handling of received Session Timer values
+## Client handling of received Session Timeout values
 
 When a client receives a response to its client-initiated DSO Keepalive message,
-or receives a server-initiated DSO Keepalive message, the client has then received
-Session Timer values dictated by the server. The two timer values contained in the
-DSO Keepalive TLV from the server may each be higher, lower, or the same as the
-respective Session Timer values the client previously had for this DSO session.
+or receives a server-initiated DSO Keepalive message, the client has then 
+received Session Timeout values dictated by the server. The two timer values 
+contained in the DSO Keepalive TLV from the server may each be higher, lower, or 
+the same as the respective Session Timeout values the client previously had for 
+this DSO session.
 
-In the case of the keepalive timer, the handling of the received value is straightforward.
-The act of receiving the message containing the DSO Keepalive TLV itself resets
-the keepalive timer, and the keepalive interval given in the DSO Keepalive TLV
-indicates the maximum time that may elapse before another message must be sent
+In the case of the keepalive timer, the handling of the received value is 
+straightforward. The act of receiving the message containing the DSO Keepalive 
+TLV itself resets the keepalive timer and updates the keepalive interval for the 
+DSO session. The new keepalive interval indicates the 
+maximum time that may elapse before another message must be sent
 or received on this DSO session, if the DSO session is to remain alive.
 
-In the case of the inactivity timeout, the handling of the received value superficially
-appears a little more subtle, though the meaning of the inactivity timeout is unchanged --
-it still indicates the maximum permissible time allowed without activity on a DSO session.
+In the case of the inactivity timeout, the handling of the received value 
+superficially appears a little more subtle, though the meaning of the inactivity 
+timeout is unchanged -- it still indicates the maximum permissible time allowed 
+without activity on a DSO session.
 The act of receiving the message containing the DSO Keepalive TLV does not
 itself reset the inactivity timer. The time elapsed since the last useful
 activity on this DSO session is unaffected by exchange of DSO Keepalive messages.
-Upon reception of an inactivity timeout value from the server, that
+The act of receiving the message containing the DSO Keepalive TLV does update 
+the timeout associated with the running inactivity timer; that
 becomes the new maximum permissible time without activity on a DSO session.
 
-* If the time since the last non-keepalive activity on this DSO session is not
-greater than the inactivity timeout, then the DSO session may remain open for now.
-When such time comes that the time since the last non-keepalive activity on this DSO session exceeds
-the inactivity timeout dictated by the server, the client MUST then close the DSO session,
+* If the inactivity timer value is not greater than the new inactivity timeout, 
+then the DSO session may remain open for now. When the inactivity timer value 
+exceeds the new inactivity timeout, the client MUST then close the DSO session,
 as described above.
 
-* If more than the maximum permissible time has already elapsed since the last
-non-keepalive activity on this DSO session, then this DSO session has already been inactive
+* If the inactivity timer value is already greater than the new inactivity 
+timeout, then this DSO session has already been inactive
 for longer than the server permits, and the client MUST immediately close this DSO session.
 
-* If more than twice the new maximum permissible time has already elapsed since the last
-non-keepalive activity on this DSO session, then this DSO session is eligible to be
-forcibly terminated by the server, though if a server abruptly reduces the
+* If the inactivity timer value is more than twice the new inactivity timeout, 
+then this DSO session is eligible to be
+forcibly terminated by the server and and the client MUST immediately close this 
+DSO session. However if a server abruptly reduces the
 inactivity timeout in this way the server SHOULD give the client a grace period
 of one quarter of the new inactivity timeout, to give the client time to close
 the connection gracefully before the server resorts to terminating it forcibly.
@@ -820,61 +841,61 @@ client doesn't need wait for a response before sending the next message).
 The server MUST act on messages in the order they are transmitted, but
 responses to those messages MAY be sent out of order, if appropriate.
 
-## Timers
+## DSO Session Timeouts {#sessiontimeouts}
 
-Two timer values are associated with a DSO session: the inactivity timeout, and the
-keepalive interval. 
+Two timeout values are associated with a DSO session: the inactivity timeout, and 
+the keepalive interval. 
 
-The first timer value, the inactivity timeout, is the maximum time for which
+The first timeout value, the inactivity timeout, is the maximum time for which
 a client may speculatively keep a DSO session open in the expectation that
 it may have future requests to send to that server.
 
-The second timer value, the keepalive interval, is the maximum permitted
+The second timeout value, the keepalive interval, is the maximum permitted
 interval between client messages to the server if the client wishes to keep
 the DSO session alive.
 
-The two timer values are independent. The inactivity timeout may be lower, the same,
-or higher than the keepalive interval, though in most cases the inactivity timeout is 
-expected to be shorter than the keepalive interval.
+The two timeout values are independent. The inactivity timeout may be lower, the 
+same, or higher than the keepalive interval, though in most cases the inactivity 
+timeout is expected to be shorter than the keepalive interval.
 
 Only when the client has a very long-lived low-traffic state does the 
-keepalive interval timer come into play, to ensure that a sufficient residual
+keepalive interval come into play, to ensure that a sufficient residual
 amount of traffic is generated to maintain NAT and firewall state.
 
-On a new DSO session, if no explicit DSO
-Keepalive message exchange has taken place, the default value for both timers is 15 seconds.
-For both timers, lower values of the timer result in higher network traffic
+On a new DSO session, if no explicit DSO Keepalive message exchange has taken 
+place, the default value for both timeouts is 15 seconds.
+For both timeouts, lower values of the timeout result in higher network traffic
 and higher CPU load on the server.
 
-## Inactive DSO Sessions
+## Inactive DSO Sessions {#inactivetimer}
 
 At both servers and clients, the generation or reception of any complete
 DNS message, including DNS requests, responses, updates, or DSO
 messages, resets both timers for that DSO session, with the exception
-that a DSO Keepalive message resets only the keepalive interval 
-timer, not the inactivity timeout timer.
+that a DSO Keepalive message resets only the keepalive timer, not the inactivity 
+timeout timer.
 
 In addition, for as long as the client has an outstanding operation in progress,
-the inactivity timeout timer remains conceptually fixed at zero, and an inactivity timeout cannot
-occur.
+the inactivity timer remains cleared, and an inactivity 
+timeout cannot occur.
 
 For short-lived DNS operations like traditional queries and updates,
 an operation is considered in progress for the time between request and 
 response, typically a period of a few hundred milliseconds at most.
-At the client, the inactivity timeout timer is cleared upon transmission of a 
+At the client, the inactivity timer is cleared upon transmission of a 
 request and remains cleared until reception of the corresponding response.
-At the server, the inactivity timeout timer is cleared upon reception of a request
+At the server, the inactivity timer is cleared upon reception of a request
 and remains cleared until transmission of the corresponding response.
 
-For long-lived DNS Stateful operations, an operation is considered in progress for
-as long as the state is active, until it is cancelled.
+For long-lived DNS Stateful operations, an operation is considered in progress
+for as long as the state is active, until it is cancelled.
 This means that a DSO session can exist, with a state 
 active, with no messages flowing in either direction, for far longer than the 
 inactivity timeout, and this is not an error. This is why there are two separate 
-timers: the inactivity timeout, and the keepalive interval. Just because a DSO session has 
-no traffic for an extended period of time
-does not automatically make that DSO session "inactive", if it has an active state 
-that is awaiting for events.
+timers: the inactivity timeout, and the keepalive interval. Just because a DSO 
+session has no traffic for an extended period of time
+does not automatically make that DSO session "inactive", if it has an active 
+state that is awaiting for events.
 
 
 ## The Inactivity Timeout
@@ -891,7 +912,7 @@ operations with that server, and then create a new DSO session later when needed
 
 ### Closing Inactive DSO Sessions
 
-A client is NOT required to wait until the inactivity timeout timer expires
+A client is NOT required to wait until the inactivity timeout expires
 before closing a DSO session.
 A client MAY close a DSO session at any time, at the client's discretion.
 If a client determines that it has no current or reasonably anticipated
@@ -936,7 +957,7 @@ DSO sessions.
 A shorter inactivity timeout with a longer keepalive interval signals to the client 
 that it should not speculatively keep inactive DSO sessions open for very long for no 
 reason, but when it does have an active reason to keep a DSO session open, it 
-doesn't need to be sending an agressive level of keepalive traffic.
+doesn't need to be sending an aggressive level of keepalive traffic.
 
 A longer inactivity timeout with a shorter keepalive interval signals to the client
 that it may speculatively keep inactive DSO sessions open for a long time, but it
@@ -946,11 +967,11 @@ This configuration is expected to be less common.
 To avoid excessive traffic the server MUST NOT send a Keepalive message
 (either a response to a client-initiated request, or a server-initiated message)
 with an inactivity timeout value less than ten seconds.
-If a client receives an Keepalive message specifying an inactivity timeout value
+If a client receives a Keepalive message specifying an inactivity timeout value
 less than ten seconds this is an error and the client MUST immediately
 terminate the connection with a TCP RST (or equivalent for other protocols).
 
-## The Keepalive Interval
+## The Keepalive Interval {#keepalivetimer}
 
 The purpose of the keepalive interval is to manage the generation of
 sufficient messages to maintain state in middle-boxes (such at NAT gateways
@@ -966,8 +987,8 @@ without any DNS messages being sent or received on a DSO session,
 the client MUST take action to keep the DSO session alive.
 To keep the DSO session alive the client MUST send a
 DSO Keepalive message (see {{keepalive}}).
-A DSO Keepalive message exchange resets only the keepalive
-interval timer, not the inactivity timeout timer.
+A DSO Keepalive message exchange resets only the keepalive timer, 
+not the inactivity timer.
 
 If a client disconnects from the network abruptly,
 without cleanly closing its DSO session,
@@ -1038,7 +1059,7 @@ immediate future, the server SHOULD return an error response to the client and
 then close the DSO session by sending a Retry Delay request message, as described in 
 {{delay}}.
 
-## Client Behaviour in Receiving an Error
+## Client Behaviour in Receiving an Error {#error}
 
 Upon receiving an error response from the server, a client SHOULD NOT
 automatically close the DSO session. An error relating to one particular operation
@@ -1054,8 +1075,8 @@ SHOULD continue to use that DSO session for subsequent operations.
 
 Apart from the cases where:
 
-* Session Timer expire (see Section xx)
-* On error (see Section xx)
+* Session Timeouts expire (see {{sessiontimeouts}})
+* On error (see {Section {{error}})
 * When under load (see below)
  
 a server MUST NOT close a DSO session with a client, except in extraordinary error 

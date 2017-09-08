@@ -1,16 +1,19 @@
-Parsing file draft-ietf-dnsop-session-signal.xml
-Created file draft-ietf-dnsop-session-signal.txt
-                                                ISC
+
+
+
+
+DNSOP Working Group                                            R. Bellis
+Internet-Draft                                                       ISC
 Updates: RFC 7766, RFC 1035 (if                              S. Cheshire
          approved)                                            Apple Inc.
 Intended status: Standards Track                            J. Dickinson
-Expires: March 8, 2018                                      S. Dickinson
+Expires: March 12, 2018                                     S. Dickinson
                                                                  Sinodun
                                                                A. Mankin
                                                               Salesforce
                                                              T. Pusateri
                                                             Unaffiliated
-                                                      September 04, 2017
+                                                      September 08, 2017
 
 
                         DNS Stateful Operations
@@ -41,7 +44,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on March 8, 2018.
+   This Internet-Draft will expire on March 12, 2018.
 
 
 
@@ -50,7 +53,7 @@ Status of This Memo
 
 
 
-Bellis, et al.            Expires March 8, 2018                 [Page 1]
+Bellis, et al.           Expires March 12, 2018                 [Page 1]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -74,57 +77,57 @@ Table of Contents
 
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   3
    2.  Terminology . . . . . . . . . . . . . . . . . . . . . . . . .   4
-   3.  Discussion  . . . . . . . . . . . . . . . . . . . . . . . . .   5
+   3.  Discussion  . . . . . . . . . . . . . . . . . . . . . . . . .   6
    4.  Protocol Details  . . . . . . . . . . . . . . . . . . . . . .   6
-     4.1.  DSO Session Establishment . . . . . . . . . . . . . . . .   6
-       4.1.1.  Middle-box Considerations . . . . . . . . . . . . . .   7
+     4.1.  DSO Session Establishment . . . . . . . . . . . . . . . .   7
+       4.1.1.  Middle-box Considerations . . . . . . . . . . . . . .   8
      4.2.  Message Format  . . . . . . . . . . . . . . . . . . . . .   8
-       4.2.1.  Header  . . . . . . . . . . . . . . . . . . . . . . .   8
+       4.2.1.  Header  . . . . . . . . . . . . . . . . . . . . . . .   9
        4.2.2.  DSO Data  . . . . . . . . . . . . . . . . . . . . . .  10
        4.2.3.  EDNS(0) and TSIG  . . . . . . . . . . . . . . . . . .  12
      4.3.  Message Handling  . . . . . . . . . . . . . . . . . . . .  13
-   5.  Keepalive Operation TLV . . . . . . . . . . . . . . . . . . .  13
-     5.1.  Client handling of received Session Timer values  . . . .  16
+   5.  Keepalive Operation TLV . . . . . . . . . . . . . . . . . . .  14
+     5.1.  Client handling of received Session Timeout values  . . .  16
      5.2.  Relation to EDNS(0) TCP Keepalive Option  . . . . . . . .  17
    6.  Retry Delay TLV . . . . . . . . . . . . . . . . . . . . . . .  17
-     6.1.  Use as an Operation TLV . . . . . . . . . . . . . . . . .  17
-     6.2.  Use as a Modifier TLV . . . . . . . . . . . . . . . . . .  18
-   7.  Encryption Padding TLV  . . . . . . . . . . . . . . . . . . .  18
-   8.  DSO Session Lifecycle and Timers  . . . . . . . . . . . . . .  19
-     8.1.  DSO Session Initiation  . . . . . . . . . . . . . . . . .  19
-     8.2.  Timers  . . . . . . . . . . . . . . . . . . . . . . . . .  19
+     6.1.  Use as an Operation TLV . . . . . . . . . . . . . . . . .  18
+     6.2.  Use as a Modifier TLV . . . . . . . . . . . . . . . . . .  19
+   7.  Encryption Padding TLV  . . . . . . . . . . . . . . . . . . .  19
+   8.  DSO Session Lifecycle and Timers  . . . . . . . . . . . . . .  20
+     8.1.  DSO Session Initiation  . . . . . . . . . . . . . . . . .  20
+     8.2.  DSO Session Timeouts  . . . . . . . . . . . . . . . . . .  20
      8.3.  Inactive DSO Sessions . . . . . . . . . . . . . . . . . .  20
      8.4.  The Inactivity Timeout  . . . . . . . . . . . . . . . . .  21
        8.4.1.  Closing Inactive DSO Sessions . . . . . . . . . . . .  21
        8.4.2.  Values for the Inactivity Timeout . . . . . . . . . .  22
-     8.5.  The Keepalive Interval  . . . . . . . . . . . . . . . . .  22
-       8.5.1.  Keepalive Interval Expiry . . . . . . . . . . . . . .  22
+     8.5.  The Keepalive Interval  . . . . . . . . . . . . . . . . .  23
+       8.5.1.  Keepalive Interval Expiry . . . . . . . . . . . . . .  23
        8.5.2.  Values for the Keepalive Interval . . . . . . . . . .  23
      8.6.  Server-Initiated Termination on Error . . . . . . . . . .  24
-     8.7.  Client Behaviour in Receiving an Error  . . . . . . . . .  24
-     8.8.  Server-Initiated Termination on Overload  . . . . . . . .  24
+     8.7.  Client Behaviour in Receiving an Error  . . . . . . . . .  25
+     8.8.  Server-Initiated Termination on Overload  . . . . . . . .  25
 
 
 
-Bellis, et al.            Expires March 8, 2018                 [Page 2]
+Bellis, et al.           Expires March 12, 2018                 [Page 2]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
 
-     8.9.  Retry Delay Operation TLV . . . . . . . . . . . . . . . .  25
+     8.9.  Retry Delay Operation TLV . . . . . . . . . . . . . . . .  26
        8.9.1.  Outstanding Operations  . . . . . . . . . . . . . . .  26
-       8.9.2.  Client Reconnection . . . . . . . . . . . . . . . . .  26
+       8.9.2.  Client Reconnection . . . . . . . . . . . . . . . . .  27
    9.  Connection Sharing  . . . . . . . . . . . . . . . . . . . . .  27
-   10. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  27
-     10.1.  DSO OPCODE Registration  . . . . . . . . . . . . . . . .  27
-     10.2.  DSO RCODE Registration . . . . . . . . . . . . . . . . .  27
+   10. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  28
+     10.1.  DSO OPCODE Registration  . . . . . . . . . . . . . . . .  28
+     10.2.  DSO RCODE Registration . . . . . . . . . . . . . . . . .  28
      10.3.  DSO Type Codes Registry  . . . . . . . . . . . . . . . .  28
-   11. Security Considerations . . . . . . . . . . . . . . . . . . .  28
-   12. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  28
+   11. Security Considerations . . . . . . . . . . . . . . . . . . .  29
+   12. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  29
    13. References  . . . . . . . . . . . . . . . . . . . . . . . . .  29
      13.1.  Normative References . . . . . . . . . . . . . . . . . .  29
-     13.2.  Informative References . . . . . . . . . . . . . . . . .  30
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  30
+     13.2.  Informative References . . . . . . . . . . . . . . . . .  31
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  31
 
 1.  Introduction
 
@@ -162,7 +165,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.            Expires March 8, 2018                 [Page 3]
+Bellis, et al.           Expires March 12, 2018                 [Page 3]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -218,7 +221,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.            Expires March 8, 2018                 [Page 4]
+Bellis, et al.           Expires March 12, 2018                 [Page 4]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -259,9 +262,29 @@ Internet-Draft           DNS Stateful Operations          September 2017
    DNS Stateful Operations are expressed using type-length-value (TLV)
    syntax.
 
-   Two timers are defined in this document: an inactivity timeout and a
-   keepalive interval.  The term "Session Timers" is used to refer to
-   this pair of values.
+   Two timers (elapsed time since an event) are defined in this
+   document:
+
+   o  an inactivity timer (see Section 5 and Section 8.3)
+
+   o  a keepalive timer (see Section 5 and Section 8.5)
+
+   The timeouts associated with these timers are called the inactivity
+   timeout and the keepalive interval respectively.  The term "Session
+   Timeouts" is used to refer to this pair of timeout values.
+
+
+
+
+
+Bellis, et al.           Expires March 12, 2018                 [Page 5]
+
+Internet-Draft           DNS Stateful Operations          September 2017
+
+
+   Reseting a timer means resetting the timer value to zero and starting
+   the timer again.  Clearing a timer means resetting the timer value to
+   zero but NOT starting the time again.
 
 3.  Discussion
 
@@ -271,14 +294,6 @@ Internet-Draft           DNS Stateful Operations          September 2017
    Firstly, establishing session parameters such as server defined
    timeouts is of great use in the general management of persistent
    connections.  For example, using DSO sessions for stub to recursive
-
-
-
-Bellis, et al.            Expires March 8, 2018                 [Page 5]
-
-Internet-Draft           DNS Stateful Operations          September 2017
-
-
    DNS-over-TLS [RFC7858] is more flexible for both the client and the
    server than attempting to manage sessions using just the EDNS(0) TCP
    Keepalive option [RFC7828].  The simple set of TLVs defined in this
@@ -311,6 +326,18 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 4.  Protocol Details
 
+
+
+
+
+
+
+
+Bellis, et al.           Expires March 12, 2018                 [Page 6]
+
+Internet-Draft           DNS Stateful Operations          September 2017
+
+
 4.1.  DSO Session Establishment
 
    DSO messages MUST only be carried in protocols and in environments
@@ -327,18 +354,15 @@ Internet-Draft           DNS Stateful Operations          September 2017
    DSO messages relate only to the specific "DSO session" in which they
    are being carried.  A "DSO session" is established over a connection
    when either side of the connection sends the first DSO TLV and it is
+   acknowledged by the other side.  The DSO message format Section 4.2.2
+   includes an option to specify that a DSO request does not require a
+   response acknowledgement.  Session establishment can only be
+   performed using a DSO message that requires a response
+   acknowledgement.
 
-
-
-Bellis, et al.            Expires March 8, 2018                 [Page 6]
-
-Internet-Draft           DNS Stateful Operations          September 2017
-
-
-   acknowledged by the other side.  While this specification defines an
-   initial set of three TLVs, additional TLVs may be defined in
-   additional specifications.  All three of the TLVs defined are
-   mandatory to implement.
+   While this specification defines an initial set of three TLVs,
+   additional TLVs may be defined in additional specifications.  All
+   three of the TLVs defined here are mandatory to implement.
 
    A client MAY attempt to initiate DSO messages at any time on a
    connection; receiving a NOTIMP response in reply indicates that the
@@ -363,6 +387,13 @@ Internet-Draft           DNS Stateful Operations          September 2017
    specification with regard to inactivity timeouts and connection
    close, not as prescribed in [RFC7766].
 
+
+
+Bellis, et al.           Expires March 12, 2018                 [Page 7]
+
+Internet-Draft           DNS Stateful Operations          September 2017
+
+
 4.1.1.  Middle-box Considerations
 
    Where an application-layer middle box (e.g., a DNS proxy, forwarder,
@@ -383,14 +414,6 @@ Internet-Draft           DNS Stateful Operations          September 2017
    the client and server (or vice versa) but this would be highly TLV-
    specific.  For example, the middle box may be able to maintain a list
    of which clients have made Push Notification subscriptions
-
-
-
-Bellis, et al.            Expires March 8, 2018                 [Page 7]
-
-Internet-Draft           DNS Stateful Operations          September 2017
-
-
    [I-D.ietf-dnssd-push] and make its own subscription(s) on their
    behalf, relaying any subsequent notifications to the client (or
    clients) that have subscribed to that particular notification.
@@ -407,6 +430,25 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
    If a DSO message is received where any of the count fields are not
    zero, then a FORMERR MUST be returned.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Bellis, et al.           Expires March 12, 2018                 [Page 8]
+
+Internet-Draft           DNS Stateful Operations          September 2017
+
 
                                                 1   1   1   1   1   1
         0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
@@ -438,15 +480,6 @@ Internet-Draft           DNS Stateful Operations          September 2017
    setup state that it has not yet ready to delete.  For example, state
    could be a subscription as defined in [I-D.ietf-dnssd-push].
 
-
-
-
-
-Bellis, et al.            Expires March 8, 2018                 [Page 8]
-
-Internet-Draft           DNS Stateful Operations          September 2017
-
-
    In a response the MESSAGE ID field MUST contain a copy of the value
    of the MESSAGE ID field in the request being responded to.
 
@@ -463,6 +496,15 @@ Internet-Draft           DNS Stateful Operations          September 2017
    the Z bits MUST be set to zero (0) on transmission and MUST be
    silently ignored on reception, unless a future document specifies
    otherwise.
+
+
+
+
+
+Bellis, et al.           Expires March 12, 2018                 [Page 9]
+
+Internet-Draft           DNS Stateful Operations          September 2017
+
 
    In a request message (QR=0) the RCODE is generally set to zero on
    transmission, and silently ignored on reception, except where
@@ -496,13 +538,6 @@ Internet-Draft           DNS Stateful Operations          September 2017
    preclude the definition and use of other codes in future documents
    that make use of DSO.
 
-
-
-Bellis, et al.            Expires March 8, 2018                 [Page 9]
-
-Internet-Draft           DNS Stateful Operations          September 2017
-
-
    If a document describing a DSO makes use of either NXDOMAIN or
    NOTAUTH then that document MUST explain the meaning.
 
@@ -518,6 +553,14 @@ Internet-Draft           DNS Stateful Operations          September 2017
    Depending on the operation a DSO response can contain:
 
    o  No TLVs
+
+
+
+
+Bellis, et al.           Expires March 12, 2018                [Page 10]
+
+Internet-Draft           DNS Stateful Operations          September 2017
+
 
    o  Only an Operation TLV
 
@@ -550,15 +593,6 @@ Internet-Draft           DNS Stateful Operations          September 2017
       /                                                               /
       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
-
-
-
-
-Bellis, et al.            Expires March 8, 2018                [Page 10]
-
-Internet-Draft           DNS Stateful Operations          September 2017
-
-
    A: A 1 bit TLV Response flag indicating whether or not an Operation
       TLV requires a response Acknowledgement.  DSO-TYPE:
 
@@ -574,6 +608,15 @@ Internet-Draft           DNS Stateful Operations          September 2017
    compressed using standard DNS name compression.  However, the
    compression MUST NOT point outside of the TYPE-DEPENDENT DATA section
    and offsets MUST be from the start of the TYPE-DEPENDENT DATA.
+
+
+
+
+
+Bellis, et al.           Expires March 12, 2018                [Page 11]
+
+Internet-Draft           DNS Stateful Operations          September 2017
+
 
 4.2.2.2.  Operation TLVs
 
@@ -606,15 +649,6 @@ Internet-Draft           DNS Stateful Operations          September 2017
    operation.  Immediately following the Operation TLV, if present, a
    DSO message MAY contain one or more Modifier TLVs.
 
-
-
-
-
-Bellis, et al.            Expires March 8, 2018                [Page 11]
-
-Internet-Draft           DNS Stateful Operations          September 2017
-
-
 4.2.2.4.  Unrecognized TLVs
 
    If a DSO request is received containing an unrecognized Operation
@@ -632,6 +666,14 @@ Internet-Draft           DNS Stateful Operations          September 2017
    Since the ARCOUNT field MUST be zero, a DSO message MUST NOT contain
    an EDNS(0) option in the additional records section.  If
    functionality provided by current or future EDNS(0) options is
+
+
+
+Bellis, et al.           Expires March 12, 2018                [Page 12]
+
+Internet-Draft           DNS Stateful Operations          September 2017
+
+
    desired for DSO messages, an Operation TLV or Modifier TLV needs to
    be defined to carry the necessary information.
 
@@ -661,16 +703,6 @@ Internet-Draft           DNS Stateful Operations          September 2017
    Keepalive operation), but messages may contain other EDNS(0) options
    as appropriate.
 
-
-
-
-
-
-Bellis, et al.            Expires March 8, 2018                [Page 12]
-
-Internet-Draft           DNS Stateful Operations          September 2017
-
-
 4.3.  Message Handling
 
    The initiator MUST set the value of the QR bit in the DNS header to
@@ -689,6 +721,15 @@ Internet-Draft           DNS Stateful Operations          September 2017
    practice the requirement that every DSO request message MUST elicit a
    DSO response incurs minimal extra cost on the network.  Requiring
    that every request elicit a corresponding response also avoids
+
+
+
+
+Bellis, et al.           Expires March 12, 2018                [Page 13]
+
+Internet-Draft           DNS Stateful Operations          September 2017
+
+
    performance problems caused by interaction between Nagle's Algorithm
    and Delayed Ack [NagleDA].
 
@@ -718,14 +759,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
    The Keepalive Operation TLV (DSO-TYPE=1) performs two functions: to
    reset the keepalive timer for the DSO session and to establish the
-   values for the Session Timers.
-
-
-
-Bellis, et al.            Expires March 8, 2018                [Page 13]
-
-Internet-Draft           DNS Stateful Operations          September 2017
-
+   values for the Session Timeouts.
 
    The Keepalive Operation TLV resets only the keepalive timer, not the
    inactivity timer.  The reason for this is that periodic Keepalive
@@ -745,10 +779,17 @@ Internet-Draft           DNS Stateful Operations          September 2017
    more than just keepalive traffic.  This is why merely sending a
    Keepalive Operation TLV does not reset the inactivity timer.
 
+
+
+Bellis, et al.           Expires March 12, 2018                [Page 14]
+
+Internet-Draft           DNS Stateful Operations          September 2017
+
+
    When sent by a client, the Keepalive Operation TLV resets a DSO
    session's keepalive timer, and at the same time requests what the
-   Session Timer timeout values should be from this point forward in the
-   DSO session.
+   Session Timeout values should be from this point forward in the DSO
+   session.
 
    An acknowledgement is always required for a Keepalive Operation TLV
    and the TLV Acknowledgement bit MUST be set in the request when
@@ -757,7 +798,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
    Once a DSO session is in progress (see Section 4) the Keepalive TLV
    also MAY be initiated by a server.  When sent by a server, it resets
    a DSO session's keepalive timer, and unilaterally informs the client
-   of the new Session Timer values to use from this point forward in
+   of the new Session Timeout values to use from this point forward in
    this DSO session.
 
    It is not required that the Keepalive TLV be used in every DSO
@@ -765,23 +806,11 @@ Internet-Draft           DNS Stateful Operations          September 2017
    conjunction with a long-lived session state, not all DNS Stateful
    operations require long-lived session state, and in some cases the
    default 15-second value for both the inactivity timeout and keepalive
-   interval may be perfectly appropriate.
+   interval may be perfectly appropriate.  However, it can be noted that
+   for clients that implement only the TLVs defined in this document it
+   is the only way for a client to initiate a DSO session.
 
    The TYPE-DEPENDENT DATA for the the Keepalive TLV is as follows:
-
-
-
-
-
-
-
-
-
-
-Bellis, et al.            Expires March 8, 2018                [Page 14]
-
-Internet-Draft           DNS Stateful Operations          September 2017
-
 
                            1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -805,101 +834,96 @@ Internet-Draft           DNS Stateful Operations          September 2017
       client MUST generate keepalive traffic to maintain connection
       state.  If the client does not generate the necessary keepalive
       traffic then after twice this interval the server will forcibly
-      terminate the connection with a TCP RST (or equivalent for other
-      protocols).
-
-   In a client-initiated DSO Keepalive message, the inactivity timeout
-   and keepalive interval contain the client's requested values.  In a
-   server response to a client-initiated message, the inactivity timeout
-   and keepalive interval contain the server's chosen values, which the
-   client MUST respect.  This is modeled after the DHCP protocol, where
-   the client requests a certain lease lifetime using DHCP option 51
-   [RFC2132], but the server is the ultimate authority for deciding what
-   lease lifetime is actually granted.
-
-   In a server-initiated DSO Keepalive message, the inactivity timeout
-   and keepalive interval unilaterally inform the client of the new
-   values from this point forward in this DSO session.  The client MUST
-   generate a response to the server-initiated DSO Keepalive message.
-   The MESSAGE ID in the response message MUST match the ID from the
-   server-initiated DSO Keepalive message, and the response message MUST
-   NOT contain any Operation TLV.
-
-   TODO: We may wish to change this, now that we've decided that we
-   don't need all requests to generate responses.
-
-   When a client is sending its second and subsequent Keepalive DSO
-   requests to the server, the client SHOULD continue to request its
-   preferred values each time.  This allows flexibility, so that if
 
 
 
-Bellis, et al.            Expires March 8, 2018                [Page 15]
+Bellis, et al.           Expires March 12, 2018                [Page 15]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
 
+      terminate the connection with a TCP RST (or equivalent for other
+      protocols).
+
+   In a client-initiated DSO Keepalive message, the Session Timeouts
+   contain the client's requested values.  In a server response to a
+   client-initiated message, the Session Timeouts contain the server's
+   chosen values, which the client MUST respect.  This is modeled after
+   the DHCP protocol, where the client requests a certain lease lifetime
+   using DHCP option 51 [RFC2132], but the server is the ultimate
+   authority for deciding what lease lifetime is actually granted.
+
+   In a server-initiated DSO Keepalive message, the Session Timeouts
+   unilaterally inform the client of the new values from this point
+   forward in this DSO session.  The client MUST generate a response to
+   the server-initiated DSO Keepalive message.  The MESSAGE ID in the
+   response message MUST match the ID from the server-initiated DSO
+   Keepalive message, and the response message MUST NOT contain any
+   Operation TLV.
+
+   When a client is sending its second and subsequent Keepalive DSO
+   requests to the server, the client SHOULD continue to request its
+   preferred values each time.  This allows flexibility, so that if
    conditions change during the lifetime of a DSO session, the server
    can adapt its responses to better fit the client's needs.
 
-5.1.  Client handling of received Session Timer values
+5.1.  Client handling of received Session Timeout values
 
    When a client receives a response to its client-initiated DSO
    Keepalive message, or receives a server-initiated DSO Keepalive
-   message, the client has then received Session Timer values dictated
+   message, the client has then received Session Timeout values dictated
    by the server.  The two timer values contained in the DSO Keepalive
    TLV from the server may each be higher, lower, or the same as the
-   respective Session Timer values the client previously had for this
+   respective Session Timeout values the client previously had for this
    DSO session.
 
    In the case of the keepalive timer, the handling of the received
    value is straightforward.  The act of receiving the message
-   containing the DSO Keepalive TLV itself resets the keepalive timer,
-   and the keepalive interval given in the DSO Keepalive TLV indicates
-   the maximum time that may elapse before another message must be sent
-   or received on this DSO session, if the DSO session is to remain
-   alive.
+   containing the DSO Keepalive TLV itself resets the keepalive timer
+   and updates the keepalive interval for the DSO session.  The new
+   keepalive interval indicates the maximum time that may elapse before
+   another message must be sent or received on this DSO session, if the
+   DSO session is to remain alive.
 
    In the case of the inactivity timeout, the handling of the received
    value superficially appears a little more subtle, though the meaning
    of the inactivity timeout is unchanged - it still indicates the
    maximum permissible time allowed without activity on a DSO session.
    The act of receiving the message containing the DSO Keepalive TLV
-   does not itself reset the inactivity timer.  The time elapsed since
-   the last useful activity on this DSO session is unaffected by
-   exchange of DSO Keepalive messages.  Upon reception of an inactivity
-   timeout value from the server, that becomes the new maximum
-   permissible time without activity on a DSO session.
-
-   o  If the time since the last non-keepalive activity on this DSO
-      session is not greater than the inactivity timeout, then the DSO
-      session may remain open for now.  When such time comes that the
-      time since the last non-keepalive activity on this DSO session
-      exceeds the inactivity timeout dictated by the server, the client
-      MUST then close the DSO session, as described above.
-
-   o  If more than the maximum permissible time has already elapsed
-      since the last non-keepalive activity on this DSO session, then
-      this DSO session has already been inactive for longer than the
-      server permits, and the client MUST immediately close this DSO
-      session.
-
-   o  If more than twice the new maximum permissible time has already
-      elapsed since the last non-keepalive activity on this DSO session,
-      then this DSO session is eligible to be forcibly terminated by the
 
 
 
-Bellis, et al.            Expires March 8, 2018                [Page 16]
+Bellis, et al.           Expires March 12, 2018                [Page 16]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
 
-      server, though if a server abruptly reduces the inactivity timeout
-      in this way the server SHOULD give the client a grace period of
-      one quarter of the new inactivity timeout, to give the client time
-      to close the connection gracefully before the server resorts to
-      terminating it forcibly.
+   does not itself reset the inactivity timer.  The time elapsed since
+   the last useful activity on this DSO session is unaffected by
+   exchange of DSO Keepalive messages.  The act of receiving the message
+   containing the DSO Keepalive TLV does update the timeout associated
+   with the running inactivity timer; that becomes the new maximum
+   permissible time without activity on a DSO session.
+
+   o  If the inactivity timer value is not greater than the new
+      inactivity timeout, then the DSO session may remain open for now.
+      When the inactivity timer value exceeds the new inactivity
+      timeout, the client MUST then close the DSO session, as described
+      above.
+
+   o  If the inactivity timer value is already greater than the new
+      inactivity timeout, then this DSO session has already been
+      inactive for longer than the server permits, and the client MUST
+      immediately close this DSO session.
+
+   o  If the inactivity timer value is more than twice the new
+      inactivity timeout, then this DSO session is eligible to be
+      forcibly terminated by the server and and the client MUST
+      immediately close this DSO session.  However if a server abruptly
+      reduces the inactivity timeout in this way the server SHOULD give
+      the client a grace period of one quarter of the new inactivity
+      timeout, to give the client time to close the connection
+      gracefully before the server resorts to terminating it forcibly.
 
 5.2.  Relation to EDNS(0) TCP Keepalive Option
 
@@ -920,6 +944,15 @@ Internet-Draft           DNS Stateful Operations          September 2017
    as a Modifier TLV.
 
    The TYPE-DEPENDENT DATA for the the Retry Delay TLV is as follows:
+
+
+
+
+
+Bellis, et al.           Expires March 12, 2018                [Page 17]
+
+Internet-Draft           DNS Stateful Operations          September 2017
+
 
                            1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -942,15 +975,6 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
    In this case it applies to the DSO session as a whole, and the client
    MUST close the DSO session, as described in section Section 8.9.  The
-
-
-
-
-Bellis, et al.            Expires March 8, 2018                [Page 17]
-
-Internet-Draft           DNS Stateful Operations          September 2017
-
-
    RCODE in the message header MUST indicate the reason for the
    termination:
 
@@ -976,6 +1000,16 @@ Internet-Draft           DNS Stateful Operations          September 2017
    An acknowledgement is not desired for a Retry Delay Operation TLV and
    the TLV Acknowledgement bit MUST be cleared in the request.
 
+
+
+
+
+
+Bellis, et al.           Expires March 12, 2018                [Page 18]
+
+Internet-Draft           DNS Stateful Operations          September 2017
+
+
 6.2.  Use as a Modifier TLV
 
    When appended to a DSO response message for some client request, the
@@ -998,14 +1032,6 @@ Internet-Draft           DNS Stateful Operations          September 2017
    variable length field containing non-specified values.  A DATA LENGTH
    of 0 essentially provides for 4 octets of padding (the minimum
    amount).
-
-
-
-
-Bellis, et al.            Expires March 8, 2018                [Page 18]
-
-Internet-Draft           DNS Stateful Operations          September 2017
-
 
                                                 1   1   1   1   1   1
         0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
@@ -1031,6 +1057,15 @@ Internet-Draft           DNS Stateful Operations          September 2017
    and length of data in the preceding TLVs.  See
    [I-D.ietf-dprive-padding-policy]
 
+
+
+
+
+Bellis, et al.           Expires March 12, 2018                [Page 19]
+
+Internet-Draft           DNS Stateful Operations          September 2017
+
+
 8.  DSO Session Lifecycle and Timers
 
 8.1.  DSO Session Initiation
@@ -1046,61 +1081,61 @@ Internet-Draft           DNS Stateful Operations          September 2017
    transmitted, but responses to those messages MAY be sent out of
    order, if appropriate.
 
-8.2.  Timers
+8.2.  DSO Session Timeouts
 
-   Two timer values are associated with a DSO session: the inactivity
+   Two timeout values are associated with a DSO session: the inactivity
    timeout, and the keepalive interval.
 
-   The first timer value, the inactivity timeout, is the maximum time
+   The first timeout value, the inactivity timeout, is the maximum time
    for which a client may speculatively keep a DSO session open in the
    expectation that it may have future requests to send to that server.
 
-
-
-
-Bellis, et al.            Expires March 8, 2018                [Page 19]
-
-Internet-Draft           DNS Stateful Operations          September 2017
-
-
-   The second timer value, the keepalive interval, is the maximum
+   The second timeout value, the keepalive interval, is the maximum
    permitted interval between client messages to the server if the
    client wishes to keep the DSO session alive.
 
-   The two timer values are independent.  The inactivity timeout may be
-   lower, the same, or higher than the keepalive interval, though in
+   The two timeout values are independent.  The inactivity timeout may
+   be lower, the same, or higher than the keepalive interval, though in
    most cases the inactivity timeout is expected to be shorter than the
    keepalive interval.
 
    Only when the client has a very long-lived low-traffic state does the
-   keepalive interval timer come into play, to ensure that a sufficient
+   keepalive interval come into play, to ensure that a sufficient
    residual amount of traffic is generated to maintain NAT and firewall
    state.
 
    On a new DSO session, if no explicit DSO Keepalive message exchange
-   has taken place, the default value for both timers is 15 seconds.
-   For both timers, lower values of the timer result in higher network
-   traffic and higher CPU load on the server.
+   has taken place, the default value for both timeouts is 15 seconds.
+   For both timeouts, lower values of the timeout result in higher
+   network traffic and higher CPU load on the server.
 
 8.3.  Inactive DSO Sessions
 
    At both servers and clients, the generation or reception of any
    complete DNS message, including DNS requests, responses, updates, or
    DSO messages, resets both timers for that DSO session, with the
+
+
+
+Bellis, et al.           Expires March 12, 2018                [Page 20]
+
+Internet-Draft           DNS Stateful Operations          September 2017
+
+
    exception that a DSO Keepalive message resets only the keepalive
-   interval timer, not the inactivity timeout timer.
+   timer, not the inactivity timeout timer.
 
    In addition, for as long as the client has an outstanding operation
-   in progress, the inactivity timeout timer remains conceptually fixed
-   at zero, and an inactivity timeout cannot occur.
+   in progress, the inactivity timer remains cleared, and an inactivity
+   timeout cannot occur.
 
    For short-lived DNS operations like traditional queries and updates,
    an operation is considered in progress for the time between request
    and response, typically a period of a few hundred milliseconds at
-   most.  At the client, the inactivity timeout timer is cleared upon
+   most.  At the client, the inactivity timer is cleared upon
    transmission of a request and remains cleared until reception of the
-   corresponding response.  At the server, the inactivity timeout timer
-   is cleared upon reception of a request and remains cleared until
+   corresponding response.  At the server, the inactivity timer is
+   cleared upon reception of a request and remains cleared until
    transmission of the corresponding response.
 
    For long-lived DNS Stateful operations, an operation is considered in
@@ -1110,15 +1145,6 @@ Internet-Draft           DNS Stateful Operations          September 2017
    inactivity timeout, and this is not an error.  This is why there are
    two separate timers: the inactivity timeout, and the keepalive
    interval.  Just because a DSO session has no traffic for an extended
-
-
-
-
-Bellis, et al.            Expires March 8, 2018                [Page 20]
-
-Internet-Draft           DNS Stateful Operations          September 2017
-
-
    period of time does not automatically make that DSO session
    "inactive", if it has an active state that is awaiting for events.
 
@@ -1138,12 +1164,19 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 8.4.1.  Closing Inactive DSO Sessions
 
-   A client is NOT required to wait until the inactivity timeout timer
-   expires before closing a DSO session.  A client MAY close a DSO
-   session at any time, at the client's discretion.  If a client
-   determines that it has no current or reasonably anticipated future
-   need for an inactive DSO session, then the client SHOULD close that
-   connection.
+   A client is NOT required to wait until the inactivity timeout expires
+   before closing a DSO session.  A client MAY close a DSO session at
+   any time, at the client's discretion.  If a client determines that it
+   has no current or reasonably anticipated future need for an inactive
+   DSO session, then the client SHOULD close that connection.
+
+
+
+
+Bellis, et al.           Expires March 12, 2018                [Page 21]
+
+Internet-Draft           DNS Stateful Operations          September 2017
+
 
    If, at any time during the life of the DSO session, the inactivity
    timeout value (i.e., 15 seconds by default) elapses without there
@@ -1168,13 +1201,6 @@ Internet-Draft           DNS Stateful Operations          September 2017
    Keepalive message exchange resets only the keepalive interval timer,
    not the inactivity timeout timer.
 
-
-
-Bellis, et al.            Expires March 8, 2018                [Page 21]
-
-Internet-Draft           DNS Stateful Operations          September 2017
-
-
    If the client wishes to keep an inactive DSO session open for longer
    than the default duration without having to send traffic every 15
    seconds, then it uses the DSO Keepalive message to request longer
@@ -1191,7 +1217,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
    to the client that it should not speculatively keep inactive DSO
    sessions open for very long for no reason, but when it does have an
    active reason to keep a DSO session open, it doesn't need to be
-   sending an agressive level of keepalive traffic.
+   sending an aggressive level of keepalive traffic.
 
    A longer inactivity timeout with a shorter keepalive interval signals
    to the client that it may speculatively keep inactive DSO sessions
@@ -1199,10 +1225,19 @@ Internet-Draft           DNS Stateful Operations          September 2017
    traffic on those inactive DSO sessions.  This configuration is
    expected to be less common.
 
+
+
+
+
+Bellis, et al.           Expires March 12, 2018                [Page 22]
+
+Internet-Draft           DNS Stateful Operations          September 2017
+
+
    To avoid excessive traffic the server MUST NOT send a Keepalive
    message (either a response to a client-initiated request, or a
    server-initiated message) with an inactivity timeout value less than
-   ten seconds.  If a client receives an Keepalive message specifying an
+   ten seconds.  If a client receives a Keepalive message specifying an
    inactivity timeout value less than ten seconds this is an error and
    the client MUST immediately terminate the connection with a TCP RST
    (or equivalent for other protocols).
@@ -1223,16 +1258,8 @@ Internet-Draft           DNS Stateful Operations          September 2017
    messages being sent or received on a DSO session, the client MUST
    take action to keep the DSO session alive.  To keep the DSO session
    alive the client MUST send a DSO Keepalive message (see Section 5).
-
-
-
-Bellis, et al.            Expires March 8, 2018                [Page 22]
-
-Internet-Draft           DNS Stateful Operations          September 2017
-
-
-   A DSO Keepalive message exchange resets only the keepalive interval
-   timer, not the inactivity timeout timer.
+   A DSO Keepalive message exchange resets only the keepalive timer, not
+   the inactivity timer.
 
    If a client disconnects from the network abruptly, without cleanly
    closing its DSO session, leaving long-lived state uncanceled, the
@@ -1252,6 +1279,16 @@ Internet-Draft           DNS Stateful Operations          September 2017
    burden at the server, because clients keep a DSO session open for the
    same length of time (determined by the inactivity timeout) regardless
    of the level of keepalive traffic required.
+
+
+
+
+
+
+Bellis, et al.           Expires March 12, 2018                [Page 23]
+
+Internet-Draft           DNS Stateful Operations          September 2017
+
 
    It may be appropriate for clients and servers to select different
    keepalive interval values depending on the nature of the network they
@@ -1279,14 +1316,6 @@ Internet-Draft           DNS Stateful Operations          September 2017
    RECOMMENDED that clients request, and servers grant, a keepalive
    interval of 60 minutes.
 
-
-
-
-Bellis, et al.            Expires March 8, 2018                [Page 23]
-
-Internet-Draft           DNS Stateful Operations          September 2017
-
-
    Note that the lower the keepalive interval value, the higher the load
    on client and server.  For example, an keepalive interval value of
    100ms would result in a continuous stream of at least ten messages
@@ -1309,6 +1338,14 @@ Internet-Draft           DNS Stateful Operations          September 2017
    After sending an error response to a client, the server MAY close the
    DSO session, or may allow the DSO session to remain open.  For error
    conditions that only affect the single operation in question, the
+
+
+
+Bellis, et al.           Expires March 12, 2018                [Page 24]
+
+Internet-Draft           DNS Stateful Operations          September 2017
+
+
    server SHOULD return an error response to the client and leave the
    DSO session open for further operations.  For error conditions that
    are likely to make all operations unsuccessful in the immediate
@@ -1334,16 +1371,9 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
    Apart from the cases where:
 
-   o  Session Timer expire (see Section xx)
+   o  Session Timeouts expire (see Section 8.2)
 
-
-
-Bellis, et al.            Expires March 8, 2018                [Page 24]
-
-Internet-Draft           DNS Stateful Operations          September 2017
-
-
-   o  On error (see Section xx)
+   o  On error (see {Section Section 8.7)
 
    o  When under load (see below)
 
@@ -1359,6 +1389,18 @@ Internet-Draft           DNS Stateful Operations          September 2017
    reason for the DSO session being closed, and allow the client five
    seconds to receive it before the server resorts to forcibly aborting
    the connection.
+
+
+
+
+
+
+
+
+Bellis, et al.           Expires March 12, 2018                [Page 25]
+
+Internet-Draft           DNS Stateful Operations          September 2017
+
 
 8.9.  Retry Delay Operation TLV
 
@@ -1391,14 +1433,6 @@ Internet-Draft           DNS Stateful Operations          September 2017
    the server MUST immediately terminate the connection with a TCP RST
    (or equivalent for other protocols).
 
-
-
-
-Bellis, et al.            Expires March 8, 2018                [Page 25]
-
-Internet-Draft           DNS Stateful Operations          September 2017
-
-
 8.9.1.  Outstanding Operations
 
    At the moment a server chooses to initiate a Retry Delay request
@@ -1416,6 +1450,14 @@ Internet-Draft           DNS Stateful Operations          September 2017
    In the case where some, but not all, of the existing operations on a
    DSO session have become invalid (perhaps because the server has been
    reconfigured and is no longer authoritative for some of the names),
+
+
+
+Bellis, et al.           Expires March 12, 2018                [Page 26]
+
+Internet-Draft           DNS Stateful Operations          September 2017
+
+
    but the server is terminating all DSO sessions en masse with a
    REFUSED (5) RCODE, the RECONNECT DELAY MAY be zero, indicating that
    the clients SHOULD immediately attempt to re-establish operations.
@@ -1447,14 +1489,6 @@ Internet-Draft           DNS Stateful Operations          September 2017
    delay value or clients may not attempt to reconnect after it resumes
    service.
 
-
-
-
-Bellis, et al.            Expires March 8, 2018                [Page 26]
-
-Internet-Draft           DNS Stateful Operations          September 2017
-
-
 9.  Connection Sharing
 
    As in [RFC7766], to mitigate the risk of unintentional server
@@ -1472,6 +1506,14 @@ Internet-Draft           DNS Stateful Operations          September 2017
    A single server may support multiple services, including DNS Updates
    [RFC2136], DNS Push Notifications [I-D.ietf-dnssd-push], and other
    services, for one or more DNS zones.  When a client discovers that
+
+
+
+Bellis, et al.           Expires March 12, 2018                [Page 27]
+
+Internet-Draft           DNS Stateful Operations          September 2017
+
+
    the target server for several different operations is the same target
    hostname and port, the client SHOULD use a single shared DSO session
    for all those operations.  A client SHOULD NOT open multiple
@@ -1502,19 +1544,31 @@ Internet-Draft           DNS Stateful Operations          September 2017
    IANA are directed to assign a value (tentatively 11) in the DNS RCODE
    Registry for the DSONOTIMP error code.
 
-
-
-
-
-Bellis, et al.            Expires March 8, 2018                [Page 27]
-
-Internet-Draft           DNS Stateful Operations          September 2017
-
-
 10.3.  DSO Type Codes Registry
 
    IANA are directed to create the DSO Type Codes Registry, with initial
    values as follows:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Bellis, et al.           Expires March 12, 2018                [Page 28]
+
+Internet-Draft           DNS Stateful Operations          September 2017
+
 
    +-----------+--------------------------------+----------+-----------+
    |      Type | Name                           | Status   | Reference |
@@ -1557,16 +1611,6 @@ Internet-Draft           DNS Stateful Operations          September 2017
    Thanks to Tim Chown, Ralph Droms, Jan Komissar, and Manju Shankar Rao
    for their helpful contributions to this document.
 
-
-
-
-
-
-Bellis, et al.            Expires March 8, 2018                [Page 28]
-
-Internet-Draft           DNS Stateful Operations          September 2017
-
-
 13.  References
 
 13.1.  Normative References
@@ -1574,6 +1618,13 @@ Internet-Draft           DNS Stateful Operations          September 2017
    [RFC1034]  Mockapetris, P., "Domain names - concepts and facilities",
               STD 13, RFC 1034, DOI 10.17487/RFC1034, November 1987,
               <https://www.rfc-editor.org/info/rfc1034>.
+
+
+
+Bellis, et al.           Expires March 12, 2018                [Page 29]
+
+Internet-Draft           DNS Stateful Operations          September 2017
+
 
    [RFC1035]  Mockapetris, P., "Domain names - implementation and
               specification", STD 13, RFC 1035, DOI 10.17487/RFC1035,
@@ -1613,16 +1664,6 @@ Internet-Draft           DNS Stateful Operations          September 2017
               Requirements", RFC 7766, DOI 10.17487/RFC7766, March 2016,
               <https://www.rfc-editor.org/info/rfc7766>.
 
-
-
-
-
-
-Bellis, et al.            Expires March 8, 2018                [Page 29]
-
-Internet-Draft           DNS Stateful Operations          September 2017
-
-
    [RFC7828]  Wouters, P., Abley, J., Dickinson, S., and R. Bellis, "The
               edns-tcp-keepalive EDNS0 Option", RFC 7828,
               DOI 10.17487/RFC7828, April 2016, <https://www.rfc-
@@ -1631,6 +1672,15 @@ Internet-Draft           DNS Stateful Operations          September 2017
    [RFC7830]  Mayrhofer, A., "The EDNS(0) Padding Option", RFC 7830,
               DOI 10.17487/RFC7830, May 2016, <https://www.rfc-
               editor.org/info/rfc7830>.
+
+
+
+
+
+Bellis, et al.           Expires March 12, 2018                [Page 30]
+
+Internet-Draft           DNS Stateful Operations          September 2017
+
 
 13.2.  Informative References
 
@@ -1668,17 +1718,6 @@ Authors' Addresses
    Email: ray@isc.org
 
 
-
-
-
-
-
-
-Bellis, et al.            Expires March 8, 2018                [Page 30]
-
-Internet-Draft           DNS Stateful Operations          September 2017
-
-
    Stuart Cheshire
    Apple Inc.
    1 Infinite Loop
@@ -1687,6 +1726,16 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
    Phone: +1 408 974 3207
    Email: cheshire@apple.com
+
+
+
+
+
+
+
+Bellis, et al.           Expires March 12, 2018                [Page 31]
+
+Internet-Draft           DNS Stateful Operations          September 2017
 
 
    John Dickinson
@@ -1730,4 +1779,14 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.            Expires March 8, 2018                [Page 31]
+
+
+
+
+
+
+
+
+
+
+Bellis, et al.           Expires March 12, 2018                [Page 32]
