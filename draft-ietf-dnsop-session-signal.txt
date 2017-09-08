@@ -872,7 +872,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
    When a client receives a response to its client-initiated DSO
    Keepalive message, or receives a server-initiated DSO Keepalive
    message, the client has then received Session Timeout values dictated
-   by the server.  The two timer values contained in the DSO Keepalive
+   by the server.  The two timeout values contained in the DSO Keepalive
    TLV from the server may each be higher, lower, or the same as the
    respective Session Timeout values the client previously had for this
    DSO session.

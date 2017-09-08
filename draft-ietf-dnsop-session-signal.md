@@ -245,7 +245,9 @@ to reset a keepalive timer in order to avoid re-cycling a DSO session.
 There are a myriad of other potential use cases for DSO given the versatility 
 and extensibility of this specification.
 
-{{details}} of this document first describes the protocol details of DNS Stateful Operations including definitions of three TLVs for session management and encryption padding. {{lifecycle}} then presents a
+{{details}} of this document first describes the protocol details of DNS Stateful
+Operations including definitions of three TLVs for session management and 
+encryption padding. {{lifecycle}} then presents a
 detailed discussion of the DSO Session lifecycle including an
 in-depth discussion of keepalive traffic and session termination.
 
@@ -683,7 +685,7 @@ the client's needs.
 
 When a client receives a response to its client-initiated DSO Keepalive message,
 or receives a server-initiated DSO Keepalive message, the client has then 
-received Session Timeout values dictated by the server. The two timer values 
+received Session Timeout values dictated by the server. The two timeout values 
 contained in the DSO Keepalive TLV from the server may each be higher, lower, or 
 the same as the respective Session Timeout values the client previously had for 
 this DSO session.
