@@ -7,13 +7,13 @@ Internet-Draft                                                       ISC
 Updates: RFC 7766, RFC 1035 (if                              S. Cheshire
          approved)                                            Apple Inc.
 Intended status: Standards Track                            J. Dickinson
-Expires: March 12, 2018                                     S. Dickinson
+Expires: March 17, 2018                                     S. Dickinson
                                                                  Sinodun
                                                                A. Mankin
                                                               Salesforce
                                                              T. Pusateri
                                                             Unaffiliated
-                                                      September 08, 2017
+                                                      September 13, 2017
 
 
                         DNS Stateful Operations
@@ -44,7 +44,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on March 12, 2018.
+   This Internet-Draft will expire on March 17, 2018.
 
 
 
@@ -53,7 +53,7 @@ Status of This Memo
 
 
 
-Bellis, et al.           Expires March 12, 2018                 [Page 1]
+Bellis, et al.           Expires March 17, 2018                 [Page 1]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Bellis, et al.           Expires March 12, 2018                 [Page 2]
+Bellis, et al.           Expires March 17, 2018                 [Page 2]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -165,7 +165,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 12, 2018                 [Page 3]
+Bellis, et al.           Expires March 17, 2018                 [Page 3]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -221,7 +221,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 12, 2018                 [Page 4]
+Bellis, et al.           Expires March 17, 2018                 [Page 4]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -277,7 +277,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 12, 2018                 [Page 5]
+Bellis, et al.           Expires March 17, 2018                 [Page 5]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -333,7 +333,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 12, 2018                 [Page 6]
+Bellis, et al.           Expires March 17, 2018                 [Page 6]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -389,7 +389,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 12, 2018                 [Page 7]
+Bellis, et al.           Expires March 17, 2018                 [Page 7]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -445,7 +445,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 12, 2018                 [Page 8]
+Bellis, et al.           Expires March 17, 2018                 [Page 8]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -501,7 +501,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 12, 2018                 [Page 9]
+Bellis, et al.           Expires March 17, 2018                 [Page 9]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -557,7 +557,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 12, 2018                [Page 10]
+Bellis, et al.           Expires March 17, 2018                [Page 10]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -613,7 +613,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 12, 2018                [Page 11]
+Bellis, et al.           Expires March 17, 2018                [Page 11]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -669,7 +669,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 12, 2018                [Page 12]
+Bellis, et al.           Expires March 17, 2018                [Page 12]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -725,7 +725,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 12, 2018                [Page 13]
+Bellis, et al.           Expires March 17, 2018                [Page 13]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -781,7 +781,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 12, 2018                [Page 14]
+Bellis, et al.           Expires March 17, 2018                [Page 14]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -837,7 +837,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 12, 2018                [Page 15]
+Bellis, et al.           Expires March 17, 2018                [Page 15]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -893,7 +893,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 12, 2018                [Page 16]
+Bellis, et al.           Expires March 17, 2018                [Page 16]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -949,7 +949,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 12, 2018                [Page 17]
+Bellis, et al.           Expires March 17, 2018                [Page 17]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -1005,7 +1005,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 12, 2018                [Page 18]
+Bellis, et al.           Expires March 17, 2018                [Page 18]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -1061,7 +1061,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 12, 2018                [Page 19]
+Bellis, et al.           Expires March 17, 2018                [Page 19]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -1117,7 +1117,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 12, 2018                [Page 20]
+Bellis, et al.           Expires March 17, 2018                [Page 20]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -1173,7 +1173,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 12, 2018                [Page 21]
+Bellis, et al.           Expires March 17, 2018                [Page 21]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -1229,7 +1229,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 12, 2018                [Page 22]
+Bellis, et al.           Expires March 17, 2018                [Page 22]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -1285,7 +1285,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 12, 2018                [Page 23]
+Bellis, et al.           Expires March 17, 2018                [Page 23]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -1341,7 +1341,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 12, 2018                [Page 24]
+Bellis, et al.           Expires March 17, 2018                [Page 24]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -1397,7 +1397,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 12, 2018                [Page 25]
+Bellis, et al.           Expires March 17, 2018                [Page 25]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -1453,7 +1453,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 12, 2018                [Page 26]
+Bellis, et al.           Expires March 17, 2018                [Page 26]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -1509,7 +1509,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 12, 2018                [Page 27]
+Bellis, et al.           Expires March 17, 2018                [Page 27]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -1565,7 +1565,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 12, 2018                [Page 28]
+Bellis, et al.           Expires March 17, 2018                [Page 28]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -1621,7 +1621,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 12, 2018                [Page 29]
+Bellis, et al.           Expires March 17, 2018                [Page 29]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -1677,7 +1677,7 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 12, 2018                [Page 30]
+Bellis, et al.           Expires March 17, 2018                [Page 30]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -1733,7 +1733,7 @@ Authors' Addresses
 
 
 
-Bellis, et al.           Expires March 12, 2018                [Page 31]
+Bellis, et al.           Expires March 17, 2018                [Page 31]
 
 Internet-Draft           DNS Stateful Operations          September 2017
 
@@ -1789,4 +1789,4 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 12, 2018                [Page 32]
+Bellis, et al.           Expires March 17, 2018                [Page 32]
