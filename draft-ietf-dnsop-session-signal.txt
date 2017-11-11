@@ -7,17 +7,17 @@ Internet-Draft                                                       ISC
 Updates: RFC 7766, RFC 1035 (if                              S. Cheshire
          approved)                                            Apple Inc.
 Intended status: Standards Track                            J. Dickinson
-Expires: March 17, 2018                                     S. Dickinson
+Expires: May 14, 2018                                       S. Dickinson
                                                                  Sinodun
                                                                A. Mankin
                                                               Salesforce
                                                              T. Pusateri
                                                             Unaffiliated
-                                                      September 13, 2017
+                                                       November 10, 2017
 
 
                         DNS Stateful Operations
-                   draft-ietf-dnsop-session-signal-04
+                   draft-ietf-dnsop-session-signal-05
 
 Abstract
 
@@ -44,7 +44,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on March 17, 2018.
+   This Internet-Draft will expire on May 14, 2018.
 
 
 
@@ -53,9 +53,9 @@ Status of This Memo
 
 
 
-Bellis, et al.           Expires March 17, 2018                 [Page 1]
+Bellis, et al.            Expires May 14, 2018                  [Page 1]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
 Copyright Notice
@@ -109,9 +109,9 @@ Table of Contents
 
 
 
-Bellis, et al.           Expires March 17, 2018                 [Page 2]
+Bellis, et al.            Expires May 14, 2018                  [Page 2]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
      8.9.  Retry Delay Operation TLV . . . . . . . . . . . . . . . .  26
@@ -165,9 +165,9 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 17, 2018                 [Page 3]
+Bellis, et al.            Expires May 14, 2018                  [Page 3]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
    With EDNS(0), multiple options may be packed into a single OPT
@@ -221,9 +221,9 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 17, 2018                 [Page 4]
+Bellis, et al.            Expires May 14, 2018                  [Page 4]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
    o  The connection between client and server is persistent and
@@ -277,9 +277,9 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 17, 2018                 [Page 5]
+Bellis, et al.            Expires May 14, 2018                  [Page 5]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
    Reseting a timer means resetting the timer value to zero and starting
@@ -333,9 +333,9 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 17, 2018                 [Page 6]
+Bellis, et al.            Expires May 14, 2018                  [Page 6]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
 4.1.  DSO Session Establishment
@@ -389,9 +389,9 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 17, 2018                 [Page 7]
+Bellis, et al.            Expires May 14, 2018                  [Page 7]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
 4.1.1.  Middle-box Considerations
@@ -445,9 +445,9 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 17, 2018                 [Page 8]
+Bellis, et al.            Expires May 14, 2018                  [Page 8]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
                                                 1   1   1   1   1   1
@@ -501,9 +501,9 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 17, 2018                 [Page 9]
+Bellis, et al.            Expires May 14, 2018                  [Page 9]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
    In a request message (QR=0) the RCODE is generally set to zero on
@@ -557,9 +557,9 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 17, 2018                [Page 10]
+Bellis, et al.            Expires May 14, 2018                 [Page 10]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
    o  Only an Operation TLV
@@ -613,9 +613,9 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 17, 2018                [Page 11]
+Bellis, et al.            Expires May 14, 2018                 [Page 11]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
 4.2.2.2.  Operation TLVs
@@ -669,9 +669,9 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 17, 2018                [Page 12]
+Bellis, et al.            Expires May 14, 2018                 [Page 12]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
    desired for DSO messages, an Operation TLV or Modifier TLV needs to
@@ -725,9 +725,9 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 17, 2018                [Page 13]
+Bellis, et al.            Expires May 14, 2018                 [Page 13]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
    performance problems caused by interaction between Nagle's Algorithm
@@ -781,9 +781,9 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 17, 2018                [Page 14]
+Bellis, et al.            Expires May 14, 2018                 [Page 14]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
    When sent by a client, the Keepalive Operation TLV resets a DSO
@@ -837,9 +837,9 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 17, 2018                [Page 15]
+Bellis, et al.            Expires May 14, 2018                 [Page 15]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
       terminate the connection with a TCP RST (or equivalent for other
@@ -893,9 +893,9 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 17, 2018                [Page 16]
+Bellis, et al.            Expires May 14, 2018                 [Page 16]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
    does not itself reset the inactivity timer.  The time elapsed since
@@ -949,9 +949,9 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 17, 2018                [Page 17]
+Bellis, et al.            Expires May 14, 2018                 [Page 17]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
                            1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
@@ -1005,9 +1005,9 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 17, 2018                [Page 18]
+Bellis, et al.            Expires May 14, 2018                 [Page 18]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
 6.2.  Use as a Modifier TLV
@@ -1061,9 +1061,9 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 17, 2018                [Page 19]
+Bellis, et al.            Expires May 14, 2018                 [Page 19]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
 8.  DSO Session Lifecycle and Timers
@@ -1117,9 +1117,9 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 17, 2018                [Page 20]
+Bellis, et al.            Expires May 14, 2018                 [Page 20]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
    exception that a DSO Keepalive message resets only the keepalive
@@ -1173,9 +1173,9 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 17, 2018                [Page 21]
+Bellis, et al.            Expires May 14, 2018                 [Page 21]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
    If, at any time during the life of the DSO session, the inactivity
@@ -1229,9 +1229,9 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 17, 2018                [Page 22]
+Bellis, et al.            Expires May 14, 2018                 [Page 22]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
    To avoid excessive traffic the server MUST NOT send a Keepalive
@@ -1285,9 +1285,9 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 17, 2018                [Page 23]
+Bellis, et al.            Expires May 14, 2018                 [Page 23]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
    It may be appropriate for clients and servers to select different
@@ -1341,9 +1341,9 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 17, 2018                [Page 24]
+Bellis, et al.            Expires May 14, 2018                 [Page 24]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
    server SHOULD return an error response to the client and leave the
@@ -1397,9 +1397,9 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 17, 2018                [Page 25]
+Bellis, et al.            Expires May 14, 2018                 [Page 25]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
 8.9.  Retry Delay Operation TLV
@@ -1453,9 +1453,9 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 17, 2018                [Page 26]
+Bellis, et al.            Expires May 14, 2018                 [Page 26]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
    but the server is terminating all DSO sessions en masse with a
@@ -1509,9 +1509,9 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 17, 2018                [Page 27]
+Bellis, et al.            Expires May 14, 2018                 [Page 27]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
    the target server for several different operations is the same target
@@ -1546,8 +1546,8 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 10.3.  DSO Type Codes Registry
 
-   IANA are directed to create the DSO Type Codes Registry, with initial
-   values as follows:
+   IANA are directed to create the 15-bit DSO Type Codes Registry, with
+   initial values as follows:
 
 
 
@@ -1565,9 +1565,9 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 17, 2018                [Page 28]
+Bellis, et al.            Expires May 14, 2018                 [Page 28]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
    +-----------+--------------------------------+----------+-----------+
@@ -1583,13 +1583,13 @@ Internet-Draft           DNS Stateful Operations          September 2017
    |    0x003F | session management TLVs        |          |           |
    |           |                                |          |           |
    |  0x0040 - | Unassigned                     |          |           |
-   |    0xF7FF |                                |          |           |
+   |    0x77FF |                                |          |           |
    |           |                                |          |           |
-   |  0xF800 - | Reserved for local /           |          |           |
-   |    0xFBFF | experimental use               |          |           |
+   |  0x7800 - | Reserved for local /           |          |           |
+   |    0x7BFF | experimental use               |          |           |
    |           |                                |          |           |
-   |  0xFC00 - | Reserved for future expansion  |          |           |
-   |    0xFFFF |                                |          |           |
+   |  0x7C00 - | Reserved for future expansion  |          |           |
+   |    0x7FFF |                                |          |           |
    +-----------+--------------------------------+----------+-----------+
 
    Registration of additional DSO Type Codes requires publication of an
@@ -1608,8 +1608,8 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 12.  Acknowledgements
 
-   Thanks to Tim Chown, Ralph Droms, Jan Komissar, and Manju Shankar Rao
-   for their helpful contributions to this document.
+   Thanks to Tim Chown, Ralph Droms, Jan Komissar, Manju Shankar Rao,
+   and Ted Lemon for their helpful contributions to this document.
 
 13.  References
 
@@ -1621,9 +1621,9 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 17, 2018                [Page 29]
+Bellis, et al.            Expires May 14, 2018                 [Page 29]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
    [RFC1035]  Mockapetris, P., "Domain names - implementation and
@@ -1677,20 +1677,21 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-Bellis, et al.           Expires March 17, 2018                [Page 30]
+Bellis, et al.            Expires May 14, 2018                 [Page 30]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
 13.2.  Informative References
 
    [I-D.ietf-dnssd-push]
               Pusateri, T. and S. Cheshire, "DNS Push Notifications",
-              draft-ietf-dnssd-push-12 (work in progress), July 2017.
+              draft-ietf-dnssd-push-13 (work in progress), October 2017.
 
    [I-D.ietf-dprive-padding-policy]
               Mayrhofer, A., "Padding Policy for EDNS(0)", draft-ietf-
-              dprive-padding-policy-01 (work in progress), July 2017.
+              dprive-padding-policy-02 (work in progress), September
+              2017.
 
    [NagleDA]  Cheshire, S., "TCP Performance problems caused by
               interaction between Nagle's Algorithm and Delayed ACK",
@@ -1732,10 +1733,9 @@ Authors' Addresses
 
 
 
-
-Bellis, et al.           Expires March 17, 2018                [Page 31]
+Bellis, et al.            Expires May 14, 2018                 [Page 31]
 
-Internet-Draft           DNS Stateful Operations          September 2017
+Internet-Draft           DNS Stateful Operations           November 2017
 
 
    John Dickinson
@@ -1766,6 +1766,8 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
    Tom Pusateri
    Unaffiliated
+   Raleigh  NC 27608
+   USA
 
    Phone: +1 919 867 1330
    Email: pusateri@bangj.com
@@ -1787,6 +1789,4 @@ Internet-Draft           DNS Stateful Operations          September 2017
 
 
 
-
-
-Bellis, et al.           Expires March 17, 2018                [Page 32]
+Bellis, et al.            Expires May 14, 2018                 [Page 32]

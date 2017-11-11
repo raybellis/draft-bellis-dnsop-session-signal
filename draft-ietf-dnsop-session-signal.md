@@ -1,7 +1,7 @@
 ---
 title: DNS Stateful Operations
-docname: draft-ietf-dnsop-session-signal-04
-date: 2017-09-13
+docname: draft-ietf-dnsop-session-signal-05
+date: 2017
 ipr: trust200902
 area: Internet
 wg: DNSOP Working Group
@@ -70,6 +70,10 @@ author:
     ins: T. Pusateri
     name: Tom Pusateri
     org: Unaffiliated
+    street: ""
+    city: Raleigh
+    code: NC 27608
+    country: USA
     phone: +1 919 867 1330
     email: pusateri@bangj.com
 
@@ -1215,7 +1219,7 @@ in the DNS RCODE Registry for the DSONOTIMP error code.
 
 ## DSO Type Codes Registry
 
-IANA are directed to create the DSO Type Codes
+IANA are directed to create the 15-bit DSO Type Codes
 Registry, with initial values as follows:
 
 | Type | Name | Status | Reference |
@@ -1224,9 +1228,9 @@ Registry, with initial values as follows:
 | 0x0001 | KeepAlive | Standard | RFC-TBD |
 | 0x0002 | Encryption Padding | Standard | RFC-TBD |
 | 0x0003 - 0x003F | Unassigned, reserved for DSO session management TLVs | | |
-| 0x0040 - 0xF7FF | Unassigned | | |
-| 0xF800 - 0xFBFF | Reserved for local / experimental use | | |
-| 0xFC00 - 0xFFFF | Reserved for future expansion | | |
+| 0x0040 - 0x77FF | Unassigned | | |
+| 0x7800 - 0x7BFF | Reserved for local / experimental use | | |
+| 0x7C00 - 0x7FFF | Reserved for future expansion | | |
 
 Registration of additional DSO Type Codes requires publication
 of an appropriate IETF "Standards Action" or "IESG Approval" document {{!RFC5226}}.
@@ -1245,7 +1249,8 @@ Thanks to
 Tim Chown,
 Ralph Droms,
 Jan Komissar,
-and Manju Shankar Rao
+Manju Shankar Rao,
+and Ted Lemon
 for their helpful contributions to this document.
 
 --- back
