@@ -552,11 +552,12 @@ but messages may contain other EDNS(0) options as appropriate.
 ## Message Handling
 
 The initiator MUST set the value of the QR bit in the DNS header to zero
-(0), and the responder MUST set it to one (1). Every DSO request 
-message (QR=0) MUST elicit a response (QR=1), 
+(0), and the responder MUST set it to one (1).
+If the Acknowledgement bit is set in the DSO request
+message (QR=0), the receiver MUST elicit a DSO response (QR=1),
 which MUST have the same MESSAGE ID in the DNS message header as in the 
 corresponding request. DSO request messages sent by the client 
-elicit a response from the server, and DSO request messages sent 
+elicit a response from the server, and DSO request messages sent by
 the server elicit a response from the client.
 
 With most TCP implementations, the TCP data acknowledgement (generated because 

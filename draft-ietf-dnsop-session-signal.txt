@@ -7,13 +7,13 @@ Internet-Draft                                                       ISC
 Updates: RFC 7766, RFC 1035 (if                              S. Cheshire
          approved)                                            Apple Inc.
 Intended status: Standards Track                            J. Dickinson
-Expires: May 14, 2018                                       S. Dickinson
+Expires: May 17, 2018                                       S. Dickinson
                                                                  Sinodun
                                                                A. Mankin
                                                               Salesforce
                                                              T. Pusateri
                                                             Unaffiliated
-                                                       November 10, 2017
+                                                       November 13, 2017
 
 
                         DNS Stateful Operations
@@ -37,14 +37,14 @@ Status of This Memo
    Internet-Drafts are working documents of the Internet Engineering
    Task Force (IETF).  Note that other groups may also distribute
    working documents as Internet-Drafts.  The list of current Internet-
-   Drafts is at http://datatracker.ietf.org/drafts/current/.
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
 
    Internet-Drafts are draft documents valid for a maximum of six months
    and may be updated, replaced, or obsoleted by other documents at any
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on May 14, 2018.
+   This Internet-Draft will expire on May 17, 2018.
 
 
 
@@ -53,7 +53,7 @@ Status of This Memo
 
 
 
-Bellis, et al.            Expires May 14, 2018                  [Page 1]
+Bellis, et al.            Expires May 17, 2018                  [Page 1]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -65,7 +65,7 @@ Copyright Notice
 
    This document is subject to BCP 78 and the IETF Trust's Legal
    Provisions Relating to IETF Documents
-   (http://trustee.ietf.org/license-info) in effect on the date of
+   (https://trustee.ietf.org/license-info) in effect on the date of
    publication of this document.  Please review these documents
    carefully, as they describe your rights and restrictions with respect
    to this document.  Code Components extracted from this document must
@@ -109,7 +109,7 @@ Table of Contents
 
 
 
-Bellis, et al.            Expires May 14, 2018                  [Page 2]
+Bellis, et al.            Expires May 17, 2018                  [Page 2]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -165,7 +165,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 14, 2018                  [Page 3]
+Bellis, et al.            Expires May 17, 2018                  [Page 3]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -221,7 +221,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 14, 2018                  [Page 4]
+Bellis, et al.            Expires May 17, 2018                  [Page 4]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -277,7 +277,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 14, 2018                  [Page 5]
+Bellis, et al.            Expires May 17, 2018                  [Page 5]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -333,7 +333,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 14, 2018                  [Page 6]
+Bellis, et al.            Expires May 17, 2018                  [Page 6]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -389,7 +389,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 14, 2018                  [Page 7]
+Bellis, et al.            Expires May 17, 2018                  [Page 7]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -445,7 +445,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 14, 2018                  [Page 8]
+Bellis, et al.            Expires May 17, 2018                  [Page 8]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -501,7 +501,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 14, 2018                  [Page 9]
+Bellis, et al.            Expires May 17, 2018                  [Page 9]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -557,7 +557,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 14, 2018                 [Page 10]
+Bellis, et al.            Expires May 17, 2018                 [Page 10]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -613,7 +613,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 14, 2018                 [Page 11]
+Bellis, et al.            Expires May 17, 2018                 [Page 11]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -669,7 +669,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 14, 2018                 [Page 12]
+Bellis, et al.            Expires May 17, 2018                 [Page 12]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -706,12 +706,13 @@ Internet-Draft           DNS Stateful Operations           November 2017
 4.3.  Message Handling
 
    The initiator MUST set the value of the QR bit in the DNS header to
-   zero (0), and the responder MUST set it to one (1).  Every DSO
-   request message (QR=0) MUST elicit a response (QR=1), which MUST have
-   the same MESSAGE ID in the DNS message header as in the corresponding
-   request.  DSO request messages sent by the client elicit a response
-   from the server, and DSO request messages sent the server elicit a
-   response from the client.
+   zero (0), and the responder MUST set it to one (1).  If the
+   Acknowledgement bit is set in the DSO request message (QR=0), the
+   receiver MUST elicit a DSO response (QR=1), which MUST have the same
+   MESSAGE ID in the DNS message header as in the corresponding request.
+   DSO request messages sent by the client elicit a response from the
+   server, and DSO request messages sent by the server elicit a response
+   from the client.
 
    With most TCP implementations, the TCP data acknowledgement
    (generated because data has been received by TCP), the TCP window
@@ -724,8 +725,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-
-Bellis, et al.            Expires May 14, 2018                 [Page 13]
+Bellis, et al.            Expires May 17, 2018                 [Page 13]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -781,7 +781,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 14, 2018                 [Page 14]
+Bellis, et al.            Expires May 17, 2018                 [Page 14]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -837,7 +837,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 14, 2018                 [Page 15]
+Bellis, et al.            Expires May 17, 2018                 [Page 15]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -893,7 +893,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 14, 2018                 [Page 16]
+Bellis, et al.            Expires May 17, 2018                 [Page 16]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -949,7 +949,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 14, 2018                 [Page 17]
+Bellis, et al.            Expires May 17, 2018                 [Page 17]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1005,7 +1005,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 14, 2018                 [Page 18]
+Bellis, et al.            Expires May 17, 2018                 [Page 18]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1061,7 +1061,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 14, 2018                 [Page 19]
+Bellis, et al.            Expires May 17, 2018                 [Page 19]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1117,7 +1117,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 14, 2018                 [Page 20]
+Bellis, et al.            Expires May 17, 2018                 [Page 20]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1173,7 +1173,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 14, 2018                 [Page 21]
+Bellis, et al.            Expires May 17, 2018                 [Page 21]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1229,7 +1229,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 14, 2018                 [Page 22]
+Bellis, et al.            Expires May 17, 2018                 [Page 22]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1285,7 +1285,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 14, 2018                 [Page 23]
+Bellis, et al.            Expires May 17, 2018                 [Page 23]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1341,7 +1341,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 14, 2018                 [Page 24]
+Bellis, et al.            Expires May 17, 2018                 [Page 24]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1397,7 +1397,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 14, 2018                 [Page 25]
+Bellis, et al.            Expires May 17, 2018                 [Page 25]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1453,7 +1453,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 14, 2018                 [Page 26]
+Bellis, et al.            Expires May 17, 2018                 [Page 26]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1509,7 +1509,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 14, 2018                 [Page 27]
+Bellis, et al.            Expires May 17, 2018                 [Page 27]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1565,7 +1565,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 14, 2018                 [Page 28]
+Bellis, et al.            Expires May 17, 2018                 [Page 28]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1621,7 +1621,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 14, 2018                 [Page 29]
+Bellis, et al.            Expires May 17, 2018                 [Page 29]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1637,8 +1637,8 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
-              DOI 10.17487/RFC2119, March 1997, <https://www.rfc-
-              editor.org/info/rfc2119>.
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/info/rfc2119>.
 
    [RFC2132]  Alexander, S. and R. Droms, "DHCP Options and BOOTP Vendor
               Extensions", RFC 2132, DOI 10.17487/RFC2132, March 1997,
@@ -1651,13 +1651,13 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
    [RFC5226]  Narten, T. and H. Alvestrand, "Guidelines for Writing an
               IANA Considerations Section in RFCs", RFC 5226,
-              DOI 10.17487/RFC5226, May 2008, <https://www.rfc-
-              editor.org/info/rfc5226>.
+              DOI 10.17487/RFC5226, May 2008,
+              <https://www.rfc-editor.org/info/rfc5226>.
 
    [RFC6891]  Damas, J., Graff, M., and P. Vixie, "Extension Mechanisms
               for DNS (EDNS(0))", STD 75, RFC 6891,
-              DOI 10.17487/RFC6891, April 2013, <https://www.rfc-
-              editor.org/info/rfc6891>.
+              DOI 10.17487/RFC6891, April 2013,
+              <https://www.rfc-editor.org/info/rfc6891>.
 
    [RFC7766]  Dickinson, J., Dickinson, S., Bellis, R., Mankin, A., and
               D. Wessels, "DNS Transport over TCP - Implementation
@@ -1666,18 +1666,18 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
    [RFC7828]  Wouters, P., Abley, J., Dickinson, S., and R. Bellis, "The
               edns-tcp-keepalive EDNS0 Option", RFC 7828,
-              DOI 10.17487/RFC7828, April 2016, <https://www.rfc-
-              editor.org/info/rfc7828>.
+              DOI 10.17487/RFC7828, April 2016,
+              <https://www.rfc-editor.org/info/rfc7828>.
 
    [RFC7830]  Mayrhofer, A., "The EDNS(0) Padding Option", RFC 7830,
-              DOI 10.17487/RFC7830, May 2016, <https://www.rfc-
-              editor.org/info/rfc7830>.
+              DOI 10.17487/RFC7830, May 2016,
+              <https://www.rfc-editor.org/info/rfc7830>.
 
 
 
 
 
-Bellis, et al.            Expires May 14, 2018                 [Page 30]
+Bellis, et al.            Expires May 17, 2018                 [Page 30]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1699,8 +1699,8 @@ Internet-Draft           DNS Stateful Operations           November 2017
               <http://www.stuartcheshire.org/papers/nagledelayedack/>.
 
    [RFC0768]  Postel, J., "User Datagram Protocol", STD 6, RFC 768,
-              DOI 10.17487/RFC0768, August 1980, <https://www.rfc-
-              editor.org/info/rfc768>.
+              DOI 10.17487/RFC0768, August 1980,
+              <https://www.rfc-editor.org/info/rfc768>.
 
    [RFC7858]  Hu, Z., Zhu, L., Heidemann, J., Mankin, A., Wessels, D.,
               and P. Hoffman, "Specification for DNS over Transport
@@ -1733,7 +1733,7 @@ Authors' Addresses
 
 
 
-Bellis, et al.            Expires May 14, 2018                 [Page 31]
+Bellis, et al.            Expires May 17, 2018                 [Page 31]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1789,4 +1789,4 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 14, 2018                 [Page 32]
+Bellis, et al.            Expires May 17, 2018                 [Page 32]
