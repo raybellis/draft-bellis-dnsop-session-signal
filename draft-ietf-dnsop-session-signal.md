@@ -233,10 +233,10 @@ TCP Keepalive option
 {{?RFC7828}}. The simple set of TLVs defined in this document is
 sufficient to greatly enhance connection management for this use case.
 
-Secondly, DNS-SD has evolved into a naturally session based mechanism where, for 
+Secondly, DNS-SD {{?RFC6763}} has evolved into a naturally session based mechanism where, for 
 example, long-lived subscriptions lend themselves to 'push' mechanisms as 
 opposed to polling. Long-lived stateful connections and server initiated 
-messages align with this use case as described in {{?I-D.ietf-dnssd-push}}.
+messages align with this use case {{?I-D.ietf-dnssd-push}}.
 
 A general use case is that DNS traffic is often bursty but session establishment 
 can be expensive. One challenge with long-lived connections is to maintain 
@@ -301,9 +301,10 @@ known in advance by other means that the client supports DSO)
 either end may unilaterally send DSO messages at any time,
 and therefore either client or server may be the initiator of a message.
 
-From this point on it is considered that a "DSO session" is in
-progress. Clients and servers should behave as described in this specification
-with regard to inactivity timeouts and connection close, not as prescribed in {{!RFC7766}}.
+From this point on it is considered that a "DSO session" is in progress.
+Clients and servers should behave as described in this specification with
+regard to inactivity timeouts and connection close, not as prescribed in
+the previous specification for DNS over TCP {{!RFC7766}}.
 
 ### Middle-box Considerations
 
@@ -371,8 +372,7 @@ connection.
 For the purposes here, a MESSAGE ID is in use in this DSO session if the
 initiator has used it in a request for which it has not yet received a
 response, or if the client has used it to setup state that it has not yet ready
-to delete. For example, state could be a subscription as defined in 
-{{?I-D.ietf-dnssd-push}}.
+to delete. For example, state could be a subscription {{?I-D.ietf-dnssd-push}}.
 
 In a response the MESSAGE ID field MUST contain a copy of the value of the
 MESSAGE ID field in the request being responded to.
@@ -821,18 +821,20 @@ of 0 essentially provides for 4 octets of padding (the minimum amount).
        /                                                               /
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
-As in {{!RFC7830}} the PADDING octets SHOULD be set to 0x00.  Other values MAY be used,
+As specified for the EDNS(0) Padding Option {{!RFC7830}}
+the PADDING octets SHOULD be set to 0x00.  Other values MAY be used,
 for example, in cases where there is a concern that the padded
 message could be subject to compression before encryption.
 PADDING octets of any value MUST be accepted in the messages received.
    
-The Encryption Padding TLV may be included in either a DSO
-request, response, or both. As in {{!RFC7830}} if a request is received with a Encryption
-Padding TLV, then the response MUST also include an Encryption Padding TLV.
+The Encryption Padding TLV may be included in either a DSO request, response, or both.
+As specified for the EDNS(0) Padding Option {{!RFC7830}}
+if a request is received with a Encryption Padding TLV,
+then the response MUST also include an Encryption Padding TLV.
 
 The length of padding is intentionally not specified in this document and
 is a function of current best practices with respect to the type and length
-of data in the preceding TLVs. See {{?I-D.ietf-dprive-padding-policy}}
+of data in the preceding TLVs {{?I-D.ietf-dprive-padding-policy}}.
 
 # DSO Session Lifecycle and Timers {#lifecycle}
 
@@ -1173,15 +1175,17 @@ after it resumes service.
 
 # Connection Sharing {#sharing}
 
-As in {{!RFC7766}}, to mitigate the risk of unintentional server overload, DNS clients
+As previously specified for DNS over TCP {{!RFC7766}},
+to mitigate the risk of unintentional server overload, DNS clients
 MUST take care to minimize the number of concurrent TCP connections
 made to any individual server.  It is RECOMMENDED that for any given
 client/server interaction there SHOULD be no more than one connection
 for regular queries, one for zone transfers, and one for each
 protocol that is being used on top of TCP (for example, if the
-resolver was using TLS).  However, it is noted that certain primary/
-secondary configurations with many busy zones might need to use more
-than one TCP connection for zone transfers for operational reasons
+resolver was using TLS).
+However, it is noted that certain primary/secondary configurations
+with many busy zones might need to use more than one TCP
+connection for zone transfers for operational reasons
 (for example, to support concurrent transfers of multiple zones).
 
 A single server may support multiple services, including DNS Updates 
