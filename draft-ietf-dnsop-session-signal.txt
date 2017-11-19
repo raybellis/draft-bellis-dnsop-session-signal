@@ -789,20 +789,24 @@ Internet-Draft           DNS Stateful Operations           November 2017
    more than just keepalive traffic.  This is why merely sending a
    Keepalive Operation TLV does not reset the inactivity timer.
 
-   When sent by a client, the Keepalive Operation TLV resets a DSO
-   session's keepalive timer, and at the same time requests what the
-   Session Timeout values should be from this point forward in the DSO
-   session.
-
-   An acknowledgement is always required for a Keepalive Operation TLV
-   and the TLV Acknowledgement bit MUST be set in the request when
-   originated by either the client or the server.
+   When sent by a client, the Keepalive Operation TLV MUST have the
+   Acknowledgement bit set.  It resets a DSO session's keepalive timer,
+   and at the same time requests what the Session Timeout values should
+   be from this point forward in the DSO session.  If a server receives
+   a Keepalive Operation TLV without the Acknowledgement bit set then
+   this is a fatal error and the server MUST immediately terminate the
+   connection with a TCP RST (or equivalent for other protocols).
 
    Once a DSO session is in progress (see Section 4) the Keepalive TLV
-   also MAY be initiated by a server.  When sent by a server, it resets
-   a DSO session's keepalive timer, and unilaterally informs the client
-   of the new Session Timeout values to use from this point forward in
-   this DSO session.
+   also MAY be initiated by a server.  When sent by a server, the
+   Keepalive Operation TLV MUST NOT have the Acknowledgement bit set.
+   It resets a DSO session's keepalive timer, and unilaterally informs
+   the client of the new Session Timeout values to use from this point
+   forward in this DSO session.  No client response to this unilateral
+   declaration is required.  If a client receives a Keepalive Operation
+   TLV with the Acknowledgement bit set then this is a fatal error and
+   the client MUST immediately terminate the connection with a TCP RST
+   (or equivalent for other protocols).
 
    It is not required that the Keepalive TLV be used in every DSO
    session.  While many DNS Stateful operations will be used in
@@ -831,10 +835,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
       interval the server will forcibly terminate the connection with a
       TCP RST (or equivalent for other protocols).
 
-   KEEPALIVE INTERVAL:  the keepalive interval for the current DSO
-      session, specified as a 32-bit word in network (big endian) order
-      in units of milliseconds.  This is the interval at which a client
-
 
 
 Bellis, et al.            Expires May 23, 2018                 [Page 15]
@@ -842,6 +842,9 @@ Bellis, et al.            Expires May 23, 2018                 [Page 15]
 Internet-Draft           DNS Stateful Operations           November 2017
 
 
+   KEEPALIVE INTERVAL:  the keepalive interval for the current DSO
+      session, specified as a 32-bit word in network (big endian) order
+      in units of milliseconds.  This is the interval at which a client
       MUST generate keepalive traffic to maintain connection state.  If
       the client does not generate the necessary keepalive traffic, then
       after twice this interval the server will forcibly terminate the
@@ -857,11 +860,8 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
    In a server-initiated DSO Keepalive message, the Session Timeouts
    unilaterally inform the client of the new values from this point
-   forward in this DSO session.  The client MUST generate a response to
-   the server-initiated DSO Keepalive message.  The MESSAGE ID in the
-   response message MUST match the ID from the server-initiated DSO
-   Keepalive message, and the response message MUST NOT contain any
-   Operation TLV.
+   forward in this DSO session.  The client MUST NOT generate a response
+   to the server-initiated DSO Keepalive message.
 
    When a client is sending its second and subsequent Keepalive DSO
    requests to the server, the client SHOULD continue to request its
