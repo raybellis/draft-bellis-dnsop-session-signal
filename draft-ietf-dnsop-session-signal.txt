@@ -7,13 +7,13 @@ Internet-Draft                                                       ISC
 Updates: RFC 7766, RFC 1035 (if                              S. Cheshire
          approved)                                            Apple Inc.
 Intended status: Standards Track                            J. Dickinson
-Expires: May 24, 2018                                       S. Dickinson
+Expires: May 23, 2018                                       S. Dickinson
                                                                  Sinodun
                                                                A. Mankin
                                                               Salesforce
                                                              T. Pusateri
                                                             Unaffiliated
-                                                       November 20, 2017
+                                                       November 19, 2017
 
 
                         DNS Stateful Operations
@@ -44,7 +44,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on May 24, 2018.
+   This Internet-Draft will expire on May 23, 2018.
 
 
 
@@ -53,7 +53,7 @@ Status of This Memo
 
 
 
-Bellis, et al.            Expires May 24, 2018                  [Page 1]
+Bellis, et al.            Expires May 23, 2018                  [Page 1]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -102,14 +102,14 @@ Table of Contents
        8.4.2.  Values for the Inactivity Timeout . . . . . . . . . .  22
      8.5.  The Keepalive Interval  . . . . . . . . . . . . . . . . .  23
        8.5.1.  Keepalive Interval Expiry . . . . . . . . . . . . . .  23
-       8.5.2.  Values for the Keepalive Interval . . . . . . . . . .  23
+       8.5.2.  Values for the Keepalive Interval . . . . . . . . . .  24
      8.6.  Server-Initiated Termination on Error . . . . . . . . . .  25
      8.7.  Client Behaviour in Receiving an Error  . . . . . . . . .  25
      8.8.  Server-Initiated Termination on Overload  . . . . . . . .  25
 
 
 
-Bellis, et al.            Expires May 24, 2018                  [Page 2]
+Bellis, et al.            Expires May 23, 2018                  [Page 2]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -165,7 +165,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 24, 2018                  [Page 3]
+Bellis, et al.            Expires May 23, 2018                  [Page 3]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -221,7 +221,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 24, 2018                  [Page 4]
+Bellis, et al.            Expires May 23, 2018                  [Page 4]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -277,7 +277,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 24, 2018                  [Page 5]
+Bellis, et al.            Expires May 23, 2018                  [Page 5]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -333,7 +333,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 24, 2018                  [Page 6]
+Bellis, et al.            Expires May 23, 2018                  [Page 6]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -389,7 +389,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 24, 2018                  [Page 7]
+Bellis, et al.            Expires May 23, 2018                  [Page 7]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -445,7 +445,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 24, 2018                  [Page 8]
+Bellis, et al.            Expires May 23, 2018                  [Page 8]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -501,7 +501,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 24, 2018                  [Page 9]
+Bellis, et al.            Expires May 23, 2018                  [Page 9]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -557,7 +557,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 24, 2018                 [Page 10]
+Bellis, et al.            Expires May 23, 2018                 [Page 10]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -613,7 +613,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 24, 2018                 [Page 11]
+Bellis, et al.            Expires May 23, 2018                 [Page 11]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -669,7 +669,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 24, 2018                 [Page 12]
+Bellis, et al.            Expires May 23, 2018                 [Page 12]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -725,7 +725,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 24, 2018                 [Page 13]
+Bellis, et al.            Expires May 23, 2018                 [Page 13]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -781,7 +781,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 24, 2018                 [Page 14]
+Bellis, et al.            Expires May 23, 2018                 [Page 14]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -837,7 +837,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 24, 2018                 [Page 15]
+Bellis, et al.            Expires May 23, 2018                 [Page 15]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -893,7 +893,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 24, 2018                 [Page 16]
+Bellis, et al.            Expires May 23, 2018                 [Page 16]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -949,7 +949,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 24, 2018                 [Page 17]
+Bellis, et al.            Expires May 23, 2018                 [Page 17]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1005,7 +1005,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 24, 2018                 [Page 18]
+Bellis, et al.            Expires May 23, 2018                 [Page 18]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1061,7 +1061,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 24, 2018                 [Page 19]
+Bellis, et al.            Expires May 23, 2018                 [Page 19]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1117,7 +1117,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 24, 2018                 [Page 20]
+Bellis, et al.            Expires May 23, 2018                 [Page 20]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1173,7 +1173,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 24, 2018                 [Page 21]
+Bellis, et al.            Expires May 23, 2018                 [Page 21]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1229,7 +1229,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 24, 2018                 [Page 22]
+Bellis, et al.            Expires May 23, 2018                 [Page 22]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1248,6 +1248,15 @@ Internet-Draft           DNS Stateful Operations           November 2017
    ten seconds this is an error and the client MUST immediately
    terminate the connection with a TCP RST (or equivalent for other
    protocols).
+
+   This does not mean that a client is forced to keep an idle connection
+   open for ten seconds if it doesn't need that -- a client is free to
+   close an idle connection whenever it chooses -- it means that servers
+   cannot _require_ a client to close an idle connection in under ten
+   seconds.
+
+   [Do we really want this restriction?  How soon does the client
+   reconnect after tearing down the connection? -SC]
 
 8.5.  The Keepalive Interval
 
@@ -1273,6 +1282,14 @@ Internet-Draft           DNS Stateful Operations           November 2017
    traffic from that client.  If, at any time during the life of the DSO
    session, twice the keepalive interval value (i.e., 30 seconds by
    default) elapses without any DNS messages being sent or received on a
+
+
+
+Bellis, et al.            Expires May 23, 2018                 [Page 23]
+
+Internet-Draft           DNS Stateful Operations           November 2017
+
+
    DSO session, the server SHOULD consider the client delinquent, and
    forcibly abort the connection with a TCP RST (or equivalent for other
    protocols).
@@ -1282,14 +1299,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
    For the keepalive interval value, lower values result in higher
    volume keepalive traffic.  Higher values of the keepalive interval
    reduce traffic and CPU load, but have minimal effect on the memory
-
-
-
-Bellis, et al.            Expires May 24, 2018                 [Page 23]
-
-Internet-Draft           DNS Stateful Operations           November 2017
-
-
    burden at the server, because clients keep a DSO session open for the
    same length of time (determined by the inactivity timeout) regardless
    of the level of keepalive traffic required.
@@ -1329,6 +1338,14 @@ Internet-Draft           DNS Stateful Operations           November 2017
    messages, long enough to cause the server to overzealously abort the
    connection.
 
+
+
+
+Bellis, et al.            Expires May 23, 2018                 [Page 24]
+
+Internet-Draft           DNS Stateful Operations           November 2017
+
+
    Because of this concern, the server MUST NOT send a Keepalive message
    (either a response to a client-initiated request, or a server-
    initiated message) with an keepalive interval value less than ten
@@ -1336,15 +1353,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
    keepalive interval value less than ten seconds this is an error and
    the client MUST immediately terminate the connection with a TCP RST
    (or equivalent for other protocols).
-
-
-
-
-
-Bellis, et al.            Expires May 24, 2018                 [Page 24]
-
-Internet-Draft           DNS Stateful Operations           November 2017
-
 
 8.6.  Server-Initiated Termination on Error
 
@@ -1386,6 +1394,14 @@ Internet-Draft           DNS Stateful Operations           November 2017
    extraordinary error conditions.  Closing the DSO session is the
    client's responsibility, to be done at the client's discretion, when
    it so chooses.  A server only closes a DSO session under exceptional
+
+
+
+Bellis, et al.            Expires May 23, 2018                 [Page 25]
+
+Internet-Draft           DNS Stateful Operations           November 2017
+
+
    circumstances, such as when the server application software or
    underlying operating system is restarting, the server application
    terminated unexpectedly (perhaps due to a bug that makes it crash),
@@ -1394,13 +1410,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
    reason for the DSO session being closed, and allow the client five
    seconds to receive it before the server resorts to forcibly aborting
    the connection.
-
-
-
-Bellis, et al.            Expires May 24, 2018                 [Page 25]
-
-Internet-Draft           DNS Stateful Operations           November 2017
-
 
 8.9.  Retry Delay Operation TLV
 
@@ -1441,6 +1450,14 @@ Internet-Draft           DNS Stateful Operations           November 2017
    Retry Delay request message has been sent.  The server MUST silently
    ignore such incoming requests, and MUST NOT generate any response
    messages for them.  When the Retry Delay request message from the
+
+
+
+Bellis, et al.            Expires May 23, 2018                 [Page 26]
+
+Internet-Draft           DNS Stateful Operations           November 2017
+
+
    server arrives at the client, the client will determine that any DNS
    requests it previously sent on this DSO session, that have not yet
    received a response, now will certainly not be receiving any
@@ -1450,14 +1467,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
    In the case where some, but not all, of the existing operations on a
    DSO session have become invalid (perhaps because the server has been
    reconfigured and is no longer authoritative for some of the names),
-
-
-
-Bellis, et al.            Expires May 24, 2018                 [Page 26]
-
-Internet-Draft           DNS Stateful Operations           November 2017
-
-
    but the server is terminating all DSO sessions en masse with a
    REFUSED (5) RCODE, the RECONNECT DELAY MAY be zero, indicating that
    the clients SHOULD immediately attempt to re-establish operations.
@@ -1497,6 +1506,14 @@ Internet-Draft           DNS Stateful Operations           November 2017
    individual server.  It is RECOMMENDED that for any given client/
    server interaction there SHOULD be no more than one connection for
    regular queries, one for zone transfers, and one for each protocol
+
+
+
+Bellis, et al.            Expires May 23, 2018                 [Page 27]
+
+Internet-Draft           DNS Stateful Operations           November 2017
+
+
    that is being used on top of TCP (for example, if the resolver was
    using TLS).  However, it is noted that certain primary/secondary
    configurations with many busy zones might need to use more than one
@@ -1506,14 +1523,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
    A single server may support multiple services, including DNS Updates
    [RFC2136], DNS Push Notifications [I-D.ietf-dnssd-push], and other
    services, for one or more DNS zones.  When a client discovers that
-
-
-
-Bellis, et al.            Expires May 24, 2018                 [Page 27]
-
-Internet-Draft           DNS Stateful Operations           November 2017
-
-
    the target server for several different operations is the same target
    hostname and port, the client SHOULD use a single shared DSO session
    for all those operations.  A client SHOULD NOT open multiple
@@ -1556,16 +1565,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-
-
-
-
-
-
-
-
-
-Bellis, et al.            Expires May 24, 2018                 [Page 28]
+Bellis, et al.            Expires May 23, 2018                 [Page 28]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1621,7 +1621,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 24, 2018                 [Page 29]
+Bellis, et al.            Expires May 23, 2018                 [Page 29]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1677,7 +1677,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 24, 2018                 [Page 30]
+Bellis, et al.            Expires May 23, 2018                 [Page 30]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1733,7 +1733,7 @@ Authors' Addresses
 
 
 
-Bellis, et al.            Expires May 24, 2018                 [Page 31]
+Bellis, et al.            Expires May 23, 2018                 [Page 31]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1789,4 +1789,4 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 24, 2018                 [Page 32]
+Bellis, et al.            Expires May 23, 2018                 [Page 32]

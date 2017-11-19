@@ -987,6 +987,12 @@ If a client receives a Keepalive message specifying an inactivity timeout value
 less than ten seconds this is an error and the client MUST immediately
 terminate the connection with a TCP RST (or equivalent for other protocols).
 
+This does not mean that a client is forced to keep an idle connection open for
+ten seconds if it doesn't need that --- a client is free to close an idle connection whenever it chooses ---
+it means that servers cannot *require* a client to close an idle connection in under ten seconds.
+
+\[Do we really want this restriction? How soon does the client reconnect after tearing down the connection? --SC]
+
 ## The Keepalive Interval {#keepalivetimer}
 
 The purpose of the keepalive interval is to manage the generation of
