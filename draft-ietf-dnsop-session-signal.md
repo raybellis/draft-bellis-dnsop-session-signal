@@ -280,35 +280,60 @@ in-order message delivery, and, in the presence of NAT gateways and firewalls
 with short UDP timeouts, it fails to provide a persistent bi-directional
 communication channel unless an excessive amount of keepalive traffic is used.
 
-DSO messages relate only to the specific "DSO session" in which
-they are being carried. A "DSO session" is established over a connection when
-either side of the connection sends the first DSO
-TLV and it is acknowledged by the other side. The DSO message format {{dsodata}} 
-includes an option to specify that a DSO request does not require a 
-response acknowledgement. Session establishment can only be performed using a 
-DSO message that requires a response acknowledgement. 
+In some environments it may be known in advance by external means
+that both client and server support DSO, and in these cases either
+client or server may initiate DSO messages at any time.
+
+However, in the typical case a server will not know in advance whether a
+client supports DSO, so in general, unless it is known in advance by other means
+that a client does support DSO, a server MUST NOT initiate DSO messages until
+a DSO session has been mutually established, as described below.
 
 A client MAY attempt to initiate DSO messages at any time
 on a connection; receiving a NOTIMP response in reply indicates that the
 server does not implement DSO, and the client SHOULD NOT
 issue further DSO messages on that connection.
 
-A server SHOULD NOT initiate DSO messages until a
-client-initiated DSO message is received first,
-unless in an environment where it is known in advance by other
-means that the client supports DSO.
-This requirement is to ensure that the clients that do not support
-DSO do not receive unsolicited inbound DSO
-messages that they would not know how to handle.
+The DSO message format (see {{tlvformat}}) includes a bit in the TLV structure
+that indicates whether or not a particular DSO request message from the
+initiator requires a corresponding DSO response message from the responder.
+A "DSO session" is established over a connection by the client
+sending a DSO request message of a kind that has the acknowledgement bit set,
+indicating that it is a request message of a kind that requires a response.
 
-On a session between a client and server that support DSO,
-once the client has sent at least one DSO message (or it is
-known in advance by other means that the client supports DSO)
+When the server receives a response-requiring DSO request message
+from a client, and transmits its response, the server considers
+the DSO session established.
+
+When the client receives the server's DSO response,
+the client considers the DSO session established.
+
+Apart from cases where it is known in advance by external means
+that both client and server support DSO,
+session establishment can only be performed by the client sending
+a DSO request message of a kind that requires a response.
+
+Currently the only suitable such messages are the 
+DSO Keepalive Operation TLV (see {{keepalive}}) and the
+DSO Encryption Padding TLV (see {{padding}}).
+
+If future documents define other client-initiated
+response-requiring DSO request messages, then one of these
+messages may also be used to establish a DSO session.
+
+Clients MAY send non-response-requiring DSO request messages at any time
+on a connection, but a "DSO session" is only considered established after:
+
+* the client has sents its first response-requiring DSO request message, and
+* (at the server) the server has received this request and transmited its response
+* (at the client) the client has received the server's response
+
+Once a "DSO session" has been established,
 either end may unilaterally send DSO messages at any time,
 and therefore either client or server may be the initiator of a message.
 
-From this point on it is considered that a "DSO session" is in progress.
-Clients and servers should behave as described in this specification with
+Once a "DSO session" has been established,
+clients and servers should behave as described in this specification with
 regard to inactivity timeouts and connection close, not as prescribed in
 the previous specification for DNS over TCP {{!RFC7766}}.
 
@@ -436,7 +461,7 @@ Depending on the operation a DSO response can contain:
 * An Operation TLV followed by one or more Modifier TLVs
 * Only Modifier TLVs
 
-#### TLV Format
+#### TLV Format {#tlvformat}
 
 Operation and modifier TLVs both use the same encoding format.
 
@@ -782,7 +807,7 @@ to request that a client close the DSO session and underlying connection, and
 not to reconnect for the indicated time interval.
 
 In this case it applies to the DSO session as a whole, and the client MUST close the 
-DSO session, as described in section {{retry}}. The RCODE in the message header 
+DSO session, as described in {{retry}}. The RCODE in the message header 
 MUST indicate the reason for the termination:
 
 *  NOERROR indicates a routine shutdown. 

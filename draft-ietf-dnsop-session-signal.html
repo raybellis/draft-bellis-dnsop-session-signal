@@ -661,11 +661,25 @@
 </h1>
 <p id="rfc.section.4.1.p.1">DSO messages MUST only be carried in protocols and in environments where a session may be established according to the definition above.  Standard DNS over TCP <a href="#RFC1035" class="xref">[RFC1035]</a><a href="#RFC7766" class="xref">[RFC7766]</a>, and DNS over TLS <a href="#RFC7858" class="xref">[RFC7858]</a> are suitable protocols.</p>
 <p id="rfc.section.4.1.p.2">DNS over plain UDP <a href="#RFC0768" class="xref">[RFC0768]</a> is not appropriate since it fails on the requirement for in-order message delivery, and, in the presence of NAT gateways and firewalls with short UDP timeouts, it fails to provide a persistent bi-directional communication channel unless an excessive amount of keepalive traffic is used.</p>
-<p id="rfc.section.4.1.p.3">DSO messages relate only to the specific &#8220;DSO session&#8221; in which they are being carried. A &#8220;DSO session&#8221; is established over a connection when either side of the connection sends the first DSO TLV and it is acknowledged by the other side. The DSO message format <a href="#dsodata" class="xref">Section 4.2.2</a> includes an option to specify that a DSO request does not require a response acknowledgement. Session establishment can only be performed using a DSO message that requires a response acknowledgement.</p>
-<p id="rfc.section.4.1.p.4">A client MAY attempt to initiate DSO messages at any time on a connection; receiving a NOTIMP response in reply indicates that the server does not implement DSO, and the client SHOULD NOT issue further DSO messages on that connection.</p>
-<p id="rfc.section.4.1.p.5">A server SHOULD NOT initiate DSO messages until a client-initiated DSO message is received first, unless in an environment where it is known in advance by other means that the client supports DSO.  This requirement is to ensure that the clients that do not support DSO do not receive unsolicited inbound DSO messages that they would not know how to handle.</p>
-<p id="rfc.section.4.1.p.6">On a session between a client and server that support DSO, once the client has sent at least one DSO message (or it is known in advance by other means that the client supports DSO) either end may unilaterally send DSO messages at any time, and therefore either client or server may be the initiator of a message.</p>
-<p id="rfc.section.4.1.p.7">From this point on it is considered that a &#8220;DSO session&#8221; is in progress.  Clients and servers should behave as described in this specification with regard to inactivity timeouts and connection close, not as prescribed in the previous specification for DNS over TCP <a href="#RFC7766" class="xref">[RFC7766]</a>.</p>
+<p id="rfc.section.4.1.p.3">In some environments it may be known in advance by external means that both client and server support DSO, and in these cases either client or server may initiate DSO messages at any time.</p>
+<p id="rfc.section.4.1.p.4">However, in the typical case a server will not know in advance whether a client supports DSO, so in general, unless it is known in advance by other means that a client does support DSO, a server MUST NOT initiate DSO messages until a DSO session has been mutually established, as described below.</p>
+<p id="rfc.section.4.1.p.5">A client MAY attempt to initiate DSO messages at any time on a connection; receiving a NOTIMP response in reply indicates that the server does not implement DSO, and the client SHOULD NOT issue further DSO messages on that connection.</p>
+<p id="rfc.section.4.1.p.6">The DSO message format (see <a href="#tlvformat" class="xref">Section 4.2.2.1</a>) includes a bit in the TLV structure that indicates whether or not a particular DSO request message from the initiator requires a corresponding DSO response message from the responder.  A &#8220;DSO session&#8221; is established over a connection by the client sending a DSO request message of a kind that has the acknowledgement bit set, indicating that it is a request message of a kind that requires a response.</p>
+<p id="rfc.section.4.1.p.7">When the server receives a response-requiring DSO request message from a client, and transmits its response, the server considers the DSO session established.</p>
+<p id="rfc.section.4.1.p.8">When the client receives the server&#8217;s DSO response, the client considers the DSO session established.</p>
+<p id="rfc.section.4.1.p.9">Apart from cases where it is known in advance by external means that both client and server support DSO, session establishment can only be performed by the client sending a DSO request message of a kind that requires a response.</p>
+<p id="rfc.section.4.1.p.10">Currently the only suitable such messages are the DSO Keepalive Operation TLV (see <a href="#keepalive" class="xref">Section 5</a>) and the DSO Encryption Padding TLV (see <a href="#padding" class="xref">Section 7</a>).</p>
+<p id="rfc.section.4.1.p.11">If future documents define other client-initiated response-requiring DSO request messages, then one of these messages may also be used to establish a DSO session.</p>
+<p id="rfc.section.4.1.p.12">Clients MAY send non-response-requiring DSO request messages at any time on a connection, but a &#8220;DSO session&#8221; is only considered established after:</p>
+<p></p>
+
+<ul>
+<li>the client has sents its first response-requiring DSO request message, and</li>
+<li>(at the server) the server has received this request and transmited its response</li>
+<li>(at the client) the client has received the server&#8217;s response</li>
+</ul>
+<p id="rfc.section.4.1.p.14">Once a &#8220;DSO session&#8221; has been established, either end may unilaterally send DSO messages at any time, and therefore either client or server may be the initiator of a message.</p>
+<p id="rfc.section.4.1.p.15">Once a &#8220;DSO session&#8221; has been established, clients and servers should behave as described in this specification with regard to inactivity timeouts and connection close, not as prescribed in the previous specification for DNS over TCP <a href="#RFC7766" class="xref">[RFC7766]</a>.</p>
 <h1 id="rfc.section.4.1.1">
 <a href="#rfc.section.4.1.1">4.1.1.</a> <a href="#middle-box-considerations" id="middle-box-considerations">Middle-box Considerations</a>
 </h1>
@@ -774,7 +788,7 @@
 <li>Only Modifier TLVs</li>
 </ul>
 <h1 id="rfc.section.4.2.2.1">
-<a href="#rfc.section.4.2.2.1">4.2.2.1.</a> <a href="#tlv-format" id="tlv-format">TLV Format</a>
+<a href="#rfc.section.4.2.2.1">4.2.2.1.</a> <a href="#tlvformat" id="tlvformat">TLV Format</a>
 </h1>
 <p id="rfc.section.4.2.2.1.p.1">Operation and modifier TLVs both use the same encoding format.</p>
 <p id="rfc.section.4.2.2.1.p.2">Operation TLVs SHOULD normally require a response and, therefore, set the TLV Acknowledgement bit in a request. However, for some Operation TLVs, this may be undesirable and the TLV Acknowledgement bit MAY be cleared in the request. Each Operation TLV definition should stipulate whether an acknowledgement is REQUIRED. If the TLV Acknowledgement bit is cleared in a request, a response MUST NOT be sent. Modifier TLVs MUST NEVER set the Acknowledgement bit. The Acknowledgement bit is NEVER set in the response to an Operation TLV.</p>
@@ -907,7 +921,7 @@
 <a href="#rfc.section.6.1">6.1.</a> <a href="#use-as-an-operation-tlv" id="use-as-an-operation-tlv">Use as an Operation TLV</a>
 </h1>
 <p id="rfc.section.6.1.p.1">When sent in a DSO request message, from server to client, the Retry Delay TLV (0) is considered an Operation TLV. It is used by a server to request that a client close the DSO session and underlying connection, and not to reconnect for the indicated time interval.</p>
-<p id="rfc.section.6.1.p.2">In this case it applies to the DSO session as a whole, and the client MUST close the DSO session, as described in section <a href="#retry" class="xref">Section 8.9</a>. The RCODE in the message header MUST indicate the reason for the termination:</p>
+<p id="rfc.section.6.1.p.2">In this case it applies to the DSO session as a whole, and the client MUST close the DSO session, as described in <a href="#retry" class="xref">Section 8.9</a>. The RCODE in the message header MUST indicate the reason for the termination:</p>
 <p></p>
 
 <ul>
