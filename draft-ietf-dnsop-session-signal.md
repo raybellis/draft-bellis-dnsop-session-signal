@@ -446,7 +446,6 @@ make use of DSO.
 If a document describing a DSO makes use of either NXDOMAIN (Name Error)
 or NOTAUTH then that document MUST explain the meaning.
 
-
 ### DSO Data {#dsodata}
 
 The standard twelve-octet DNS message header is followed by the DSO Data.
@@ -628,251 +627,6 @@ match any of its outstanding operations, this is a fatal error and it MUST
 immediately terminate the connection with a TCP RST (or equivalent for other 
 protocols).
 
-# Keepalive Operation TLV {#keepalive}
-
-The Keepalive Operation TLV (DSO-TYPE=1) performs two functions: to reset the
-keepalive timer for the DSO session and to establish the values for the Session Timeouts. 
-
-The Keepalive Operation TLV resets only the keepalive timer, not the inactivity timer.
-The reason for this is that periodic Keepalive Operation TLVs are sent for the
-sole purpose of keeping a DSO session alive, because that DSO session has current
-or recent non-maintenance activity that warrants keeping the DSO session alive.
-If sending keepalive traffic itself were to reset the inactivity timer, then 
-that would create a circular livelock where keepalive traffic would be sent 
-indefinitely to keep a DSO session alive, where the only activity on that DSO 
-session would be the keepalive traffic keeping the DSO session alive so that further 
-keepalive traffic can be sent.
-
-Sending keepalive traffic is considered a maintenance activity
-that is performed in service of other client activities.
-Sending keepalive traffic itself is not considered a client activity.
-For a DSO session to be considered active, it must be carrying something more than just keepalive traffic.
-This is why merely sending a Keepalive Operation TLV does not reset the inactivity timer.
-
-When sent by a client, the Keepalive Operation TLV MUST have the Acknowledgement bit set.
-It resets a DSO session's keepalive timer, and at the same time requests what the
-Session Timeout values should be from this point forward in the DSO session.
-If a server receives a Keepalive Operation TLV without the Acknowledgement bit set
-then this is a fatal error and the server MUST immediately terminate
-the connection with a TCP RST (or equivalent for other protocols).
-
-Once a DSO session is in progress (see {{details}}) the Keepalive TLV also MAY be initiated by a server.
-When sent by a server, the Keepalive Operation TLV MUST NOT have the Acknowledgement bit set.
-It resets a DSO session's keepalive timer, and unilaterally informs the client of
-the new Session Timeout values to use from this point forward in this DSO session.
-No client response to this unilateral declaration is required.
-If a client receives a Keepalive Operation TLV with the Acknowledgement bit set
-then this is a fatal error and the client MUST immediately terminate
-the connection with a TCP RST (or equivalent for other protocols).
-
-It is not required that the Keepalive TLV be used in every DSO session.
-While many DNS Stateful operations
-will be used in conjunction with a long-lived session state,
-not all DNS Stateful operations require long-lived session state,
-and in some cases the default 15-second value for both the inactivity timeout
-and keepalive interval may be perfectly appropriate. However, it can be noted 
-that for clients that implement only the TLVs defined in this document it is
-the only way for a client to initiate a DSO session.
-
-The TYPE-DEPENDENT DATA for the the Keepalive TLV is as follows:
-
-                            1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
-        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-       |                 INACTIVITY TIMEOUT (32 bits)                  |
-       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-       |                 KEEPALIVE INTERVAL (32 bits)                  |
-       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-
-INACTIVITY TIMEOUT:
-: the inactivity timeout for the current DSO session, specified as a
-32-bit word in network (big endian) order in units of milliseconds.
-This is the timeout at which the client MUST close an inactive DSO session.
-If the client does not gracefully close an inactive DSO session,
-then after twice this interval the server will forcibly terminate
-the connection with a TCP RST (or equivalent for other protocols).
-
-KEEPALIVE INTERVAL:
-: the keepalive interval for the current DSO session, specified as a
-32-bit word in network (big endian) order in units of milliseconds.
-This is the interval at which a client MUST generate keepalive
-traffic to maintain connection state.
-If the client does not generate the necessary keepalive traffic,
-then after twice this interval the server will forcibly terminate
-the connection with a TCP RST (or equivalent for other protocols).
-
-In a client-initiated DSO Keepalive message,
-the Session Timeouts contain the client's requested values.
-In a server response to a client-initiated message, the Session Timeouts contain 
-the server's chosen values, which the client MUST respect.
-This is modeled after the DHCP protocol, where the client
-requests a certain lease lifetime using DHCP option 51 {{!RFC2132}},
-but the server is the ultimate authority
-for deciding what lease lifetime is actually granted.
-
-In a server-initiated DSO Keepalive message, the Session Timeouts
-unilaterally inform the client of the new values from this point
-forward in this DSO session. The client MUST NOT generate a
-response to the server-initiated DSO Keepalive message.
-
-When a client is sending its second and subsequent Keepalive DSO 
-requests to the server, the client SHOULD continue to request its preferred 
-values each time. This allows flexibility, so that if conditions change during 
-the lifetime of a DSO session, the server can adapt its responses to better fit 
-the client's needs.
-
-## Client handling of received Session Timeout values
-
-When a client receives a response to its client-initiated DSO Keepalive message,
-or receives a server-initiated DSO Keepalive message, the client has then 
-received Session Timeout values dictated by the server. The two timeout values 
-contained in the DSO Keepalive TLV from the server may each be higher, lower, or 
-the same as the respective Session Timeout values the client previously had for 
-this DSO session.
-
-In the case of the keepalive timer, the handling of the received value is 
-straightforward. The act of receiving the message containing the DSO Keepalive 
-TLV itself resets the keepalive timer and updates the keepalive interval for the 
-DSO session. The new keepalive interval indicates the 
-maximum time that may elapse before another message must be sent
-or received on this DSO session, if the DSO session is to remain alive.
-
-In the case of the inactivity timeout, the handling of the received value 
-is a little more subtle, though the meaning of the inactivity 
-timeout is unchanged -- it still indicates the maximum permissible time allowed 
-without activity on a DSO session.
-The act of receiving the message containing the DSO Keepalive TLV does not
-itself reset the inactivity timer. The time elapsed since the last useful
-activity on this DSO session is unaffected by exchange of DSO Keepalive messages.
-The act of receiving the message containing the DSO Keepalive TLV does update 
-the timeout associated with the running inactivity timer; that
-becomes the new maximum permissible time without activity on a DSO session.
-
-* If the current inactivity timer value is not greater than the new inactivity timeout, 
-then the DSO session may remain open for now. When the inactivity timer value 
-exceeds the new inactivity timeout, the client MUST then close the DSO session,
-as described above.
-
-* If the current inactivity timer value is already greater than the new inactivity 
-timeout, then this DSO session has already been inactive
-for longer than the server permits, and the client MUST immediately close this DSO session.
-
-* If the current inactivity timer value is more than twice the new inactivity timeout, 
-then this DSO session is eligible to be
-forcibly terminated by the server and and the client MUST immediately close this 
-DSO session. However if a server abruptly reduces the
-inactivity timeout in this way the server SHOULD give the client a grace period
-of one quarter of the new inactivity timeout, to give the client time to close
-the connection gracefully before the server resorts to terminating it forcibly.
-
-## Relation to EDNS(0) TCP Keepalive Option
-
-The inactivity timeout value in the Keepalive TLV (DSO-TYPE=1) has similar
-intent to the EDNS(0) TCP Keepalive Option {{!RFC7828}}.
-A client/server pair that supports DSO MUST NOT use the
-EDNS(0) TCP KeepAlive option within any message after a DSO 
-session has been established.
-Once a DSO session has been established, if either
-client or server receives a DNS message over the DSO session that contains an
-EDNS(0) TCP Keepalive option, this is an error and the receiver of the
-EDNS(0) TCP Keepalive option MUST immediately
-terminate the connection with a TCP RST (or equivalent for other protocols).
-
-
-# Retry Delay TLV {#delay}
-
-The Retry Delay TLV (DSO-TYPE=0) can be used as an Operation TLV or as
-a Modifier TLV. 
-
-The TYPE-DEPENDENT DATA for the the Retry Delay TLV is as follows:
-
-                            1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
-        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-       |                     RETRY DELAY (32 bits)                     |
-       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-
-RETRY DELAY:
-: a time value, specified as a 32-bit word in network order in units of 
-milliseconds, within which the client MUST NOT retry this operation, or retry 
-connecting to this server.
-
-The RECOMMENDED value is 10 seconds.
-
-## Use as an Operation TLV
-
-When sent in a DSO request message, from server to client, the 
-Retry Delay TLV (0) is considered an Operation TLV. It is used by a server 
-to request that a client close the DSO session and underlying connection, and 
-not to reconnect for the indicated time interval.
-
-In this case it applies to the DSO session as a whole, and the client MUST close the 
-DSO session, as described in {{retry}}. The RCODE in the message header 
-MUST indicate the reason for the termination:
-
-*  NOERROR indicates a routine shutdown. 
-*  SERVFAIL indicates that the server is overloaded due to resource exhaustion. 
-*  REFUSED indicates that the server has been reconfigured and is no longer able 
-to perform one or more of the functions 
-currently being performed on this DSO session (for example, a DNS Push Notification 
-server could be reconfigured such that is is no longer accepting DNS Push 
-Notification requests for one or more of the currently subscribed names).
-
-This document specifies only these three RCODE values for Retry Delay request.
-Servers sending Retry Delay requests SHOULD use one of these three values.
-However, future circumstances may create situations where other RCODE values
-are appropriate in Retry Delay requests, so clients MUST be prepared
-to accept Retry Delay requests with any RCODE value.
-
-An acknowledgement is not desired for a Retry Delay Operation TLV and the TLV
-Acknowledgement bit MUST be cleared in the request.
-
-## Use as a Modifier TLV
-
-When appended to a DSO response message for some client request,
-the Retry Delay TLV (0) is considered a Modifier TLV.
-The indicated time interval during which the client SHOULD NOT retry
-applies only to the failed operation, not to the DSO session as a whole.
-
-In the case of a client request that returns a nonzero RCODE value, the server 
-MAY append a Retry Delay TLV (0) to the response, indicating the time interval
-during which the client SHOULD NOT attempt this operation again.
-
-# Encryption Padding TLV {#padding}
-
-The Encryption Padding TLV (DSO-TYPE=2) can only be used as a Modifier TLV.
-It is only applicable when the DSO Transport layer uses encryption
-such as TLS.
-
-The TYPE-DEPENDENT DATA for the the Padding TLV is optional and is a
-variable length field containing non-specified values. A DATA LENGTH
-of 0 essentially provides for 4 octets of padding (the minimum amount).
-
-                                                 1   1   1   1   1   1
-         0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
-       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-       /                                                               /
-       /                   VARIABLE NUMBER OF OCTETS                   /
-       /                                                               /
-       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-
-As specified for the EDNS(0) Padding Option {{!RFC7830}}
-the PADDING octets SHOULD be set to 0x00.  Other values MAY be used,
-for example, in cases where there is a concern that the padded
-message could be subject to compression before encryption.
-PADDING octets of any value MUST be accepted in the messages received.
-   
-The Encryption Padding TLV may be included in either a DSO request, response, or both.
-As specified for the EDNS(0) Padding Option {{!RFC7830}}
-if a request is received with a Encryption Padding TLV,
-then the response MUST also include an Encryption Padding TLV.
-
-\[Need discussion here of whether the Ack bit is set in requests, responses, or both --SC]
-
-The length of padding is intentionally not specified in this document and
-is a function of current best practices with respect to the type and length
-of data in the preceding TLVs {{?I-D.ietf-dprive-padding-policy}}.
-
 # DSO Session Lifecycle and Timers {#lifecycle}
 
 ## DSO Session Initiation
@@ -944,7 +698,6 @@ session has no traffic for an extended period of time
 does not automatically make that DSO session "inactive",
 if it has an active state that is awaiting events.
 
-
 ## The Inactivity Timeout
 
 The purpose of the inactivity timeout is for the server to balance its trade off 
@@ -955,7 +708,6 @@ the cost of establishing a new DSO session for future communications with that
 server. A server with scarce memory resources can offer a low inactivity timeout,
 to cause clients to promptly close DSO sessions whenever they have no outstanding
 operations with that server, and then create a new DSO session later when needed.
-
 
 ### Closing Inactive DSO Sessions
 
@@ -1099,7 +851,6 @@ with an keepalive interval value less than ten seconds.
 If a client receives an Keepalive message specifying an keepalive interval value
 less than ten seconds this is an error and the client MUST immediately
 terminate the connection with a TCP RST (or equivalent for other protocols).
-
 
 ## Server-Initiated Termination on Error
 
@@ -1269,6 +1020,251 @@ the same client IP address.
 Because of these constraints, a DNS server MUST be prepared to accept
 multiple connections from different source ports on the same client IP address.
 
+# Base TLVs for DNS Stateful Operations
+
+## Retry Delay TLV {#delay}
+
+The Retry Delay TLV (DSO-TYPE=0) can be used as an Operation TLV or as
+a Modifier TLV. 
+
+The TYPE-DEPENDENT DATA for the the Retry Delay TLV is as follows:
+
+                            1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
+        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                     RETRY DELAY (32 bits)                     |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+RETRY DELAY:
+: a time value, specified as a 32-bit word in network order in units of 
+milliseconds, within which the client MUST NOT retry this operation, or retry 
+connecting to this server.
+
+The RECOMMENDED value is 10 seconds.
+
+### Use as an Operation TLV
+
+When sent in a DSO request message, from server to client, the 
+Retry Delay TLV (0) is considered an Operation TLV. It is used by a server 
+to request that a client close the DSO session and underlying connection, and 
+not to reconnect for the indicated time interval.
+
+In this case it applies to the DSO session as a whole, and the client MUST close the 
+DSO session, as described in {{retry}}. The RCODE in the message header 
+MUST indicate the reason for the termination:
+
+*  NOERROR indicates a routine shutdown. 
+*  SERVFAIL indicates that the server is overloaded due to resource exhaustion. 
+*  REFUSED indicates that the server has been reconfigured and is no longer able 
+to perform one or more of the functions 
+currently being performed on this DSO session (for example, a DNS Push Notification 
+server could be reconfigured such that is is no longer accepting DNS Push 
+Notification requests for one or more of the currently subscribed names).
+
+This document specifies only these three RCODE values for Retry Delay request.
+Servers sending Retry Delay requests SHOULD use one of these three values.
+However, future circumstances may create situations where other RCODE values
+are appropriate in Retry Delay requests, so clients MUST be prepared
+to accept Retry Delay requests with any RCODE value.
+
+An acknowledgement is not desired for a Retry Delay Operation TLV and the TLV
+Acknowledgement bit MUST be cleared in the request.
+
+### Use as a Modifier TLV
+
+When appended to a DSO response message for some client request,
+the Retry Delay TLV (0) is considered a Modifier TLV.
+The indicated time interval during which the client SHOULD NOT retry
+applies only to the failed operation, not to the DSO session as a whole.
+
+In the case of a client request that returns a nonzero RCODE value, the server 
+MAY append a Retry Delay TLV (0) to the response, indicating the time interval
+during which the client SHOULD NOT attempt this operation again.
+
+## Keepalive Operation TLV {#keepalive}
+
+The Keepalive Operation TLV (DSO-TYPE=1) performs two functions: to reset the
+keepalive timer for the DSO session and to establish the values for the Session Timeouts. 
+
+The Keepalive Operation TLV resets only the keepalive timer, not the inactivity timer.
+The reason for this is that periodic Keepalive Operation TLVs are sent for the
+sole purpose of keeping a DSO session alive, because that DSO session has current
+or recent non-maintenance activity that warrants keeping the DSO session alive.
+If sending keepalive traffic itself were to reset the inactivity timer, then 
+that would create a circular livelock where keepalive traffic would be sent 
+indefinitely to keep a DSO session alive, where the only activity on that DSO 
+session would be the keepalive traffic keeping the DSO session alive so that further 
+keepalive traffic can be sent.
+
+Sending keepalive traffic is considered a maintenance activity
+that is performed in service of other client activities.
+Sending keepalive traffic itself is not considered a client activity.
+For a DSO session to be considered active, it must be carrying something more than just keepalive traffic.
+This is why merely sending a Keepalive Operation TLV does not reset the inactivity timer.
+
+When sent by a client, the Keepalive Operation TLV MUST have the Acknowledgement bit set.
+It resets a DSO session's keepalive timer, and at the same time requests what the
+Session Timeout values should be from this point forward in the DSO session.
+If a server receives a Keepalive Operation TLV without the Acknowledgement bit set
+then this is a fatal error and the server MUST immediately terminate
+the connection with a TCP RST (or equivalent for other protocols).
+
+Once a DSO session is in progress (see {{details}}) the Keepalive TLV also MAY be initiated by a server.
+When sent by a server, the Keepalive Operation TLV MUST NOT have the Acknowledgement bit set.
+It resets a DSO session's keepalive timer, and unilaterally informs the client of
+the new Session Timeout values to use from this point forward in this DSO session.
+No client response to this unilateral declaration is required.
+If a client receives a Keepalive Operation TLV with the Acknowledgement bit set
+then this is a fatal error and the client MUST immediately terminate
+the connection with a TCP RST (or equivalent for other protocols).
+
+It is not required that the Keepalive TLV be used in every DSO session.
+While many DNS Stateful operations
+will be used in conjunction with a long-lived session state,
+not all DNS Stateful operations require long-lived session state,
+and in some cases the default 15-second value for both the inactivity timeout
+and keepalive interval may be perfectly appropriate. However, it can be noted 
+that for clients that implement only the TLVs defined in this document it is
+the only way for a client to initiate a DSO session.
+
+The TYPE-DEPENDENT DATA for the the Keepalive TLV is as follows:
+
+                            1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
+        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                 INACTIVITY TIMEOUT (32 bits)                  |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       |                 KEEPALIVE INTERVAL (32 bits)                  |
+       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+INACTIVITY TIMEOUT:
+: the inactivity timeout for the current DSO session, specified as a
+32-bit word in network (big endian) order in units of milliseconds.
+This is the timeout at which the client MUST close an inactive DSO session.
+If the client does not gracefully close an inactive DSO session,
+then after twice this interval the server will forcibly terminate
+the connection with a TCP RST (or equivalent for other protocols).
+
+KEEPALIVE INTERVAL:
+: the keepalive interval for the current DSO session, specified as a
+32-bit word in network (big endian) order in units of milliseconds.
+This is the interval at which a client MUST generate keepalive
+traffic to maintain connection state.
+If the client does not generate the necessary keepalive traffic,
+then after twice this interval the server will forcibly terminate
+the connection with a TCP RST (or equivalent for other protocols).
+
+In a client-initiated DSO Keepalive message,
+the Session Timeouts contain the client's requested values.
+In a server response to a client-initiated message, the Session Timeouts contain 
+the server's chosen values, which the client MUST respect.
+This is modeled after the DHCP protocol, where the client
+requests a certain lease lifetime using DHCP option 51 {{!RFC2132}},
+but the server is the ultimate authority
+for deciding what lease lifetime is actually granted.
+
+In a server-initiated DSO Keepalive message, the Session Timeouts
+unilaterally inform the client of the new values from this point
+forward in this DSO session. The client MUST NOT generate a
+response to the server-initiated DSO Keepalive message.
+
+When a client is sending its second and subsequent Keepalive DSO 
+requests to the server, the client SHOULD continue to request its preferred 
+values each time. This allows flexibility, so that if conditions change during 
+the lifetime of a DSO session, the server can adapt its responses to better fit 
+the client's needs.
+
+### Client handling of received Session Timeout values
+
+When a client receives a response to its client-initiated DSO Keepalive message,
+or receives a server-initiated DSO Keepalive message, the client has then 
+received Session Timeout values dictated by the server. The two timeout values 
+contained in the DSO Keepalive TLV from the server may each be higher, lower, or 
+the same as the respective Session Timeout values the client previously had for 
+this DSO session.
+
+In the case of the keepalive timer, the handling of the received value is 
+straightforward. The act of receiving the message containing the DSO Keepalive 
+TLV itself resets the keepalive timer and updates the keepalive interval for the 
+DSO session. The new keepalive interval indicates the 
+maximum time that may elapse before another message must be sent
+or received on this DSO session, if the DSO session is to remain alive.
+
+In the case of the inactivity timeout, the handling of the received value 
+is a little more subtle, though the meaning of the inactivity 
+timeout is unchanged -- it still indicates the maximum permissible time allowed 
+without activity on a DSO session.
+The act of receiving the message containing the DSO Keepalive TLV does not
+itself reset the inactivity timer. The time elapsed since the last useful
+activity on this DSO session is unaffected by exchange of DSO Keepalive messages.
+The act of receiving the message containing the DSO Keepalive TLV does update 
+the timeout associated with the running inactivity timer; that
+becomes the new maximum permissible time without activity on a DSO session.
+
+* If the current inactivity timer value is not greater than the new inactivity timeout, 
+then the DSO session may remain open for now. When the inactivity timer value 
+exceeds the new inactivity timeout, the client MUST then close the DSO session,
+as described above.
+
+* If the current inactivity timer value is already greater than the new inactivity 
+timeout, then this DSO session has already been inactive
+for longer than the server permits, and the client MUST immediately close this DSO session.
+
+* If the current inactivity timer value is more than twice the new inactivity timeout, 
+then this DSO session is eligible to be
+forcibly terminated by the server and and the client MUST immediately close this 
+DSO session. However if a server abruptly reduces the
+inactivity timeout in this way the server SHOULD give the client a grace period
+of one quarter of the new inactivity timeout, to give the client time to close
+the connection gracefully before the server resorts to terminating it forcibly.
+
+### Relation to EDNS(0) TCP Keepalive Option
+
+The inactivity timeout value in the Keepalive TLV (DSO-TYPE=1) has similar
+intent to the EDNS(0) TCP Keepalive Option {{!RFC7828}}.
+A client/server pair that supports DSO MUST NOT use the
+EDNS(0) TCP KeepAlive option within any message after a DSO 
+session has been established.
+Once a DSO session has been established, if either
+client or server receives a DNS message over the DSO session that contains an
+EDNS(0) TCP Keepalive option, this is an error and the receiver of the
+EDNS(0) TCP Keepalive option MUST immediately
+terminate the connection with a TCP RST (or equivalent for other protocols).
+
+## Encryption Padding TLV {#padding}
+
+The Encryption Padding TLV (DSO-TYPE=2) can only be used as a Modifier TLV.
+It is only applicable when the DSO Transport layer uses encryption
+such as TLS.
+
+The TYPE-DEPENDENT DATA for the the Padding TLV is optional and is a
+variable length field containing non-specified values. A DATA LENGTH
+of 0 essentially provides for 4 octets of padding (the minimum amount).
+
+                                                 1   1   1   1   1   1
+         0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+       /                                                               /
+       /                   VARIABLE NUMBER OF OCTETS                   /
+       /                                                               /
+       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+
+As specified for the EDNS(0) Padding Option {{!RFC7830}}
+the PADDING octets SHOULD be set to 0x00.  Other values MAY be used,
+for example, in cases where there is a concern that the padded
+message could be subject to compression before encryption.
+PADDING octets of any value MUST be accepted in the messages received.
+   
+The Encryption Padding TLV may be included in either a DSO request, response, or both.
+As specified for the EDNS(0) Padding Option {{!RFC7830}}
+if a request is received with a Encryption Padding TLV,
+then the response MUST also include an Encryption Padding TLV.
+
+\[Need discussion here of whether the Ack bit is set in requests, responses, or both --SC]
+
+The length of padding is intentionally not specified in this document and
+is a function of current best practices with respect to the type and length
+of data in the preceding TLVs {{?I-D.ietf-dprive-padding-policy}}.
 
 # IANA Considerations
 
