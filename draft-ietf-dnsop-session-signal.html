@@ -1016,15 +1016,19 @@
 <h1 id="rfc.section.8.8">
 <a href="#rfc.section.8.8">8.8.</a> <a href="#server-initiated-termination-on-overload" id="server-initiated-termination-on-overload">Server-Initiated Termination on Overload</a>
 </h1>
-<p id="rfc.section.8.8.p.1">Apart from the cases where:</p>
+<p id="rfc.section.8.8.p.1">A server MUST NOT close a DSO session with a client, except in certain exceptional circumstances, as outlined below.  In normal operation, closing a DSO session is the client&#8217;s responsibility.  The client makes the determination of when to close a DSO session based on an evaluation of both its own needs, and the inactivity timeout value dictated by the server.</p>
+<p id="rfc.section.8.8.p.2">Situations where a server may terminate a DSO session include:</p>
 <p></p>
 
 <ul>
-<li>Session Timeouts expire (see <a href="#sessiontimeouts" class="xref">Section 8.2</a>)</li>
-<li>On error (see <a href="#error" class="xref">Section 8.7</a>)</li>
-<li>When under load (see below)</li>
+<li>The server is undergoing reconfiguration or maintenance procedures that require clients to be disconnected.</li>
+<li>The server application software or underlying operating system is shutting down or restarting.</li>
+<li>The server application software terminates unexpectedly (perhaps due to a bug that makes it crash).</li>
+<li>The client fails to meets its obligation to generate keepalive traffic or close an inactive session within twice the respective time intervals dictated by the server (see <a href="#sessiontimeouts" class="xref">Section 8.2</a>).</li>
+<li>The client sends a grossly invalid or malformed request that is indicative of a seriously defective client implementation (see <a href="#error" class="xref">Section 8.7</a>).</li>
+<li>The server is over capacity and needs to shed some load (see <a href="#retry" class="xref">Section 8.9</a>).</li>
 </ul>
-<p id="rfc.section.8.8.p.3">a server MUST NOT close a DSO session with a client, except in extraordinary error conditions. Closing the DSO session is the client&#8217;s responsibility, to be done at the client&#8217;s discretion, when it so chooses. A server only closes a DSO session under exceptional circumstances, such as when the server application software or underlying operating system is restarting, the server application terminated unexpectedly (perhaps due to a bug that makes it crash), or the server is undergoing maintenance procedures.  When possible, a server SHOULD send a Retry Delay message informing the client of the reason for the DSO session being closed, and allow the client five seconds to receive it before the server resorts to forcibly aborting the connection.</p>
+<p id="rfc.section.8.8.p.4">When a server has to close a DSO session with a client (because of exceptional circumstances such as those outlined above) the server SHOULD, whenever possible, send a Retry Delay Operation TLV (see below) informing the client of the reason for the DSO session being closed, and allow the client five seconds to receive it before the server resorts to forcibly aborting the connection.</p>
 <h1 id="rfc.section.8.9">
 <a href="#rfc.section.8.9">8.9.</a> <a href="#retry" id="retry">Retry Delay Operation TLV</a>
 </h1>

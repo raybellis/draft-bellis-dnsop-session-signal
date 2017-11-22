@@ -115,17 +115,17 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
      8.9.  Retry Delay Operation TLV . . . . . . . . . . . . . . . .  26
-       8.9.1.  Outstanding Operations  . . . . . . . . . . . . . . .  26
+       8.9.1.  Outstanding Operations  . . . . . . . . . . . . . . .  27
        8.9.2.  Client Reconnection . . . . . . . . . . . . . . . . .  27
-   9.  Connection Sharing  . . . . . . . . . . . . . . . . . . . . .  27
+   9.  Connection Sharing  . . . . . . . . . . . . . . . . . . . . .  28
    10. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  28
-     10.1.  DSO OPCODE Registration  . . . . . . . . . . . . . . . .  28
-     10.2.  DSO RCODE Registration . . . . . . . . . . . . . . . . .  28
-     10.3.  DSO Type Codes Registry  . . . . . . . . . . . . . . . .  28
+     10.1.  DSO OPCODE Registration  . . . . . . . . . . . . . . . .  29
+     10.2.  DSO RCODE Registration . . . . . . . . . . . . . . . . .  29
+     10.3.  DSO Type Codes Registry  . . . . . . . . . . . . . . . .  29
    11. Security Considerations . . . . . . . . . . . . . . . . . . .  29
-   12. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  29
-   13. References  . . . . . . . . . . . . . . . . . . . . . . . . .  29
-     13.1.  Normative References . . . . . . . . . . . . . . . . . .  29
+   12. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  30
+   13. References  . . . . . . . . . . . . . . . . . . . . . . . . .  30
+     13.1.  Normative References . . . . . . . . . . . . . . . . . .  30
      13.2.  Informative References . . . . . . . . . . . . . . . . .  31
    Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  31
 
@@ -1382,18 +1382,18 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 8.8.  Server-Initiated Termination on Overload
 
-   Apart from the cases where:
+   A server MUST NOT close a DSO session with a client, except in
+   certain exceptional circumstances, as outlined below.  In normal
+   operation, closing a DSO session is the client's responsibility.  The
+   client makes the determination of when to close a DSO session based
+   on an evaluation of both its own needs, and the inactivity timeout
+   value dictated by the server.
 
-   o  Session Timeouts expire (see Section 8.2)
+   Situations where a server may terminate a DSO session include:
 
-   o  On error (see Section 8.7)
+   o  The server is undergoing reconfiguration or maintenance procedures
+      that require clients to be disconnected.
 
-   o  When under load (see below)
-
-   a server MUST NOT close a DSO session with a client, except in
-   extraordinary error conditions.  Closing the DSO session is the
-   client's responsibility, to be done at the client's discretion, when
-   it so chooses.  A server only closes a DSO session under exceptional
 
 
 
@@ -1402,14 +1402,29 @@ Bellis, et al.            Expires May 23, 2018                 [Page 25]
 Internet-Draft           DNS Stateful Operations           November 2017
 
 
-   circumstances, such as when the server application software or
-   underlying operating system is restarting, the server application
-   terminated unexpectedly (perhaps due to a bug that makes it crash),
-   or the server is undergoing maintenance procedures.  When possible, a
-   server SHOULD send a Retry Delay message informing the client of the
-   reason for the DSO session being closed, and allow the client five
-   seconds to receive it before the server resorts to forcibly aborting
-   the connection.
+   o  The server application software or underlying operating system is
+      shutting down or restarting.
+
+   o  The server application software terminates unexpectedly (perhaps
+      due to a bug that makes it crash).
+
+   o  The client fails to meets its obligation to generate keepalive
+      traffic or close an inactive session within twice the respective
+      time intervals dictated by the server (see Section 8.2).
+
+   o  The client sends a grossly invalid or malformed request that is
+      indicative of a seriously defective client implementation (see
+      Section 8.7).
+
+   o  The server is over capacity and needs to shed some load (see
+      Section 8.9).
+
+   When a server has to close a DSO session with a client (because of
+   exceptional circumstances such as those outlined above) the server
+   SHOULD, whenever possible, send a Retry Delay Operation TLV (see
+   below) informing the client of the reason for the DSO session being
+   closed, and allow the client five seconds to receive it before the
+   server resorts to forcibly aborting the connection.
 
 8.9.  Retry Delay Operation TLV
 
@@ -1434,6 +1449,15 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
    Upon receipt of a Retry Delay request from the server, the client
    MUST make note of the reconnect delay for this server, and then
+
+
+
+
+Bellis, et al.            Expires May 23, 2018                 [Page 26]
+
+Internet-Draft           DNS Stateful Operations           November 2017
+
+
    immediately close the connection.  This is to place the burden of
    TCP's TIME-WAIT state on the client.
 
@@ -1450,14 +1474,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
    Retry Delay request message has been sent.  The server MUST silently
    ignore such incoming requests, and MUST NOT generate any response
    messages for them.  When the Retry Delay request message from the
-
-
-
-Bellis, et al.            Expires May 23, 2018                 [Page 26]
-
-Internet-Draft           DNS Stateful Operations           November 2017
-
-
    server arrives at the client, the client will determine that any DNS
    requests it previously sent on this DSO session, that have not yet
    received a response, now will certainly not be receiving any
@@ -1490,6 +1506,14 @@ Internet-Draft           DNS Stateful Operations           November 2017
    client MUST respect the indicated delay before attempting to
    reconnect.
 
+
+
+
+Bellis, et al.            Expires May 23, 2018                 [Page 27]
+
+Internet-Draft           DNS Stateful Operations           November 2017
+
+
    If a particular server does not want a client to reconnect (it is
    being de-commissioned), it SHOULD set the retry delay to the maximum
    value (which is approximately 497 days).  If the server will only be
@@ -1506,14 +1530,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
    individual server.  It is RECOMMENDED that for any given client/
    server interaction there SHOULD be no more than one connection for
    regular queries, one for zone transfers, and one for each protocol
-
-
-
-Bellis, et al.            Expires May 23, 2018                 [Page 27]
-
-Internet-Draft           DNS Stateful Operations           November 2017
-
-
    that is being used on top of TCP (for example, if the resolver was
    using TLS).  However, it is noted that certain primary/secondary
    configurations with many busy zones might need to use more than one
@@ -1543,6 +1559,17 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 10.  IANA Considerations
 
+
+
+
+
+
+
+Bellis, et al.            Expires May 23, 2018                 [Page 28]
+
+Internet-Draft           DNS Stateful Operations           November 2017
+
+
 10.1.  DSO OPCODE Registration
 
    IANA are directed to assign a value (tentatively 6) in the DNS
@@ -1557,18 +1584,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
    IANA are directed to create the 15-bit DSO Type Codes Registry, with
    initial values as follows:
-
-
-
-
-
-
-
-
-Bellis, et al.            Expires May 23, 2018                 [Page 28]
-
-Internet-Draft           DNS Stateful Operations           November 2017
-
 
    +-----------+--------------------------------+----------+-----------+
    |      Type | Name                           | Status   | Reference |
@@ -1603,6 +1618,14 @@ Internet-Draft           DNS Stateful Operations           November 2017
    TLS messages and MUST NOT be sent in the clear before the TLS session
    is established.
 
+
+
+
+Bellis, et al.            Expires May 23, 2018                 [Page 29]
+
+Internet-Draft           DNS Stateful Operations           November 2017
+
+
    The data field of the "Encryption Padding" TLV could be used as a
    covert channel.
 
@@ -1618,13 +1641,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
    [RFC1034]  Mockapetris, P., "Domain names - concepts and facilities",
               STD 13, RFC 1034, DOI 10.17487/RFC1034, November 1987,
               <https://www.rfc-editor.org/info/rfc1034>.
-
-
-
-Bellis, et al.            Expires May 23, 2018                 [Page 29]
-
-Internet-Draft           DNS Stateful Operations           November 2017
-
 
    [RFC1035]  Mockapetris, P., "Domain names - implementation and
               specification", STD 13, RFC 1035, DOI 10.17487/RFC1035,
@@ -1659,6 +1675,13 @@ Internet-Draft           DNS Stateful Operations           November 2017
               DOI 10.17487/RFC6891, April 2013,
               <https://www.rfc-editor.org/info/rfc6891>.
 
+
+
+Bellis, et al.            Expires May 23, 2018                 [Page 30]
+
+Internet-Draft           DNS Stateful Operations           November 2017
+
+
    [RFC7766]  Dickinson, J., Dickinson, S., Bellis, R., Mankin, A., and
               D. Wessels, "DNS Transport over TCP - Implementation
               Requirements", RFC 7766, DOI 10.17487/RFC7766, March 2016,
@@ -1672,15 +1695,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
    [RFC7830]  Mayrhofer, A., "The EDNS(0) Padding Option", RFC 7830,
               DOI 10.17487/RFC7830, May 2016,
               <https://www.rfc-editor.org/info/rfc7830>.
-
-
-
-
-
-Bellis, et al.            Expires May 23, 2018                 [Page 30]
-
-Internet-Draft           DNS Stateful Operations           November 2017
-
 
 13.2.  Informative References
 
@@ -1713,20 +1727,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 Authors' Addresses
 
-   Ray Bellis
-   Internet Systems Consortium, Inc.
-   950 Charter Street
-   Redwood City  CA 94063
-   USA
-
-   Phone: +1 650 423 1200
-   Email: ray@isc.org
-
-
-
-
-
-
 
 
 
@@ -1736,6 +1736,16 @@ Authors' Addresses
 Bellis, et al.            Expires May 23, 2018                 [Page 31]
 
 Internet-Draft           DNS Stateful Operations           November 2017
+
+
+   Ray Bellis
+   Internet Systems Consortium, Inc.
+   950 Charter Street
+   Redwood City  CA 94063
+   USA
+
+   Phone: +1 650 423 1200
+   Email: ray@isc.org
 
 
    Stuart Cheshire
@@ -1774,6 +1784,16 @@ Internet-Draft           DNS Stateful Operations           November 2017
    Email: allison.mankin@gmail.com
 
 
+
+
+
+
+
+Bellis, et al.            Expires May 23, 2018                 [Page 32]
+
+Internet-Draft           DNS Stateful Operations           November 2017
+
+
    Tom Pusateri
    Unaffiliated
    Raleigh  NC 27608
@@ -1789,4 +1809,40 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires May 23, 2018                 [Page 32]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Bellis, et al.            Expires May 23, 2018                 [Page 33]

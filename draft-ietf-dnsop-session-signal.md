@@ -1098,23 +1098,39 @@ SHOULD continue to use that DSO session for subsequent operations.
 
 ## Server-Initiated Termination on Overload
 
-Apart from the cases where:
+A server MUST NOT close a DSO session with a client,
+except in certain exceptional circumstances, as outlined below.
+In normal operation, closing a DSO session is the client's responsibility.
+The client makes the determination of when to close a DSO
+session based on an evaluation of both its own needs,
+and the inactivity timeout value dictated by the server.
 
-* Session Timeouts expire (see {{sessiontimeouts}})
-* On error (see {{error}})
-* When under load (see below)
- 
-a server MUST NOT close a DSO session with a client, except in extraordinary error 
-conditions. Closing the DSO session is the
-client's responsibility, to be done at the client's discretion, when it so 
-chooses. A server only closes a DSO session under exceptional circumstances, such as
-when the server application software or underlying operating system is
-restarting, the server application terminated unexpectedly (perhaps due to a
-bug that makes it crash), or the server is undergoing maintenance procedures.
-When possible, a server SHOULD send a Retry Delay message informing the
-client of the reason for the DSO session being closed, and allow the client
-five seconds to receive it before the server resorts to forcibly aborting the 
-connection.
+Situations where a server may terminate a DSO session include:
+
+* The server is undergoing reconfiguration or maintenance procedures
+that require clients to be disconnected.
+
+* The server application software or underlying operating system
+is shutting down or restarting.
+
+* The server application software terminates unexpectedly
+(perhaps due to a bug that makes it crash).
+
+* The client fails to meets its obligation to generate keepalive
+traffic or close an inactive session within twice the respective
+time intervals dictated by the server (see {{sessiontimeouts}}).
+
+* The client sends a grossly invalid or malformed request that is
+indicative of a seriously defective client implementation (see {{error}}).
+
+* The server is over capacity and needs to shed some load (see {{retry}}).
+
+When a server has to close a DSO session with a client
+(because of exceptional circumstances such as those outlined above)
+the server SHOULD, whenever possible, send a Retry Delay Operation TLV
+(see below) informing the client of the reason for the DSO session
+being closed, and allow the client five seconds to receive it
+before the server resorts to forcibly aborting the connection.
 
 ## Retry Delay Operation TLV {#retry}
 
