@@ -88,10 +88,12 @@ informative:
 
 --- abstract
 
-This document defines a new DNS Stateful Operation OPCODE used to communicate 
-operations within persistent stateful sessions, expressed using type-length-value (TLV) 
-syntax, and defines an initial set of TLVs used to manage session timeouts and 
-termination. This mechanism is intended to reduce the overhead of existing 
+This document defines a new DNS OPCODE, for DNS Stateful Operations (DSO).
+DSO messages are used to communicate operations within persistent
+stateful sessions, expressed using type-length-value (TLV) syntax.
+This document defines an initial set of TLVs, including ones
+used to manage session timeouts and termination.
+This mechanism is intended to reduce the overhead of existing 
 “per-packet” signaling mechanisms with “per-message” semantics as well as 
 defining new stateful operations not defined in EDNS(0). 
 
@@ -115,10 +117,14 @@ For example, a server cannot arbitrarily
 instruct a client to close a connection because the server can only send EDNS(0) options 
 in responses to queries that contained EDNS(0) options.
 
-This document defines a new DNS Stateful Operation OPCODE used to
-carry operations within persistent stateful connections, expressed
-using type-length-value (TLV) syntax, and defines an initial set of
-TLVs including ones used to manage session timeouts and termination.
+This document defines a new DNS OPCODE, for DNS Stateful Operations (DSO).
+DSO messages are used to communicate operations within persistent
+stateful sessions, expressed using type-length-value (TLV) syntax.
+This document defines an initial set of TLVs, including ones
+used to manage session timeouts and termination.
+
+All three of the TLVs defined here are mandatory for all implementations of DSO.
+Additional TLVs may be defined in additional specifications.
 
 It should be noted that the message format for DNS Stateful Operations
 (see {{format}}) differs from the traditional DNS packet
@@ -281,11 +287,6 @@ TLV and it is acknowledged by the other side. The DSO message format {{dsodata}}
 includes an option to specify that a DSO request does not require a 
 response acknowledgement. Session establishment can only be performed using a 
 DSO message that requires a response acknowledgement. 
-
-While this 
-specification defines an initial set of three TLVs, additional TLVs may be 
-defined in additional specifications. All three of the TLVs defined here are 
-mandatory to implement. 
 
 A client MAY attempt to initiate DSO messages at any time
 on a connection; receiving a NOTIMP response in reply indicates that the

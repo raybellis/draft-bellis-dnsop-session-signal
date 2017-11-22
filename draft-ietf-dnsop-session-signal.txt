@@ -21,11 +21,12 @@ Expires: May 23, 2018                                       S. Dickinson
 
 Abstract
 
-   This document defines a new DNS Stateful Operation OPCODE used to
-   communicate operations within persistent stateful sessions, expressed
-   using type-length-value (TLV) syntax, and defines an initial set of
-   TLVs used to manage session timeouts and termination.  This mechanism
-   is intended to reduce the overhead of existing "per-packet" signaling
+   This document defines a new DNS OPCODE, for DNS Stateful Operations
+   (DSO).  DSO messages are used to communicate operations within
+   persistent stateful sessions, expressed using type-length-value (TLV)
+   syntax.  This document defines an initial set of TLVs, including ones
+   used to manage session timeouts and termination.  This mechanism is
+   intended to reduce the overhead of existing "per-packet" signaling
    mechanisms with "per-message" semantics as well as defining new
    stateful operations not defined in EDNS(0).
 
@@ -45,7 +46,6 @@ Status of This Memo
    material or to cite them other than as "work in progress."
 
    This Internet-Draft will expire on May 23, 2018.
-
 
 
 
@@ -149,19 +149,19 @@ Internet-Draft           DNS Stateful Operations           November 2017
    because the server can only send EDNS(0) options in responses to
    queries that contained EDNS(0) options.
 
-   This document defines a new DNS Stateful Operation OPCODE used to
-   carry operations within persistent stateful connections, expressed
-   using type-length-value (TLV) syntax, and defines an initial set of
-   TLVs including ones used to manage session timeouts and termination.
+   This document defines a new DNS OPCODE, for DNS Stateful Operations
+   (DSO).  DSO messages are used to communicate operations within
+   persistent stateful sessions, expressed using type-length-value (TLV)
+   syntax.  This document defines an initial set of TLVs, including ones
+   used to manage session timeouts and termination.
+
+   All three of the TLVs defined here are mandatory for all
+   implementations of DSO.  Additional TLVs may be defined in additional
+   specifications.
 
    It should be noted that the message format for DNS Stateful
    Operations (see Section 4.2) differs from the traditional DNS packet
    format used for standard queries and responses.  The standard twelve-
-   octet header is used, but the four count fields (QDCOUNT, ANCOUNT,
-   NSCOUNT, ARCOUNT) are set to zero and their corresponding sections
-   are not present.  The actual data pertaining to DNS Stateful
-   Operations (expressed in TLV format) is appended to the end of the
-   DNS message header.  When displayed using packet analyzer tools that
 
 
 
@@ -170,6 +170,11 @@ Bellis, et al.            Expires May 23, 2018                  [Page 3]
 Internet-Draft           DNS Stateful Operations           November 2017
 
 
+   octet header is used, but the four count fields (QDCOUNT, ANCOUNT,
+   NSCOUNT, ARCOUNT) are set to zero and their corresponding sections
+   are not present.  The actual data pertaining to DNS Stateful
+   Operations (expressed in TLV format) is appended to the end of the
+   DNS message header.  When displayed using packet analyzer tools that
    have not been updated to recognize the DNS Stateful Operations
    format, this will result in the Stateful Operations data being
    displayed as unknown additional data after the end of the DNS
@@ -213,11 +218,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
    "OPTIONAL" in this document are to be interpreted as described in
    "Key words for use in RFCs to Indicate Requirement Levels" [RFC2119].
 
-   "DSO" is used to mean DNS Stateful Operation.
-
-   The term "connection" means a bidirectional byte stream of reliable,
-   in-order messages, such as provided by using DNS over TCP
-   [RFC1035][RFC7766] or DNS over TLS [RFC7858].
 
 
 
@@ -225,6 +225,12 @@ Bellis, et al.            Expires May 23, 2018                  [Page 4]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
+
+   "DSO" is used to mean DNS Stateful Operation.
+
+   The term "connection" means a bidirectional byte stream of reliable,
+   in-order messages, such as provided by using DNS over TCP
+   [RFC1035][RFC7766] or DNS over TLS [RFC7858].
 
    The unqualified term "session" in the context of this document means
    the exchange of DNS messages over a connection where:
@@ -268,12 +274,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
    Two timers (elapsed time since an event) are defined in this
    document:
 
-   o  an inactivity timer (see Section 5 and Section 8.3)
-
-   o  a keepalive timer (see Section 5 and Section 8.5)
-
-
-
 
 
 
@@ -281,6 +281,10 @@ Bellis, et al.            Expires May 23, 2018                  [Page 5]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
+
+   o  an inactivity timer (see Section 5 and Section 8.3)
+
+   o  a keepalive timer (see Section 5 and Section 8.5)
 
    The timeouts associated with these timers are called the inactivity
    timeout and the keepalive interval respectively.  The term "Session
@@ -326,10 +330,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
    Section 4 of this document describes the protocol details of DNS
    Stateful Operations including definitions of three TLVs for session
    management and encryption padding.  Section 8 presents a detailed
-   discussion of the DSO Session lifecycle including an in-depth
-   discussion of keepalive traffic and session termination.
-
-
 
 
 
@@ -337,6 +337,9 @@ Bellis, et al.            Expires May 23, 2018                  [Page 6]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
+
+   discussion of the DSO Session lifecycle including an in-depth
+   discussion of keepalive traffic and session termination.
 
 4.  Protocol Details
 
@@ -362,10 +365,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
    performed using a DSO message that requires a response
    acknowledgement.
 
-   While this specification defines an initial set of three TLVs,
-   additional TLVs may be defined in additional specifications.  All
-   three of the TLVs defined here are mandatory to implement.
-
    A client MAY attempt to initiate DSO messages at any time on a
    connection; receiving a NOTIMP response in reply indicates that the
    server does not implement DSO, and the client SHOULD NOT issue
@@ -386,6 +385,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
    From this point on it is considered that a "DSO session" is in
    progress.  Clients and servers should behave as described in this
+   specification with regard to inactivity timeouts and connection
 
 
 
@@ -394,7 +394,6 @@ Bellis, et al.            Expires May 23, 2018                  [Page 7]
 Internet-Draft           DNS Stateful Operations           November 2017
 
 
-   specification with regard to inactivity timeouts and connection
    close, not as prescribed in the previous specification for DNS over
    TCP [RFC7766].
 
@@ -435,6 +434,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
    If a DSO message is received where any of the count fields are not
    zero, then a FORMERR MUST be returned, unless a future document
    specifies otherwise.
+
 
 
 
