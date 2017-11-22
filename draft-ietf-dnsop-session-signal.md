@@ -115,19 +115,33 @@ For example, a server cannot arbitrarily
 instruct a client to close a connection because the server can only send EDNS(0) options 
 in responses to queries that contained EDNS(0) options.
 
-This document defines a new DNS Stateful Operation OPCODE used to carry
-operations within persistent stateful connections, expressed using type-length-value (TLV)
-syntax, and
-defines an initial set of TLVs including ones used to manage session timeouts and termination. 
+This document defines a new DNS Stateful Operation OPCODE used to
+carry operations within persistent stateful connections, expressed
+using type-length-value (TLV) syntax, and defines an initial set of
+TLVs including ones used to manage session timeouts and termination.
+
+It should be noted that the message format for DNS Stateful Operations
+(see {{format}}) differs from the traditional DNS packet
+format used for standard queries and responses.
+The standard twelve-octet header is used, but the four count fields
+(QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT) are set to zero and their
+corresponding sections are not present.
+The actual data pertaining to DNS Stateful Operations
+(expressed in TLV format) is appended to the end of the DNS message header.
+When displayed using packet analyzer tools that have not been
+updated to recognize the DNS Stateful Operations format, this
+will result in the Stateful Operations data being displayed
+as unknown additional data after the end of the DNS message.
+It is likely that future updates to these tools will add the ability
+to recognize, decode, and display the Stateful Operations data.
 
 This new format has distinct advantages over an RR-based format because it
 is more explicit and more compact. Each TLV definition is specific
 to the use case, and as a result contains no redundant or overloaded fields.
 Importantly, it completely avoids conflating DNS Stateful Operations in anyway 
-with normal DNS operations or with existing EDNS(0) based functionality. A goal 
-of this approach is to avoid the operational
-issues that have befallen EDNS(0), particularly relating to middle-box 
-behaviour.
+with normal DNS operations or with existing EDNS(0) based functionality.
+A goal of this approach is to avoid the operational issues that have
+befallen EDNS(0), particularly relating to middle-box behaviour.
 
 With EDNS(0), multiple options may be packed into a single OPT pseudo-RR,
 and there is no generalized mechanism for a client to be able to tell
@@ -136,28 +150,18 @@ option within the combined OPT RR.
 The specifications for each individual option need to define how each
 different option is to be acknowledged, if necessary.
 
-With DNS Stateful Operations, in contrast, there is no compelling motivation
-to pack multiple operations into a single message for efficiency reasons.
+In contrast to EDNS(0), with DNS Stateful Operations there is no
+compelling motivation to pack multiple operations into a single
+message for efficiency reasons, because DNS Stateful Operations
+always operates using a connection-oriented transport protocol.
 Each Stateful operation is communicated in its own separate
 DNS message, and the transport protocol can take care of packing
 separate DNS messages into a single IP packet if appropriate.
 For example, TCP can pack multiple small DNS messages into a single TCP segment.
-The RCODE in each response message indicates the success or failure of the operation in question.
-
-It should be noted that the message format for DNS Stateful Operations
-(see {{format}}) differs from the traditional DNS packet
-format used for standard queries and responses.
-The standard twelve-octet header is used, but the four count fields
-(QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT) are set to zero and their
-corresponding sections are not present.
-The actual data pertaining to DNS Stateful Operations is
-appended to the end of the DNS message header.
-When displayed using today's packet analyzer tools that have not been updated
-to recognize the DNS Stateful Operations format, this will result
-in the Stateful Operations data being displayed as unknown additional
-data after the end of the DNS message. It is likely that future updates
-to these tools will add the ability to recognize, decode, and display the
-Stateful Operations data.
+This simplification allows for clearer semantics.
+Each DSO request message communicates just one primary operation,
+and the RCODE in the corresponding response message indicates the
+success or failure of that operation.
 
 # Terminology
 

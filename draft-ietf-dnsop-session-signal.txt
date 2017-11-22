@@ -78,7 +78,7 @@ Table of Contents
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   3
    2.  Terminology . . . . . . . . . . . . . . . . . . . . . . . . .   4
    3.  Discussion  . . . . . . . . . . . . . . . . . . . . . . . . .   6
-   4.  Protocol Details  . . . . . . . . . . . . . . . . . . . . . .   6
+   4.  Protocol Details  . . . . . . . . . . . . . . . . . . . . . .   7
      4.1.  DSO Session Establishment . . . . . . . . . . . . . . . .   7
        4.1.1.  Middle-box Considerations . . . . . . . . . . . . . .   8
      4.2.  Message Format  . . . . . . . . . . . . . . . . . . . . .   8
@@ -154,6 +154,29 @@ Internet-Draft           DNS Stateful Operations           November 2017
    using type-length-value (TLV) syntax, and defines an initial set of
    TLVs including ones used to manage session timeouts and termination.
 
+   It should be noted that the message format for DNS Stateful
+   Operations (see Section 4.2) differs from the traditional DNS packet
+   format used for standard queries and responses.  The standard twelve-
+   octet header is used, but the four count fields (QDCOUNT, ANCOUNT,
+   NSCOUNT, ARCOUNT) are set to zero and their corresponding sections
+   are not present.  The actual data pertaining to DNS Stateful
+   Operations (expressed in TLV format) is appended to the end of the
+   DNS message header.  When displayed using packet analyzer tools that
+
+
+
+Bellis, et al.            Expires May 23, 2018                  [Page 3]
+
+Internet-Draft           DNS Stateful Operations           November 2017
+
+
+   have not been updated to recognize the DNS Stateful Operations
+   format, this will result in the Stateful Operations data being
+   displayed as unknown additional data after the end of the DNS
+   message.  It is likely that future updates to these tools will add
+   the ability to recognize, decode, and display the Stateful Operations
+   data.
+
    This new format has distinct advantages over an RR-based format
    because it is more explicit and more compact.  Each TLV definition is
    specific to the use case, and as a result contains no redundant or
@@ -163,13 +186,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
    avoid the operational issues that have befallen EDNS(0), particularly
    relating to middle-box behaviour.
 
-
-
-Bellis, et al.            Expires May 23, 2018                  [Page 3]
-
-Internet-Draft           DNS Stateful Operations           November 2017
-
-
    With EDNS(0), multiple options may be packed into a single OPT
    pseudo-RR, and there is no generalized mechanism for a client to be
    able to tell whether a server has processed or otherwise acted upon
@@ -177,28 +193,18 @@ Internet-Draft           DNS Stateful Operations           November 2017
    specifications for each individual option need to define how each
    different option is to be acknowledged, if necessary.
 
-   With DNS Stateful Operations, in contrast, there is no compelling
-   motivation to pack multiple operations into a single message for
-   efficiency reasons.  Each Stateful operation is communicated in its
-   own separate DNS message, and the transport protocol can take care of
-   packing separate DNS messages into a single IP packet if appropriate.
-   For example, TCP can pack multiple small DNS messages into a single
-   TCP segment.  The RCODE in each response message indicates the
-   success or failure of the operation in question.
-
-   It should be noted that the message format for DNS Stateful
-   Operations (see Section 4.2) differs from the traditional DNS packet
-   format used for standard queries and responses.  The standard twelve-
-   octet header is used, but the four count fields (QDCOUNT, ANCOUNT,
-   NSCOUNT, ARCOUNT) are set to zero and their corresponding sections
-   are not present.  The actual data pertaining to DNS Stateful
-   Operations is appended to the end of the DNS message header.  When
-   displayed using today's packet analyzer tools that have not been
-   updated to recognize the DNS Stateful Operations format, this will
-   result in the Stateful Operations data being displayed as unknown
-   additional data after the end of the DNS message.  It is likely that
-   future updates to these tools will add the ability to recognize,
-   decode, and display the Stateful Operations data.
+   In contrast to EDNS(0), with DNS Stateful Operations there is no
+   compelling motivation to pack multiple operations into a single
+   message for efficiency reasons, because DNS Stateful Operations
+   always operates using a connection-oriented transport protocol.  Each
+   Stateful operation is communicated in its own separate DNS message,
+   and the transport protocol can take care of packing separate DNS
+   messages into a single IP packet if appropriate.  For example, TCP
+   can pack multiple small DNS messages into a single TCP segment.  This
+   simplification allows for clearer semantics.  Each DSO request
+   message communicates just one primary operation, and the RCODE in the
+   corresponding response message indicates the success or failure of
+   that operation.
 
 2.  Terminology
 
@@ -213,18 +219,15 @@ Internet-Draft           DNS Stateful Operations           November 2017
    in-order messages, such as provided by using DNS over TCP
    [RFC1035][RFC7766] or DNS over TLS [RFC7858].
 
-   The unqualified term "session" in the context of this document means
-   the exchange of DNS messages over a connection where:
-
-
-
-
 
 
 Bellis, et al.            Expires May 23, 2018                  [Page 4]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
+
+   The unqualified term "session" in the context of this document means
+   the exchange of DNS messages over a connection where:
 
    o  The connection between client and server is persistent and
       relatively long-lived (i.e., minutes or hours, rather than
@@ -269,9 +272,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
    o  a keepalive timer (see Section 5 and Section 8.5)
 
-   The timeouts associated with these timers are called the inactivity
-   timeout and the keepalive interval respectively.  The term "Session
-   Timeouts" is used to refer to this pair of timeout values.
 
 
 
@@ -281,6 +281,10 @@ Bellis, et al.            Expires May 23, 2018                  [Page 5]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
+
+   The timeouts associated with these timers are called the inactivity
+   timeout and the keepalive interval respectively.  The term "Session
+   Timeouts" is used to refer to this pair of timeout values.
 
    Reseting a timer means resetting the timer value to zero and starting
    the timer again.  Clearing a timer means resetting the timer value to
@@ -325,10 +329,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
    discussion of the DSO Session lifecycle including an in-depth
    discussion of keepalive traffic and session termination.
 
-4.  Protocol Details
-
-
-
 
 
 
@@ -337,6 +337,8 @@ Bellis, et al.            Expires May 23, 2018                  [Page 6]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
+
+4.  Protocol Details
 
 4.1.  DSO Session Establishment
 
@@ -384,8 +386,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
    From this point on it is considered that a "DSO session" is in
    progress.  Clients and servers should behave as described in this
-   specification with regard to inactivity timeouts and connection
-
 
 
 
@@ -394,6 +394,7 @@ Bellis, et al.            Expires May 23, 2018                  [Page 7]
 Internet-Draft           DNS Stateful Operations           November 2017
 
 
+   specification with regard to inactivity timeouts and connection
    close, not as prescribed in the previous specification for DNS over
    TCP [RFC7766].
 
@@ -434,7 +435,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
    If a DSO message is received where any of the count fields are not
    zero, then a FORMERR MUST be returned, unless a future document
    specifies otherwise.
-
 
 
 
