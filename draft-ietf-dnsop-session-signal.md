@@ -867,6 +867,8 @@ As specified for the EDNS(0) Padding Option {{!RFC7830}}
 if a request is received with a Encryption Padding TLV,
 then the response MUST also include an Encryption Padding TLV.
 
+\[Need discussion here of whether the Ack bit is set in requests, responses, or both --SC]
+
 The length of padding is intentionally not specified in this document and
 is a function of current best practices with respect to the type and length
 of data in the preceding TLVs {{?I-D.ietf-dprive-padding-policy}}.

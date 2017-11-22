@@ -952,7 +952,8 @@
 </pre>
 <p id="rfc.section.7.p.3">As specified for the EDNS(0) Padding Option <a href="#RFC7830" class="xref">[RFC7830]</a> the PADDING octets SHOULD be set to 0x00.  Other values MAY be used, for example, in cases where there is a concern that the padded message could be subject to compression before encryption.  PADDING octets of any value MUST be accepted in the messages received.</p>
 <p id="rfc.section.7.p.4">The Encryption Padding TLV may be included in either a DSO request, response, or both.  As specified for the EDNS(0) Padding Option <a href="#RFC7830" class="xref">[RFC7830]</a> if a request is received with a Encryption Padding TLV, then the response MUST also include an Encryption Padding TLV.</p>
-<p id="rfc.section.7.p.5">The length of padding is intentionally not specified in this document and is a function of current best practices with respect to the type and length of data in the preceding TLVs <a href="#I-D.ietf-dprive-padding-policy" class="xref">[I-D.ietf-dprive-padding-policy]</a>.</p>
+<p id="rfc.section.7.p.5">[Need discussion here of whether the Ack bit is set in requests, responses, or both &#8211;SC]</p>
+<p id="rfc.section.7.p.6">The length of padding is intentionally not specified in this document and is a function of current best practices with respect to the type and length of data in the preceding TLVs <a href="#I-D.ietf-dprive-padding-policy" class="xref">[I-D.ietf-dprive-padding-policy]</a>.</p>
 <h1 id="rfc.section.8">
 <a href="#rfc.section.8">8.</a> <a href="#lifecycle" id="lifecycle">DSO Session Lifecycle and Timers</a>
 </h1>

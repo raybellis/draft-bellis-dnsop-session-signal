@@ -1108,11 +1108,11 @@ Internet-Draft           DNS Stateful Operations           November 2017
    [RFC7830] if a request is received with a Encryption Padding TLV,
    then the response MUST also include an Encryption Padding TLV.
 
+   [Need discussion here of whether the Ack bit is set in requests,
+   responses, or both -SC]
+
    The length of padding is intentionally not specified in this document
    and is a function of current best practices with respect to the type
-   and length of data in the preceding TLVs
-   [I-D.ietf-dprive-padding-policy].
-
 
 
 
@@ -1121,6 +1121,9 @@ Bellis, et al.            Expires May 23, 2018                 [Page 20]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
+
+   and length of data in the preceding TLVs
+   [I-D.ietf-dprive-padding-policy].
 
 8.  DSO Session Lifecycle and Timers
 
@@ -1165,9 +1168,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
    has taken place, the default value for both timeouts is 15 seconds.
    For both timeouts, lower values of the timeout result in higher
    network traffic and higher CPU load on the server.
-
-
-
 
 
 
