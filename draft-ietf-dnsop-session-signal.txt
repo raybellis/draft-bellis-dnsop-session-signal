@@ -411,11 +411,11 @@ Internet-Draft           DNS Stateful Operations           November 2017
    time on a connection, but a "DSO session" is only considered
    established after:
 
-   o  the client has sents its first response-requiring DSO request
+   o  the client has sent its first response-requiring DSO request
       message, and
 
    o  (at the server) the server has received this request and
-      transmited its response
+      transmitted its response
 
    o  (at the client) the client has received the server's response
 

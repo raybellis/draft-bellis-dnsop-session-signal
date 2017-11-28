@@ -324,8 +324,8 @@ messages may also be used to establish a DSO session.
 Clients MAY send non-response-requiring DSO request messages at any time
 on a connection, but a "DSO session" is only considered established after:
 
-* the client has sents its first response-requiring DSO request message, and
-* (at the server) the server has received this request and transmited its response
+* the client has sent its first response-requiring DSO request message, and
+* (at the server) the server has received this request and transmitted its response
 * (at the client) the client has received the server's response
 
 Once a "DSO session" has been established,
