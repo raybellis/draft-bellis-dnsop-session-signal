@@ -1,7 +1,7 @@
 ---
 title: DNS Stateful Operations
 docname: draft-ietf-dnsop-session-signal-05
-date: 2017-11-19
+date: 2017-11-30
 ipr: trust200902
 area: Internet
 wg: DNSOP Working Group
@@ -464,13 +464,9 @@ Depending on the operation a DSO response can contain:
 
 Operation and modifier TLVs both use the same encoding format.
 
-Operation TLVs SHOULD normally require a response and, therefore, set the TLV
-Acknowledgement bit in a request. However, for some Operation TLVs, this may be
-undesirable and the TLV Acknowledgement bit MAY be cleared in the request. Each
-Operation TLV definition should stipulate whether an acknowledgement is
-REQUIRED. If the TLV Acknowledgement bit is cleared in a request, a response
-MUST NOT be sent. Modifier TLVs MUST NEVER set the Acknowledgement bit. The
-Acknowledgement bit is NEVER set in the response to an Operation TLV.
+The Acknowledgement bit in an Operation TLV of a request dictates if a response is to be sent. The Operation TLV may or may not be echoed back in the response according to the definition of the TLV. Each Operation TLV definition should stipulate whether an acknowledgement is REQUIRED. If the Operation TLV is not included in the response according to the TLV definition, the matching identifier in the standard DNS Header response is sufficient as an acknowledgement. If the TLV Acknowledgement bit is cleared in a request, a response MUST NOT be sent. The Acknowledgement bit is NEVER set in a response. Modifier TLVs MUST NEVER set the Acknowledgement bit in request or response.
+
+It is by design that Operation TLVs SHOULD normally require a response and, therefore, set the TLV Acknowledgement bit in a request. However, for some Operation TLVs, this may be undesirable and the TLV Acknowledgement bit MAY be cleared in the request.  
 
                                                  1   1   1   1   1   1
          0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
@@ -486,7 +482,7 @@ Acknowledgement bit is NEVER set in the response to an Operation TLV.
 
 A:
 : A 1-bit TLV Response flag indicating whether or not an Operation TLV requires
-a response Acknowledgement.
+a response Acknowledgement. This bit is never set in responses to Operation TLVs and never set in Modifier TLVs in either direction.
 
 DSO-TYPE:
 : A 15-bit field in network order giving the type of the current DSO TLV per
@@ -1300,8 +1296,6 @@ The Encryption Padding TLV may be included in either a DSO request, response, or
 As specified for the EDNS(0) Padding Option {{!RFC7830}}
 if a request is received with a Encryption Padding TLV,
 then the response MUST also include an Encryption Padding TLV.
-
-\[Need discussion here of whether the Ack bit is set in requests, responses, or both --SC]
 
 The length of padding is intentionally not specified in this document and
 is a function of current best practices with respect to the type and length
