@@ -760,9 +760,11 @@ without there being any operation active on the DSO session,
 the client MUST gracefully close the connection with a
 TLS close_notify followed by a TCP FIN (or equivalent for other protocols).
 
-If, at any time during the life of the DSO session, twice the inactivity timeout value
-(i.e., 30 seconds by default) elapses without there being any operation
-active on the DSO session, the server SHOULD consider the client delinquent,
+If, at any time during the life of the DSO session,
+twice the inactivity timeout value (i.e., 30 seconds by default),
+or five seconds, if twice the inactivity timeout value is less than five seconds,
+elapses without there being any operation active on the DSO session,
+the server SHOULD consider the client delinquent,
 and forcibly abort the DSO session.
 For DSO sessions over TCP (or over TLS over TCP),
 to avoid the burden of having a connection in TIME-WAIT state, instead of
@@ -785,34 +787,46 @@ longer timeout values, as described in {{keepalive}}.
 
 ### Values for the Inactivity Timeout
 
-For the inactivity timeout value, lower values result in more frequent DSO session 
-teardown and re-establishment. Higher values result in lower traffic and CPU
-load on the server, but a larger memory burden to maintain state for inactive 
-DSO sessions.
+For the inactivity timeout value, lower values result in
+more frequent DSO session teardown and re-establishment.
+Higher values result in larger memory burden to maintain state for
+inactive DSO sessions, but lower traffic and CPU load on the server.
 
-A shorter inactivity timeout with a longer keepalive interval signals to the client 
-that it should not speculatively keep inactive DSO sessions open for very long without
-reason, but when it does have an active reason to keep a DSO session open, it 
-doesn't need to be sending an aggressive level of keepalive traffic.
+A server may dictate (in a server-initiated Keepalive message,
+or in a response to a client-initiated Keepalive request message)
+any value it chooses for the inactivity timeout.
+When a connection's inactivity timeout is reached the client MUST
+begin closing the idle connection, but a client is NOT REQUIRED
+to keep an idle connection open until the inactivity timeout is
+reached --- a client SHOULD begin closing the connection sooner
+if it has no reason to expect future operations with that server
+before the inactivity timeout is reached.
 
-A longer inactivity timeout with a shorter keepalive interval signals to the client
-that it may speculatively keep inactive DSO sessions open for a long time, but it
-should be sending a lot of keepalive traffic on those inactive DSO sessions.
+A shorter inactivity timeout with a longer keepalive interval signals
+to the client that it should not speculatively keep an inactive DSO
+session open for very long without reason, but when it does have an
+active reason to keep a DSO session open, it doesn't need to be sending
+an aggressive level of keepalive traffic to maintain that session.
+
+A longer inactivity timeout with a shorter keepalive interval
+signals to the client that it may speculatively keep an inactive
+DSO session open for a long time, but to maintain that inactive
+DSO session it should be sending a lot of keepalive traffic.
 This configuration is expected to be less common.
 
-To avoid repeated teardown and re-establishment of sessions,
-the server MUST NOT send a Keepalive message
-(either a response to a client-initiated request, or a server-initiated message)
-with an inactivity timeout value less than ten seconds.
-If a client receives a Keepalive message specifying an inactivity timeout value
-less than ten seconds this is an error and the client MUST immediately
-terminate the connection with a TCP RST (or equivalent for other protocols).
+A server may dictate any value it chooses for the inactivity timeout
+(either in a response to a client-initiated request, or in a server-initiated message)
+including values under one second, or even zero.
+An inactivity timeout of zero informs the client that it
+should not speculatively maintain idle connections at all, and
+as soon as the client has completed the operation or operations relating
+to this server, the client should immediately begin closing this session.
 
-This does not mean that a client is forced to keep an idle connection open for
-ten seconds if it doesn't need that --- a client is free to close an idle connection whenever it chooses ---
-it means that servers cannot *require* a client to close an idle connection in under ten seconds.
-
-\[Do we really want this restriction? How soon does the client reconnect after tearing down the connection? --SC]
+A server will abort an idle client session after twice the
+inactivity timeout value, or five seconds, whichever is greater.
+In the case of a zero inactivity timeout value, this means that
+if a client fails to close an idle client session then the server
+will forcibly abort the idle session after five seconds.
 
 ## The Keepalive Interval {#keepalivetimer}
 
@@ -891,13 +905,13 @@ terminate the connection with a TCP RST (or equivalent for other protocols).
 
 ## Server-Initiated Termination on Error
 
-After sending an error response to a client, the server MAY close the DSO session,
+After sending an error response to a client, the server MAY end the DSO session,
 or may allow the DSO session to remain open. For error conditions
 that only affect the single operation in question, the server SHOULD return an
 error response to the client and leave the DSO session open for further operations.
 For error conditions that are likely to make all operations unsuccessful in the
 immediate future, the server SHOULD return an error response to the client and 
-then close the DSO session by sending a Retry Delay request message, as described in 
+then end the DSO session by sending a Retry Delay request message, as described in 
 {{delay}}.
 
 ## Client Behaviour in Receiving an Error {#error}
@@ -907,9 +921,10 @@ automatically close the DSO session. An error relating to one particular operati
 on a DSO session does not necessarily imply that all other operations on that
 DSO session have also failed, or that future operations will fail. The client
 should assume that the server will make its own decision about whether or not to
-close the DSO session, based on the server's determination of whether the error
+end the DSO session, based on the server's determination of whether the error
 condition pertains to this particular operation, or would also apply to any
-subsequent operations. If the server does not close the DSO session then the client
+subsequent operations. If the server does not end the DSO session by
+sending the client a Retry Delay message (see {{delay}}) then the client
 SHOULD continue to use that DSO session for subsequent operations.
 
 ## Server-Initiated Termination on Overload
@@ -921,7 +936,7 @@ The client makes the determination of when to close a DSO
 session based on an evaluation of both its own needs,
 and the inactivity timeout value dictated by the server.
 
-Situations where a server may terminate a DSO session include:
+Some exceptional situations where a server may terminate a DSO session include:
 
 * The server is undergoing reconfiguration or maintenance procedures
 that require clients to be disconnected.
@@ -933,8 +948,9 @@ is shutting down or restarting.
 (perhaps due to a bug that makes it crash).
 
 * The client fails to meets its obligation to generate keepalive
-traffic or close an inactive session within twice the respective
-time intervals dictated by the server (see {{sessiontimeouts}}).
+traffic or close an inactive session by the prescribed times
+(twice the time interval dictated by the server, or five seconds,
+whichever is greater, as described in {{sessiontimeouts}}).
 
 * The client sends a grossly invalid or malformed request that is
 indicative of a seriously defective client implementation (see {{error}}).
@@ -1086,7 +1102,7 @@ Retry Delay TLV (0) is considered an Operation TLV. It is used by a server
 to request that a client close the DSO session and underlying connection, and 
 not to reconnect for the indicated time interval.
 
-In this case it applies to the DSO session as a whole, and the client MUST close the 
+In this case it applies to the DSO session as a whole, and the client MUST begin closing the 
 DSO session, as described in {{retry}}. The RCODE in the message header 
 MUST indicate the reason for the termination:
 
@@ -1109,14 +1125,16 @@ Acknowledgement bit MUST be cleared in the request.
 
 ### Use as a Modifier TLV
 
+In the case of a client request that returns a nonzero RCODE value,
+the server MAY append a Retry Delay TLV (0) to the response,
+indicating the time interval during which the client
+SHOULD NOT attempt this operation again.
+
 When appended to a DSO response message for some client request,
 the Retry Delay TLV (0) is considered a Modifier TLV.
+
 The indicated time interval during which the client SHOULD NOT retry
 applies only to the failed operation, not to the DSO session as a whole.
-
-In the case of a client request that returns a nonzero RCODE value, the server 
-MAY append a Retry Delay TLV (0) to the response, indicating the time interval
-during which the client SHOULD NOT attempt this operation again.
 
 ## Keepalive Operation TLV {#keepalive}
 
@@ -1177,19 +1195,25 @@ The TYPE-DEPENDENT DATA for the the Keepalive TLV is as follows:
 INACTIVITY TIMEOUT:
 : the inactivity timeout for the current DSO session, specified as a
 32-bit word in network (big endian) order in units of milliseconds.
-This is the timeout at which the client MUST close an inactive DSO session.
-If the client does not gracefully close an inactive DSO session,
-then after twice this interval the server will forcibly terminate
-the connection with a TCP RST (or equivalent for other protocols).
+This is the timeout at which the client MUST begin closing an inactive DSO session.
+The inactivity timeout can be any value of the server's choosing.
+If the client does not gracefully close an inactive DSO
+session, then after twice this interval, or five seconds,
+whichever is greater, the server will forcibly terminate the
+connection with a TCP RST (or equivalent for other protocols).
 
 KEEPALIVE INTERVAL:
 : the keepalive interval for the current DSO session, specified as a
 32-bit word in network (big endian) order in units of milliseconds.
 This is the interval at which a client MUST generate keepalive
 traffic to maintain connection state.
-If the client does not generate the necessary keepalive traffic,
+The keepalive interval MUST NOT be less than ten seconds.
+If the client does not generate the mandated keepalive traffic,
 then after twice this interval the server will forcibly terminate
 the connection with a TCP RST (or equivalent for other protocols).
+Since the minimum allowed keepalive interval is ten seconds, the
+minimum time at which a server will forcibly disconnect a client for
+failing to generate the mandated keepalive traffic is twenty seconds.
 
 In a client-initiated DSO Keepalive message,
 the Session Timeouts contain the client's requested values.
@@ -1229,31 +1253,34 @@ or received on this DSO session, if the DSO session is to remain alive.
 
 In the case of the inactivity timeout, the handling of the received value 
 is a little more subtle, though the meaning of the inactivity 
-timeout is unchanged -- it still indicates the maximum permissible time allowed 
+timeout is unchanged --- it still indicates the maximum permissible time allowed 
 without activity on a DSO session.
 The act of receiving the message containing the DSO Keepalive TLV does not
 itself reset the inactivity timer. The time elapsed since the last useful
 activity on this DSO session is unaffected by exchange of DSO Keepalive messages.
-The act of receiving the message containing the DSO Keepalive TLV does update 
-the timeout associated with the running inactivity timer; that
-becomes the new maximum permissible time without activity on a DSO session.
+The new inactivity timeout value in the DSO Keepalive TLV in the received message
+does update the timeout associated with the running inactivity timer;
+that becomes the new maximum permissible time without activity on a DSO session.
 
-* If the current inactivity timer value is not greater than the new inactivity timeout, 
-then the DSO session may remain open for now. When the inactivity timer value 
-exceeds the new inactivity timeout, the client MUST then close the DSO session,
-as described above.
+* If the current inactivity timer value is not greater than the
+new inactivity timeout, then the DSO session may remain open for now.
+When the inactivity timer value exceeds the new inactivity timeout,
+the client MUST then begin closing the DSO session, as described above.
 
-* If the current inactivity timer value is already greater than the new inactivity 
-timeout, then this DSO session has already been inactive
-for longer than the server permits, and the client MUST immediately close this DSO session.
+* If the current inactivity timer value is already greater
+than the new inactivity timeout, then this DSO session has
+already been inactive for longer than the server permits,
+and the client MUST immediately begin closing this DSO session.
 
-* If the current inactivity timer value is more than twice the new inactivity timeout, 
-then this DSO session is eligible to be
-forcibly terminated by the server and and the client MUST immediately close this 
-DSO session. However if a server abruptly reduces the
-inactivity timeout in this way the server SHOULD give the client a grace period
-of one quarter of the new inactivity timeout, to give the client time to close
-the connection gracefully before the server resorts to terminating it forcibly.
+* If the current inactivity timer value is already more than twice the
+new inactivity timeout, then the client is immediately considered delinquent
+(this DSO session is immediately eligible to be forcibly terminated by the server)
+and the client MUST immediately begin closing this DSO session.
+However if a server abruptly reduces the inactivity timeout in this
+way, then, to give the client time to close the connection gracefully
+before the server resorts to terminating it forcibly, the server
+SHOULD give the client an additional grace period of one quarter
+of the new inactivity timeout, or five seconds, whichever is greater.
 
 ### Relation to EDNS(0) TCP Keepalive Option
 
