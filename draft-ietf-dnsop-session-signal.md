@@ -189,12 +189,12 @@ DNS messages over a connection where:
   long-lived (i.e., minutes or hours, rather than seconds).
 - Either end of the connection may initiate messages to the other.
 
-A "DSO session" is established between two endpoints that
+A "DSO Session" is established between two endpoints that
 acknowledge persistent DNS state via the exchange of DSO messages
 over the connection. This is distinct from, for example a DNS-over-TCP session
 as described in RC7766.
 
-A "DSO session" is terminated when the underlying connection is closed.
+A "DSO Session" is terminated when the underlying connection is closed.
 
 The term "server" means the software with a listening socket, awaiting
 incoming connection requests.
@@ -286,53 +286,56 @@ client or server may initiate DSO messages at any time.
 
 However, in the typical case a server will not know in advance whether a
 client supports DSO, so in general, unless it is known in advance by other means
-that a client does support DSO, a server MUST NOT initiate DSO messages until
-a DSO session has been mutually established, as described below.
+that a client does support DSO, a server MUST NOT initiate DSO request messages
+until a DSO Session has been mutually established, as described below.
+Similarly, unless it is known in advance by other means that a server
+does support DSO, a client MUST NOT initiate non-response-requiring
+DSO request messages until after a DSO Session has been mutually established.
 
-A client MAY attempt to initiate DSO messages at any time
-on a connection; receiving a NOTIMP response in reply indicates that the
-server does not implement DSO, and the client SHOULD NOT
+Many, but not all, DSO request messages sent by an initiator
+elicit a response from the responder.
+Whether or not a given DSO request message elicits a response is
+determined by whether or not the first DSO TLV (see {{tlvformat}})
+in the message (the Primary TLV) is one that is specified to generate a response.
+
+A DSO Session is established over a connection by the client
+sending a DSO request message of a kind that requires a response,
+such as the DSO Keepalive Operation TLV (see {{keepalive}}),
+and receiving a response, with matching MESSAGE ID, and RCODE
+set to NOERROR (0), indicating that the DSO request was successful.
+
+If the RCODE is set to DSONOTIMP (tentatively 11) this indicates
+that the server does support DSO, but does not support the particular
+operation the client requested.
+A server MUST NOT return DSONOTIMP for the DSO Keepalive Operation
+TLV, but this could happen in the future, if a client attempts to
+establish a DSO Session using a future response-requiring DSO TLV
+which the server does not understand.
+If the server returns DSONOTIMP then a DSO Session is not
+considered established, but the client is permitted to continue
+sending DNS messages on the connection,
+including other response-requiring DSO messages such as the DSO Keepalive,
+which may result in a successful NOERROR response,
+yielding the establishment of a DSO Session.
+
+If the RCODE is set to any value other than NOERROR (0) or DSONOTIMP
+(tentatively 11), then the client should assume that the server does
+not support DSO. In this case the client is permitted to continue
+sending DNS messages on that connection, but the client SHOULD NOT
 issue further DSO messages on that connection.
 
-The DSO message format (see {{tlvformat}}) includes a bit in the TLV structure
-that indicates whether or not a particular DSO request message from the
-initiator requires a corresponding DSO response message from the responder.
-A "DSO session" is established over a connection by the client
-sending a DSO request message of a kind that has the acknowledgement bit set,
-indicating that it is a request message of a kind that requires a response.
-
 When the server receives a response-requiring DSO request message
-from a client, and transmits its response, the server considers
-the DSO session established.
+from a client, and transmits a sucessful NOERROR response to that
+request, the server considers the DSO Session established.
 
-When the client receives the server's DSO response,
-the client considers the DSO session established.
+When the client receives the server's NOERROR response to its
+DSO request message, the client considers the DSO Session established.
 
-Apart from cases where it is known in advance by external means
-that both client and server support DSO,
-session establishment can only be performed by the client sending
-a DSO request message of a kind that requires a response.
-
-Currently the only suitable such messages are the 
-DSO Keepalive Operation TLV (see {{keepalive}}) and the
-DSO Encryption Padding TLV (see {{padding}}).
-
-If future documents define other client-initiated
-response-requiring DSO request messages, then one of these
-messages may also be used to establish a DSO session.
-
-Clients MAY send non-response-requiring DSO request messages at any time
-on a connection, but a "DSO session" is only considered established after:
-
-* the client has sent its first response-requiring DSO request message, and
-* (at the server) the server has received this request and transmitted its response
-* (at the client) the client has received the server's response
-
-Once a "DSO session" has been established,
+Once a DSO Session has been established,
 either end may unilaterally send DSO messages at any time,
 and therefore either client or server may be the initiator of a message.
 
-Once a "DSO session" has been established,
+Once a DSO Session has been established,
 clients and servers should behave as described in this specification with
 regard to inactivity timeouts and connection close, not as prescribed in
 the previous specification for DNS over TCP {{!RFC7766}}.
@@ -400,7 +403,7 @@ unless a future document specifies otherwise.
 In a request the MESSAGE ID field MUST be set to a unique value, that the
 initiator is not currently using for any other active operation on this 
 connection.
-For the purposes here, a MESSAGE ID is in use in this DSO session if the
+For the purposes here, a MESSAGE ID is in use in this DSO Session if the
 initiator has used it in a request for which it has not yet received a
 response, or if the client has used it to setup state that it has not yet
 deleted. For example, state could be a subscription {{?I-D.ietf-dnssd-push}}.
@@ -573,7 +576,7 @@ TSIG records.
 
 This specification explicitly prohibits use of the
 EDNS(0) TCP Keepalive Option {{!RFC7828}}
-in *any* messages sent on a DSO session (because it duplicates
+in *any* messages sent on a DSO Session (because it duplicates
 the functionality provided by the DSO Keepalive operation),
 but messages may contain other EDNS(0) options as appropriate.
 
@@ -596,15 +599,15 @@ The namespaces of 16-bit MESSAGE IDs are disjoint in each direction.
 For example, it is *not* an error for both client and server to send a request
 message with the same ID. In effect, the 16-bit MESSAGE ID combined with the 
 identity of the initiator (client or server) serves as a 17-bit unique 
-identifier for a particular operation on a DSO session.
+identifier for a particular operation on a DSO Session.
 
 As described in {{header}} An initiator MUST NOT reuse a MESSAGE ID that is 
 already in use for an 
 outstanding request, unless specified otherwise by the relevant specification 
 for the DSO in question. At the very least, this means 
 that a MESSAGE ID MUST NOT be reused in a particular direction
-on a particular DSO session while the initiator is waiting for a response to a 
-previous request using that MESSAGE ID on that DSO session,
+on a particular DSO Session while the initiator is waiting for a response to a 
+previous request using that MESSAGE ID on that DSO Session,
 unless specified otherwise by the relevant 
 specification for the DSO in question.
 (For a long-lived state the MESSAGE ID for the operation
@@ -670,26 +673,26 @@ widely-available networking APIs currently include this capability.
 
 A session begins when a client makes a new connection to a server.
 
-A DSO session begin as described in {{establishment}}.
+A DSO Session begin as described in {{establishment}}.
 
 The client may perform as many DNS operations as it wishes using the
-newly created DSO session. Operations SHOULD be pipelined (i.e., the
+newly created DSO Session. Operations SHOULD be pipelined (i.e., the
 client doesn't need wait for a response before sending the next message).
 The server MUST act on messages in the order they are transmitted, but
 responses to those messages MAY be sent out of order, if appropriate.
 
 ## DSO Session Timeouts {#sessiontimeouts}
 
-Two timeout values are associated with a DSO session: the inactivity timeout, and 
+Two timeout values are associated with a DSO Session: the inactivity timeout, and 
 the keepalive interval. 
 
 The first timeout value, the inactivity timeout, is the maximum time for which
-a client may speculatively keep a DSO session open in the expectation that
+a client may speculatively keep a DSO Session open in the expectation that
 it may have future requests to send to that server.
 
 The second timeout value, the keepalive interval, is the maximum permitted
 interval between client messages to the server if the client wishes to keep
-the DSO session alive.
+the DSO Session alive.
 
 The two timeout values are independent. The inactivity timeout may be lower, the 
 same, or higher than the keepalive interval, though in most cases the inactivity 
@@ -700,7 +703,7 @@ keepalive interval come into play, to ensure that a sufficient residual
 amount of traffic is generated to maintain NAT and firewall state
 and to assure client and server that they still have connectivity to each other.
 
-On a new DSO session, if no explicit DSO Keepalive message exchange has taken 
+On a new DSO Session, if no explicit DSO Keepalive message exchange has taken 
 place, the default value for both timeouts is 15 seconds.
 For both timeouts, lower values of the timeout result in higher network traffic
 and higher CPU load on the server.
@@ -709,7 +712,7 @@ and higher CPU load on the server.
 
 At both servers and clients, the generation or reception of any complete
 DNS message, including DNS requests, responses, updates, or DSO
-messages, resets both timers for that DSO session, with the exception
+messages, resets both timers for that DSO Session, with the exception
 that a DSO Keepalive message resets only the keepalive timer, not the inactivity 
 timeout timer.
 
@@ -727,60 +730,60 @@ and remains cleared until transmission of the corresponding response.
 
 For long-lived DNS Stateful operations, an operation is considered in progress
 for as long as the state is active, until it is cancelled.
-This means that a DSO session can exist, with a state 
+This means that a DSO Session can exist, with a state 
 active, with no messages flowing in either direction, for far longer than the 
 inactivity timeout, and this is not an error. This is why there are two separate 
-timers: the inactivity timeout, and the keepalive interval. Just because a DSO 
-session has no traffic for an extended period of time
-does not automatically make that DSO session "inactive",
+timers: the inactivity timeout, and the keepalive interval.
+Just because a DSO Session has no traffic for an extended period of time
+does not automatically make that DSO Session "inactive",
 if it has an active state that is awaiting events.
 
 ## The Inactivity Timeout
 
 The purpose of the inactivity timeout is for the server to balance its trade off 
-between the costs of setting up new DSO sessions and the costs of maintaining inactive 
-DSO sessions. A server with abundant DSO session capacity can offer a high inactivity timeout, 
-to permit clients to keep a speculative DSO session open for a long time, to save 
-the cost of establishing a new DSO session for future communications with that 
+between the costs of setting up new DSO Sessions and the costs of maintaining inactive 
+DSO Sessions. A server with abundant DSO Session capacity can offer a high inactivity timeout, 
+to permit clients to keep a speculative DSO Session open for a long time, to save 
+the cost of establishing a new DSO Session for future communications with that 
 server. A server with scarce memory resources can offer a low inactivity timeout,
-to cause clients to promptly close DSO sessions whenever they have no outstanding
-operations with that server, and then create a new DSO session later when needed.
+to cause clients to promptly close DSO Sessions whenever they have no outstanding
+operations with that server, and then create a new DSO Session later when needed.
 
 ### Closing Inactive DSO Sessions
 
 A client is NOT required to wait until the inactivity timeout expires
-before closing a DSO session.
-A client MAY close a DSO session at any time, at the client's discretion.
+before closing a DSO Session.
+A client MAY close a DSO Session at any time, at the client's discretion.
 If a client determines that it has no current or reasonably anticipated
-future need for an inactive DSO session, then the client SHOULD close that connection.
+future need for an inactive DSO Session, then the client SHOULD close that connection.
 
-If, at any time during the life of the DSO session,
+If, at any time during the life of the DSO Session,
 the inactivity timeout value (i.e., 15 seconds by default) elapses
-without there being any operation active on the DSO session,
+without there being any operation active on the DSO Session,
 the client MUST gracefully close the connection with a
 TLS close_notify followed by a TCP FIN (or equivalent for other protocols).
 
-If, at any time during the life of the DSO session,
+If, at any time during the life of the DSO Session,
 twice the inactivity timeout value (i.e., 30 seconds by default),
 or five seconds, if twice the inactivity timeout value is less than five seconds,
-elapses without there being any operation active on the DSO session,
+elapses without there being any operation active on the DSO Session,
 the server SHOULD consider the client delinquent,
-and forcibly abort the DSO session.
-For DSO sessions over TCP (or over TLS over TCP),
+and forcibly abort the DSO Session.
+For DSO Sessions over TCP (or over TLS over TCP),
 to avoid the burden of having a connection in TIME-WAIT state, instead of
 closing the connection gracefully the server SHOULD abort
 the connection with a TCP RST (or equivalent for other protocols).
 (In the BSD Sockets API this is achieved by setting the
 SO_LINGER option to zero before closing the socket.)
 
-In this context, an operation being active on a DSO session includes
+In this context, an operation being active on a DSO Session includes
 a query waiting for a response, an update waiting for a response,
 or active state,
 but not a DSO Keepalive message exchange itself.
 A DSO Keepalive message exchange resets only the keepalive
 interval timer, not the inactivity timeout timer.
 
-If the client wishes to keep an inactive DSO session open for longer than
+If the client wishes to keep an inactive DSO Session open for longer than
 the default duration without having to send traffic every 15 seconds,
 then it uses the DSO Keepalive message to request
 longer timeout values, as described in {{keepalive}}.
@@ -788,9 +791,9 @@ longer timeout values, as described in {{keepalive}}.
 ### Values for the Inactivity Timeout
 
 For the inactivity timeout value, lower values result in
-more frequent DSO session teardown and re-establishment.
+more frequent DSO Session teardown and re-establishment.
 Higher values result in larger memory burden to maintain state for
-inactive DSO sessions, but lower traffic and CPU load on the server.
+inactive DSO Sessions, but lower traffic and CPU load on the server.
 
 A server may dictate (in a server-initiated Keepalive message,
 or in a response to a client-initiated Keepalive request message)
@@ -804,14 +807,14 @@ before the inactivity timeout is reached.
 
 A shorter inactivity timeout with a longer keepalive interval signals
 to the client that it should not speculatively keep an inactive DSO
-session open for very long without reason, but when it does have an
-active reason to keep a DSO session open, it doesn't need to be sending
+Session open for very long without reason, but when it does have an
+active reason to keep a DSO Session open, it doesn't need to be sending
 an aggressive level of keepalive traffic to maintain that session.
 
 A longer inactivity timeout with a shorter keepalive interval
 signals to the client that it may speculatively keep an inactive
-DSO session open for a long time, but to maintain that inactive
-DSO session it should be sending a lot of keepalive traffic.
+DSO Session open for a long time, but to maintain that inactive
+DSO Session it should be sending a lot of keepalive traffic.
 This configuration is expected to be less common.
 
 A server may dictate any value it chooses for the inactivity timeout
@@ -838,22 +841,22 @@ when connectivity is lost, and attempt re-connection if appropriate.
 
 ### Keepalive Interval Expiry
 
-If, at any time during the life of the DSO session,
+If, at any time during the life of the DSO Session,
 the keepalive interval value (i.e., 15 seconds by default) elapses
-without any DNS messages being sent or received on a DSO session,
-the client MUST take action to keep the DSO session alive,
+without any DNS messages being sent or received on a DSO Session,
+the client MUST take action to keep the DSO Session alive,
 by sending a DSO Keepalive message (see {{keepalive}}).
 A DSO Keepalive message exchange resets only the keepalive timer, 
 not the inactivity timer.
 
 If a client disconnects from the network abruptly,
-without cleanly closing its DSO session,
+without cleanly closing its DSO Session,
 leaving long-lived state uncanceled,
 the server learns of this after failing to
 receive the required keepalive traffic from that client.
-If, at any time during the life of the DSO session,
+If, at any time during the life of the DSO Session,
 twice the keepalive interval value (i.e., 30 seconds by default) elapses
-without any DNS messages being sent or received on a DSO session,
+without any DNS messages being sent or received on a DSO Session,
 the server SHOULD consider the client delinquent,
 and forcibly abort the connection with a TCP RST (or equivalent for other 
 protocols).
@@ -863,7 +866,7 @@ protocols).
 For the keepalive interval value, lower values result in higher volume keepalive 
 traffic. Higher values of the keepalive interval reduce traffic and CPU load, 
 but have minimal effect on the memory burden
-at the server, because clients keep a DSO session open for the same length of time
+at the server, because clients keep a DSO Session open for the same length of time
 (determined by the inactivity timeout) regardless of the level of keepalive traffic 
 required.
 
@@ -892,7 +895,7 @@ servers grant, a keepalive interval of 60 minutes.
 Note that the lower the keepalive interval value, the higher the load on client
 and server. For example, an keepalive interval value of 100ms would result in a
 continuous stream of at least ten messages per second, in both directions,
-to keep the DSO session alive. And, in this extreme example, a single packet loss and
+to keep the DSO Session alive. And, in this extreme example, a single packet loss and
 retransmission over a long path could introduce a momentary pause in the stream of messages,
 long enough to cause the server to overzealously abort the connection.
 
@@ -905,38 +908,38 @@ terminate the connection with a TCP RST (or equivalent for other protocols).
 
 ## Server-Initiated Termination on Error
 
-After sending an error response to a client, the server MAY end the DSO session,
-or may allow the DSO session to remain open. For error conditions
+After sending an error response to a client, the server MAY end the DSO Session,
+or may allow the DSO Session to remain open. For error conditions
 that only affect the single operation in question, the server SHOULD return an
-error response to the client and leave the DSO session open for further operations.
+error response to the client and leave the DSO Session open for further operations.
 For error conditions that are likely to make all operations unsuccessful in the
 immediate future, the server SHOULD return an error response to the client and 
-then end the DSO session by sending a Retry Delay request message, as described in 
+then end the DSO Session by sending a Retry Delay request message, as described in 
 {{delay}}.
 
 ## Client Behaviour in Receiving an Error {#error}
 
 Upon receiving an error response from the server, a client SHOULD NOT
-automatically close the DSO session. An error relating to one particular operation
-on a DSO session does not necessarily imply that all other operations on that
-DSO session have also failed, or that future operations will fail. The client
+automatically close the DSO Session. An error relating to one particular operation
+on a DSO Session does not necessarily imply that all other operations on that
+DSO Session have also failed, or that future operations will fail. The client
 should assume that the server will make its own decision about whether or not to
-end the DSO session, based on the server's determination of whether the error
+end the DSO Session, based on the server's determination of whether the error
 condition pertains to this particular operation, or would also apply to any
-subsequent operations. If the server does not end the DSO session by
+subsequent operations. If the server does not end the DSO Session by
 sending the client a Retry Delay message (see {{delay}}) then the client
-SHOULD continue to use that DSO session for subsequent operations.
+SHOULD continue to use that DSO Session for subsequent operations.
 
 ## Server-Initiated Termination on Overload
 
-A server MUST NOT close a DSO session with a client,
+A server MUST NOT close a DSO Session with a client,
 except in certain exceptional circumstances, as outlined below.
-In normal operation, closing a DSO session is the client's responsibility.
+In normal operation, closing a DSO Session is the client's responsibility.
 The client makes the determination of when to close a DSO
-session based on an evaluation of both its own needs,
+Session based on an evaluation of both its own needs,
 and the inactivity timeout value dictated by the server.
 
-Some exceptional situations where a server may terminate a DSO session include:
+Some exceptional situations where a server may terminate a DSO Session include:
 
 * The server is undergoing reconfiguration or maintenance procedures
 that require clients to be disconnected.
@@ -957,10 +960,10 @@ indicative of a seriously defective client implementation (see {{error}}).
 
 * The server is over capacity and needs to shed some load (see {{retry}}).
 
-When a server has to close a DSO session with a client
+When a server has to close a DSO Session with a client
 (because of exceptional circumstances such as those outlined above)
 the server SHOULD, whenever possible, send a Retry Delay Operation TLV
-(see below) informing the client of the reason for the DSO session
+(see below) informing the client of the reason for the DSO Session
 being closed, and allow the client five seconds to receive it
 before the server resorts to forcibly aborting the connection.
 
@@ -977,7 +980,7 @@ Therefore to avoid this reconnection implosion, a server SHOULD instead choose
 to shed client load by sending a Retry Delay request message, with an RCODE of 
 SERVFAIL, to inform the client of the overload situation. After sending a Retry 
 Delay request message, the server MUST NOT send any further messages on that 
-DSO session.
+DSO Session.
 
 After sending the Retry Delay request the server SHOULD allow the
 client five seconds to close the connection, and if the client has not
@@ -998,24 +1001,24 @@ and the server MUST immediately terminate the connection with a TCP RST
 
 At the moment a server chooses to initiate a Retry Delay request message
 there may be DNS requests already in flight from client to server on this 
-DSO session, which will arrive at the server after its Retry Delay request message 
+DSO Session, which will arrive at the server after its Retry Delay request message 
 has been sent.
 The server MUST silently ignore such incoming requests, and MUST NOT generate
 any response messages for them. When the Retry Delay request message from the
 server arrives at the client, the client will determine that any DNS requests
-it previously sent on this DSO session, that have not yet received a response, now 
+it previously sent on this DSO Session, that have not yet received a response, now 
 will certainly not be receiving any response. Such requests should be considered
 failed, and should be retried at a later time, as appropriate.
 
-In the case where some, but not all, of the existing operations on a DSO session 
+In the case where some, but not all, of the existing operations on a DSO Session 
 have become invalid (perhaps because the server has been reconfigured and is no 
 longer authoritative for some of the names),
-but the server is terminating all DSO sessions en masse with a REFUSED (5) RCODE,
+but the server is terminating all DSO Sessions en masse with a REFUSED (5) RCODE,
 the RECONNECT DELAY MAY be zero, indicating that the clients SHOULD immediately
 attempt to re-establish operations.
 It is likely that some of the attempts will be successful and some will not.
 
-In the case where a server is terminating a large number of DSO sessions at once
+In the case where a server is terminating a large number of DSO Sessions at once
 (e.g., if the system is restarting) and the server doesn't want to be inundated 
 with a flood of simultaneous retries, it SHOULD send different RECONNECT delay 
 values to each client.
@@ -1025,7 +1028,7 @@ client, yielding a post-restart reconnection rate of ten clients per second).
 
 ### Client Reconnection
 
-After a DSO session is closed by the server, the client SHOULD try to reconnect,
+After a DSO Session is closed by the server, the client SHOULD try to reconnect,
 to that server, or to another suitable server, if more than one is available.
 If reconnecting to the same server, the client MUST respect the indicated delay
 before attempting to reconnect.
@@ -1057,7 +1060,7 @@ A single server may support multiple services, including DNS Updates
 and other services, for one or more DNS zones.
 When a client discovers that the target server for several different operations
 is the same target hostname and port, the client SHOULD use a single
-shared DSO session for all those operations.
+shared DSO Session for all those operations.
 A client SHOULD NOT open multiple connections to the same target host and port
 just because the names being operated on are different or
 happen to fall within different zones.
@@ -1099,18 +1102,18 @@ The RECOMMENDED value is 10 seconds.
 
 When sent in a DSO request message, from server to client, the 
 Retry Delay TLV (0) is considered an Operation TLV. It is used by a server 
-to request that a client close the DSO session and underlying connection, and 
+to request that a client close the DSO Session and underlying connection, and 
 not to reconnect for the indicated time interval.
 
-In this case it applies to the DSO session as a whole, and the client MUST begin closing the 
-DSO session, as described in {{retry}}. The RCODE in the message header 
+In this case it applies to the DSO Session as a whole, and the client MUST begin closing the 
+DSO Session, as described in {{retry}}. The RCODE in the message header 
 MUST indicate the reason for the termination:
 
 *  NOERROR indicates a routine shutdown. 
 *  SERVFAIL indicates that the server is overloaded due to resource exhaustion. 
 *  REFUSED indicates that the server has been reconfigured and is no longer able 
 to perform one or more of the functions 
-currently being performed on this DSO session (for example, a DNS Push Notification 
+currently being performed on this DSO Session (for example, a DNS Push Notification 
 server could be reconfigured such that is is no longer accepting DNS Push 
 Notification requests for one or more of the currently subscribed names).
 
@@ -1134,53 +1137,53 @@ When appended to a DSO response message for some client request,
 the Retry Delay TLV (0) is considered a Modifier TLV.
 
 The indicated time interval during which the client SHOULD NOT retry
-applies only to the failed operation, not to the DSO session as a whole.
+applies only to the failed operation, not to the DSO Session as a whole.
 
 ## Keepalive Operation TLV {#keepalive}
 
 The Keepalive Operation TLV (DSO-TYPE=1) performs two functions: to reset the
-keepalive timer for the DSO session and to establish the values for the Session Timeouts. 
+keepalive timer for the DSO Session and to establish the values for the Session Timeouts. 
 
 The Keepalive Operation TLV resets only the keepalive timer, not the inactivity timer.
 The reason for this is that periodic Keepalive Operation TLVs are sent for the
-sole purpose of keeping a DSO session alive, because that DSO session has current
-or recent non-maintenance activity that warrants keeping the DSO session alive.
+sole purpose of keeping a DSO Session alive, because that DSO Session has current
+or recent non-maintenance activity that warrants keeping the DSO Session alive.
 If sending keepalive traffic itself were to reset the inactivity timer, then 
 that would create a circular livelock where keepalive traffic would be sent 
-indefinitely to keep a DSO session alive, where the only activity on that DSO 
-session would be the keepalive traffic keeping the DSO session alive so that further 
+indefinitely to keep a DSO Session alive, where the only activity on that DSO 
+Session would be the keepalive traffic keeping the DSO Session alive so that further 
 keepalive traffic can be sent.
 
 Sending keepalive traffic is considered a maintenance activity
 that is performed in service of other client activities.
 Sending keepalive traffic itself is not considered a client activity.
-For a DSO session to be considered active, it must be carrying something more than just keepalive traffic.
+For a DSO Session to be considered active, it must be carrying something more than just keepalive traffic.
 This is why merely sending a Keepalive Operation TLV does not reset the inactivity timer.
 
 When sent by a client, the Keepalive Operation TLV MUST have the Acknowledgement bit set.
-It resets a DSO session's keepalive timer, and at the same time requests what the
-Session Timeout values should be from this point forward in the DSO session.
+It resets a DSO Session's keepalive timer, and at the same time requests what the
+Session Timeout values should be from this point forward in the DSO Session.
 If a server receives a Keepalive Operation TLV without the Acknowledgement bit set
 then this is a fatal error and the server MUST immediately terminate
 the connection with a TCP RST (or equivalent for other protocols).
 
-Once a DSO session is in progress (see {{details}}) the Keepalive TLV also MAY be initiated by a server.
+Once a DSO Session is in progress (see {{details}}) the Keepalive TLV also MAY be initiated by a server.
 When sent by a server, the Keepalive Operation TLV MUST NOT have the Acknowledgement bit set.
-It resets a DSO session's keepalive timer, and unilaterally informs the client of
-the new Session Timeout values to use from this point forward in this DSO session.
+It resets a DSO Session's keepalive timer, and unilaterally informs the client of
+the new Session Timeout values to use from this point forward in this DSO Session.
 No client response to this unilateral declaration is required.
 If a client receives a Keepalive Operation TLV with the Acknowledgement bit set
 then this is a fatal error and the client MUST immediately terminate
 the connection with a TCP RST (or equivalent for other protocols).
 
-It is not required that the Keepalive TLV be used in every DSO session.
+It is not required that the Keepalive TLV be used in every DSO Session.
 While many DNS Stateful operations
 will be used in conjunction with a long-lived session state,
 not all DNS Stateful operations require long-lived session state,
 and in some cases the default 15-second value for both the inactivity timeout
-and keepalive interval may be perfectly appropriate. However, it can be noted 
-that for clients that implement only the TLVs defined in this document it is
-the only way for a client to initiate a DSO session.
+and keepalive interval may be perfectly appropriate.
+However, note that for clients that implement only the TLVs defined in
+this document it is the only way for a client to initiate a DSO Session.
 
 The TYPE-DEPENDENT DATA for the the Keepalive TLV is as follows:
 
@@ -1193,17 +1196,17 @@ The TYPE-DEPENDENT DATA for the the Keepalive TLV is as follows:
        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 INACTIVITY TIMEOUT:
-: the inactivity timeout for the current DSO session, specified as a
+: the inactivity timeout for the current DSO Session, specified as a
 32-bit word in network (big endian) order in units of milliseconds.
-This is the timeout at which the client MUST begin closing an inactive DSO session.
+This is the timeout at which the client MUST begin closing an inactive DSO Session.
 The inactivity timeout can be any value of the server's choosing.
 If the client does not gracefully close an inactive DSO
-session, then after twice this interval, or five seconds,
+Session, then after twice this interval, or five seconds,
 whichever is greater, the server will forcibly terminate the
 connection with a TCP RST (or equivalent for other protocols).
 
 KEEPALIVE INTERVAL:
-: the keepalive interval for the current DSO session, specified as a
+: the keepalive interval for the current DSO Session, specified as a
 32-bit word in network (big endian) order in units of milliseconds.
 This is the interval at which a client MUST generate keepalive
 traffic to maintain connection state.
@@ -1226,13 +1229,13 @@ for deciding what lease lifetime is actually granted.
 
 In a server-initiated DSO Keepalive message, the Session Timeouts
 unilaterally inform the client of the new values from this point
-forward in this DSO session. The client MUST NOT generate a
+forward in this DSO Session. The client MUST NOT generate a
 response to the server-initiated DSO Keepalive message.
 
 When a client is sending its second and subsequent Keepalive DSO 
 requests to the server, the client SHOULD continue to request its preferred 
 values each time. This allows flexibility, so that if conditions change during 
-the lifetime of a DSO session, the server can adapt its responses to better fit 
+the lifetime of a DSO Session, the server can adapt its responses to better fit 
 the client's needs.
 
 ### Client handling of received Session Timeout values
@@ -1242,40 +1245,40 @@ or receives a server-initiated DSO Keepalive message, the client has then
 received Session Timeout values dictated by the server. The two timeout values 
 contained in the DSO Keepalive TLV from the server may each be higher, lower, or 
 the same as the respective Session Timeout values the client previously had for 
-this DSO session.
+this DSO Session.
 
 In the case of the keepalive timer, the handling of the received value is 
 straightforward. The act of receiving the message containing the DSO Keepalive 
 TLV itself resets the keepalive timer and updates the keepalive interval for the 
-DSO session. The new keepalive interval indicates the 
+DSO Session. The new keepalive interval indicates the 
 maximum time that may elapse before another message must be sent
-or received on this DSO session, if the DSO session is to remain alive.
+or received on this DSO Session, if the DSO Session is to remain alive.
 
 In the case of the inactivity timeout, the handling of the received value 
 is a little more subtle, though the meaning of the inactivity 
 timeout is unchanged --- it still indicates the maximum permissible time allowed 
-without activity on a DSO session.
+without activity on a DSO Session.
 The act of receiving the message containing the DSO Keepalive TLV does not
 itself reset the inactivity timer. The time elapsed since the last useful
-activity on this DSO session is unaffected by exchange of DSO Keepalive messages.
+activity on this DSO Session is unaffected by exchange of DSO Keepalive messages.
 The new inactivity timeout value in the DSO Keepalive TLV in the received message
 does update the timeout associated with the running inactivity timer;
-that becomes the new maximum permissible time without activity on a DSO session.
+that becomes the new maximum permissible time without activity on a DSO Session.
 
 * If the current inactivity timer value is not greater than the
-new inactivity timeout, then the DSO session may remain open for now.
+new inactivity timeout, then the DSO Session may remain open for now.
 When the inactivity timer value exceeds the new inactivity timeout,
-the client MUST then begin closing the DSO session, as described above.
+the client MUST then begin closing the DSO Session, as described above.
 
 * If the current inactivity timer value is already greater
-than the new inactivity timeout, then this DSO session has
+than the new inactivity timeout, then this DSO Session has
 already been inactive for longer than the server permits,
-and the client MUST immediately begin closing this DSO session.
+and the client MUST immediately begin closing this DSO Session.
 
 * If the current inactivity timer value is already more than twice the
 new inactivity timeout, then the client is immediately considered delinquent
-(this DSO session is immediately eligible to be forcibly terminated by the server)
-and the client MUST immediately begin closing this DSO session.
+(this DSO Session is immediately eligible to be forcibly terminated by the server)
+and the client MUST immediately begin closing this DSO Session.
 However if a server abruptly reduces the inactivity timeout in this
 way, then, to give the client time to close the connection gracefully
 before the server resorts to terminating it forcibly, the server
@@ -1288,9 +1291,9 @@ The inactivity timeout value in the Keepalive TLV (DSO-TYPE=1) has similar
 intent to the EDNS(0) TCP Keepalive Option {{!RFC7828}}.
 A client/server pair that supports DSO MUST NOT use the
 EDNS(0) TCP KeepAlive option within any message after a DSO 
-session has been established.
-Once a DSO session has been established, if either
-client or server receives a DNS message over the DSO session that contains an
+Session has been established.
+Once a DSO Session has been established, if either
+client or server receives a DNS message over the DSO Session that contains an
 EDNS(0) TCP Keepalive option, this is an error and the receiver of the
 EDNS(0) TCP Keepalive option MUST immediately
 terminate the connection with a TCP RST (or equivalent for other protocols).
@@ -1350,7 +1353,7 @@ Registry, with initial values as follows:
 | 0x0000 | RetryDelay | Standard | RFC-TBD |
 | 0x0001 | KeepAlive | Standard | RFC-TBD |
 | 0x0002 | Encryption Padding | Standard | RFC-TBD |
-| 0x0003 - 0x003F | Unassigned, reserved for DSO session management TLVs | | |
+| 0x0003 - 0x003F | Unassigned, reserved for DSO session-management TLVs | | |
 | 0x0040 - 0x77FF | Unassigned | | |
 | 0x7800 - 0x7BFF | Reserved for local / experimental use | | |
 | 0x7C00 - 0x7FFF | Reserved for future expansion | | |

@@ -222,12 +222,12 @@ long-lived (i.e., minutes or hours, rather than seconds).</t>
   <t>Either end of the connection may initiate messages to the other.</t>
 </list></t>
 
-<t>A “DSO session” is established between two endpoints that
+<t>A “DSO Session” is established between two endpoints that
 acknowledge persistent DNS state via the exchange of DSO messages
 over the connection. This is distinct from, for example a DNS-over-TCP session
 as described in RC7766.</t>
 
-<t>A “DSO session” is terminated when the underlying connection is closed.</t>
+<t>A “DSO Session” is terminated when the underlying connection is closed.</t>
 
 <t>The term “server” means the software with a listening socket, awaiting
 incoming connection requests.</t>
@@ -323,55 +323,56 @@ client or server may initiate DSO messages at any time.</t>
 
 <t>However, in the typical case a server will not know in advance whether a
 client supports DSO, so in general, unless it is known in advance by other means
-that a client does support DSO, a server MUST NOT initiate DSO messages until
-a DSO session has been mutually established, as described below.</t>
+that a client does support DSO, a server MUST NOT initiate DSO request messages
+until a DSO Session has been mutually established, as described below.
+Similarly, unless it is known in advance by other means that a server
+does support DSO, a client MUST NOT initiate non-response-requiring
+DSO request messages until after a DSO Session has been mutually established.</t>
 
-<t>A client MAY attempt to initiate DSO messages at any time
-on a connection; receiving a NOTIMP response in reply indicates that the
-server does not implement DSO, and the client SHOULD NOT
+<t>Many, but not all, DSO request messages sent by an initiator
+elicit a response from the responder.
+Whether or not a given DSO request message elicits a response is
+determined by whether or not the first DSO TLV (see <xref target="tlvformat"/>)
+in the message (the Primary TLV) is one that is specified to generate a response.</t>
+
+<t>A DSO Session is established over a connection by the client
+sending a DSO request message of a kind that requires a response,
+such as the DSO Keepalive Operation TLV (see <xref target="keepalive"/>),
+and receiving a response, with matching MESSAGE ID, and RCODE
+set to NOERROR (0), indicating that the DSO request was successful.</t>
+
+<t>If the RCODE is set to DSONOTIMP (tentatively 11) this indicates
+that the server does support DSO, but does not support the particular
+operation the client requested.
+A server MUST NOT return DSONOTIMP for the DSO Keepalive Operation
+TLV, but this could happen in the future, if a client attempts to
+establish a DSO Session using a future response-requiring DSO TLV
+which the server does not understand.
+If the server returns DSONOTIMP then a DSO Session is not
+considered established, but the client is permitted to continue
+sending DNS messages on the connection,
+including other response-requiring DSO messages such as the DSO Keepalive,
+which may result in a successful NOERROR response,
+yielding the establishment of a DSO Session.</t>
+
+<t>If the RCODE is set to any value other than NOERROR (0) or DSONOTIMP
+(tentatively 11), then the client should assume that the server does
+not support DSO. In this case the client is permitted to continue
+sending DNS messages on that connection, but the client SHOULD NOT
 issue further DSO messages on that connection.</t>
 
-<t>The DSO message format (see <xref target="tlvformat"/>) includes a bit in the TLV structure
-that indicates whether or not a particular DSO request message from the
-initiator requires a corresponding DSO response message from the responder.
-A “DSO session” is established over a connection by the client
-sending a DSO request message of a kind that has the acknowledgement bit set,
-indicating that it is a request message of a kind that requires a response.</t>
-
 <t>When the server receives a response-requiring DSO request message
-from a client, and transmits its response, the server considers
-the DSO session established.</t>
+from a client, and transmits a sucessful NOERROR response to that
+request, the server considers the DSO Session established.</t>
 
-<t>When the client receives the server’s DSO response,
-the client considers the DSO session established.</t>
+<t>When the client receives the server’s NOERROR response to its
+DSO request message, the client considers the DSO Session established.</t>
 
-<t>Apart from cases where it is known in advance by external means
-that both client and server support DSO,
-session establishment can only be performed by the client sending
-a DSO request message of a kind that requires a response.</t>
-
-<t>Currently the only suitable such messages are the 
-DSO Keepalive Operation TLV (see <xref target="keepalive"/>) and the
-DSO Encryption Padding TLV (see <xref target="padding"/>).</t>
-
-<t>If future documents define other client-initiated
-response-requiring DSO request messages, then one of these
-messages may also be used to establish a DSO session.</t>
-
-<t>Clients MAY send non-response-requiring DSO request messages at any time
-on a connection, but a “DSO session” is only considered established after:</t>
-
-<t><list style="symbols">
-  <t>the client has sent its first response-requiring DSO request message, and</t>
-  <t>(at the server) the server has received this request and transmitted its response</t>
-  <t>(at the client) the client has received the server’s response</t>
-</list></t>
-
-<t>Once a “DSO session” has been established,
+<t>Once a DSO Session has been established,
 either end may unilaterally send DSO messages at any time,
 and therefore either client or server may be the initiator of a message.</t>
 
-<t>Once a “DSO session” has been established,
+<t>Once a DSO Session has been established,
 clients and servers should behave as described in this specification with
 regard to inactivity timeouts and connection close, not as prescribed in
 the previous specification for DNS over TCP <xref target="RFC7766"/>.</t>
@@ -443,7 +444,7 @@ unless a future document specifies otherwise.</t>
 <t>In a request the MESSAGE ID field MUST be set to a unique value, that the
 initiator is not currently using for any other active operation on this 
 connection.
-For the purposes here, a MESSAGE ID is in use in this DSO session if the
+For the purposes here, a MESSAGE ID is in use in this DSO Session if the
 initiator has used it in a request for which it has not yet received a
 response, or if the client has used it to setup state that it has not yet
 deleted. For example, state could be a subscription <xref target="I-D.ietf-dnssd-push"/>.</t>
@@ -644,7 +645,7 @@ TSIG records.</t>
 
 <t>This specification explicitly prohibits use of the
 EDNS(0) TCP Keepalive Option <xref target="RFC7828"/>
-in <spanx style="emph">any</spanx> messages sent on a DSO session (because it duplicates
+in <spanx style="emph">any</spanx> messages sent on a DSO Session (because it duplicates
 the functionality provided by the DSO Keepalive operation),
 but messages may contain other EDNS(0) options as appropriate.</t>
 
@@ -669,15 +670,15 @@ operation TLV MUST NOT elicit a response.</t>
 For example, it is <spanx style="emph">not</spanx> an error for both client and server to send a request
 message with the same ID. In effect, the 16-bit MESSAGE ID combined with the 
 identity of the initiator (client or server) serves as a 17-bit unique 
-identifier for a particular operation on a DSO session.</t>
+identifier for a particular operation on a DSO Session.</t>
 
 <t>As described in <xref target="header"/> An initiator MUST NOT reuse a MESSAGE ID that is 
 already in use for an 
 outstanding request, unless specified otherwise by the relevant specification 
 for the DSO in question. At the very least, this means 
 that a MESSAGE ID MUST NOT be reused in a particular direction
-on a particular DSO session while the initiator is waiting for a response to a 
-previous request using that MESSAGE ID on that DSO session,
+on a particular DSO Session while the initiator is waiting for a response to a 
+previous request using that MESSAGE ID on that DSO Session,
 unless specified otherwise by the relevant 
 specification for the DSO in question.
 (For a long-lived state the MESSAGE ID for the operation
@@ -746,10 +747,10 @@ widely-available networking APIs currently include this capability.</t>
 
 <t>A session begins when a client makes a new connection to a server.</t>
 
-<t>A DSO session begin as described in <xref target="establishment"/>.</t>
+<t>A DSO Session begin as described in <xref target="establishment"/>.</t>
 
 <t>The client may perform as many DNS operations as it wishes using the
-newly created DSO session. Operations SHOULD be pipelined (i.e., the
+newly created DSO Session. Operations SHOULD be pipelined (i.e., the
 client doesn’t need wait for a response before sending the next message).
 The server MUST act on messages in the order they are transmitted, but
 responses to those messages MAY be sent out of order, if appropriate.</t>
@@ -757,16 +758,16 @@ responses to those messages MAY be sent out of order, if appropriate.</t>
 </section>
 <section anchor="sessiontimeouts" title="DSO Session Timeouts">
 
-<t>Two timeout values are associated with a DSO session: the inactivity timeout, and 
+<t>Two timeout values are associated with a DSO Session: the inactivity timeout, and 
 the keepalive interval.</t>
 
 <t>The first timeout value, the inactivity timeout, is the maximum time for which
-a client may speculatively keep a DSO session open in the expectation that
+a client may speculatively keep a DSO Session open in the expectation that
 it may have future requests to send to that server.</t>
 
 <t>The second timeout value, the keepalive interval, is the maximum permitted
 interval between client messages to the server if the client wishes to keep
-the DSO session alive.</t>
+the DSO Session alive.</t>
 
 <t>The two timeout values are independent. The inactivity timeout may be lower, the 
 same, or higher than the keepalive interval, though in most cases the inactivity 
@@ -777,7 +778,7 @@ keepalive interval come into play, to ensure that a sufficient residual
 amount of traffic is generated to maintain NAT and firewall state
 and to assure client and server that they still have connectivity to each other.</t>
 
-<t>On a new DSO session, if no explicit DSO Keepalive message exchange has taken 
+<t>On a new DSO Session, if no explicit DSO Keepalive message exchange has taken 
 place, the default value for both timeouts is 15 seconds.
 For both timeouts, lower values of the timeout result in higher network traffic
 and higher CPU load on the server.</t>
@@ -787,7 +788,7 @@ and higher CPU load on the server.</t>
 
 <t>At both servers and clients, the generation or reception of any complete
 DNS message, including DNS requests, responses, updates, or DSO
-messages, resets both timers for that DSO session, with the exception
+messages, resets both timers for that DSO Session, with the exception
 that a DSO Keepalive message resets only the keepalive timer, not the inactivity 
 timeout timer.</t>
 
@@ -805,61 +806,61 @@ and remains cleared until transmission of the corresponding response.</t>
 
 <t>For long-lived DNS Stateful operations, an operation is considered in progress
 for as long as the state is active, until it is cancelled.
-This means that a DSO session can exist, with a state 
+This means that a DSO Session can exist, with a state 
 active, with no messages flowing in either direction, for far longer than the 
 inactivity timeout, and this is not an error. This is why there are two separate 
-timers: the inactivity timeout, and the keepalive interval. Just because a DSO 
-session has no traffic for an extended period of time
-does not automatically make that DSO session “inactive”,
+timers: the inactivity timeout, and the keepalive interval.
+Just because a DSO Session has no traffic for an extended period of time
+does not automatically make that DSO Session “inactive”,
 if it has an active state that is awaiting events.</t>
 
 </section>
 <section anchor="the-inactivity-timeout" title="The Inactivity Timeout">
 
 <t>The purpose of the inactivity timeout is for the server to balance its trade off 
-between the costs of setting up new DSO sessions and the costs of maintaining inactive 
-DSO sessions. A server with abundant DSO session capacity can offer a high inactivity timeout, 
-to permit clients to keep a speculative DSO session open for a long time, to save 
-the cost of establishing a new DSO session for future communications with that 
+between the costs of setting up new DSO Sessions and the costs of maintaining inactive 
+DSO Sessions. A server with abundant DSO Session capacity can offer a high inactivity timeout, 
+to permit clients to keep a speculative DSO Session open for a long time, to save 
+the cost of establishing a new DSO Session for future communications with that 
 server. A server with scarce memory resources can offer a low inactivity timeout,
-to cause clients to promptly close DSO sessions whenever they have no outstanding
-operations with that server, and then create a new DSO session later when needed.</t>
+to cause clients to promptly close DSO Sessions whenever they have no outstanding
+operations with that server, and then create a new DSO Session later when needed.</t>
 
 <section anchor="closing-inactive-dso-sessions" title="Closing Inactive DSO Sessions">
 
 <t>A client is NOT required to wait until the inactivity timeout expires
-before closing a DSO session.
-A client MAY close a DSO session at any time, at the client’s discretion.
+before closing a DSO Session.
+A client MAY close a DSO Session at any time, at the client’s discretion.
 If a client determines that it has no current or reasonably anticipated
-future need for an inactive DSO session, then the client SHOULD close that connection.</t>
+future need for an inactive DSO Session, then the client SHOULD close that connection.</t>
 
-<t>If, at any time during the life of the DSO session,
+<t>If, at any time during the life of the DSO Session,
 the inactivity timeout value (i.e., 15 seconds by default) elapses
-without there being any operation active on the DSO session,
+without there being any operation active on the DSO Session,
 the client MUST gracefully close the connection with a
 TLS close_notify followed by a TCP FIN (or equivalent for other protocols).</t>
 
-<t>If, at any time during the life of the DSO session,
+<t>If, at any time during the life of the DSO Session,
 twice the inactivity timeout value (i.e., 30 seconds by default),
 or five seconds, if twice the inactivity timeout value is less than five seconds,
-elapses without there being any operation active on the DSO session,
+elapses without there being any operation active on the DSO Session,
 the server SHOULD consider the client delinquent,
-and forcibly abort the DSO session.
-For DSO sessions over TCP (or over TLS over TCP),
+and forcibly abort the DSO Session.
+For DSO Sessions over TCP (or over TLS over TCP),
 to avoid the burden of having a connection in TIME-WAIT state, instead of
 closing the connection gracefully the server SHOULD abort
 the connection with a TCP RST (or equivalent for other protocols).
 (In the BSD Sockets API this is achieved by setting the
 SO_LINGER option to zero before closing the socket.)</t>
 
-<t>In this context, an operation being active on a DSO session includes
+<t>In this context, an operation being active on a DSO Session includes
 a query waiting for a response, an update waiting for a response,
 or active state,
 but not a DSO Keepalive message exchange itself.
 A DSO Keepalive message exchange resets only the keepalive
 interval timer, not the inactivity timeout timer.</t>
 
-<t>If the client wishes to keep an inactive DSO session open for longer than
+<t>If the client wishes to keep an inactive DSO Session open for longer than
 the default duration without having to send traffic every 15 seconds,
 then it uses the DSO Keepalive message to request
 longer timeout values, as described in <xref target="keepalive"/>.</t>
@@ -868,9 +869,9 @@ longer timeout values, as described in <xref target="keepalive"/>.</t>
 <section anchor="values-for-the-inactivity-timeout" title="Values for the Inactivity Timeout">
 
 <t>For the inactivity timeout value, lower values result in
-more frequent DSO session teardown and re-establishment.
+more frequent DSO Session teardown and re-establishment.
 Higher values result in larger memory burden to maintain state for
-inactive DSO sessions, but lower traffic and CPU load on the server.</t>
+inactive DSO Sessions, but lower traffic and CPU load on the server.</t>
 
 <t>A server may dictate (in a server-initiated Keepalive message,
 or in a response to a client-initiated Keepalive request message)
@@ -884,14 +885,14 @@ before the inactivity timeout is reached.</t>
 
 <t>A shorter inactivity timeout with a longer keepalive interval signals
 to the client that it should not speculatively keep an inactive DSO
-session open for very long without reason, but when it does have an
-active reason to keep a DSO session open, it doesn’t need to be sending
+Session open for very long without reason, but when it does have an
+active reason to keep a DSO Session open, it doesn’t need to be sending
 an aggressive level of keepalive traffic to maintain that session.</t>
 
 <t>A longer inactivity timeout with a shorter keepalive interval
 signals to the client that it may speculatively keep an inactive
-DSO session open for a long time, but to maintain that inactive
-DSO session it should be sending a lot of keepalive traffic.
+DSO Session open for a long time, but to maintain that inactive
+DSO Session it should be sending a lot of keepalive traffic.
 This configuration is expected to be less common.</t>
 
 <t>A server may dictate any value it chooses for the inactivity timeout
@@ -920,22 +921,22 @@ when connectivity is lost, and attempt re-connection if appropriate.</t>
 
 <section anchor="keepalive-interval-expiry" title="Keepalive Interval Expiry">
 
-<t>If, at any time during the life of the DSO session,
+<t>If, at any time during the life of the DSO Session,
 the keepalive interval value (i.e., 15 seconds by default) elapses
-without any DNS messages being sent or received on a DSO session,
-the client MUST take action to keep the DSO session alive,
+without any DNS messages being sent or received on a DSO Session,
+the client MUST take action to keep the DSO Session alive,
 by sending a DSO Keepalive message (see <xref target="keepalive"/>).
 A DSO Keepalive message exchange resets only the keepalive timer, 
 not the inactivity timer.</t>
 
 <t>If a client disconnects from the network abruptly,
-without cleanly closing its DSO session,
+without cleanly closing its DSO Session,
 leaving long-lived state uncanceled,
 the server learns of this after failing to
 receive the required keepalive traffic from that client.
-If, at any time during the life of the DSO session,
+If, at any time during the life of the DSO Session,
 twice the keepalive interval value (i.e., 30 seconds by default) elapses
-without any DNS messages being sent or received on a DSO session,
+without any DNS messages being sent or received on a DSO Session,
 the server SHOULD consider the client delinquent,
 and forcibly abort the connection with a TCP RST (or equivalent for other 
 protocols).</t>
@@ -946,7 +947,7 @@ protocols).</t>
 <t>For the keepalive interval value, lower values result in higher volume keepalive 
 traffic. Higher values of the keepalive interval reduce traffic and CPU load, 
 but have minimal effect on the memory burden
-at the server, because clients keep a DSO session open for the same length of time
+at the server, because clients keep a DSO Session open for the same length of time
 (determined by the inactivity timeout) regardless of the level of keepalive traffic 
 required.</t>
 
@@ -975,7 +976,7 @@ servers grant, a keepalive interval of 60 minutes.</t>
 <t>Note that the lower the keepalive interval value, the higher the load on client
 and server. For example, an keepalive interval value of 100ms would result in a
 continuous stream of at least ten messages per second, in both directions,
-to keep the DSO session alive. And, in this extreme example, a single packet loss and
+to keep the DSO Session alive. And, in this extreme example, a single packet loss and
 retransmission over a long path could introduce a momentary pause in the stream of messages,
 long enough to cause the server to overzealously abort the connection.</t>
 
@@ -990,40 +991,40 @@ terminate the connection with a TCP RST (or equivalent for other protocols).</t>
 </section>
 <section anchor="server-initiated-termination-on-error" title="Server-Initiated Termination on Error">
 
-<t>After sending an error response to a client, the server MAY end the DSO session,
-or may allow the DSO session to remain open. For error conditions
+<t>After sending an error response to a client, the server MAY end the DSO Session,
+or may allow the DSO Session to remain open. For error conditions
 that only affect the single operation in question, the server SHOULD return an
-error response to the client and leave the DSO session open for further operations.
+error response to the client and leave the DSO Session open for further operations.
 For error conditions that are likely to make all operations unsuccessful in the
 immediate future, the server SHOULD return an error response to the client and 
-then end the DSO session by sending a Retry Delay request message, as described in 
+then end the DSO Session by sending a Retry Delay request message, as described in 
 <xref target="delay"/>.</t>
 
 </section>
 <section anchor="error" title="Client Behaviour in Receiving an Error">
 
 <t>Upon receiving an error response from the server, a client SHOULD NOT
-automatically close the DSO session. An error relating to one particular operation
-on a DSO session does not necessarily imply that all other operations on that
-DSO session have also failed, or that future operations will fail. The client
+automatically close the DSO Session. An error relating to one particular operation
+on a DSO Session does not necessarily imply that all other operations on that
+DSO Session have also failed, or that future operations will fail. The client
 should assume that the server will make its own decision about whether or not to
-end the DSO session, based on the server’s determination of whether the error
+end the DSO Session, based on the server’s determination of whether the error
 condition pertains to this particular operation, or would also apply to any
-subsequent operations. If the server does not end the DSO session by
+subsequent operations. If the server does not end the DSO Session by
 sending the client a Retry Delay message (see <xref target="delay"/>) then the client
-SHOULD continue to use that DSO session for subsequent operations.</t>
+SHOULD continue to use that DSO Session for subsequent operations.</t>
 
 </section>
 <section anchor="server-initiated-termination-on-overload" title="Server-Initiated Termination on Overload">
 
-<t>A server MUST NOT close a DSO session with a client,
+<t>A server MUST NOT close a DSO Session with a client,
 except in certain exceptional circumstances, as outlined below.
-In normal operation, closing a DSO session is the client’s responsibility.
+In normal operation, closing a DSO Session is the client’s responsibility.
 The client makes the determination of when to close a DSO
-session based on an evaluation of both its own needs,
+Session based on an evaluation of both its own needs,
 and the inactivity timeout value dictated by the server.</t>
 
-<t>Some exceptional situations where a server may terminate a DSO session include:</t>
+<t>Some exceptional situations where a server may terminate a DSO Session include:</t>
 
 <t><list style="symbols">
   <t>The server is undergoing reconfiguration or maintenance procedures
@@ -1041,10 +1042,10 @@ indicative of a seriously defective client implementation (see <xref target="err
   <t>The server is over capacity and needs to shed some load (see <xref target="retry"/>).</t>
 </list></t>
 
-<t>When a server has to close a DSO session with a client
+<t>When a server has to close a DSO Session with a client
 (because of exceptional circumstances such as those outlined above)
 the server SHOULD, whenever possible, send a Retry Delay Operation TLV
-(see below) informing the client of the reason for the DSO session
+(see below) informing the client of the reason for the DSO Session
 being closed, and allow the client five seconds to receive it
 before the server resorts to forcibly aborting the connection.</t>
 
@@ -1062,7 +1063,7 @@ immediately, putting more burden on the server.</t>
 to shed client load by sending a Retry Delay request message, with an RCODE of 
 SERVFAIL, to inform the client of the overload situation. After sending a Retry 
 Delay request message, the server MUST NOT send any further messages on that 
-DSO session.</t>
+DSO Session.</t>
 
 <t>After sending the Retry Delay request the server SHOULD allow the
 client five seconds to close the connection, and if the client has not
@@ -1083,24 +1084,24 @@ and the server MUST immediately terminate the connection with a TCP RST
 
 <t>At the moment a server chooses to initiate a Retry Delay request message
 there may be DNS requests already in flight from client to server on this 
-DSO session, which will arrive at the server after its Retry Delay request message 
+DSO Session, which will arrive at the server after its Retry Delay request message 
 has been sent.
 The server MUST silently ignore such incoming requests, and MUST NOT generate
 any response messages for them. When the Retry Delay request message from the
 server arrives at the client, the client will determine that any DNS requests
-it previously sent on this DSO session, that have not yet received a response, now 
+it previously sent on this DSO Session, that have not yet received a response, now 
 will certainly not be receiving any response. Such requests should be considered
 failed, and should be retried at a later time, as appropriate.</t>
 
-<t>In the case where some, but not all, of the existing operations on a DSO session 
+<t>In the case where some, but not all, of the existing operations on a DSO Session 
 have become invalid (perhaps because the server has been reconfigured and is no 
 longer authoritative for some of the names),
-but the server is terminating all DSO sessions en masse with a REFUSED (5) RCODE,
+but the server is terminating all DSO Sessions en masse with a REFUSED (5) RCODE,
 the RECONNECT DELAY MAY be zero, indicating that the clients SHOULD immediately
 attempt to re-establish operations.
 It is likely that some of the attempts will be successful and some will not.</t>
 
-<t>In the case where a server is terminating a large number of DSO sessions at once
+<t>In the case where a server is terminating a large number of DSO Sessions at once
 (e.g., if the system is restarting) and the server doesn’t want to be inundated 
 with a flood of simultaneous retries, it SHOULD send different RECONNECT delay 
 values to each client.
@@ -1111,7 +1112,7 @@ client, yielding a post-restart reconnection rate of ten clients per second).</t
 </section>
 <section anchor="client-reconnection" title="Client Reconnection">
 
-<t>After a DSO session is closed by the server, the client SHOULD try to reconnect,
+<t>After a DSO Session is closed by the server, the client SHOULD try to reconnect,
 to that server, or to another suitable server, if more than one is available.
 If reconnecting to the same server, the client MUST respect the indicated delay
 before attempting to reconnect.</t>
@@ -1146,7 +1147,7 @@ connection for zone transfers for operational reasons
 and other services, for one or more DNS zones.
 When a client discovers that the target server for several different operations
 is the same target hostname and port, the client SHOULD use a single
-shared DSO session for all those operations.
+shared DSO Session for all those operations.
 A client SHOULD NOT open multiple connections to the same target host and port
 just because the names being operated on are different or
 happen to fall within different zones.
@@ -1193,11 +1194,11 @@ connecting to this server.</t>
 
 <t>When sent in a DSO request message, from server to client, the 
 Retry Delay TLV (0) is considered an Operation TLV. It is used by a server 
-to request that a client close the DSO session and underlying connection, and 
+to request that a client close the DSO Session and underlying connection, and 
 not to reconnect for the indicated time interval.</t>
 
-<t>In this case it applies to the DSO session as a whole, and the client MUST begin closing the 
-DSO session, as described in <xref target="retry"/>. The RCODE in the message header 
+<t>In this case it applies to the DSO Session as a whole, and the client MUST begin closing the 
+DSO Session, as described in <xref target="retry"/>. The RCODE in the message header 
 MUST indicate the reason for the termination:</t>
 
 <t><list style="symbols">
@@ -1205,7 +1206,7 @@ MUST indicate the reason for the termination:</t>
   <t>SERVFAIL indicates that the server is overloaded due to resource exhaustion.</t>
   <t>REFUSED indicates that the server has been reconfigured and is no longer able 
 to perform one or more of the functions 
-currently being performed on this DSO session (for example, a DNS Push Notification 
+currently being performed on this DSO Session (for example, a DNS Push Notification 
 server could be reconfigured such that is is no longer accepting DNS Push 
 Notification requests for one or more of the currently subscribed names).</t>
 </list></t>
@@ -1231,55 +1232,55 @@ SHOULD NOT attempt this operation again.</t>
 the Retry Delay TLV (0) is considered a Modifier TLV.</t>
 
 <t>The indicated time interval during which the client SHOULD NOT retry
-applies only to the failed operation, not to the DSO session as a whole.</t>
+applies only to the failed operation, not to the DSO Session as a whole.</t>
 
 </section>
 </section>
 <section anchor="keepalive" title="Keepalive Operation TLV">
 
 <t>The Keepalive Operation TLV (DSO-TYPE=1) performs two functions: to reset the
-keepalive timer for the DSO session and to establish the values for the Session Timeouts.</t>
+keepalive timer for the DSO Session and to establish the values for the Session Timeouts.</t>
 
 <t>The Keepalive Operation TLV resets only the keepalive timer, not the inactivity timer.
 The reason for this is that periodic Keepalive Operation TLVs are sent for the
-sole purpose of keeping a DSO session alive, because that DSO session has current
-or recent non-maintenance activity that warrants keeping the DSO session alive.
+sole purpose of keeping a DSO Session alive, because that DSO Session has current
+or recent non-maintenance activity that warrants keeping the DSO Session alive.
 If sending keepalive traffic itself were to reset the inactivity timer, then 
 that would create a circular livelock where keepalive traffic would be sent 
-indefinitely to keep a DSO session alive, where the only activity on that DSO 
-session would be the keepalive traffic keeping the DSO session alive so that further 
+indefinitely to keep a DSO Session alive, where the only activity on that DSO 
+Session would be the keepalive traffic keeping the DSO Session alive so that further 
 keepalive traffic can be sent.</t>
 
 <t>Sending keepalive traffic is considered a maintenance activity
 that is performed in service of other client activities.
 Sending keepalive traffic itself is not considered a client activity.
-For a DSO session to be considered active, it must be carrying something more than just keepalive traffic.
+For a DSO Session to be considered active, it must be carrying something more than just keepalive traffic.
 This is why merely sending a Keepalive Operation TLV does not reset the inactivity timer.</t>
 
 <t>When sent by a client, the Keepalive Operation TLV MUST have the Acknowledgement bit set.
-It resets a DSO session’s keepalive timer, and at the same time requests what the
-Session Timeout values should be from this point forward in the DSO session.
+It resets a DSO Session’s keepalive timer, and at the same time requests what the
+Session Timeout values should be from this point forward in the DSO Session.
 If a server receives a Keepalive Operation TLV without the Acknowledgement bit set
 then this is a fatal error and the server MUST immediately terminate
 the connection with a TCP RST (or equivalent for other protocols).</t>
 
-<t>Once a DSO session is in progress (see <xref target="details"/>) the Keepalive TLV also MAY be initiated by a server.
+<t>Once a DSO Session is in progress (see <xref target="details"/>) the Keepalive TLV also MAY be initiated by a server.
 When sent by a server, the Keepalive Operation TLV MUST NOT have the Acknowledgement bit set.
-It resets a DSO session’s keepalive timer, and unilaterally informs the client of
-the new Session Timeout values to use from this point forward in this DSO session.
+It resets a DSO Session’s keepalive timer, and unilaterally informs the client of
+the new Session Timeout values to use from this point forward in this DSO Session.
 No client response to this unilateral declaration is required.
 If a client receives a Keepalive Operation TLV with the Acknowledgement bit set
 then this is a fatal error and the client MUST immediately terminate
 the connection with a TCP RST (or equivalent for other protocols).</t>
 
-<t>It is not required that the Keepalive TLV be used in every DSO session.
+<t>It is not required that the Keepalive TLV be used in every DSO Session.
 While many DNS Stateful operations
 will be used in conjunction with a long-lived session state,
 not all DNS Stateful operations require long-lived session state,
 and in some cases the default 15-second value for both the inactivity timeout
-and keepalive interval may be perfectly appropriate. However, it can be noted 
-that for clients that implement only the TLVs defined in this document it is
-the only way for a client to initiate a DSO session.</t>
+and keepalive interval may be perfectly appropriate.
+However, note that for clients that implement only the TLVs defined in
+this document it is the only way for a client to initiate a DSO Session.</t>
 
 <t>The TYPE-DEPENDENT DATA for the the Keepalive TLV is as follows:</t>
 
@@ -1295,16 +1296,16 @@ the only way for a client to initiate a DSO session.</t>
 
 <t><list style="hanging">
   <t hangText='INACTIVITY TIMEOUT:'>
-  the inactivity timeout for the current DSO session, specified as a
+  the inactivity timeout for the current DSO Session, specified as a
 32-bit word in network (big endian) order in units of milliseconds.
-This is the timeout at which the client MUST begin closing an inactive DSO session.
+This is the timeout at which the client MUST begin closing an inactive DSO Session.
 The inactivity timeout can be any value of the server’s choosing.
 If the client does not gracefully close an inactive DSO
-session, then after twice this interval, or five seconds,
+Session, then after twice this interval, or five seconds,
 whichever is greater, the server will forcibly terminate the
 connection with a TCP RST (or equivalent for other protocols).</t>
   <t hangText='KEEPALIVE INTERVAL:'>
-  the keepalive interval for the current DSO session, specified as a
+  the keepalive interval for the current DSO Session, specified as a
 32-bit word in network (big endian) order in units of milliseconds.
 This is the interval at which a client MUST generate keepalive
 traffic to maintain connection state.
@@ -1328,13 +1329,13 @@ for deciding what lease lifetime is actually granted.</t>
 
 <t>In a server-initiated DSO Keepalive message, the Session Timeouts
 unilaterally inform the client of the new values from this point
-forward in this DSO session. The client MUST NOT generate a
+forward in this DSO Session. The client MUST NOT generate a
 response to the server-initiated DSO Keepalive message.</t>
 
 <t>When a client is sending its second and subsequent Keepalive DSO 
 requests to the server, the client SHOULD continue to request its preferred 
 values each time. This allows flexibility, so that if conditions change during 
-the lifetime of a DSO session, the server can adapt its responses to better fit 
+the lifetime of a DSO Session, the server can adapt its responses to better fit 
 the client’s needs.</t>
 
 <section anchor="client-handling-of-received-session-timeout-values" title="Client handling of received Session Timeout values">
@@ -1344,39 +1345,39 @@ or receives a server-initiated DSO Keepalive message, the client has then
 received Session Timeout values dictated by the server. The two timeout values 
 contained in the DSO Keepalive TLV from the server may each be higher, lower, or 
 the same as the respective Session Timeout values the client previously had for 
-this DSO session.</t>
+this DSO Session.</t>
 
 <t>In the case of the keepalive timer, the handling of the received value is 
 straightforward. The act of receiving the message containing the DSO Keepalive 
 TLV itself resets the keepalive timer and updates the keepalive interval for the 
-DSO session. The new keepalive interval indicates the 
+DSO Session. The new keepalive interval indicates the 
 maximum time that may elapse before another message must be sent
-or received on this DSO session, if the DSO session is to remain alive.</t>
+or received on this DSO Session, if the DSO Session is to remain alive.</t>
 
 <t>In the case of the inactivity timeout, the handling of the received value 
 is a little more subtle, though the meaning of the inactivity 
 timeout is unchanged — it still indicates the maximum permissible time allowed 
-without activity on a DSO session.
+without activity on a DSO Session.
 The act of receiving the message containing the DSO Keepalive TLV does not
 itself reset the inactivity timer. The time elapsed since the last useful
-activity on this DSO session is unaffected by exchange of DSO Keepalive messages.
+activity on this DSO Session is unaffected by exchange of DSO Keepalive messages.
 The new inactivity timeout value in the DSO Keepalive TLV in the received message
 does update the timeout associated with the running inactivity timer;
-that becomes the new maximum permissible time without activity on a DSO session.</t>
+that becomes the new maximum permissible time without activity on a DSO Session.</t>
 
 <t><list style="symbols">
   <t>If the current inactivity timer value is not greater than the
-new inactivity timeout, then the DSO session may remain open for now.
+new inactivity timeout, then the DSO Session may remain open for now.
 When the inactivity timer value exceeds the new inactivity timeout,
-the client MUST then begin closing the DSO session, as described above.</t>
+the client MUST then begin closing the DSO Session, as described above.</t>
   <t>If the current inactivity timer value is already greater
-than the new inactivity timeout, then this DSO session has
+than the new inactivity timeout, then this DSO Session has
 already been inactive for longer than the server permits,
-and the client MUST immediately begin closing this DSO session.</t>
+and the client MUST immediately begin closing this DSO Session.</t>
   <t>If the current inactivity timer value is already more than twice the
 new inactivity timeout, then the client is immediately considered delinquent
-(this DSO session is immediately eligible to be forcibly terminated by the server)
-and the client MUST immediately begin closing this DSO session.
+(this DSO Session is immediately eligible to be forcibly terminated by the server)
+and the client MUST immediately begin closing this DSO Session.
 However if a server abruptly reduces the inactivity timeout in this
 way, then, to give the client time to close the connection gracefully
 before the server resorts to terminating it forcibly, the server
@@ -1391,9 +1392,9 @@ of the new inactivity timeout, or five seconds, whichever is greater.</t>
 intent to the EDNS(0) TCP Keepalive Option <xref target="RFC7828"/>.
 A client/server pair that supports DSO MUST NOT use the
 EDNS(0) TCP KeepAlive option within any message after a DSO 
-session has been established.
-Once a DSO session has been established, if either
-client or server receives a DNS message over the DSO session that contains an
+Session has been established.
+Once a DSO Session has been established, if either
+client or server receives a DNS message over the DSO Session that contains an
 EDNS(0) TCP Keepalive option, this is an error and the receiver of the
 EDNS(0) TCP Keepalive option MUST immediately
 terminate the connection with a TCP RST (or equivalent for other protocols).</t>
@@ -1474,7 +1475,7 @@ Registry, with initial values as follows:</t>
       <c>Standard</c>
       <c>RFC-TBD</c>
       <c>0x0003 - 0x003F</c>
-      <c>Unassigned, reserved for DSO session management TLVs</c>
+      <c>Unassigned, reserved for DSO session-management TLVs</c>
       <c>&#160;</c>
       <c>&#160;</c>
       <c>0x0040 - 0x77FF</c>
@@ -1565,443 +1566,444 @@ for their helpful contributions to this document.</t>
   </back>
 
 <!-- ##markdown-source:
-H4sIAOCpKVoAA+19a3cbR3Lo9/4Vc+UPJh0AJvW0lXNPlqYom7sSqSUpbzZf
-cgbAgBwLmEFmBqSwks7JD7n3z+WX3Hp2V88Dom1lk5NztWFMAjPd1dXV1fWu
-8XjsmrxZZs+TF2eXyWWTNtlis0zO11mVNnlZ1G5ezop0BQ/Mq3TRjPOsWYzn
-RV2ux3VW1/DIuM6vi3Q5Pnji5vD68+ThweGz8eHh+NGBy9fV86SpNnXz8ODg
-+4OHLq2y9HlyWjRZVWSNu7umic/fJH8pq3d5cZ38WJWbtXt3Fx4av8CJ3Sxt
-nid1M3ebNU5TP08uXh4nz549fTqi3w4PHj1xblbOYZTnyQag/M6t8+cuScZJ
-U87ov/V2VWWLmn8vq4b+cOmmuSkrehJ+kiQvcPBJ8kO2XOY1fcQYuEi39sOy
-ug5QJpfbuslWdXIMSIOh881qBF/OJvRoOp1W2S08fXlMf9cwdQbr+f7JQXJ8
-k1YwBiAfP6OvZ3mzhemy+V1ZzpNj+Is/LucAxfFR8v3jg6eP5KNN0VTw8NvL
-I/pgfVMW8NA/HCZPYezHDx8lh4B6+ipbpfnyeVKl2z/k9WwC4MdLvpwALFl9
-k1eZWfRlswH44m9o5Ufr9TILS9QlHcJHi7zImyx5VZZrs57jDVBVkxdlazFP
-Dg4ff24xjw++S75/9jh59PDgmV3MTMD6Q4rQTGblKl7THyfJi3wGlFWXhVnU
-H8ubovUFrekSoJtvirCrV9nspiiX5XWe1dFOypN26fT7OHmdXqfzdJkVyXEG
-y8nk4/P3i7KaJ5ezPCtmWfImrd4Z3PC3BjHn//w4efzjUQsviNZ58icg8Tmt
-1OPhl3T+h5pB6iLhsh8Jl2mV/o9CQg0LGsbC0QSgKmCxBgVHeJjLwn7BKADQ
-awBmltnxU356sqKn/3CNn3bnuZokbzY1sKgqNzNdlav4Y5rnbZEuFvkyh4/n
-0Sl68MAyAoAmv74xiDk7Th4+e3rw3eeOzfeH3yffPX2WHD56FPGAtUDyh2la
-XP9Ca3B5AQteAde/zXAXz9LrZfbiiDe0SatrBOumadbPv/327u5uUhNf0POH
-3OTbdQoHvP62wDfn2TLdZvN09u5bHoFvmavjN8mbrKKZkALWVTldItucpZsa
-dnW6BSQCZOkMb59kmjV3GRARAfN1Dft1XVZ5c7NK0mKevOA5kqPjPzFZeka+
-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
-PR9qZgcBAA==
+H4sIALm2KVoAA+1923IbR5Loe31FH/nBpBeASV1tbZzYoSnK5oxEakjK3tmX
+jQbQINsCujF9IYWRFLEfcs7P7ZecvFZldTcg+rKzExtHs1yTQHdVVlZWVt5z
+PB67Jm+W2fPkxdllctmkTbZol8n5OqvSJi+L2s3LWZGu4IF5lS6acZ41i/G8
+qMv1uM7qGh4Z1/l1kS7HB0/cHF5/njw8OHw2PjwcPzpw+bp6njRVWzcPDw6+
+PXjo0ipLnyenRZNVRda4u2ua+PxN8lNZvcuL6+T7qmzX7t1deGj8Aid2s7R5
+ntTN3LVrnKZ+nly8PE6ePXv6dES/HR48euLcrJzDKM+TFqD8xq3z5y5JxklT
+zui/9WZVZYuafy+rhv5wadvclBU9CT9Jkhc4+CT5Llsu85o+YgxcpBv7YVld
+ByiTy03dZKs6OQakwdB5uxrBl7MJPZpOp1V2C09fHtPfNUydwXq+fXKQHN+k
+FYwByMfP6OtZ3mxgumx+V5bz5Bj+4o/LOUBxfJR8+/jg6SP5qC2aCh5+e3lE
+H6xvygIe+qfD5CmM/fjho+QQUE9fZas0Xz5PqnTzh7yeTQD8eMmXE4Alq2/y
+KjOLvmxagC/+hlZ+tF4vs7BEXdIhfLTIi7zJkldluTbrOW6Bqpq8KDuLeXJw
++Phzi3l88E3y7bPHyaOHB8/sYmYC1h9ShGYyK1fxmv44SV7kM6CsuizMov5Y
+3hSdL2hNlwDdvC3Crl5ls5uiXJbXeVZHOylP2qXT7+PkdXqdztNlViTHGSwn
+k4/P3y/Kap5czvKsmGXJm7R6Z3DD3xrEnP/r4+Tx90cdvCBa58mfgMTntFKP
+h5/T+R9qBqmPhMthJFymVfo/Cgk1LGg7Fo4mAFUBizUoOMLDXBb2C0YBgF4D
+MLPMjp/y05MVPf2Ha/y0P8/VJHnT1sCiqtzMdFWu4o9pnrdFuljkyxw+nken
+6MEDywgAmvz6xiDm7Dh5+OzpwTefOzbfHn6bfPP0WXL46FHEA9YCyR+maXH9
+M63B5QUseAVc/zbDXTxLr5fZiyPe0CatrhGsm6ZZP//667u7u0lNfEHPH3KT
+r9cpHPD66wLfnGfLdJPN09m7r3kEvmWujt8kb7KKZkIKWFfldIlsc5a2Nezq
+dANIBMjSGd4+yTRr7jIgIgLmyxr267qs8uZmlaTFPHnBcyRHx39isvSMfDf7
+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
+Kp+2JtHc3DEAFxpwp+nsnft/Pao5BMsIAQA=
 
 -->
 
