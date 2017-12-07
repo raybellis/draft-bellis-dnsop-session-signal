@@ -532,7 +532,7 @@ A "Modifier TLV" specifies additional parameters
 relating to the operation. Immediately following the Operation TLV, if present,
 a DSO message MAY contain one or more Modifier TLVs.
 
-####  Unrecognized TLVs
+#### Unrecognized TLVs
 
 If a DSO request is received containing an unrecognized
 Operation TLV, the receiver MUST send a response with matching
@@ -770,8 +770,8 @@ elapses without there being any operation active on the DSO Session,
 the server SHOULD consider the client delinquent,
 and forcibly abort the DSO Session.
 For DSO Sessions over TCP (or over TLS over TCP),
-to avoid the burden of having a connection in TIME-WAIT state, instead of
-closing the connection gracefully the server SHOULD abort
+to avoid the burden of having a connection in TIME-WAIT state,
+instead of closing the connection gracefully the server SHOULD abort
 the connection with a TCP RST (or equivalent for other protocols).
 (In the BSD Sockets API this is achieved by setting the
 SO_LINGER option to zero before closing the socket.)
@@ -989,8 +989,8 @@ the connection with a TCP RST (or equivalent for other protocols).
 
 Upon receipt of a Retry Delay request from the server, the client MUST
 make note of the reconnect delay for this server, and then immediately
-close the connection. This is to place the burden of TCP's TIME-WAIT state on 
-the client.
+close the connection.
+This is to place the burden of TCP's TIME-WAIT state on the client.
 
 A Retry Delay request message MUST NOT be initiated by a client.
 If a server receives a Retry Delay request message this is an error
@@ -1109,9 +1109,9 @@ In this case it applies to the DSO Session as a whole, and the client MUST begin
 DSO Session, as described in {{retry}}. The RCODE in the message header 
 MUST indicate the reason for the termination:
 
-*  NOERROR indicates a routine shutdown. 
-*  SERVFAIL indicates that the server is overloaded due to resource exhaustion. 
-*  REFUSED indicates that the server has been reconfigured and is no longer able 
+* NOERROR indicates a routine shutdown. 
+* SERVFAIL indicates that the server is overloaded due to resource exhaustion. 
+* REFUSED indicates that the server has been reconfigured and is no longer able 
 to perform one or more of the functions 
 currently being performed on this DSO Session (for example, a DNS Push Notification 
 server could be reconfigured such that is is no longer accepting DNS Push 
