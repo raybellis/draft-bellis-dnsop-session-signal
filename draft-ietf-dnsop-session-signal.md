@@ -308,7 +308,8 @@ If the RCODE is set to DSONOTIMP (tentatively 11) this indicates
 that the server does support DSO, but does not support the particular
 operation the client requested.
 A server MUST NOT return DSONOTIMP for the DSO Keepalive Operation
-TLV, but this could happen in the future, if a client attempts to
+TLV. However, in future it is possible that a server may return DSONOTIMP
+to the first DSO message sent by the client if a client attempts to
 establish a DSO Session using a future response-requiring DSO TLV
 which the server does not understand.
 If the server returns DSONOTIMP then a DSO Session is not
@@ -684,7 +685,8 @@ responses to those messages MAY be sent out of order, if appropriate.
 ## DSO Session Timeouts {#sessiontimeouts}
 
 Two timeout values are associated with a DSO Session: the inactivity timeout, and 
-the keepalive interval. 
+the keepalive interval. Both values are carried in the same TLV, the DSO Keepalive
+Operation TLV (see section {{keepalive}}).
 
 The first timeout value, the inactivity timeout, is the maximum time for which
 a client may speculatively keep a DSO Session open in the expectation that
@@ -1368,6 +1370,30 @@ are subject to the same constraints as any other DNS over TLS messages
 and MUST NOT be sent in the clear before the TLS session is established.
 
 The data field of the "Encryption Padding" TLV could be used as a covert channel.
+
+# Privacy Considerations
+
+The intention of this specification is to enable stateful information 
+(connection parameters and DNS data) directly related to the DSO Session to be 
+transmitted. 
+
+Future extensions to this specification (and non-standard implementations) 
+could, in principle, define TLVs that include client identifiers and personal 
+data in a similar manner to some non-standard deployed uses of EDNS0 
+{{?I-D.tale-dnsop-edns0-clientid}}. 
+
+Such uses of the protocol are highly likely to compromise the privacy of DNS 
+users and increase the tracking capabilities of pervasive monitoring in conflict
+with {{?RFC7258}} (Pervasive monitoring is an Attack).  
+
+Any such extensions proposed to the IETF would require careful considerations 
+with regard to the principles laid out in {{?RFC6973}} (Privacy Considerations for 
+Internet Protocols) and {{?RFC8165}} (Design Considerations for Metadata Insertion) 
+and should require at a minimum that those options are only used on encrypted 
+transports (or the data is directly encrypted) 
+
+Any such non-standard uses of this protocol are regarded as a direct violation
+of {{?RFC7258}}.
 
 # Acknowledgements
 
