@@ -399,15 +399,16 @@
 <link href="#rfc.section.5.6" rel="Chapter" title="5.6 Server-Initiated Termination on Error">
 <link href="#rfc.section.5.7" rel="Chapter" title="5.7 Client Behaviour in Receiving an Error">
 <link href="#rfc.section.5.8" rel="Chapter" title="5.8 Server-Initiated Termination on Overload">
-<link href="#rfc.section.5.9" rel="Chapter" title="5.9 Retry Delay Operation TLV">
+<link href="#rfc.section.5.9" rel="Chapter" title="5.9 Retry Delay TLV">
 <link href="#rfc.section.5.9.1" rel="Chapter" title="5.9.1 Outstanding Operations">
 <link href="#rfc.section.5.9.2" rel="Chapter" title="5.9.2 Client Reconnection">
 <link href="#rfc.section.6" rel="Chapter" title="6 Connection Sharing">
 <link href="#rfc.section.7" rel="Chapter" title="7 Base TLVs for DNS Stateful Operations">
 <link href="#rfc.section.7.1" rel="Chapter" title="7.1 Retry Delay TLV">
-<link href="#rfc.section.7.1.1" rel="Chapter" title="7.1.1 Use as an Operation TLV">
-<link href="#rfc.section.7.1.2" rel="Chapter" title="7.1.2 Use as a Modifier TLV">
-<link href="#rfc.section.7.2" rel="Chapter" title="7.2 Keepalive Operation TLV">
+<link href="#rfc.section.7.1.1" rel="Chapter" title="7.1.1 Use as a Primary TLV">
+<link href="#rfc.section.7.1.2" rel="Chapter" title="7.1.2 Use as a Response TLV">
+<link href="#rfc.section.7.1.3" rel="Chapter" title="7.1.3 Use by Client">
+<link href="#rfc.section.7.2" rel="Chapter" title="7.2 Keepalive TLV">
 <link href="#rfc.section.7.2.1" rel="Chapter" title="7.2.1 Client handling of received Session Timeout values">
 <link href="#rfc.section.7.2.2" rel="Chapter" title="7.2.2 Relation to EDNS(0) TCP Keepalive Option">
 <link href="#rfc.section.7.3" rel="Chapter" title="7.3 Encryption Padding TLV">
@@ -561,7 +562,7 @@
 </li>
 <li>5.8.   <a href="#rfc.section.5.8">Server-Initiated Termination on Overload</a>
 </li>
-<li>5.9.   <a href="#rfc.section.5.9">Retry Delay Operation TLV</a>
+<li>5.9.   <a href="#rfc.section.5.9">Retry Delay TLV</a>
 </li>
 <ul><li>5.9.1.   <a href="#rfc.section.5.9.1">Outstanding Operations</a>
 </li>
@@ -573,11 +574,13 @@
 </li>
 <ul><li>7.1.   <a href="#rfc.section.7.1">Retry Delay TLV</a>
 </li>
-<ul><li>7.1.1.   <a href="#rfc.section.7.1.1">Use as an Operation TLV</a>
+<ul><li>7.1.1.   <a href="#rfc.section.7.1.1">Use as a Primary TLV</a>
 </li>
-<li>7.1.2.   <a href="#rfc.section.7.1.2">Use as a Modifier TLV</a>
+<li>7.1.2.   <a href="#rfc.section.7.1.2">Use as a Response TLV</a>
 </li>
-</ul><li>7.2.   <a href="#rfc.section.7.2">Keepalive Operation TLV</a>
+<li>7.1.3.   <a href="#rfc.section.7.1.3">Use by Client</a>
+</li>
+</ul><li>7.2.   <a href="#rfc.section.7.2">Keepalive TLV</a>
 </li>
 <ul><li>7.2.1.   <a href="#rfc.section.7.2.1">Client handling of received Session Timeout values</a>
 </li>
@@ -615,8 +618,8 @@
 <p id="rfc.section.1.p.1">The use of transports for DNS other than UDP is being increasingly specified, for example, DNS over TCP <a href="#RFC1035" class="xref">[RFC1035]</a><a href="#RFC7766" class="xref">[RFC7766]</a> and DNS over TLS <a href="#RFC7858" class="xref">[RFC7858]</a>.  Such transports can offer persistent, long-lived sessions and therefore when using them for transporting DNS messages it is of benefit to have a mechanism that can establish parameters associated with those sessions, such as timeouts.  In such situations it is also advantageous to support server initiated messages.</p>
 <p id="rfc.section.1.p.2">The existing EDNS(0) Extension Mechanism for DNS <a href="#RFC6891" class="xref">[RFC6891]</a> is explicitly defined to only have &#8220;per-message&#8221; semantics. Whilst EDNS(0) has been used to signal at least one session-related parameter (the EDNS(0) TCP Keepalive option <a href="#RFC7828" class="xref">[RFC7828]</a>) the result is less than optimal due to the restrictions imposed by the EDNS(0) semantics and the lack of server-initiated signalling.  For example, a server cannot arbitrarily instruct a client to close a connection because the server can only send EDNS(0) options in responses to queries that contained EDNS(0) options.</p>
 <p id="rfc.section.1.p.3">This document defines a new DNS OPCODE, for DNS Stateful Operations (DSO).  DSO messages are used to communicate operations within persistent stateful sessions, expressed using type-length-value (TLV) syntax.  This document defines an initial set of TLVs, including ones used to manage session timeouts and termination.</p>
-<p id="rfc.section.1.p.4">All three of the TLVs defined here are mandatory for all implementations of DSO.  Additional TLVs may be defined in additional specifications.</p>
-<p id="rfc.section.1.p.5">It should be noted that the message format for DNS Stateful Operations (see <a href="#format" class="xref">Section 4.2</a>) differs from the traditional DNS message format used for standard queries and responses.  The standard twelve-octet header is used, but the four count fields (QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT) are set to zero and their corresponding sections are not present.  The actual data pertaining to DNS Stateful Operations (expressed in TLV format) is appended to the end of the DNS message header.  When displayed using packet analyzer tools that have not been updated to recognize the DNS Stateful Operations format, this will result in the Stateful Operations data being displayed as unknown additional data after the end of the DNS message.  It is likely that future updates to these tools will add the ability to recognize, decode, and display the Stateful Operations data.</p>
+<p id="rfc.section.1.p.4">All three of the TLVs defined here are mandatory for all implementations of DSO.  Further TLVs may be defined in additional specifications.</p>
+<p id="rfc.section.1.p.5">It should be noted that the message format for DNS Stateful Operations (see <a href="#format" class="xref">Section 4.2</a>) differs from the traditional DNS message format used for standard queries and responses.  The standard twelve-octet header is used, but the four count fields (QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT) are set to zero and their corresponding sections are not present.  The actual data pertaining to DNS Stateful Operations (expressed in TLV syntax) is appended to the end of the DNS message header.  When displayed using packet analyzer tools that have not been updated to recognize the DNS Stateful Operations format, this will result in the Stateful Operations data being displayed as unknown additional data after the end of the DNS message.  It is likely that future updates to these tools will add the ability to recognize, decode, and display the Stateful Operations data.</p>
 <p id="rfc.section.1.p.6">This new format has distinct advantages over an RR-based format because it is more explicit and more compact. Each TLV definition is specific to the use case, and as a result contains no redundant or overloaded fields.  Importantly, it completely avoids conflating DNS Stateful Operations in anyway with normal DNS operations or with existing EDNS(0) based functionality.  A goal of this approach is to avoid the operational issues that have befallen EDNS(0), particularly relating to middle-box behaviour.</p>
 <p id="rfc.section.1.p.7">With EDNS(0), multiple options may be packed into a single OPT pseudo-RR, and there is no generalized mechanism for a client to be able to tell whether a server has processed or otherwise acted upon each individual option within the combined OPT RR.  The specifications for each individual option need to define how each different option is to be acknowledged, if necessary.</p>
 <p id="rfc.section.1.p.8">In contrast to EDNS(0), with DNS Stateful Operations there is no compelling motivation to pack multiple operations into a single message for efficiency reasons, because DNS Stateful Operations always operates using a connection-oriented transport protocol.  Each Stateful operation is communicated in its own separate DNS message, and the transport protocol can take care of packing separate DNS messages into a single IP packet if appropriate.  For example, TCP can pack multiple small DNS messages into a single TCP segment.  This simplification allows for clearer semantics.  Each DSO request message communicates just one primary operation, and the RCODE in the corresponding response message indicates the success or failure of that operation.</p>
@@ -640,16 +643,19 @@
 <p id="rfc.section.2.p.10">The terms &#8220;initiator&#8221; and &#8220;responder&#8221; correspond respectively to the initial sender and subsequent receiver of a DSO request message, regardless of which was the &#8220;client&#8221; and &#8220;server&#8221; in the usual DNS sense.</p>
 <p id="rfc.section.2.p.11">The term &#8220;sender&#8221; may apply to either an initiator (when sending a DNS Stateful Operation request message) or a responder (when sending a DNS Stateful Operation response message).</p>
 <p id="rfc.section.2.p.12">Likewise, the term &#8220;receiver&#8221; may apply to either a responder (when receiving a DNS Stateful Operation request message) or an initiator (when receiving a DNS Stateful Operation response message).</p>
-<p id="rfc.section.2.p.13">DNS Stateful Operations are expressed using type-length-value (TLV) syntax.</p>
-<p id="rfc.section.2.p.14">Two timers (elapsed time since an event) are defined in this document:</p>
+<p id="rfc.section.2.p.13">DNS Stateful Operations uses &#8220;DSO request messages&#8221; and &#8220;DSO response messages&#8221;.  DSO request messages are further subdivided into two variants, &#8220;acknowledged request messages&#8221; (which generate a corresponding response message) and &#8220;unacknowledged request messages&#8221; (which do not generate any corresponding response message).</p>
+<p id="rfc.section.2.p.14">The content of DSO messages is expressed using type-length-value (TLV) syntax.</p>
+<p id="rfc.section.2.p.15">In a DSO request message the first TLV is referred to as the &#8220;Primary TLV&#8221; and determines the nature of the operation being performed, including whether it is an acknowledged or unacknowledged operation; any other TLVs in a DSO request message are referred to as &#8220;Additional TLVs&#8221; and serve as modifiers affecting the primary operation.</p>
+<p id="rfc.section.2.p.16">A DSO response message may contain no TLVs, or it may contain one or more TLVs as appropriate to the information being communicated.  In the context of DSO response messages the qualifiers &#8220;Primary&#8221; and &#8220;Additional&#8221; do not apply.</p>
+<p id="rfc.section.2.p.17">Two timers (elapsed time since an event) are defined in this document:</p>
 <p></p>
 
 <ul>
 <li>an inactivity timer (see <a href="#keepalive" class="xref">Section 7.2</a> and <a href="#inactivetimer" class="xref">Section 5.3</a>)</li>
 <li>a keepalive timer (see <a href="#keepalive" class="xref">Section 7.2</a> and <a href="#keepalivetimer" class="xref">Section 5.5</a>)</li>
 </ul>
-<p id="rfc.section.2.p.16">The timeouts associated with these timers are called the inactivity timeout and the keepalive interval respectively.  The term &#8220;Session Timeouts&#8221; is used to refer to this pair of timeout values.</p>
-<p id="rfc.section.2.p.17">Reseting a timer means resetting the timer value to zero and starting the timer again. Clearing a timer means resetting the timer value to zero but NOT starting the time again.</p>
+<p id="rfc.section.2.p.19">The timeouts associated with these timers are called the inactivity timeout and the keepalive interval respectively.  The term &#8220;Session Timeouts&#8221; is used to refer to this pair of timeout values.</p>
+<p id="rfc.section.2.p.20">Reseting a timer means resetting the timer value to zero and starting the timer again. Clearing a timer means resetting the timer value to zero but NOT starting the time again.</p>
 <h1 id="rfc.section.3">
 <a href="#rfc.section.3">3.</a> <a href="#discussion" id="discussion">Discussion</a>
 </h1>
@@ -669,9 +675,9 @@
 <p id="rfc.section.4.1.p.2">DNS over plain UDP <a href="#RFC0768" class="xref">[RFC0768]</a> is not appropriate since it fails on the requirement for in-order message delivery, and, in the presence of NAT gateways and firewalls with short UDP timeouts, it fails to provide a persistent bi-directional communication channel unless an excessive amount of keepalive traffic is used.</p>
 <p id="rfc.section.4.1.p.3">In some environments it may be known in advance by external means that both client and server support DSO, and in these cases either client or server may initiate DSO messages at any time.</p>
 <p id="rfc.section.4.1.p.4">However, in the typical case a server will not know in advance whether a client supports DSO, so in general, unless it is known in advance by other means that a client does support DSO, a server MUST NOT initiate DSO request messages until a DSO Session has been mutually established, as described below.  Similarly, unless it is known in advance by other means that a server does support DSO, a client MUST NOT initiate non-response-requiring DSO request messages until after a DSO Session has been mutually established.</p>
-<p id="rfc.section.4.1.p.5">Many, but not all, DSO request messages sent by an initiator elicit a response from the responder.  Whether or not a given DSO request message elicits a response is determined by whether or not the first DSO TLV (see <a href="#tlvformat" class="xref">Section 4.2.2.1</a>) in the message (the Primary TLV) is one that is specified to generate a response.</p>
-<p id="rfc.section.4.1.p.6">A DSO Session is established over a connection by the client sending a DSO request message of a kind that requires a response, such as the DSO Keepalive Operation TLV (see <a href="#keepalive" class="xref">Section 7.2</a>), and receiving a response, with matching MESSAGE ID, and RCODE set to NOERROR (0), indicating that the DSO request was successful.</p>
-<p id="rfc.section.4.1.p.7">If the RCODE is set to DSONOTIMP (tentatively 11) this indicates that the server does support DSO, but does not support the particular operation the client requested.  A server MUST NOT return DSONOTIMP for the DSO Keepalive Operation TLV, but this could happen in the future, if a client attempts to establish a DSO Session using a future response-requiring DSO TLV which the server does not understand.  If the server returns DSONOTIMP then a DSO Session is not considered established, but the client is permitted to continue sending DNS messages on the connection, including other response-requiring DSO messages such as the DSO Keepalive, which may result in a successful NOERROR response, yielding the establishment of a DSO Session.</p>
+<p id="rfc.section.4.1.p.5">Many, but not all, DSO request messages sent by an initiator elicit a response from the responder.  Whether or not a given DSO request message elicits a response is determined by whether or not the first DSO TLV (see <a href="#tlvsyntax" class="xref">Section 4.2.2.1</a>) in the message (the Primary TLV) is one that is specified to generate a response.</p>
+<p id="rfc.section.4.1.p.6">A DSO Session is established over a connection by the client sending a DSO request message of a kind that requires a response, such as the DSO Keepalive TLV (see <a href="#keepalive" class="xref">Section 7.2</a>), and receiving a response, with matching MESSAGE ID, and RCODE set to NOERROR (0), indicating that the DSO request was successful.</p>
+<p id="rfc.section.4.1.p.7">If the RCODE is set to DSONOTIMP (tentatively 11) this indicates that the server does support DSO, but does not support the particular operation the client requested.  A server MUST NOT return DSONOTIMP for the DSO Keepalive TLV, but this could happen in the future, if a client attempts to establish a DSO Session using a future response-requiring DSO TLV which the server does not understand.  If the server returns DSONOTIMP then a DSO Session is not considered established, but the client is permitted to continue sending DNS messages on the connection, including other response-requiring DSO messages such as the DSO Keepalive, which may result in a successful NOERROR response, yielding the establishment of a DSO Session.</p>
 <p id="rfc.section.4.1.p.8">If the RCODE is set to any value other than NOERROR (0) or DSONOTIMP (tentatively 11), then the client should assume that the server does not support DSO. In this case the client is permitted to continue sending DNS messages on that connection, but the client SHOULD NOT issue further DSO messages on that connection.</p>
 <p id="rfc.section.4.1.p.9">When the server receives a response-requiring DSO request message from a client, and transmits a sucessful NOERROR response to that request, the server considers the DSO Session established.</p>
 <p id="rfc.section.4.1.p.10">When the client receives the server&#8217;s NOERROR response to its DSO request message, the client considers the DSO Session established.</p>
@@ -711,13 +717,13 @@
 <h1 id="rfc.section.4.2.1">
 <a href="#rfc.section.4.2.1">4.2.1.</a> <a href="#header" id="header">Header</a>
 </h1>
-<p id="rfc.section.4.2.1.p.1">In a request the MESSAGE ID field MUST be set to a unique value, that the initiator is not currently using for any other active operation on this connection.  For the purposes here, a MESSAGE ID is in use in this DSO Session if the initiator has used it in a request for which it has not yet received a response, or if the client has used it to setup state that it has not yet deleted. For example, state could be a subscription <a href="#I-D.ietf-dnssd-push" class="xref">[I-D.ietf-dnssd-push]</a>.</p>
-<p id="rfc.section.4.2.1.p.2">In a response the MESSAGE ID field MUST contain a copy of the value of the MESSAGE ID field in the request being responded to.</p>
+<p id="rfc.section.4.2.1.p.1">In an unacknowledged request message the MESSAGE ID field MUST be set to zero.  In an acknowledged request message the MESSAGE ID field MUST be set to a unique nonzero value, that the initiator is not currently using for any other active operation on this connection.  For the purposes here, a MESSAGE ID is in use in this DSO Session if the initiator has used it in a request for which it is still awaiting a response, or if the client has used it to setup state that it has not yet deleted.  For example, state could be a Push Notification subscription <a href="#I-D.ietf-dnssd-push" class="xref">[I-D.ietf-dnssd-push]</a> or a Discovery Relay interface subscription <a href="#I-D.sctl-dnssd-mdns-relay" class="xref">[I-D.sctl-dnssd-mdns-relay]</a>.</p>
+<p id="rfc.section.4.2.1.p.2">In a response message the MESSAGE ID field MUST contain a copy of the value of the MESSAGE ID field in the acknowledged request message being responded to.</p>
 <p id="rfc.section.4.2.1.p.3">In a request the DNS Header QR bit MUST be zero (QR=0).  If the QR bit is not zero the message is not a request.</p>
 <p id="rfc.section.4.2.1.p.4">In a response the DNS Header QR bit MUST be one (QR=1).  If the QR bit is not one the message is not a response.</p>
 <p id="rfc.section.4.2.1.p.5">The DNS Header OPCODE field holds the DSO OPCODE value (tentatively 6).</p>
 <p id="rfc.section.4.2.1.p.6">The Z bits are currently unused in DSO messages, and in both DSO requests and DSO responses the Z bits MUST be set to zero (0) on transmission and MUST be silently ignored on reception, unless a future document specifies otherwise.</p>
-<p id="rfc.section.4.2.1.p.7">In a request message (QR=0) the RCODE is generally set to zero on transmission, and silently ignored on reception, except where specified otherwise (for example, the Retry Delay operation (see <a href="#delay" class="xref">Section 7.1</a>), where the RCODE indicates the reason for termination).</p>
+<p id="rfc.section.4.2.1.p.7">In a request message (QR=0) the RCODE is generally set to zero on transmission, and silently ignored on reception, except where specified otherwise (for example, the Retry Delay request message (see <a href="#delay" class="xref">Section 7.1</a>), where the RCODE indicates the reason for termination).</p>
 <p id="rfc.section.4.2.1.p.8">The RCODE value in a response may be one of the following values:</p>
 <table cellpadding="3" cellspacing="0" class="tt full center">
 <thead><tr>
@@ -759,7 +765,7 @@
 <tr>
 <td class="right">9</td>
 <td class="left">NOTAUTH</td>
-<td class="left">Not Authoritative (TLV dependent)</td>
+<td class="left">Not Authoritative (TLV-dependent)</td>
 </tr>
 <tr>
 <td class="right">11</td>
@@ -773,28 +779,23 @@
 <h1 id="rfc.section.4.2.2">
 <a href="#rfc.section.4.2.2">4.2.2.</a> <a href="#dsodata" id="dsodata">DSO Data</a>
 </h1>
-<p id="rfc.section.4.2.2.p.1">The standard twelve-octet DNS message header is followed by the DSO Data.</p>
-<p id="rfc.section.4.2.2.p.2">The first TLV in a DSO request message is called the Operation TLV. Any subsequent TLVs after this initial Operation TLV are called Modifier TLVs.</p>
-<p id="rfc.section.4.2.2.p.3">Depending on the operation a DSO response can contain:</p>
-<p></p>
-
-<ul>
-<li>No TLVs</li>
-<li>Only an Operation TLV</li>
-<li>An Operation TLV followed by one or more Modifier TLVs</li>
-<li>Only Modifier TLVs</li>
-</ul>
+<p id="rfc.section.4.2.2.p.1">The standard twelve-octet DNS message header with its zero-valued count fields is followed by the DSO Data, expressed using TLV syntax, as described below <a href="#tlvsyntax" class="xref">Section 4.2.2.1</a>.</p>
+<p id="rfc.section.4.2.2.p.2">A DSO message may be either a request message or a response message, as indicated by the QR bit in the DNS message header.  DSO request messages are further subdivided into two variants, acknowledged request messages (which generate a corresponding response message) and unacknowledged request messages (which do not generate any corresponding response message).</p>
+<p id="rfc.section.4.2.2.p.3">A DSO request message MUST contain at least one TLV.  The first TLV in a DSO request message is referred to as the &#8220;Primary TLV&#8221; and determines the nature of the operation being performed, including whether it is an acknowledged or unacknowledged operation.  In some cases it may be appropriate to include other TLVs in a request message, such as the Encryption Padding TLV (<a href="#padding" class="xref">Section 7.3</a>), and these extra TLVs are referred to as the &#8220;Additional TLVs&#8221;.</p>
+<p id="rfc.section.4.2.2.p.4">A DSO response message may contain no TLVs, or it may contain one or more TLVs.  In the context of DSO response messages, the qualifiers &#8220;Primary&#8221; and &#8220;Additional&#8221; do not apply.  A DSO response message is specified to carry TLVs appropriate to the information being communicated.  A DSO response message may contain the same TLV type as the Primary TLV from the corresponding DSO request message, but it is not required to do so.  The MESSAGE ID field in the DNS message header is sufficient to identify to which DSO request message this response message relates.</p>
+<p id="rfc.section.4.2.2.p.5">Most DSO request messages are acknowledged request messages, specified to generate corresponding responses.  In some specialized high-traffic use cases, it may be appropriate to use unacknowledged request messages.  Unacknowledged request messages can be more efficient on the network, because they don&#8217;t generate a stream of corresponding reply messages.  Using unacknowledged request messages can also simplify software in some cases, by removing need for the software to maintain state while it waits to receive replies it doesn&#8217;t care about.  When the specification for a particular TLV states that, when used as the Primary (i.e., first) TLV in a request message, that request message is to be unacknowledged, the MESSAGE ID field MUST be set to zero and the receiver MUST NOT generate any response message corresponding to this unacknowledged request message.</p>
+<p id="rfc.section.4.2.2.p.6">The previous point, that the receiver MUST NOT generate responses to unacknowledged request messages, applies even in the case of errors.  When a DSO request message is received with the MESSAGE ID field set to zero, the receiver MUST NOT generate any response.  For example, if the DSO-TYPE in the Primary TLV is unrecognized, then a DSNOTIMP error MUST NOT be returned; instead the receiver MUST immediately terminate the connection with a TCP RST (or equivalent for other protocols).</p>
+<p id="rfc.section.4.2.2.p.7">Unacknowledged request messages MUST NOT be used &#8220;speculatively&#8221; in cases where the sender doesn&#8217;t know if the receiver supports the Primary TLV in the message, because there is no way to receive any response to indicate success or failure of the request message (the request message does not contain a unique MESSAGE ID with which to associate a response with its corresponding request).  Unacknowledged request messages are only appropriate in cases where the sender already knows that the receiver supports and wishes to receive these messages.  For example, after a client has subscribed for Push Notifications, the subsequent event notifications are then sent as unacknowledged request messages, and this is appropriate because the client initiated the message stream by virtue of its Push Notification subscription, thereby indicating its support of Push Notifications, and its desire to receive event notifications <a href="#I-D.ietf-dnssd-push" class="xref">[I-D.ietf-dnssd-push]</a>.  After an mDNS Relay client has subscribed to receive inbound mDNS traffic from an mDNS Relay, the subsequent stream of received packets is then sent using unacknowledged request messages, and this is appropriate because the client initiated the message stream by virtue of its mDNS Relay link subscription, thereby indicating its support of mDNS Relay, and its desire to receive inbound mDNS packets over that DSO session <a href="#I-D.sctl-dnssd-mdns-relay" class="xref">[I-D.sctl-dnssd-mdns-relay]</a>.</p>
 <h1 id="rfc.section.4.2.2.1">
-<a href="#rfc.section.4.2.2.1">4.2.2.1.</a> <a href="#tlvformat" id="tlvformat">TLV Format</a>
+<a href="#rfc.section.4.2.2.1">4.2.2.1.</a> <a href="#tlvsyntax" id="tlvsyntax">TLV Syntax</a>
 </h1>
-<p id="rfc.section.4.2.2.1.p.1">Operation and modifier TLVs both use the same encoding format.</p>
-<p id="rfc.section.4.2.2.1.p.2">The Acknowledgement bit in an Operation TLV of a request dictates if a response is to be sent. The Operation TLV may or may not be echoed back in the response according to the definition of the TLV. Each Operation TLV definition should stipulate whether an acknowledgement is REQUIRED. If the Operation TLV is not included in the response according to the TLV definition, the matching identifier in the standard DNS Header response is sufficient as an acknowledgement. If the TLV Acknowledgement bit is cleared in a request, a response MUST NOT be sent. The Acknowledgement bit is NEVER set in a response. Modifier TLVs MUST NEVER set the Acknowledgement bit in request or response.</p>
-<p id="rfc.section.4.2.2.1.p.3">It is by design that Operation TLVs SHOULD normally require a response and, therefore, set the TLV Acknowledgement bit in a request. However, for some Operation TLVs, this may be undesirable and the TLV Acknowledgement bit MAY be cleared in the request.</p>
+<p id="rfc.section.4.2.2.1.p.1">All TLVs, whether used as &#8220;Primary&#8221;, &#8220;Additional&#8221;, or in responses, use the same encoding syntax.</p>
+<p id="rfc.section.4.2.2.1.p.2">The specification for a TLV determines whether, when used as the Primary (i.e., first) TLV in a request message, that request message is to be acknowledged.  If the request message is to be acknowledged, the specification also states which TLVs, if any, are to be included in the response.  The Primary TLV may or may not be contained in the response, depending on what is stated in the specification for that TLV.</p>
 <pre>
                                              1   1   1   1   1   1
      0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-   | A |                        DSO-TYPE                           |
+   |                            DSO-TYPE                           |
    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
    |                        DSO DATA LENGTH                        |
    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
@@ -806,46 +807,46 @@
 <p></p>
 
 <dl>
-<dt>A:</dt>
-<dd style="margin-left: 8">A 1-bit TLV Response flag indicating whether or not an Operation TLV requires a response Acknowledgement. This bit is never set in responses to Operation TLVs and never set in Modifier TLVs in either direction.</dd>
 <dt>DSO-TYPE:</dt>
-<dd style="margin-left: 8">A 15-bit field in network order giving the type of the current DSO TLV per the IANA DSO Type Codes Registry.</dd>
+<dd style="margin-left: 8">A 16-bit field in network order giving the type of the current DSO TLV per the IANA DSO Type Codes Registry.</dd>
 <dt>DSO DATA LENGTH:</dt>
 <dd style="margin-left: 8">A 16-bit field in network order giving the size in octets of the TYPE-DEPENDENT DATA.</dd>
 <dt>TYPE-DEPENDENT DATA:</dt>
 <dd style="margin-left: 8">Type-code specific format.</dd>
 </dl>
-<p id="rfc.section.4.2.2.1.p.5">Where domain names appear within TYPE-DEPENDENT DATA, they MAY be compressed using standard DNS name compression. However, the compression MUST NOT point outside of the TYPE-DEPENDENT DATA section and offsets MUST be from the start of the TYPE-DEPENDENT DATA.</p>
+<p id="rfc.section.4.2.2.1.p.4">Where domain names appear within TYPE-DEPENDENT DATA, they MAY be compressed using standard DNS name compression. However, the compression MUST NOT point outside of the TYPE-DEPENDENT DATA section and offsets MUST be from the start of the TYPE-DEPENDENT DATA.</p>
 <h1 id="rfc.section.4.2.2.2">
-<a href="#rfc.section.4.2.2.2">4.2.2.2.</a> <a href="#operation-tlvs" id="operation-tlvs">Operation TLVs</a>
+<a href="#rfc.section.4.2.2.2">4.2.2.2.</a> <a href="#primary-tlv" id="primary-tlv">Primary TLV</a>
 </h1>
-<p id="rfc.section.4.2.2.2.p.1">An &#8220;Operation TLV&#8221; specifies the operation to be performed.</p>
-<p id="rfc.section.4.2.2.2.p.2">A DSO message MUST contain at most one Operation TLV.</p>
-<p id="rfc.section.4.2.2.2.p.3">In all cases a DSO request message MUST contain exactly one Operation TLV, indicating the operation to be performed.</p>
-<p id="rfc.section.4.2.2.2.p.4">Depending on the operation, a DSO response message MAY contain no Operation TLV, because it is simply a response to a previous request message, and the MESSAGE ID in the header is sufficient to identify the request in question. Or it may contain a single corresponding response Operation TLV, with the same DSO-TYPE as in the request message. The specification for each DSO type determines whether a response for that operation type is required to carry the Operation TLV.</p>
-<p id="rfc.section.4.2.2.2.p.5">If a DSO response is received for an operation which requires that the response carry an Operation TLV, and the required Operation TLV is not the first DSO TLV in the response message, then this is a fatal error and the recipient of the defective response message MUST immediately terminate the connection with a TCP RST (or equivalent for other protocols).</p>
+<p id="rfc.section.4.2.2.2.p.1">The Primary (first) TLV in a DSO request message indicates the operation to be performed.  A DSO request message MUST contain at at least one TLV, the Primary TLV.</p>
 <h1 id="rfc.section.4.2.2.3">
-<a href="#rfc.section.4.2.2.3">4.2.2.3.</a> <a href="#modifier-tlvs" id="modifier-tlvs">Modifier TLVs</a>
+<a href="#rfc.section.4.2.2.3">4.2.2.3.</a> <a href="#additional-tlvs" id="additional-tlvs">Additional TLVs</a>
 </h1>
-<p id="rfc.section.4.2.2.3.p.1">A &#8220;Modifier TLV&#8221; specifies additional parameters relating to the operation. Immediately following the Operation TLV, if present, a DSO message MAY contain one or more Modifier TLVs.</p>
+<p id="rfc.section.4.2.2.3.p.1">An &#8220;Additional TLV&#8221; specifies additional parameters relating to the operation. Immediately following the Primary TLV a DSO request message MAY contain one or more Additional TLVs.</p>
 <h1 id="rfc.section.4.2.2.4">
-<a href="#rfc.section.4.2.2.4">4.2.2.4.</a> <a href="#unrecognized-tlvs" id="unrecognized-tlvs">Unrecognized TLVs</a>
+<a href="#rfc.section.4.2.2.4">4.2.2.4.</a> <a href="#response-tlvs" id="response-tlvs">Response TLVs</a>
 </h1>
-<p id="rfc.section.4.2.2.4.p.1">If a DSO request is received containing an unrecognized Operation TLV, the receiver MUST send a response with matching MESSAGE ID, and RCODE DSONOTIMP (tentatively 11). The response MUST NOT contain an Operation TLV.</p>
-<p id="rfc.section.4.2.2.4.p.2">If a DSO message (request or response) is received containing one or more unrecognized Modifier TLVs, the unrecognized Modifier TLVs MUST be silently ignored, and the remainder of the message is interpreted and handled as if the unrecognized parts were not present.</p>
+<p id="rfc.section.4.2.2.4.p.1">Depending on the operation, a DSO response message MAY contain no TLVs, because it is simply a response to a previous request message, and the MESSAGE ID in the header is sufficient to identify the request in question.  Or it may contain a single response TLV, with the same DSO-TYPE as the Primary TLV in the request message.  Alternatively it may contain one or more TLVs of other types, or a combination of the above, as appropriate for the information that needs to be communicated.  The specification for each DSO TLV determines what TLVs are required in a response to a request using that TLV as the Primary TLV.</p>
+<p id="rfc.section.4.2.2.4.p.2">If a DSO response is received for an operation where the specification requires that the response carry a particular TLV or TLVs, and the required TLV(s) are not present, then this is a fatal error and the recipient of the defective response message MUST immediately terminate the connection with a TCP RST (or equivalent for other protocols).</p>
+<h1 id="rfc.section.4.2.2.5">
+<a href="#rfc.section.4.2.2.5">4.2.2.5.</a> <a href="#unrecognized-tlvs" id="unrecognized-tlvs">Unrecognized TLVs</a>
+</h1>
+<p id="rfc.section.4.2.2.5.p.1">If a DSO request is received containing an unrecognized Primary TLV, the receiver MUST send a response with matching MESSAGE ID, and RCODE DSONOTIMP (tentatively 11).  The response MUST NOT contain a copy of the offending Primary TLV.</p>
+<p id="rfc.section.4.2.2.5.p.2">If a DSO request message is received containing one or more unrecognized Additional TLVs, the unrecognized Additional TLVs MUST be silently ignored, and the remainder of the message is interpreted and handled as if the unrecognized parts were not present.</p>
+<p id="rfc.section.4.2.2.5.p.3">Similarly, if a DSO response message is received containing one or more unrecognized TLVs, the unrecognized TLVs MUST be silently ignored, and the remainder of the message is interpreted and handled as if the unrecognized parts were not present.</p>
 <h1 id="rfc.section.4.2.3">
 <a href="#rfc.section.4.2.3">4.2.3.</a> <a href="#edns0-and-tsig" id="edns0-and-tsig">EDNS(0) and TSIG</a>
 </h1>
-<p id="rfc.section.4.2.3.p.1">Since the ARCOUNT field MUST be zero, a DSO message MUST NOT contain an EDNS(0) option in the additional records section.  If functionality provided by current or future EDNS(0) options is desired for DSO messages, an Operation TLV or Modifier TLV needs to be defined to carry the necessary information.</p>
+<p id="rfc.section.4.2.3.p.1">Since the ARCOUNT field MUST be zero, a DSO message MUST NOT contain an EDNS(0) option in the additional records section.  If functionality provided by current or future EDNS(0) options is desired for DSO messages, one or more new DSO TLVs need to be defined to carry the necessary information.</p>
 <p id="rfc.section.4.2.3.p.2">For example, the EDNS(0) Padding Option <a href="#RFC7830" class="xref">[RFC7830]</a> used for security purposes is not permitted in a DSO message, so if message padding is desired for DSO messages then the Encryption Padding TLV described in <a href="#padding" class="xref">Section 7.3</a> MUST be used.</p>
-<p id="rfc.section.4.2.3.p.3">Similarly, a DSO message MUST NOT contain a TSIG record.  A TSIG record in a conventional DNS message is added as the last record in the additional records section, and carries a signature computed over the preceding message content. Since DSO data appears after the additional records section, it would not be included in the signature calculation.  If use of signatures with DSO messages becomes necessary in the future, an explicit Modifier TLV needs to be defined to perform this function.</p>
+<p id="rfc.section.4.2.3.p.3">Similarly, a DSO message MUST NOT contain a TSIG record.  A TSIG record in a conventional DNS message is added as the last record in the additional records section, and carries a signature computed over the preceding message content. Since DSO data appears after the additional records section, it would not be included in the signature calculation.  If use of signatures with DSO messages becomes necessary in the future, a new DSO TLV needs to be defined to perform this function.</p>
 <p id="rfc.section.4.2.3.p.4">Note however that, while DSO <em>messages</em> cannot include EDNS(0) or TSIG records, a DSO <em>session</em> is typically used to carry a whole series of DNS messages of different kinds, including DSO messages, and other DNS message types like Query <a href="#RFC1034" class="xref">[RFC1034]</a> <a href="#RFC1035" class="xref">[RFC1035]</a> and Update <a href="#RFC2136" class="xref">[RFC2136]</a>, and those messages can carry EDNS(0) and TSIG records.</p>
 <p id="rfc.section.4.2.3.p.5">This specification explicitly prohibits use of the EDNS(0) TCP Keepalive Option <a href="#RFC7828" class="xref">[RFC7828]</a> in <em>any</em> messages sent on a DSO Session (because it duplicates the functionality provided by the DSO Keepalive operation), but messages may contain other EDNS(0) options as appropriate.</p>
 <h1 id="rfc.section.4.3">
 <a href="#rfc.section.4.3">4.3.</a> <a href="#message-handling" id="message-handling">Message Handling</a>
 </h1>
-<p id="rfc.section.4.3.p.1">The initiator MUST set the value of the QR bit in the DNS header to zero (0), and the responder MUST set it to one (1).  Every DSO request message (QR=0) with the Acknowledgement bit set in the operation TLV MUST elicit a response (QR=1), which MUST have the same MESSAGE ID in the DNS message header as in the corresponding request.  DSO request messages sent by the client with the Acknowledgement bit set in the operation TLV elicit a response from the server, and DSO request messages sent by the server with the Acknowledgement bit set in the operation TLV elicit a response from the client.</p>
-<p id="rfc.section.4.3.p.2">A DSO request message (QR=0) with the Acknowledgement bit clear in the operation TLV MUST NOT elicit a response.</p>
+<p id="rfc.section.4.3.p.1">The initiator MUST set the value of the QR bit in the DNS header to zero (0), and the responder MUST set it to one (1).  Every DSO request message (QR=0) with a nonzero MESSAGE ID field MUST elicit a corresponding response (QR=1), which MUST have the same MESSAGE ID in the DNS message header as in the corresponding request.  DSO request messages sent by the client with a nonzero MESSAGE ID field elicit a response from the server, and DSO request messages sent by the server with a nonzero MESSAGE ID field elicit a response from the client.</p>
+<p id="rfc.section.4.3.p.2">A DSO request message (QR=0) with a zero MESSAGE ID field MUST NOT elicit a response.</p>
 <p id="rfc.section.4.3.p.3">The namespaces of 16-bit MESSAGE IDs are disjoint in each direction.  For example, it is <em>not</em> an error for both client and server to send a request message with the same ID. In effect, the 16-bit MESSAGE ID combined with the identity of the initiator (client or server) serves as a 17-bit unique identifier for a particular operation on a DSO Session.</p>
 <p id="rfc.section.4.3.p.4">As described in <a href="#header" class="xref">Section 4.2.1</a> An initiator MUST NOT reuse a MESSAGE ID that is already in use for an outstanding request, unless specified otherwise by the relevant specification for the DSO in question. At the very least, this means that a MESSAGE ID MUST NOT be reused in a particular direction on a particular DSO Session while the initiator is waiting for a response to a previous request using that MESSAGE ID on that DSO Session, unless specified otherwise by the relevant specification for the DSO in question.  (For a long-lived state the MESSAGE ID for the operation MUST NOT be reused whilst that state remains active.)</p>
 <p id="rfc.section.4.3.p.5">If a client or server receives a response (QR=1) where the MESSAGE ID does not match any of its outstanding operations, this is a fatal error and it MUST immediately terminate the connection with a TCP RST (or equivalent for other protocols).</p>
@@ -951,9 +952,9 @@
 <li>The client sends a grossly invalid or malformed request that is indicative of a seriously defective client implementation (see <a href="#error" class="xref">Section 5.7</a>).</li>
 <li>The server is over capacity and needs to shed some load (see <a href="#retry" class="xref">Section 5.9</a>).</li>
 </ul>
-<p id="rfc.section.5.8.p.4">When a server has to close a DSO Session with a client (because of exceptional circumstances such as those outlined above) the server SHOULD, whenever possible, send a Retry Delay Operation TLV (see below) informing the client of the reason for the DSO Session being closed, and allow the client five seconds to receive it before the server resorts to forcibly aborting the connection.</p>
+<p id="rfc.section.5.8.p.4">When a server has to close a DSO Session with a client (because of exceptional circumstances such as those outlined above) the server SHOULD, whenever possible, send a Retry Delay request message (see below) informing the client of the reason for the DSO Session being closed, and allow the client five seconds to receive it before the server resorts to forcibly aborting the connection.</p>
 <h1 id="rfc.section.5.9">
-<a href="#rfc.section.5.9">5.9.</a> <a href="#retry" id="retry">Retry Delay Operation TLV</a>
+<a href="#rfc.section.5.9">5.9.</a> <a href="#retry" id="retry">Retry Delay TLV</a>
 </h1>
 <p id="rfc.section.5.9.p.1">There may be rare cases where a server is overloaded and wishes to shed load.  If a server is low on resources it MAY simply terminate a client connection with a TCP RST (or equivalent for other protocols).  However, the likely behavior of the client may be simply to to treat this as a network failure and connect immediately, putting more burden on the server.</p>
 <p id="rfc.section.5.9.p.2">Therefore to avoid this reconnection implosion, a server SHOULD instead choose to shed client load by sending a Retry Delay request message, with an RCODE of SERVFAIL, to inform the client of the overload situation. After sending a Retry Delay request message, the server MUST NOT send any further messages on that DSO Session.</p>
@@ -983,7 +984,7 @@
 <h1 id="rfc.section.7.1">
 <a href="#rfc.section.7.1">7.1.</a> <a href="#delay" id="delay">Retry Delay TLV</a>
 </h1>
-<p id="rfc.section.7.1.p.1">The Retry Delay TLV (DSO-TYPE=0) can be used as an Operation TLV or as a Modifier TLV.</p>
+<p id="rfc.section.7.1.p.1">The Retry Delay TLV (DSO-TYPE=0) can be used as a Primary TLV or as a response TLV.</p>
 <p id="rfc.section.7.1.p.2">The TYPE-DEPENDENT DATA for the the Retry Delay TLV is as follows:</p>
 <pre>
                         1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
@@ -1000,9 +1001,9 @@
 </dl>
 <p id="rfc.section.7.1.p.4">The RECOMMENDED value is 10 seconds.</p>
 <h1 id="rfc.section.7.1.1">
-<a href="#rfc.section.7.1.1">7.1.1.</a> <a href="#use-as-an-operation-tlv" id="use-as-an-operation-tlv">Use as an Operation TLV</a>
+<a href="#rfc.section.7.1.1">7.1.1.</a> <a href="#use-as-a-primary-tlv" id="use-as-a-primary-tlv">Use as a Primary TLV</a>
 </h1>
-<p id="rfc.section.7.1.1.p.1">When sent in a DSO request message, from server to client, the Retry Delay TLV (0) is considered an Operation TLV. It is used by a server to request that a client close the DSO Session and underlying connection, and not to reconnect for the indicated time interval.</p>
+<p id="rfc.section.7.1.1.p.1">When sent in a DSO request message, from server to client, the Retry Delay TLV (0) is used as a Primary TLV. It is used by a server to instruct a client to close the DSO Session and underlying connection, and not to reconnect for the indicated time interval.</p>
 <p id="rfc.section.7.1.1.p.2">In this case it applies to the DSO Session as a whole, and the client MUST begin closing the DSO Session, as described in <a href="#retry" class="xref">Section 5.9</a>. The RCODE in the message header MUST indicate the reason for the termination:</p>
 <p></p>
 
@@ -1012,21 +1013,24 @@
 <li>REFUSED indicates that the server has been reconfigured and is no longer able to perform one or more of the functions currently being performed on this DSO Session (for example, a DNS Push Notification server could be reconfigured such that is is no longer accepting DNS Push Notification requests for one or more of the currently subscribed names).</li>
 </ul>
 <p id="rfc.section.7.1.1.p.4">This document specifies only these three RCODE values for Retry Delay request.  Servers sending Retry Delay requests SHOULD use one of these three values.  However, future circumstances may create situations where other RCODE values are appropriate in Retry Delay requests, so clients MUST be prepared to accept Retry Delay requests with any RCODE value.</p>
-<p id="rfc.section.7.1.1.p.5">An acknowledgement is not desired for a Retry Delay Operation TLV and the TLV Acknowledgement bit MUST be cleared in the request.</p>
+<p id="rfc.section.7.1.1.p.5">An reply is not desired for a Retry Delay operation and the MESSAGE ID MUST be set to zero in the request.</p>
 <h1 id="rfc.section.7.1.2">
-<a href="#rfc.section.7.1.2">7.1.2.</a> <a href="#use-as-a-modifier-tlv" id="use-as-a-modifier-tlv">Use as a Modifier TLV</a>
+<a href="#rfc.section.7.1.2">7.1.2.</a> <a href="#use-as-a-response-tlv" id="use-as-a-response-tlv">Use as a Response TLV</a>
 </h1>
 <p id="rfc.section.7.1.2.p.1">In the case of a client request that returns a nonzero RCODE value, the server MAY append a Retry Delay TLV (0) to the response, indicating the time interval during which the client SHOULD NOT attempt this operation again.</p>
-<p id="rfc.section.7.1.2.p.2">When appended to a DSO response message for some client request, the Retry Delay TLV (0) is considered a Modifier TLV.</p>
-<p id="rfc.section.7.1.2.p.3">The indicated time interval during which the client SHOULD NOT retry applies only to the failed operation, not to the DSO Session as a whole.</p>
-<h1 id="rfc.section.7.2">
-<a href="#rfc.section.7.2">7.2.</a> <a href="#keepalive" id="keepalive">Keepalive Operation TLV</a>
+<p id="rfc.section.7.1.2.p.2">The indicated time interval during which the client SHOULD NOT retry applies only to the failed operation, not to the DSO Session as a whole.</p>
+<h1 id="rfc.section.7.1.3">
+<a href="#rfc.section.7.1.3">7.1.3.</a> <a href="#use-by-client" id="use-by-client">Use by Client</a>
 </h1>
-<p id="rfc.section.7.2.p.1">The Keepalive Operation TLV (DSO-TYPE=1) performs two functions: to reset the keepalive timer for the DSO Session and to establish the values for the Session Timeouts.</p>
-<p id="rfc.section.7.2.p.2">The Keepalive Operation TLV resets only the keepalive timer, not the inactivity timer.  The reason for this is that periodic Keepalive Operation TLVs are sent for the sole purpose of keeping a DSO Session alive, because that DSO Session has current or recent non-maintenance activity that warrants keeping the DSO Session alive.  If sending keepalive traffic itself were to reset the inactivity timer, then that would create a circular livelock where keepalive traffic would be sent indefinitely to keep a DSO Session alive, where the only activity on that DSO Session would be the keepalive traffic keeping the DSO Session alive so that further keepalive traffic can be sent.</p>
-<p id="rfc.section.7.2.p.3">Sending keepalive traffic is considered a maintenance activity that is performed in service of other client activities.  Sending keepalive traffic itself is not considered a client activity.  For a DSO Session to be considered active, it must be carrying something more than just keepalive traffic.  This is why merely sending a Keepalive Operation TLV does not reset the inactivity timer.</p>
-<p id="rfc.section.7.2.p.4">When sent by a client, the Keepalive Operation TLV MUST have the Acknowledgement bit set.  It resets a DSO Session&#8217;s keepalive timer, and at the same time requests what the Session Timeout values should be from this point forward in the DSO Session.  If a server receives a Keepalive Operation TLV without the Acknowledgement bit set then this is a fatal error and the server MUST immediately terminate the connection with a TCP RST (or equivalent for other protocols).</p>
-<p id="rfc.section.7.2.p.5">Once a DSO Session is in progress (see <a href="#details" class="xref">Section 4</a>) the Keepalive TLV also MAY be initiated by a server.  When sent by a server, the Keepalive Operation TLV MUST NOT have the Acknowledgement bit set.  It resets a DSO Session&#8217;s keepalive timer, and unilaterally informs the client of the new Session Timeout values to use from this point forward in this DSO Session.  No client response to this unilateral declaration is required.  If a client receives a Keepalive Operation TLV with the Acknowledgement bit set then this is a fatal error and the client MUST immediately terminate the connection with a TCP RST (or equivalent for other protocols).</p>
+<p id="rfc.section.7.1.3.p.1">A client MUST NOT send a Retry Delay TLV to a server, either in a DSO request message, or in a DSO response message.  If a server receives a DSO message containing a Retry Delay TLV, this is a fatal error and the server MUST immediately terminate the connection with a TCP RST (or equivalent for other protocols).</p>
+<h1 id="rfc.section.7.2">
+<a href="#rfc.section.7.2">7.2.</a> <a href="#keepalive" id="keepalive">Keepalive TLV</a>
+</h1>
+<p id="rfc.section.7.2.p.1">The Keepalive TLV (DSO-TYPE=1) performs two functions: to reset the keepalive timer for the DSO Session and to establish the values for the Session Timeouts.</p>
+<p id="rfc.section.7.2.p.2">The Keepalive TLV resets only the keepalive timer, not the inactivity timer.  The reason for this is that periodic Keepalive TLVs are sent for the sole purpose of keeping a DSO Session alive, because that DSO Session has current or recent non-maintenance activity that warrants keeping the DSO Session alive.  If sending keepalive traffic itself were to reset the inactivity timer, then that would create a circular livelock where keepalive traffic would be sent indefinitely to keep a DSO Session alive, where the only activity on that DSO Session would be the keepalive traffic keeping the DSO Session alive so that further keepalive traffic can be sent.</p>
+<p id="rfc.section.7.2.p.3">Sending keepalive traffic is considered a maintenance activity that is performed in service of other client activities.  Sending keepalive traffic itself is not considered a client activity.  For a DSO Session to be considered active, it must be carrying something more than just keepalive traffic.  This is why merely sending a Keepalive TLV does not reset the inactivity timer.</p>
+<p id="rfc.section.7.2.p.4">When sent by a client, the Keepalive request message MUST be sent as an acknowledged request, with a nonzero MESSAGE ID.  It resets a DSO Session&#8217;s keepalive timer, and at the same time requests what the Session Timeout values should be from this point forward in the DSO Session.  If a server receives a Keepalive request message with a zero MESSAGE ID then this is a fatal error and the server MUST immediately terminate the connection with a TCP RST (or equivalent for other protocols).</p>
+<p id="rfc.section.7.2.p.5">Once a DSO Session is in progress (see <a href="#details" class="xref">Section 4</a>) the Keepalive TLV also MAY be initiated by a server.  When sent by a server, the Keepalive request message MUST be sent as an unacknowledged request, with the MESSAGE ID set to zero.  It resets a DSO Session&#8217;s keepalive timer, and unilaterally informs the client of the new Session Timeout values to use from this point forward in this DSO Session.  No client response to this unilateral declaration is required or allowed.  If a client receives a Keepalive request message with a nonzero MESSAGE ID then this is a fatal error and the client MUST immediately terminate the connection with a TCP RST (or equivalent for other protocols).</p>
 <p id="rfc.section.7.2.p.6">It is not required that the Keepalive TLV be used in every DSO Session.  While many DNS Stateful operations will be used in conjunction with a long-lived session state, not all DNS Stateful operations require long-lived session state, and in some cases the default 15-second value for both the inactivity timeout and keepalive interval may be perfectly appropriate.  However, note that for clients that implement only the TLVs defined in this document it is the only way for a client to initiate a DSO Session.</p>
 <p id="rfc.section.7.2.p.7">The TYPE-DEPENDENT DATA for the the Keepalive TLV is as follows:</p>
 <pre>
@@ -1069,7 +1073,7 @@
 <h1 id="rfc.section.7.3">
 <a href="#rfc.section.7.3">7.3.</a> <a href="#padding" id="padding">Encryption Padding TLV</a>
 </h1>
-<p id="rfc.section.7.3.p.1">The Encryption Padding TLV (DSO-TYPE=2) can only be used as a Modifier TLV.  It is only applicable when the DSO Transport layer uses encryption such as TLS.</p>
+<p id="rfc.section.7.3.p.1">The Encryption Padding TLV (DSO-TYPE=2) can only be used as an Additional or Response TLV.  It is only applicable when the DSO Transport layer uses encryption such as TLS.</p>
 <p id="rfc.section.7.3.p.2">The TYPE-DEPENDENT DATA for the the Padding TLV is optional and is a variable length field containing non-specified values. A DATA LENGTH of 0 essentially provides for 4 octets of padding (the minimum amount).</p>
 <pre>
                                              1   1   1   1   1   1
@@ -1097,7 +1101,7 @@
 <h1 id="rfc.section.8.3">
 <a href="#rfc.section.8.3">8.3.</a> <a href="#dso-type-codes-registry" id="dso-type-codes-registry">DSO Type Codes Registry</a>
 </h1>
-<p id="rfc.section.8.3.p.1">IANA are directed to create the 15-bit DSO Type Codes Registry, with initial values as follows:</p>
+<p id="rfc.section.8.3.p.1">IANA are directed to create the 16-bit DSO Type Codes Registry, with initial values as follows:</p>
 <table cellpadding="3" cellspacing="0" class="tt full center">
 <thead><tr>
 <th class="right">Type</th>
@@ -1131,19 +1135,19 @@
 <td class="left"></td>
 </tr>
 <tr>
-<td class="right">0x0040 - 0x77FF</td>
+<td class="right">0x0040 - 0xF7FF</td>
 <td class="left">Unassigned</td>
 <td class="left"></td>
 <td class="left"></td>
 </tr>
 <tr>
-<td class="right">0x7800 - 0x7BFF</td>
+<td class="right">0xF800 - 0xFBFF</td>
 <td class="left">Reserved for local / experimental use</td>
 <td class="left"></td>
 <td class="left"></td>
 </tr>
 <tr>
-<td class="right">0x7C00 - 0x7FFF</td>
+<td class="right">0xFC00 - 0xFFFF</td>
 <td class="left">Reserved for future expansion</td>
 <td class="left"></td>
 <td class="left"></td>
@@ -1233,6 +1237,11 @@
 <td class="reference"><b id="I-D.ietf-dprive-padding-policy">[I-D.ietf-dprive-padding-policy]</b></td>
 <td class="top">
 <a>Mayrhofer, A.</a>, "<a href="https://tools.ietf.org/html/draft-ietf-dprive-padding-policy-02">Padding Policy for EDNS(0)</a>", Internet-Draft draft-ietf-dprive-padding-policy-02, September 2017.</td>
+</tr>
+<tr>
+<td class="reference"><b id="I-D.sctl-dnssd-mdns-relay">[I-D.sctl-dnssd-mdns-relay]</b></td>
+<td class="top">
+<a>Cheshire, S.</a> and <a>T. Lemon</a>, "<a href="https://tools.ietf.org/html/draft-sctl-dnssd-mdns-relay-02">Multicast DNS Discovery Relay</a>", Internet-Draft draft-sctl-dnssd-mdns-relay-02, November 2017.</td>
 </tr>
 <tr>
 <td class="reference"><b id="NagleDA">[NagleDA]</b></td>

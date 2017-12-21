@@ -123,7 +123,7 @@ This document defines an initial set of TLVs, including ones
 used to manage session timeouts and termination.
 
 All three of the TLVs defined here are mandatory for all implementations of DSO.
-Additional TLVs may be defined in additional specifications.
+Further TLVs may be defined in additional specifications.
 
 It should be noted that the message format for DNS Stateful Operations
 (see {{format}}) differs from the traditional DNS message
@@ -132,7 +132,7 @@ The standard twelve-octet header is used, but the four count fields
 (QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT) are set to zero and their
 corresponding sections are not present.
 The actual data pertaining to DNS Stateful Operations
-(expressed in TLV format) is appended to the end of the DNS message header.
+(expressed in TLV syntax) is appended to the end of the DNS message header.
 When displayed using packet analyzer tools that have not been
 updated to recognize the DNS Stateful Operations format, this
 will result in the Stateful Operations data being displayed
@@ -213,7 +213,25 @@ Likewise, the term "receiver" may apply to either a responder
 (when receiving a DNS Stateful Operation request message)
 or an initiator (when receiving a DNS Stateful Operation response message).
 
-DNS Stateful Operations are expressed using type-length-value (TLV) syntax.
+DNS Stateful Operations uses "DSO request messages" and "DSO response messages".
+DSO request messages are further subdivided into two variants,
+"acknowledged request messages"
+(which generate a corresponding response message) and
+"unacknowledged request messages"
+(which do not generate any corresponding response message).
+
+The content of DSO messages is expressed using type-length-value (TLV) syntax.
+
+In a DSO request message the first TLV is referred to as the "Primary TLV"
+and determines the nature of the operation being performed,
+including whether it is an acknowledged or unacknowledged operation;
+any other TLVs in a DSO request message are referred to as "Additional TLVs"
+and serve as modifiers affecting the primary operation.
+
+A DSO response message may contain no TLVs, or it may contain one
+or more TLVs as appropriate to the information being communicated.
+In the context of DSO response messages the qualifiers
+"Primary" and "Additional" do not apply.
 
 Two timers (elapsed time since an event) are defined in this document: 
 
@@ -294,20 +312,20 @@ DSO request messages until after a DSO Session has been mutually established.
 Many, but not all, DSO request messages sent by an initiator
 elicit a response from the responder.
 Whether or not a given DSO request message elicits a response is
-determined by whether or not the first DSO TLV (see {{tlvformat}})
+determined by whether or not the first DSO TLV (see {{tlvsyntax}})
 in the message (the Primary TLV) is one that is specified to generate a response.
 
 A DSO Session is established over a connection by the client
 sending a DSO request message of a kind that requires a response,
-such as the DSO Keepalive Operation TLV (see {{keepalive}}),
+such as the DSO Keepalive TLV (see {{keepalive}}),
 and receiving a response, with matching MESSAGE ID, and RCODE
 set to NOERROR (0), indicating that the DSO request was successful.
 
 If the RCODE is set to DSONOTIMP (tentatively 11) this indicates
 that the server does support DSO, but does not support the particular
 operation the client requested.
-A server MUST NOT return DSONOTIMP for the DSO Keepalive Operation
-TLV, but this could happen in the future, if a client attempts to
+A server MUST NOT return DSONOTIMP for the DSO Keepalive TLV,
+but this could happen in the future, if a client attempts to
 establish a DSO Session using a future response-requiring DSO TLV
 which the server does not understand.
 If the server returns DSONOTIMP then a DSO Session is not
@@ -399,16 +417,18 @@ unless a future document specifies otherwise.
 
 ### Header {#header}
 
-In a request the MESSAGE ID field MUST be set to a unique value, that the
-initiator is not currently using for any other active operation on this 
-connection.
+In an unacknowledged request message the MESSAGE ID field MUST be set to zero.
+In an acknowledged request message the MESSAGE ID field MUST
+be set to a unique nonzero value, that the initiator is not
+currently using for any other active operation on this connection.
 For the purposes here, a MESSAGE ID is in use in this DSO Session if the
-initiator has used it in a request for which it has not yet received a
-response, or if the client has used it to setup state that it has not yet
-deleted. For example, state could be a subscription {{?I-D.ietf-dnssd-push}}.
+initiator has used it in a request for which it is still awaiting a response,
+or if the client has used it to setup state that it has not yet deleted.
+For example, state could be a Push Notification subscription {{?I-D.ietf-dnssd-push}}
+or a Discovery Relay interface subscription {{?I-D.sctl-dnssd-mdns-relay}}.
 
-In a response the MESSAGE ID field MUST contain a copy of the value of the
-MESSAGE ID field in the request being responded to.
+In a response message the MESSAGE ID field MUST contain a copy of the value of
+the MESSAGE ID field in the acknowledged request message being responded to.
 
 In a request the DNS Header QR bit MUST be zero (QR=0).
 If the QR bit is not zero the message is not a request.
@@ -425,8 +445,8 @@ on reception, unless a future document specifies otherwise.
 
 In a request message (QR=0) the RCODE is generally set to zero on transmission,
 and silently ignored on reception, except where specified otherwise
-(for example, the Retry Delay operation (see {{delay}}), where the RCODE indicates the reason
-for termination).
+(for example, the Retry Delay request message (see {{delay}}),
+where the RCODE indicates the reason for termination).
 
 The RCODE value in a response may be one of the following values:
 
@@ -438,7 +458,7 @@ The RCODE value in a response may be one of the following values:
 | 3 | NXDOMAIN | Name Error --- Named entity does not exist (TLV-dependent) |
 | 4 | NOTIMP | DSO not supported |
 | 5 | REFUSED | Operation declined for policy reasons |
-| 9 | NOTAUTH | Not Authoritative (TLV dependent) |
+| 9 | NOTAUTH | Not Authoritative (TLV-dependent) |
 | 11 | DSONOTIMP | DSO type code not supported |
 
 Use of the above RCODEs is likely to be common in DSO but 
@@ -450,30 +470,102 @@ or NOTAUTH then that document MUST explain the meaning.
 
 ### DSO Data {#dsodata}
 
-The standard twelve-octet DNS message header is followed by the DSO Data.
+The standard twelve-octet DNS message header with its
+zero-valued count fields is followed by the DSO Data,
+expressed using TLV syntax, as described below {{tlvsyntax}}.
 
-The first TLV in a DSO request message is called the Operation 
-TLV. Any subsequent TLVs after this initial Operation TLV are called Modifier TLVs.
+A DSO message may be either a request message or a response message,
+as indicated by the QR bit in the DNS message header.
+DSO request messages are further subdivided into two variants,
+acknowledged request messages
+(which generate a corresponding response message)
+and unacknowledged request messages
+(which do not generate any corresponding response message).
 
-Depending on the operation a DSO response can contain:
+A DSO request message MUST contain at least one TLV.
+The first TLV in a DSO request message is referred to as the "Primary TLV"
+and determines the nature of the operation being performed,
+including whether it is an acknowledged or unacknowledged operation.
+In some cases it may be appropriate to include other TLVs in a request message,
+such as the Encryption Padding TLV ({{padding}}),
+and these extra TLVs are referred to as the "Additional TLVs".
 
-* No TLVs
-* Only an Operation TLV
-* An Operation TLV followed by one or more Modifier TLVs
-* Only Modifier TLVs
+A DSO response message may contain no TLVs,
+or it may contain one or more TLVs.
+In the context of DSO response messages,
+the qualifiers "Primary" and "Additional" do not apply.
+A DSO response message is specified to carry TLVs
+appropriate to the information being communicated.
+A DSO response message may contain the same TLV type as the Primary TLV from
+the corresponding DSO request message, but it is not required to do so.
+The MESSAGE ID field in the DNS message header is sufficient to identify
+to which DSO request message this response message relates.
 
-#### TLV Format {#tlvformat}
+Most DSO request messages are acknowledged request messages,
+specified to generate corresponding responses.
+In some specialized high-traffic use cases,
+it may be appropriate to use unacknowledged request messages.
+Unacknowledged request messages can be more efficient on the network,
+because they don't generate a stream of corresponding reply messages.
+Using unacknowledged request messages can also simplify software
+in some cases, by removing need for the software to maintain
+state while it waits to receive replies it doesn't care about.
+When the specification for a particular TLV states that,
+when used as the Primary (i.e., first) TLV in a request message,
+that request message is to be unacknowledged,
+the MESSAGE ID field MUST be set to zero and
+the receiver MUST NOT generate any response message
+corresponding to this unacknowledged request message.
 
-Operation and modifier TLVs both use the same encoding format.
+The previous point, that the receiver MUST NOT generate responses to
+unacknowledged request messages, applies even in the case of errors.
+When a DSO request message is received with the MESSAGE ID field
+set to zero, the receiver MUST NOT generate any response.
+For example, if the DSO-TYPE in the Primary TLV is unrecognized,
+then a DSNOTIMP error MUST NOT be returned; instead the receiver
+MUST immediately terminate
+the connection with a TCP RST (or equivalent for other protocols).
 
-The Acknowledgement bit in an Operation TLV of a request dictates if a response is to be sent. The Operation TLV may or may not be echoed back in the response according to the definition of the TLV. Each Operation TLV definition should stipulate whether an acknowledgement is REQUIRED. If the Operation TLV is not included in the response according to the TLV definition, the matching identifier in the standard DNS Header response is sufficient as an acknowledgement. If the TLV Acknowledgement bit is cleared in a request, a response MUST NOT be sent. The Acknowledgement bit is NEVER set in a response. Modifier TLVs MUST NEVER set the Acknowledgement bit in request or response.
+Unacknowledged request messages MUST NOT be used "speculatively"
+in cases where the sender doesn't know if the receiver supports
+the Primary TLV in the message, because there is no way to receive
+any response to indicate success or failure of the request message
+(the request message does not contain a unique MESSAGE ID with
+which to associate a response with its corresponding request).
+Unacknowledged request messages are only appropriate in cases where
+the sender already knows that the receiver supports and wishes to
+receive these messages.
+For example, after a client has subscribed for Push Notifications,
+the subsequent event notifications are then sent as unacknowledged
+request messages, and this is appropriate because the client initiated
+the message stream by virtue of its Push Notification subscription,
+thereby indicating its support of Push Notifications, and its
+desire to receive event notifications {{?I-D.ietf-dnssd-push}}.
+After an mDNS Relay client has subscribed to receive inbound mDNS
+traffic from an mDNS Relay, the subsequent stream of received
+packets is then sent using unacknowledged request messages, and
+this is appropriate because the client initiated the message stream
+by virtue of its mDNS Relay link subscription, thereby indicating
+its support of mDNS Relay, and its desire to receive inbound mDNS
+packets over that DSO session {{?I-D.sctl-dnssd-mdns-relay}}.
 
-It is by design that Operation TLVs SHOULD normally require a response and, therefore, set the TLV Acknowledgement bit in a request. However, for some Operation TLVs, this may be undesirable and the TLV Acknowledgement bit MAY be cleared in the request.  
+#### TLV Syntax {#tlvsyntax}
+
+All TLVs, whether used as "Primary", "Additional", or in responses,
+use the same encoding syntax.
+
+The specification for a TLV determines whether,
+when used as the Primary (i.e., first) TLV in a request message,
+that request message is to be acknowledged.
+If the request message is to be acknowledged, the specification
+also states which TLVs, if any, are to be included in the response.
+The Primary TLV may or may not be contained in the response,
+depending on what is stated in the specification for that TLV.
 
                                                  1   1   1   1   1   1
          0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-       | A |                        DSO-TYPE                           |
+       |                            DSO-TYPE                           |
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
        |                        DSO DATA LENGTH                        |
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
@@ -482,12 +574,8 @@ It is by design that Operation TLVs SHOULD normally require a response and, ther
        /                                                               /
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
-A:
-: A 1-bit TLV Response flag indicating whether or not an Operation TLV requires
-a response Acknowledgement. This bit is never set in responses to Operation TLVs and never set in Modifier TLVs in either direction.
-
 DSO-TYPE:
-: A 15-bit field in network order giving the type of the current DSO TLV per
+: A 16-bit field in network order giving the type of the current DSO TLV per
 the IANA DSO Type Codes Registry.
 
 DSO DATA LENGTH:
@@ -502,54 +590,61 @@ using standard DNS name compression. However, the compression MUST NOT point
 outside of the TYPE-DEPENDENT DATA section and offsets MUST be from the start
 of the TYPE-DEPENDENT DATA.
 
-#### Operation TLVs
+#### Primary TLV
 
-An "Operation TLV" specifies the operation to be performed.
+The Primary (first) TLV in a DSO request message indicates the operation to be performed.
+A DSO request message MUST contain at at least one TLV, the Primary TLV.
 
-A DSO message MUST contain at most one Operation TLV.
+#### Additional TLVs
 
-In all cases a DSO request message MUST contain exactly one 
-Operation TLV, indicating the operation to be performed.
+An "Additional TLV" specifies additional parameters
+relating to the operation. Immediately following the Primary TLV
+a DSO request message MAY contain one or more Additional TLVs.
 
-Depending on the operation, a DSO response message MAY contain no 
-Operation TLV, because it is simply a response to a previous request message,
-and the MESSAGE ID in the header is sufficient to identify the request in 
-question. Or it may contain a single corresponding response Operation TLV, with 
-the same DSO-TYPE as in the request message. The specification for each DSO
-type determines whether a response for that operation type 
-is required to carry the Operation TLV.
+#### Response TLVs
 
-If a DSO response is received for an operation which requires
-that the response carry an Operation TLV, and the required Operation TLV is not
-the first DSO TLV in the response message, then this is a fatal 
+Depending on the operation, a DSO response message MAY contain no TLVs,
+because it is simply a response to a previous request message, and the
+MESSAGE ID in the header is sufficient to identify the request in question.
+Or it may contain a single response TLV, with the same DSO-TYPE as the
+Primary TLV in the request message.
+Alternatively it may contain one or more TLVs of other
+types, or a combination of the above, as appropriate
+for the information that needs to be communicated.
+The specification for each DSO TLV determines
+what TLVs are required in a response to a request
+using that TLV as the Primary TLV.
+
+If a DSO response is received for an operation where the specification
+requires that the response carry a particular TLV or TLVs,
+and the required TLV(s) are not present, then this is a fatal
 error and the recipient of the defective response message MUST immediately
 terminate the connection with a TCP RST (or equivalent for other protocols).
-
-#### Modifier TLVs
-
-A "Modifier TLV" specifies additional parameters
-relating to the operation. Immediately following the Operation TLV, if present,
-a DSO message MAY contain one or more Modifier TLVs.
 
 #### Unrecognized TLVs
 
 If a DSO request is received containing an unrecognized
-Operation TLV, the receiver MUST send a response with matching
-MESSAGE ID, and RCODE DSONOTIMP (tentatively 11). The response MUST NOT contain 
-an Operation TLV.
+Primary TLV, the receiver MUST send a response with matching
+MESSAGE ID, and RCODE DSONOTIMP (tentatively 11).
+The response MUST NOT contain a copy of the offending Primary TLV.
 
-If a DSO message (request or response) is received
-containing one or more unrecognized Modifier TLVs, the unrecognized
-Modifier TLVs MUST be silently ignored, and the remainder of the message
+If a DSO request message is received
+containing one or more unrecognized Additional TLVs, the unrecognized
+Additional TLVs MUST be silently ignored, and the remainder of the message
 is interpreted and handled as if the unrecognized parts were not present.
+
+Similarly, if a DSO response message is received containing one
+or more unrecognized TLVs, the unrecognized TLVs MUST be silently
+ignored, and the remainder of the message is interpreted and
+handled as if the unrecognized parts were not present.
 
 ### EDNS(0) and TSIG
 
 Since the ARCOUNT field MUST be zero, a DSO message
 MUST NOT contain an EDNS(0) option in the additional records section.
-If functionality provided by current or future EDNS(0) options is desired
-for DSO messages, an Operation TLV or
-Modifier TLV needs to be defined to carry the necessary information.
+If functionality provided by current or future EDNS(0) options
+is desired for DSO messages, one or more new DSO TLVs
+need to be defined to carry the necessary information.
 
 For example, the EDNS(0) Padding Option {{!RFC7830}} used for security purposes
 is not permitted in a DSO message,
@@ -563,8 +658,7 @@ the preceding message content. Since DSO data appears
 after the additional records section, it would not be included in the
 signature calculation. 
 If use of signatures with DSO messages becomes necessary in the 
-future, an explicit Modifier TLV needs to be defined to 
-perform this function.
+future, a new DSO TLV needs to be defined to perform this function.
 
 Note however that, while DSO *messages* cannot include
 EDNS(0) or TSIG records, a DSO *session* is typically used to 
@@ -583,16 +677,15 @@ but messages may contain other EDNS(0) options as appropriate.
 
 The initiator MUST set the value of the QR bit in the DNS header to
 zero (0), and the responder MUST set it to one (1).
-Every DSO request message (QR=0) with the Acknowledgement bit set in the
-operation TLV MUST elicit a response (QR=1), which MUST have the same
+Every DSO request message (QR=0) with a nonzero MESSAGE ID field
+MUST elicit a corresponding response (QR=1), which MUST have the same
 MESSAGE ID in the DNS message header as in the corresponding request.
-DSO request messages sent by the client with the Acknowledgement
-bit set in the operation TLV elicit a response from the server, and
-DSO request messages sent by the server with the Acknowledgement
-bit set in the operation TLV elicit a response from the client.
+DSO request messages sent by the client with a nonzero MESSAGE ID field
+elicit a response from the server, and
+DSO request messages sent by the server with a nonzero MESSAGE ID field
+elicit a response from the client.
 
-A DSO request message (QR=0) with the Acknowledgement bit clear in the
-operation TLV MUST NOT elicit a response.
+A DSO request message (QR=0) with a zero MESSAGE ID field MUST NOT elicit a response.
 
 The namespaces of 16-bit MESSAGE IDs are disjoint in each direction.
 For example, it is *not* an error for both client and server to send a request
@@ -961,12 +1054,12 @@ indicative of a seriously defective client implementation (see {{error}}).
 
 When a server has to close a DSO Session with a client
 (because of exceptional circumstances such as those outlined above)
-the server SHOULD, whenever possible, send a Retry Delay Operation TLV
+the server SHOULD, whenever possible, send a Retry Delay request message
 (see below) informing the client of the reason for the DSO Session
 being closed, and allow the client five seconds to receive it
 before the server resorts to forcibly aborting the connection.
 
-## Retry Delay Operation TLV {#retry}
+## Retry Delay TLV {#retry}
 
 There may be rare cases where a server is overloaded and wishes to shed load.
 If a server is low on resources it MAY simply terminate a client connection with 
@@ -1079,8 +1172,8 @@ multiple connections from different source ports on the same client IP address.
 
 ## Retry Delay TLV {#delay}
 
-The Retry Delay TLV (DSO-TYPE=0) can be used as an Operation TLV or as
-a Modifier TLV. 
+The Retry Delay TLV (DSO-TYPE=0) can be used as a Primary TLV or as
+a response TLV.
 
 The TYPE-DEPENDENT DATA for the the Retry Delay TLV is as follows:
 
@@ -1097,12 +1190,12 @@ connecting to this server.
 
 The RECOMMENDED value is 10 seconds.
 
-### Use as an Operation TLV
+### Use as a Primary TLV
 
 When sent in a DSO request message, from server to client, the 
-Retry Delay TLV (0) is considered an Operation TLV. It is used by a server 
-to request that a client close the DSO Session and underlying connection, and 
-not to reconnect for the indicated time interval.
+Retry Delay TLV (0) is used as a Primary TLV. It is used by a server
+to instruct a client to close the DSO Session and underlying connection,
+and not to reconnect for the indicated time interval.
 
 In this case it applies to the DSO Session as a whole, and the client MUST begin closing the 
 DSO Session, as described in {{retry}}. The RCODE in the message header 
@@ -1122,29 +1215,34 @@ However, future circumstances may create situations where other RCODE values
 are appropriate in Retry Delay requests, so clients MUST be prepared
 to accept Retry Delay requests with any RCODE value.
 
-An acknowledgement is not desired for a Retry Delay Operation TLV and the TLV
-Acknowledgement bit MUST be cleared in the request.
+An reply is not desired for a Retry Delay operation and the
+MESSAGE ID MUST be set to zero in the request.
 
-### Use as a Modifier TLV
+### Use as a Response TLV
 
 In the case of a client request that returns a nonzero RCODE value,
 the server MAY append a Retry Delay TLV (0) to the response,
 indicating the time interval during which the client
 SHOULD NOT attempt this operation again.
 
-When appended to a DSO response message for some client request,
-the Retry Delay TLV (0) is considered a Modifier TLV.
-
 The indicated time interval during which the client SHOULD NOT retry
 applies only to the failed operation, not to the DSO Session as a whole.
 
-## Keepalive Operation TLV {#keepalive}
+### Use by Client
 
-The Keepalive Operation TLV (DSO-TYPE=1) performs two functions: to reset the
+A client MUST NOT send a Retry Delay TLV to a server,
+either in a DSO request message, or in a DSO response message.
+If a server receives a DSO message containing a Retry Delay TLV,
+this is a fatal error and the server MUST immediately terminate
+the connection with a TCP RST (or equivalent for other protocols).
+
+## Keepalive TLV {#keepalive}
+
+The Keepalive TLV (DSO-TYPE=1) performs two functions: to reset the
 keepalive timer for the DSO Session and to establish the values for the Session Timeouts. 
 
-The Keepalive Operation TLV resets only the keepalive timer, not the inactivity timer.
-The reason for this is that periodic Keepalive Operation TLVs are sent for the
+The Keepalive TLV resets only the keepalive timer, not the inactivity timer.
+The reason for this is that periodic Keepalive TLVs are sent for the
 sole purpose of keeping a DSO Session alive, because that DSO Session has current
 or recent non-maintenance activity that warrants keeping the DSO Session alive.
 If sending keepalive traffic itself were to reset the inactivity timer, then 
@@ -1157,21 +1255,23 @@ Sending keepalive traffic is considered a maintenance activity
 that is performed in service of other client activities.
 Sending keepalive traffic itself is not considered a client activity.
 For a DSO Session to be considered active, it must be carrying something more than just keepalive traffic.
-This is why merely sending a Keepalive Operation TLV does not reset the inactivity timer.
+This is why merely sending a Keepalive TLV does not reset the inactivity timer.
 
-When sent by a client, the Keepalive Operation TLV MUST have the Acknowledgement bit set.
+When sent by a client, the Keepalive request message MUST
+be sent as an acknowledged request, with a nonzero MESSAGE ID.
 It resets a DSO Session's keepalive timer, and at the same time requests what the
 Session Timeout values should be from this point forward in the DSO Session.
-If a server receives a Keepalive Operation TLV without the Acknowledgement bit set
+If a server receives a Keepalive request message with a zero MESSAGE ID
 then this is a fatal error and the server MUST immediately terminate
 the connection with a TCP RST (or equivalent for other protocols).
 
 Once a DSO Session is in progress (see {{details}}) the Keepalive TLV also MAY be initiated by a server.
-When sent by a server, the Keepalive Operation TLV MUST NOT have the Acknowledgement bit set.
+When sent by a server, the Keepalive request message MUST
+be sent as an unacknowledged request, with the MESSAGE ID set to zero.
 It resets a DSO Session's keepalive timer, and unilaterally informs the client of
 the new Session Timeout values to use from this point forward in this DSO Session.
-No client response to this unilateral declaration is required.
-If a client receives a Keepalive Operation TLV with the Acknowledgement bit set
+No client response to this unilateral declaration is required or allowed.
+If a client receives a Keepalive request message with a nonzero MESSAGE ID
 then this is a fatal error and the client MUST immediately terminate
 the connection with a TCP RST (or equivalent for other protocols).
 
@@ -1299,7 +1399,8 @@ terminate the connection with a TCP RST (or equivalent for other protocols).
 
 ## Encryption Padding TLV {#padding}
 
-The Encryption Padding TLV (DSO-TYPE=2) can only be used as a Modifier TLV.
+The Encryption Padding TLV (DSO-TYPE=2) can only be used as
+an Additional or Response TLV.
 It is only applicable when the DSO Transport layer uses encryption
 such as TLS.
 
@@ -1344,7 +1445,7 @@ in the DNS RCODE Registry for the DSONOTIMP error code.
 
 ## DSO Type Codes Registry
 
-IANA are directed to create the 15-bit DSO Type Codes
+IANA are directed to create the 16-bit DSO Type Codes
 Registry, with initial values as follows:
 
 | Type | Name | Status | Reference |
@@ -1353,9 +1454,9 @@ Registry, with initial values as follows:
 | 0x0001 | KeepAlive | Standard | RFC-TBD |
 | 0x0002 | Encryption Padding | Standard | RFC-TBD |
 | 0x0003 - 0x003F | Unassigned, reserved for DSO session-management TLVs | | |
-| 0x0040 - 0x77FF | Unassigned | | |
-| 0x7800 - 0x7BFF | Reserved for local / experimental use | | |
-| 0x7C00 - 0x7FFF | Reserved for future expansion | | |
+| 0x0040 - 0xF7FF | Unassigned | | |
+| 0xF800 - 0xFBFF | Reserved for local / experimental use | | |
+| 0xFC00 - 0xFFFF | Reserved for future expansion | | |
 
 Registration of additional DSO Type Codes requires publication
 of an appropriate IETF "Standards Action" or "IESG Approval" document {{!RFC5226}}.
