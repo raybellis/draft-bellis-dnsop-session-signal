@@ -623,12 +623,17 @@ terminate the connection with a TCP RST (or equivalent for other protocols).
 
 #### Unrecognized TLVs
 
-If a DSO request is received containing an unrecognized
-Primary TLV, the receiver MUST send a response with matching
-MESSAGE ID, and RCODE DSONOTIMP (tentatively 11).
-The response MUST NOT contain a copy of the offending Primary TLV.
+If DSO request is received containing an unrecognized Primary TLV,
+with a nonzero MESSAGE ID (indicating that a response is expected),
+then the receiver MUST send a response with matching MESSAGE ID,
+and RCODE DSONOTIMP (tentatively 11).
+The response MUST NOT contain a copy of the unrecognized Primary TLV.
 
-If a DSO request message is received
+If DSO request is received containing an unrecognized Primary TLV,
+with a zero MESSAGE ID (indicating that no response is expected),
+the receiver MUST silently ignore the message. A response MUST NOT be sent.
+
+If a DSO request message is received where the Primary TLV is recognized,
 containing one or more unrecognized Additional TLVs, the unrecognized
 Additional TLVs MUST be silently ignored, and the remainder of the message
 is interpreted and handled as if the unrecognized parts were not present.

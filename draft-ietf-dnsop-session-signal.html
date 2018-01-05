@@ -831,9 +831,10 @@
 <h1 id="rfc.section.4.2.2.5">
 <a href="#rfc.section.4.2.2.5">4.2.2.5.</a> <a href="#unrecognized-tlvs" id="unrecognized-tlvs">Unrecognized TLVs</a>
 </h1>
-<p id="rfc.section.4.2.2.5.p.1">If a DSO request is received containing an unrecognized Primary TLV, the receiver MUST send a response with matching MESSAGE ID, and RCODE DSONOTIMP (tentatively 11).  The response MUST NOT contain a copy of the offending Primary TLV.</p>
-<p id="rfc.section.4.2.2.5.p.2">If a DSO request message is received containing one or more unrecognized Additional TLVs, the unrecognized Additional TLVs MUST be silently ignored, and the remainder of the message is interpreted and handled as if the unrecognized parts were not present.</p>
-<p id="rfc.section.4.2.2.5.p.3">Similarly, if a DSO response message is received containing one or more unrecognized TLVs, the unrecognized TLVs MUST be silently ignored, and the remainder of the message is interpreted and handled as if the unrecognized parts were not present.</p>
+<p id="rfc.section.4.2.2.5.p.1">If DSO request is received containing an unrecognized Primary TLV, with a nonzero MESSAGE ID (indicating that a response is expected), then the receiver MUST send a response with matching MESSAGE ID, and RCODE DSONOTIMP (tentatively 11).  The response MUST NOT contain a copy of the unrecognized Primary TLV.</p>
+<p id="rfc.section.4.2.2.5.p.2">If DSO request is received containing an unrecognized Primary TLV, with a zero MESSAGE ID (indicating that no response is expected), the receiver MUST silently ignore the message. A response MUST NOT be sent.</p>
+<p id="rfc.section.4.2.2.5.p.3">If a DSO request message is received where the Primary TLV is recognized, containing one or more unrecognized Additional TLVs, the unrecognized Additional TLVs MUST be silently ignored, and the remainder of the message is interpreted and handled as if the unrecognized parts were not present.</p>
+<p id="rfc.section.4.2.2.5.p.4">Similarly, if a DSO response message is received containing one or more unrecognized TLVs, the unrecognized TLVs MUST be silently ignored, and the remainder of the message is interpreted and handled as if the unrecognized parts were not present.</p>
 <h1 id="rfc.section.4.2.3">
 <a href="#rfc.section.4.2.3">4.2.3.</a> <a href="#edns0-and-tsig" id="edns0-and-tsig">EDNS(0) and TSIG</a>
 </h1>
