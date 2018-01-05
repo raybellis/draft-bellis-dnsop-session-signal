@@ -808,9 +808,9 @@
 
 <dl>
 <dt>DSO-TYPE:</dt>
-<dd style="margin-left: 8">A 16-bit field in network order giving the type of the current DSO TLV per the IANA DSO Type Codes Registry.</dd>
+<dd style="margin-left: 8">A 16-bit unsigned integer in network (big endian) byte order giving the type of the current DSO TLV per the IANA DSO Type Codes Registry.</dd>
 <dt>DSO DATA LENGTH:</dt>
-<dd style="margin-left: 8">A 16-bit field in network order giving the size in octets of the TYPE-DEPENDENT DATA.</dd>
+<dd style="margin-left: 8">A 16-bit unsigned integer in network (big endian) byte order giving the size in octets of the TYPE-DEPENDENT DATA.</dd>
 <dt>TYPE-DEPENDENT DATA:</dt>
 <dd style="margin-left: 8">Type-code specific format.</dd>
 </dl>
@@ -998,7 +998,7 @@
 
 <dl>
 <dt>RETRY DELAY:</dt>
-<dd style="margin-left: 8">a time value, specified as a 32-bit word in network order in units of milliseconds, within which the client MUST NOT retry this operation, or retry connecting to this server.</dd>
+<dd style="margin-left: 8">a time value, specified as a 32-bit unsigned integer in network (big endian) byte order in units of milliseconds, within which the client MUST NOT retry this operation, or retry connecting to this server.</dd>
 </dl>
 <p id="rfc.section.7.1.p.4">The RECOMMENDED value is 10 seconds.</p>
 <h1 id="rfc.section.7.1.1">
@@ -1047,9 +1047,9 @@
 
 <dl>
 <dt>INACTIVITY TIMEOUT:</dt>
-<dd style="margin-left: 8">the inactivity timeout for the current DSO Session, specified as a 32-bit word in network (big endian) order in units of milliseconds.  This is the timeout at which the client MUST begin closing an inactive DSO Session.  The inactivity timeout can be any value of the server&#8217;s choosing.  If the client does not gracefully close an inactive DSO Session, then after twice this interval, or five seconds, whichever is greater, the server will forcibly terminate the connection with a TCP RST (or equivalent for other protocols).</dd>
+<dd style="margin-left: 8">the inactivity timeout for the current DSO Session, specified as a 32-bit unsigned integer in network (big endian) byte order in units of milliseconds.  This is the timeout at which the client MUST begin closing an inactive DSO Session.  The inactivity timeout can be any value of the server&#8217;s choosing.  If the client does not gracefully close an inactive DSO Session, then after twice this interval, or five seconds, whichever is greater, the server will forcibly terminate the connection with a TCP RST (or equivalent for other protocols).</dd>
 <dt>KEEPALIVE INTERVAL:</dt>
-<dd style="margin-left: 8">the keepalive interval for the current DSO Session, specified as a 32-bit word in network (big endian) order in units of milliseconds.  This is the interval at which a client MUST generate keepalive traffic to maintain connection state.  The keepalive interval MUST NOT be less than ten seconds.  If the client does not generate the mandated keepalive traffic, then after twice this interval the server will forcibly terminate the connection with a TCP RST (or equivalent for other protocols).  Since the minimum allowed keepalive interval is ten seconds, the minimum time at which a server will forcibly disconnect a client for failing to generate the mandated keepalive traffic is twenty seconds.</dd>
+<dd style="margin-left: 8">the keepalive interval for the current DSO Session, specified as a 32-bit unsigned integer in network (big endian) byte order in units of milliseconds.  This is the interval at which a client MUST generate keepalive traffic to maintain connection state.  The keepalive interval MUST NOT be less than ten seconds.  If the client does not generate the mandated keepalive traffic, then after twice this interval the server will forcibly terminate the connection with a TCP RST (or equivalent for other protocols).  Since the minimum allowed keepalive interval is ten seconds, the minimum time at which a server will forcibly disconnect a client for failing to generate the mandated keepalive traffic is twenty seconds.</dd>
 </dl>
 <p id="rfc.section.7.2.p.9">In a client-initiated DSO Keepalive message, the Session Timeouts contain the client&#8217;s requested values.  In a server response to a client-initiated message, the Session Timeouts contain the server&#8217;s chosen values, which the client MUST respect.  This is modeled after the DHCP protocol, where the client requests a certain lease lifetime using DHCP option 51 <a href="#RFC2132" class="xref">[RFC2132]</a>, but the server is the ultimate authority for deciding what lease lifetime is actually granted.</p>
 <p id="rfc.section.7.2.p.10">In a server-initiated DSO Keepalive message, the Session Timeouts unilaterally inform the client of the new values from this point forward in this DSO Session. The client MUST NOT generate a response to the server-initiated DSO Keepalive message.</p>

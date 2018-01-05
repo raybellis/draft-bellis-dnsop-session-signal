@@ -730,11 +730,12 @@ Bellis, et al.            Expires June 3, 2018                 [Page 13]
 Internet-Draft           DNS Stateful Operations           November 2017
 
 
-   DSO-TYPE:  A 16-bit field in network order giving the type of the
-      current DSO TLV per the IANA DSO Type Codes Registry.
+   DSO-TYPE:  A 16-bit unsigned integer in network (big endian) byte
+      order giving the type of the current DSO TLV per the IANA DSO Type
+      Codes Registry.
 
-   DSO DATA LENGTH:  A 16-bit field in network order giving the size in
-      octets of the TYPE-DEPENDENT DATA.
+   DSO DATA LENGTH:  A 16-bit unsigned integer in network (big endian)
+      byte order giving the size in octets of the TYPE-DEPENDENT DATA.
 
    TYPE-DEPENDENT DATA:  Type-code specific format.
 
@@ -774,7 +775,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
    error and the recipient of the defective response message MUST
    immediately terminate the connection with a TCP RST (or equivalent
    for other protocols).
-
 
 
 
@@ -1483,9 +1483,10 @@ Internet-Draft           DNS Stateful Operations           November 2017
       |                     RETRY DELAY (32 bits)                     |
       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
-   RETRY DELAY:  a time value, specified as a 32-bit word in network
-      order in units of milliseconds, within which the client MUST NOT
-      retry this operation, or retry connecting to this server.
+   RETRY DELAY:  a time value, specified as a 32-bit unsigned integer in
+      network (big endian) byte order in units of milliseconds, within
+      which the client MUST NOT retry this operation, or retry
+      connecting to this server.
 
    The RECOMMENDED value is 10 seconds.
 
@@ -1505,7 +1506,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
    o  SERVFAIL indicates that the server is overloaded due to resource
       exhaustion.
-
 
 
 
@@ -1635,27 +1635,27 @@ Internet-Draft           DNS Stateful Operations           November 2017
       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
    INACTIVITY TIMEOUT:  the inactivity timeout for the current DSO
-      Session, specified as a 32-bit word in network (big endian) order
-      in units of milliseconds.  This is the timeout at which the client
-      MUST begin closing an inactive DSO Session.  The inactivity
-      timeout can be any value of the server's choosing.  If the client
-      does not gracefully close an inactive DSO Session, then after
-      twice this interval, or five seconds, whichever is greater, the
-      server will forcibly terminate the connection with a TCP RST (or
-      equivalent for other protocols).
+      Session, specified as a 32-bit unsigned integer in network (big
+      endian) byte order in units of milliseconds.  This is the timeout
+      at which the client MUST begin closing an inactive DSO Session.
+      The inactivity timeout can be any value of the server's choosing.
+      If the client does not gracefully close an inactive DSO Session,
+      then after twice this interval, or five seconds, whichever is
+      greater, the server will forcibly terminate the connection with a
+      TCP RST (or equivalent for other protocols).
 
    KEEPALIVE INTERVAL:  the keepalive interval for the current DSO
-      Session, specified as a 32-bit word in network (big endian) order
-      in units of milliseconds.  This is the interval at which a client
-      MUST generate keepalive traffic to maintain connection state.  The
-      keepalive interval MUST NOT be less than ten seconds.  If the
-      client does not generate the mandated keepalive traffic, then
-      after twice this interval the server will forcibly terminate the
-      connection with a TCP RST (or equivalent for other protocols).
-      Since the minimum allowed keepalive interval is ten seconds, the
-      minimum time at which a server will forcibly disconnect a client
-      for failing to generate the mandated keepalive traffic is twenty
-      seconds.
+      Session, specified as a 32-bit unsigned integer in network (big
+      endian) byte order in units of milliseconds.  This is the interval
+      at which a client MUST generate keepalive traffic to maintain
+      connection state.  The keepalive interval MUST NOT be less than
+      ten seconds.  If the client does not generate the mandated
+      keepalive traffic, then after twice this interval the server will
+      forcibly terminate the connection with a TCP RST (or equivalent
+      for other protocols).  Since the minimum allowed keepalive
+      interval is ten seconds, the minimum time at which a server will
+      forcibly disconnect a client for failing to generate the mandated
+      keepalive traffic is twenty seconds.
 
    In a client-initiated DSO Keepalive message, the Session Timeouts
    contain the client's requested values.  In a server response to a

@@ -575,12 +575,12 @@ depending on what is stated in the specification for that TLV.
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
 DSO-TYPE:
-: A 16-bit field in network order giving the type of the current DSO TLV per
-the IANA DSO Type Codes Registry.
+: A 16-bit unsigned integer in network (big endian) byte order
+giving the type of the current DSO TLV per the IANA DSO Type Codes Registry.
 
 DSO DATA LENGTH:
-: A 16-bit field in network order giving the size in octets of
-the TYPE-DEPENDENT DATA.
+: A 16-bit unsigned integer in network (big endian) byte order
+giving the size in octets of the TYPE-DEPENDENT DATA.
 
 TYPE-DEPENDENT DATA:
 : Type-code specific format.
@@ -1189,9 +1189,9 @@ The TYPE-DEPENDENT DATA for the the Retry Delay TLV is as follows:
        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 RETRY DELAY:
-: a time value, specified as a 32-bit word in network order in units of 
-milliseconds, within which the client MUST NOT retry this operation, or retry 
-connecting to this server.
+: a time value, specified as
+a 32-bit unsigned integer in network (big endian) byte order in units of milliseconds,
+within which the client MUST NOT retry this operation, or retry connecting to this server.
 
 The RECOMMENDED value is 10 seconds.
 
@@ -1300,8 +1300,8 @@ The TYPE-DEPENDENT DATA for the the Keepalive TLV is as follows:
        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 INACTIVITY TIMEOUT:
-: the inactivity timeout for the current DSO Session, specified as a
-32-bit word in network (big endian) order in units of milliseconds.
+: the inactivity timeout for the current DSO Session, specified as
+a 32-bit unsigned integer in network (big endian) byte order in units of milliseconds.
 This is the timeout at which the client MUST begin closing an inactive DSO Session.
 The inactivity timeout can be any value of the server's choosing.
 If the client does not gracefully close an inactive DSO
@@ -1310,8 +1310,8 @@ whichever is greater, the server will forcibly terminate the
 connection with a TCP RST (or equivalent for other protocols).
 
 KEEPALIVE INTERVAL:
-: the keepalive interval for the current DSO Session, specified as a
-32-bit word in network (big endian) order in units of milliseconds.
+: the keepalive interval for the current DSO Session, specified as
+a 32-bit unsigned integer in network (big endian) byte order in units of milliseconds.
 This is the interval at which a client MUST generate keepalive
 traffic to maintain connection state.
 The keepalive interval MUST NOT be less than ten seconds.
