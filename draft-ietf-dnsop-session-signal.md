@@ -88,12 +88,12 @@ informative:
 
 --- abstract
 
-This document defines a new DNS OPCODE, for DNS Stateful Operations (DSO).
+This document defines a new DNS OPCODE, DSO (tentatively 6), for DNS Stateful Operations.
 DSO messages are used to communicate operations within persistent
 stateful sessions, expressed using type-length-value (TLV) syntax.
-This document defines an initial set of TLVs, including ones
-used to manage session timeouts and termination,
-as well as defining new stateful operations
+This document defines an initial set of three TLVs,
+used to manage session timeouts, termination, and encryption padding,
+and defines a framework for new stateful operations
 not supported by the existing EDNS(0) mechanism.
 
 --- middle
@@ -116,16 +116,16 @@ For example, a server cannot arbitrarily
 instruct a client to close a connection because the server can only send EDNS(0) options 
 in responses to queries that contained EDNS(0) options.
 
-This document defines a new DNS OPCODE, for DNS Stateful Operations (DSO).
+This document defines a new DNS OPCODE, DSO (tentatively 6), for DNS Stateful Operations.
 DSO messages are used to communicate operations within persistent
 stateful sessions, expressed using type-length-value (TLV) syntax.
-This document defines an initial set of TLVs, including ones
-used to manage session timeouts and termination.
+This document defines an initial set of three TLVs,
+used to manage session timeouts, termination, and encryption padding.
 
 All three of the TLVs defined here are mandatory for all implementations of DSO.
 Further TLVs may be defined in additional specifications.
 
-It should be noted that the message format for DNS Stateful Operations
+It should be noted that the format for DSO messages
 (see {{format}}) differs from the traditional DNS message
 format used for standard queries and responses.
 The standard twelve-octet header is used, but the four count fields
@@ -134,11 +134,11 @@ corresponding sections are not present.
 The actual data pertaining to DNS Stateful Operations
 (expressed in TLV syntax) is appended to the end of the DNS message header.
 When displayed using packet analyzer tools that have not been
-updated to recognize the DNS Stateful Operations format, this
-will result in the Stateful Operations data being displayed
+updated to recognize the DSO format, this
+will result in the DSO data being displayed
 as unknown additional data after the end of the DNS message.
 It is likely that future updates to these tools will add the ability
-to recognize, decode, and display the Stateful Operations data.
+to recognize, decode, and display the DSO data.
 
 This new format has distinct advantages over an RR-based format because it
 is more explicit and more compact. Each TLV definition is specific
@@ -155,9 +155,9 @@ option within the combined OPT RR.
 The specifications for each individual option need to define how each
 different option is to be acknowledged, if necessary.
 
-In contrast to EDNS(0), with DNS Stateful Operations there is no
+In contrast to EDNS(0), with DSO there is no
 compelling motivation to pack multiple operations into a single
-message for efficiency reasons, because DNS Stateful Operations
+message for efficiency reasons, because DSO
 always operates using a connection-oriented transport protocol.
 Each Stateful operation is communicated in its own separate
 DNS message, and the transport protocol can take care of packing
@@ -205,13 +205,13 @@ The terms "initiator" and "responder" correspond respectively to the
 initial sender and subsequent receiver of a DSO request message,
 regardless of which was the "client" and "server" in the usual DNS sense.
 
-The term "sender" may apply to either an initiator
-(when sending a DNS Stateful Operation request message)
-or a responder (when sending a DNS Stateful Operation response message).
+The term "sender" may apply to
+either an initiator (when sending a DSO request message)
+or a responder (when sending a DSO response message).
 
-Likewise, the term "receiver" may apply to either a responder
-(when receiving a DNS Stateful Operation request message)
-or an initiator (when receiving a DNS Stateful Operation response message).
+Likewise, the term "receiver" may apply to
+either a responder (when receiving a DSO request message)
+or an initiator (when receiving a DSO response message).
 
 DNS Stateful Operations uses "DSO request messages" and "DSO response messages".
 DSO request messages are further subdivided into two variants,
@@ -277,11 +277,10 @@ and to assure client and server that they still have connectivity to each other.
 There are a myriad of other potential use cases for DSO given the versatility 
 and extensibility of this specification.
 
-{{details}} of this document describes the protocol details of DNS Stateful
-Operations including definitions of three TLVs for session management and 
-encryption padding. {{lifecycle}} presents a
-detailed discussion of the DSO Session lifecycle including an
-in-depth discussion of keepalive traffic and session termination.
+{{details}} of this document describes the protocol details of DNS Stateful Operations
+including definitions of three TLVs for session management and encryption padding.
+{{lifecycle}} presents a detailed discussion of the DSO Session lifecycle
+including an in-depth discussion of keepalive traffic and session termination.
 
 # Protocol Details {#details}
 
