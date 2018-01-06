@@ -520,8 +520,8 @@ the corresponding DSO request message, but it is not required to do so.
 The MESSAGE ID field in the DNS message header is sufficient to identify
 to which DSO request message this response message relates.
 
-Most DSO request messages are acknowledged request messages,
-specified to generate corresponding responses.
+It is anticipated that most DSO request messages will be acknowledged
+request messages, specified to generate corresponding responses.
 In some specialized high-traffic use cases,
 it may be appropriate to use unacknowledged request messages.
 Unacknowledged request messages can be more efficient on the network,
@@ -636,8 +636,7 @@ Alternatively it may contain one or more TLVs of other
 types, or a combination of the above, as appropriate
 for the information that needs to be communicated.
 The specification for each DSO TLV determines
-what TLVs are required in a response to a request
-using that TLV as the Primary TLV.
+what TLVs are required in a response to a request using that TLV.
 
 If a DSO response is received for an operation where the specification
 requires that the response carry a particular TLV or TLVs,
@@ -741,7 +740,7 @@ specification for the DSO in question.
 MUST NOT be reused whilst that state remains active.)
 
 If a client or server receives a response (QR=1) where the MESSAGE ID is zero,
-or does not match the MESSAGE ID of any of its outstanding operations,
+or any other value that does not match the MESSAGE ID of any of its outstanding operations,
 this is a fatal error and the recipient MUST immediately terminate
 the connection with a TCP RST (or equivalent for other protocols).
 
@@ -1123,7 +1122,7 @@ before the server resorts to forcibly aborting the connection.
 
 ***
 
-## Retry Delay TLV {#retry}
+## Retry Delay Request {#retry}
 
 There may be rare cases where a server is overloaded and wishes to shed load.
 If a server is low on resources it MAY simply terminate a client connection with 
@@ -1243,8 +1242,9 @@ Retry Delay, Keepalive, and Encryption Padding.
 
 ## Retry Delay TLV {#delay}
 
-The Retry Delay TLV (DSO-TYPE=0) can be used as a Primary TLV or as
-a response TLV.
+The Retry Delay TLV (DSO-TYPE=0) can be used as a
+Primary TLV (unacknowledged) in a server-to-client message,
+or as a response TLV in a server-to-client response to a client-to-server request message.
 
 The TYPE-DEPENDENT DATA for the the Retry Delay TLV is as follows:
 
@@ -1286,8 +1286,9 @@ However, future circumstances may create situations where other RCODE values
 are appropriate in Retry Delay requests, so clients MUST be prepared
 to accept Retry Delay requests with any RCODE value.
 
-An reply is not desired for a Retry Delay operation and the
-MESSAGE ID MUST be set to zero in the request.
+A Retry Delay request is an unacknowledged request message;
+the MESSAGE ID MUST be set to zero in the request
+and the client MUST NOT send a response.
 
 ### Use as a Response TLV
 
@@ -1347,6 +1348,8 @@ No client response to this unilateral declaration is required or allowed.
 If a client receives a Keepalive request message with a nonzero MESSAGE ID
 then this is a fatal error and the client MUST immediately terminate
 the connection with a TCP RST (or equivalent for other protocols).
+
+The Keepalive TLV is not used as an Additional TLV.
 
 It is not required that the Keepalive TLV be used in every DSO Session.
 While many DNS Stateful operations

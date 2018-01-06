@@ -100,7 +100,7 @@ Table of Contents
      5.6.  Server-Initiated Termination on Error . . . . . . . . . .  29
      5.7.  Client Behaviour upon Receiving an Error  . . . . . . . .  29
      5.8.  Server-Initiated Termination on Overload  . . . . . . . .  30
-     5.9.  Retry Delay TLV . . . . . . . . . . . . . . . . . . . . .  31
+     5.9.  Retry Delay Request . . . . . . . . . . . . . . . . . . .  31
        5.9.1.  Outstanding Operations  . . . . . . . . . . . . . . .  31
        5.9.2.  Client Reconnection . . . . . . . . . . . . . . . . .  32
    6.  Connection Sharing  . . . . . . . . . . . . . . . . . . . . .  33
@@ -761,15 +761,15 @@ Internet-Draft           DNS Stateful Operations           November 2017
    message header is sufficient to identify to which DSO request message
    this response message relates.
 
-   Most DSO request messages are acknowledged request messages,
-   specified to generate corresponding responses.  In some specialized
-   high-traffic use cases, it may be appropriate to use unacknowledged
-   request messages.  Unacknowledged request messages can be more
-   efficient on the network, because they don't generate a stream of
-   corresponding reply messages.  Using unacknowledged request messages
-   can also simplify software in some cases, by removing need for an
-   initiator to maintain state while it waits to receive replies it
-   doesn't care about.  When the specification for a particular TLV
+   It is anticipated that most DSO request messages will be acknowledged
+   request messages, specified to generate corresponding responses.  In
+   some specialized high-traffic use cases, it may be appropriate to use
+   unacknowledged request messages.  Unacknowledged request messages can
+   be more efficient on the network, because they don't generate a
+   stream of corresponding reply messages.  Using unacknowledged request
+   messages can also simplify software in some cases, by removing need
+   for an initiator to maintain state while it waits to receive replies
+   it doesn't care about.  When the specification for a particular TLV
    states that, when used as a Primary TLV (i.e., first) in a request
    message, that request message is to be unacknowledged, the MESSAGE ID
    field MUST be set to zero and the receiver MUST NOT generate any
@@ -921,7 +921,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
    combination of the above, as appropriate for the information that
    needs to be communicated.  The specification for each DSO TLV
    determines what TLVs are required in a response to a request using
-   that TLV as the Primary TLV.
+   that TLV.
 
    If a DSO response is received for an operation where the
    specification requires that the response carry a particular TLV or
@@ -1099,10 +1099,10 @@ Internet-Draft           DNS Stateful Operations           November 2017
    whilst that state remains active.)
 
    If a client or server receives a response (QR=1) where the MESSAGE ID
-   is zero, or does not match the MESSAGE ID of any of its outstanding
-   operations, this is a fatal error and the recipient MUST immediately
-   terminate the connection with a TCP RST (or equivalent for other
-   protocols).
+   is zero, or any other value that does not match the MESSAGE ID of any
+   of its outstanding operations, this is a fatal error and the
+   recipient MUST immediately terminate the connection with a TCP RST
+   (or equivalent for other protocols).
 
 
 
@@ -1682,7 +1682,7 @@ Bellis, et al.            Expires June 3, 2018                 [Page 30]
 Internet-Draft           DNS Stateful Operations           November 2017
 
 
-5.9.  Retry Delay TLV
+5.9.  Retry Delay Request
 
    There may be rare cases where a server is overloaded and wishes to
    shed load.  If a server is low on resources it MAY simply terminate a
@@ -1857,8 +1857,9 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 7.1.  Retry Delay TLV
 
-   The Retry Delay TLV (DSO-TYPE=0) can be used as a Primary TLV or as a
-   response TLV.
+   The Retry Delay TLV (DSO-TYPE=0) can be used as a Primary TLV
+   (unacknowledged) in a server-to-client message, or as a response TLV
+   in a server-to-client response to a client-to-server request message.
 
    The TYPE-DEPENDENT DATA for the the Retry Delay TLV is as follows:
 
@@ -1896,8 +1897,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
       longer able to perform one or more of the functions currently
       being performed on this DSO Session (for example, a DNS Push
       Notification server could be reconfigured such that is is no
-      longer accepting DNS Push Notification requests for one or more of
-      the currently subscribed names).
+
 
 
 
@@ -1906,6 +1906,9 @@ Bellis, et al.            Expires June 3, 2018                 [Page 34]
 Internet-Draft           DNS Stateful Operations           November 2017
 
 
+      longer accepting DNS Push Notification requests for one or more of
+      the currently subscribed names).
+
    This document specifies only these three RCODE values for Retry Delay
    request.  Servers sending Retry Delay requests SHOULD use one of
    these three values.  However, future circumstances may create
@@ -1913,8 +1916,9 @@ Internet-Draft           DNS Stateful Operations           November 2017
    requests, so clients MUST be prepared to accept Retry Delay requests
    with any RCODE value.
 
-   An reply is not desired for a Retry Delay operation and the MESSAGE
-   ID MUST be set to zero in the request.
+   A Retry Delay request is an unacknowledged request message; the
+   MESSAGE ID MUST be set to zero in the request and the client MUST NOT
+   send a response.
 
 7.1.2.  Use as a Response TLV
 
@@ -1934,10 +1938,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
    a DSO message containing a Retry Delay TLV, this is a fatal error and
    the server MUST immediately terminate the connection with a TCP RST
    (or equivalent for other protocols).
-
-
-
-
 
 
 
@@ -2006,10 +2006,10 @@ Internet-Draft           DNS Stateful Operations           November 2017
    then this is a fatal error and the client MUST immediately terminate
    the connection with a TCP RST (or equivalent for other protocols).
 
+   The Keepalive TLV is not used as an Additional TLV.
+
    It is not required that the Keepalive TLV be used in every DSO
    Session.  While many DNS Stateful operations will be used in
-   conjunction with a long-lived session state, not all DNS Stateful
-   operations require long-lived session state, and in some cases the
 
 
 
@@ -2018,6 +2018,8 @@ Bellis, et al.            Expires June 3, 2018                 [Page 36]
 Internet-Draft           DNS Stateful Operations           November 2017
 
 
+   conjunction with a long-lived session state, not all DNS Stateful
+   operations require long-lived session state, and in some cases the
    default 15-second value for both the inactivity timeout and keepalive
    interval may be perfectly appropriate.  However, note that for
    clients that implement only the TLVs defined in this document it is
@@ -2064,8 +2066,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
    using DHCP option 51 [RFC2132], but the server is the ultimate
    authority for deciding what lease lifetime is actually granted.
 
-   In a server-initiated DSO Keepalive message, the Session Timeouts
-   unilaterally inform the client of the new values from this point
 
 
 
@@ -2074,6 +2074,8 @@ Bellis, et al.            Expires June 3, 2018                 [Page 37]
 Internet-Draft           DNS Stateful Operations           November 2017
 
 
+   In a server-initiated DSO Keepalive message, the Session Timeouts
+   unilaterally inform the client of the new values from this point
    forward in this DSO Session.  The client MUST NOT generate a response
    to the server-initiated DSO Keepalive message.
 
@@ -2119,8 +2121,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
       timeout, the client MUST then begin closing the DSO Session, as
       described above.
 
-   o  If the current inactivity timer value is already greater than the
-      new inactivity timeout, then this DSO Session has already been
 
 
 
@@ -2130,6 +2130,8 @@ Bellis, et al.            Expires June 3, 2018                 [Page 38]
 Internet-Draft           DNS Stateful Operations           November 2017
 
 
+   o  If the current inactivity timer value is already greater than the
+      new inactivity timeout, then this DSO Session has already been
       inactive for longer than the server permits, and the client MUST
       immediately begin closing this DSO Session.
 
@@ -2156,8 +2158,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
    receiver of the EDNS(0) TCP Keepalive option MUST immediately
    terminate the connection with a TCP RST (or equivalent for other
    protocols).
-
-
 
 
 
