@@ -1627,7 +1627,7 @@ in the DNS RCODE Registry.</t>
 with initial (hexadecimal) values as shown below:</t>
 
 <texttable>
-      <ttcol align='right'>Type</ttcol>
+      <ttcol align='left'>Type</ttcol>
       <ttcol align='left'>Name</ttcol>
       <ttcol align='left'>Status</ttcol>
       <ttcol align='left'>Reference</ttcol>
@@ -1762,7 +1762,7 @@ for their helpful contributions to this document.</t>
   </back>
 
 <!-- ##markdown-source:
-H4sIAJQ1UFoAA+19a3cbR3bg9/oVvfQHkwoAk5It28rZs0OLlM2MRGpIaiaT
+H4sIAEVQUFoAA+19a3cbR3bg9/oVvfQHkwoAk5It28rZs0OLlM2MRGpIaiaT
 zZ6cBtAg2wK6ke4GaYys/5Lfkl+291l1qx8gZXtmZ3OiCWMS6K7HrVv3/RiP
 x67Jm2X2Ijk5v0qumrTJFptlcrHOqrTJy6J283JWpCt4YF6li2acZ81iPC/q
 cj2us7qGR8Z1flOky/HhV24Or79Inh4efT0+Oho/O3T5unqRNNWmbp4eHn57
@@ -2214,25 +2214,25 @@ k86xoaAACx7Ndp1J5WJcClJJ0BBTPcM1QkMX3cqjxUL72VgWPl6XwC24oq/k
 zZ0dnx9jXjvJ1polBxwOT/LiLQVnX4LAiyajIF3RS7hBKpvO+X2YblAxx5ZS
 Aggg6f11AHTSBLv+53/w0E714/Mr/eg//0Om2078Oi5/u2UcHdl1gOR19uat
 L+w8z6IFXXbWo+yfOCyeyUt4Rxe2HV6UhIPiyEfPyXHYPwLnYEkExTLZvwU6
-gh6EVbo8UFqTUujbfcFlCl849zMP9HNyjhbInylgZVPDL5cZ5VOC1Pez+3k8
-fgE/+E/+Y37B32GYQ/hHr8FKOECbBsNE9jl+/url+Pq7k0QePYKPgoS668mn
-8FHPBdv1yrMx/LyCz98Vac0uVqInKIUy4YB/CEMJuxlzQzC6bHQHfsb/0Vhf
-Ho5fff0qHst//eqbQ/j6O/r60g6PtSeqnEpnLr9YljM4DRTR/Xsv8b1X3fck
-lwReB/kLd8tvuOi8a724e91p9rAMDJB/vzIn9FZT1U7NK5QBALO+lW4a+Keg
-CVPPr54+fQ7UE0mHHWZRZajJsoMK45LXBDmJ1a65MXaQgOVjr3/4kgA5OpTP
-S586gU45qSKBVm0cM9QIyBv1NHGfEW8094pZyADe5/gp5HdwdUGoPMBQI7a4
-VWJlCs3b6crR3b/LQdMU2RaPmgrtuH22B9JjJnxWCcWKCwbZNzCWPfi2kcKz
-DZEjtSpMYicbNMWEaSXkMx8bFddI9uEYBIFV+l6qUWAIYi8GmApCRb3RDPei
-RM/FAgg48vYZsA89kEbiBQpkx/UMFkXlQ2q0UlmqiZ+iKt5BRjqLvZ2I7PFS
-MZ+Qam/wfu64nDqUv+faFKmW1jx+scCZz06vX3lCUSfHkrmtnNWiOe02eAAr
-2jmKJUGV6u5eKb7ZSVif0A4nNVUkqa6as9GI8IkVcGoNtAytpklRrYSqfw66
-fkbNUJEd0P2NF85R0CkbdiZa3E8dhS2YRJIFW2s6ozvlcbDfpeaxzVtMR5eH
-SPuv//vJEyC/T5786/8JosFVBjiG+NsWD85kFasMTeR5vRIfiJIXgkAoePP6
-Khj3TKU9gqoRbj09MHUFOGZ4K4QIhhzjkGPsUx+GscX9NNbYhzRgEQRjB8M3
-62ApjAwkxL5JrmLVVa7tXpd37ZEg7CX0kEVMhUYacv0WGabsfgYY66OdmbbA
-NGnxHgHmrvNV8hKZ+chdpss1AA3II5Dff8ImJSVa6dNq5N6kxY8bLDhUvIfN
-XKYl23KvYdLX2UrK5cBK8yq5zZZrJFOodVf5dGPqgxis0SNGL9A0nb13/xfq
-UG9RYyMBAA==
+gh6EVbo8UFqTUujbfcFlCl849zMP9HNyjhbInylgZVPDL5cZ5VOC1Pez+3lM
+/+L/mF/wdxjpEP7Rm7AYjtGm8TCXfY6fv3o5vv7uJJFHj+CjIKTuevIpfNRz
+x3a98mwMP6/g83dFWrOXlUgKCqJMO+AfglEib8bcE4zuG12Dn/F/NNaXh+NX
+X7+Kx/Jfv/rmEL7+jr6+tMNj+Ykqp+qZyy+W5QwOBKV0/95LfO9V9z1JJ4HX
+QQTD3fIbLjryWu/uXneaPawEAxzAr8wJydVstVPzCiUBwKxvpaEG/imYwgT0
+q6dPnwMBRephh1lUGSqz7KPC0OQ1QU7CtWvujR2EYPnYqyC+KkCOPuXz0mdP
+oF9OCkmgYRvHDGUC8kadTdxqxNvNvW4WkoD3OYQKWR7cXpArDzDaiI1ulRia
+Qv92unV0/e9yUDZFvMWjplo7bp9NgvSYiaBVWrHimkH2DQxnD+5tJPJsRuRg
+rQrz2MkMTWFhWgz5zIdHxWWSfUQGQWCVvpeCFBiF2IsBpohQUW80yb0o0Xmx
+ABqO7H0GHEQPpJGQgQI5cj2DRVEFkRoNVZZw4qeojXeQkc5ibycie7xUzCek
+2hu8nzsupw7l77n2RaqlO49fLDDns9PrV55Q1MmxJG8rc7VoTrsNTsCKdo6S
+SdCmurtXom92EtYntMNJWRXJq6vmbDcifGIdnLoDLUO3adJVKyHsn4O6n1E/
+VOQIdH/jhXMgdMq2nYnW91NfYQsmkXDBBpvO6E7ZHOx3qals8xbf0eUh0v7r
+/37yBMjvkyf/+n+CdHCVAY4h/rYlhDNZxSpDK3ler8QNouSFIBBq3ry+CvY9
+U2yPoGrkW08PTGkBDhveCiGCIcc45Bhb1YdhbH0/DTf2UQ1YB8GYwvDNOhgL
+IxsJcXASrVh7lWu71+VdeyQLeyE9JBJTrZGGvL9Fhlm7nwHG+oBnpi0wTVq8
+R4C563yVvER+PnKX6XINQAPyCOT3n7BPSYmG+rQauTdp8eMGaw4V72Ezl2nJ
+5txrmPR1tpKKObDSvEpus+UayRQq3lU+3ZgSIQZr9IjRETRNZ+/d/wW0c7vO
+ZiMBAA==
 
 -->
 

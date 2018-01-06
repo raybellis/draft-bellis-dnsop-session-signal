@@ -1516,7 +1516,7 @@ The IANA is directed to create the 16-bit DSO Type Code Registry,
 with initial (hexadecimal) values as shown below:
 
 | Type | Name | Status | Reference |
-|--:|------|--------|-----------|
+|------|------|--------|-----------|
 | 0000 | RetryDelay | Standard | RFC-TBD |
 | 0001 | KeepAlive | Standard | RFC-TBD |
 | 0002 | Encryption Padding | Standard | RFC-TBD |
