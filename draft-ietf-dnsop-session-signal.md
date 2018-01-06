@@ -146,7 +146,7 @@ to its use case, and as a result contains no redundant or overloaded fields.
 Importantly, it completely avoids conflating DNS Stateful Operations in any way 
 with normal DNS operations or with existing EDNS(0)-based functionality.
 A goal of this approach is to avoid the operational issues that have
-befallen EDNS(0), particularly relating to middle-box behaviour.
+befallen EDNS(0), particularly relating to middlebox behaviour.
 
 With EDNS(0), multiple options may be packed into a single OPT pseudo-RR,
 and there is no generalized mechanism for a client to be able to tell
@@ -275,7 +275,7 @@ sufficient traffic to maintain NAT and firewall state.
 To mitigate this issue this document introduces a
 new concept for the DNS, that is DSO "Keepalive traffic".
 This traffic carries no DNS data and is not considered 'activity'
-in the classic DNS sense, but serves to maintain state in middle boxes,
+in the classic DNS sense, but serves to maintain state in middleboxes,
 and to assure client and server that they still have connectivity to each other.
 
 There are a myriad of other potential use cases for DSO given the versatility 
@@ -364,25 +364,25 @@ the previous specification for DNS over TCP {{!RFC7766}}.
 
 ***
 
-### Middle-box Considerations
+### Middlebox Considerations
 
-Where an application-layer middle box (e.g., a DNS proxy, forwarder, or
-session multiplexer) is in the path the middle box MUST NOT blindly
+Where an application-layer middlebox (e.g., a DNS proxy, forwarder, or
+session multiplexer) is in the path the middlebox MUST NOT blindly
 forward DSO messages in either direction, and MUST treat the inbound
 and outbound connections as separate sessions.  This does not preclude
-the use of DSO messages in the presence of an IP-layer middle box, such
+the use of DSO messages in the presence of an IP-layer middlebox, such
 as a NAT that rewrites IP-layer and/or transport-layer headers but
 otherwise preserves the effect of a single session between the client
 and the server.
 
-To illustrate the above, consider a network where a middle box
+To illustrate the above, consider a network where a middlebox
 terminates one or more TCP connections from clients and multiplexes the
 queries therein over a single TCP connection to an upstream server.  The
 DSO messages and any associated state are specific to the individual
-TCP connections.  A DSO-aware middle box MAY in some circumstances be
+TCP connections.  A DSO-aware middlebox MAY in some circumstances be
 able to retain associated state and pass it between the client and
 server (or vice versa) but this would be highly TLV-specific.  For
-example, the middle box may be able to maintain a list of which clients
+example, the middlebox may be able to maintain a list of which clients
 have made Push Notification subscriptions {{?I-D.ietf-dnssd-push}} and
 make its own subscription(s) on their behalf, relaying any subsequent
 notifications to the client (or clients) that have subscribed to that
@@ -972,7 +972,7 @@ will forcibly abort the idle session after five seconds.
 ## The Keepalive Interval {#keepalivetimer}
 
 The purpose of the keepalive interval is to manage the generation of
-sufficient messages to maintain state in middle boxes (such at NAT gateways
+sufficient messages to maintain state in middleboxes (such at NAT gateways
 or firewalls) and for the client and server to periodically verify that they
 still have connectivity to each other. This allows them to clean up state
 when connectivity is lost, and attempt re-connection if appropriate.
