@@ -1179,7 +1179,7 @@ before attempting to reconnect.
 
 If a particular server does not want a client to reconnect (it is being
 de-commissioned), it SHOULD set the retry delay to the maximum value (which is
-approximately 497 days). If the server will only be out of service for a maintenance
+approximately 49.7 days). If the server will only be out of service for a maintenance
 period, it should use a value closer to the expected maintenance window and
 not default to a very large delay value or clients may not attempt to reconnect
 after it resumes service.
