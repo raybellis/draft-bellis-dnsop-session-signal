@@ -244,9 +244,8 @@ The timeouts associated with these timers are called the inactivity timeout and
 the keepalive interval respectively. 
 The term "Session Timeouts" is used to refer to this pair of timeout values.
 
-Reseting a timer means resetting the timer value to zero and starting the timer 
-again. Clearing a timer means resetting the timer value to zero but NOT starting 
-the time again. 
+Reseting a timer means resetting the timer value to zero and starting the timer again.
+Clearing a timer means resetting the timer value to zero but NOT starting the timer again. 
 
 ***
 

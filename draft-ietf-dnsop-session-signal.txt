@@ -316,7 +316,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
    Reseting a timer means resetting the timer value to zero and starting
    the timer again.  Clearing a timer means resetting the timer value to
-   zero but NOT starting the time again.
+   zero but NOT starting the timer again.
 
 
 
