@@ -412,15 +412,20 @@
 <link href="#rfc.section.7.2.1" rel="Chapter" title="7.2.1 Client handling of received Session Timeout values">
 <link href="#rfc.section.7.2.2" rel="Chapter" title="7.2.2 Relation to EDNS(0) TCP Keepalive Option">
 <link href="#rfc.section.7.3" rel="Chapter" title="7.3 Encryption Padding TLV">
-<link href="#rfc.section.8" rel="Chapter" title="8 IANA Considerations">
-<link href="#rfc.section.8.1" rel="Chapter" title="8.1 DSO OPCODE Registration">
-<link href="#rfc.section.8.2" rel="Chapter" title="8.2 DSO RCODE Registration">
-<link href="#rfc.section.8.3" rel="Chapter" title="8.3 DSO Type Code Registry">
-<link href="#rfc.section.9" rel="Chapter" title="9 Security Considerations">
-<link href="#rfc.section.10" rel="Chapter" title="10 Acknowledgements">
-<link href="#rfc.references" rel="Chapter" title="11 References">
-<link href="#rfc.references.1" rel="Chapter" title="11.1 Normative References">
-<link href="#rfc.references.2" rel="Chapter" title="11.2 Informative References">
+<link href="#rfc.section.8" rel="Chapter" title="8 Summary">
+<link href="#rfc.section.8.1" rel="Chapter" title="8.1 MESSAGE ID">
+<link href="#rfc.section.8.2" rel="Chapter" title="8.2 TLV Usage">
+<link href="#rfc.section.8.3" rel="Chapter" title="8.3 Inactivity Timeout">
+<link href="#rfc.section.8.4" rel="Chapter" title="8.4 Keepalive Interval">
+<link href="#rfc.section.9" rel="Chapter" title="9 IANA Considerations">
+<link href="#rfc.section.9.1" rel="Chapter" title="9.1 DSO OPCODE Registration">
+<link href="#rfc.section.9.2" rel="Chapter" title="9.2 DSO RCODE Registration">
+<link href="#rfc.section.9.3" rel="Chapter" title="9.3 DSO Type Code Registry">
+<link href="#rfc.section.10" rel="Chapter" title="10 Security Considerations">
+<link href="#rfc.section.11" rel="Chapter" title="11 Acknowledgements">
+<link href="#rfc.references" rel="Chapter" title="12 References">
+<link href="#rfc.references.1" rel="Chapter" title="12.1 Normative References">
+<link href="#rfc.references.2" rel="Chapter" title="12.2 Informative References">
 <link href="#rfc.authors" rel="Chapter">
 
 
@@ -588,23 +593,33 @@
 </li>
 </ul><li>7.3.   <a href="#rfc.section.7.3">Encryption Padding TLV</a>
 </li>
-</ul><li>8.   <a href="#rfc.section.8">IANA Considerations</a>
+</ul><li>8.   <a href="#rfc.section.8">Summary</a>
 </li>
-<ul><li>8.1.   <a href="#rfc.section.8.1">DSO OPCODE Registration</a>
+<ul><li>8.1.   <a href="#rfc.section.8.1">MESSAGE ID</a>
 </li>
-<li>8.2.   <a href="#rfc.section.8.2">DSO RCODE Registration</a>
+<li>8.2.   <a href="#rfc.section.8.2">TLV Usage</a>
 </li>
-<li>8.3.   <a href="#rfc.section.8.3">DSO Type Code Registry</a>
+<li>8.3.   <a href="#rfc.section.8.3">Inactivity Timeout</a>
 </li>
-</ul><li>9.   <a href="#rfc.section.9">Security Considerations</a>
+<li>8.4.   <a href="#rfc.section.8.4">Keepalive Interval</a>
 </li>
-<li>10.   <a href="#rfc.section.10">Acknowledgements</a>
+</ul><li>9.   <a href="#rfc.section.9">IANA Considerations</a>
 </li>
-<li>11.   <a href="#rfc.references">References</a>
+<ul><li>9.1.   <a href="#rfc.section.9.1">DSO OPCODE Registration</a>
 </li>
-<ul><li>11.1.   <a href="#rfc.references.1">Normative References</a>
+<li>9.2.   <a href="#rfc.section.9.2">DSO RCODE Registration</a>
 </li>
-<li>11.2.   <a href="#rfc.references.2">Informative References</a>
+<li>9.3.   <a href="#rfc.section.9.3">DSO Type Code Registry</a>
+</li>
+</ul><li>10.   <a href="#rfc.section.10">Security Considerations</a>
+</li>
+<li>11.   <a href="#rfc.section.11">Acknowledgements</a>
+</li>
+<li>12.   <a href="#rfc.references">References</a>
+</li>
+<ul><li>12.1.   <a href="#rfc.references.1">Normative References</a>
+</li>
+<li>12.2.   <a href="#rfc.references.2">Informative References</a>
 </li>
 </ul><li><a href="#rfc.authors">Authors' Addresses</a>
 </li>
@@ -924,8 +939,10 @@
 <p id="rfc.section.5.4.2.p.2">A server may dictate (in a server-initiated Keepalive message, or in a response to a client-initiated Keepalive request message) any value it chooses for the inactivity timeout.  When a connection&#8217;s inactivity timeout is reached the client MUST begin closing the idle connection, but a client is NOT REQUIRED to keep an idle connection open until the inactivity timeout is reached &#8212; a client SHOULD begin closing the connection sooner if it has no reason to expect future operations with that server before the inactivity timeout is reached.</p>
 <p id="rfc.section.5.4.2.p.3">A shorter inactivity timeout with a longer keepalive interval signals to the client that it should not speculatively keep an inactive DSO Session open for very long without reason, but when it does have an active reason to keep a DSO Session open, it doesn&#8217;t need to be sending an aggressive level of keepalive traffic to maintain that session.</p>
 <p id="rfc.section.5.4.2.p.4">A longer inactivity timeout with a shorter keepalive interval signals to the client that it may speculatively keep an inactive DSO Session open for a long time, but to maintain that inactive DSO Session it should be sending a lot of keepalive traffic.  This configuration is expected to be less common.</p>
-<p id="rfc.section.5.4.2.p.5">A server may dictate any value it chooses for the inactivity timeout (either in a response to a client-initiated request, or in a server-initiated message) including values under one second, or even zero.  An inactivity timeout of zero informs the client that it should not speculatively maintain idle connections at all, and as soon as the client has completed the operation or operations relating to this server, the client should immediately begin closing this session.</p>
-<p id="rfc.section.5.4.2.p.6">A server will abort an idle client session after twice the inactivity timeout value, or five seconds, whichever is greater.  In the case of a zero inactivity timeout value, this means that if a client fails to close an idle client session then the server will forcibly abort the idle session after five seconds.</p>
+<p id="rfc.section.5.4.2.p.5">A server may dictate any value it chooses for the inactivity timeout (either in a response to a client-initiated request, or in a server-initiated message) including values under one second, or even zero.</p>
+<p id="rfc.section.5.4.2.p.6">An inactivity timeout of zero informs the client that it should not speculatively maintain idle connections at all, and as soon as the client has completed the operation or operations relating to this server, the client should immediately begin closing this session.</p>
+<p id="rfc.section.5.4.2.p.7">An inactivity timeout of 0xFFFFFFFF (2^32-1 milliseconds, approximately 49.7 days) informs the client that it may keep an idle connection open as long as it wishes.  Note that after granting an unlimited inactivity timeout in this way, at any point the server may revise that inactivity timeout by sending a new Keepalive TLV dictating new Session Timeout values to the client.</p>
+<p id="rfc.section.5.4.2.p.8">A server will abort an idle client session after twice the inactivity timeout value, or five seconds, whichever is greater.  In the case of a zero inactivity timeout value, this means that if a client fails to close an idle client session then the server will forcibly abort the idle session after five seconds.</p>
 <h1 id="rfc.section.5.5">
 <a href="#rfc.section.5.5">5.5.</a> <a href="#keepalivetimer" id="keepalivetimer">The Keepalive Interval</a>
 </h1>
@@ -946,6 +963,7 @@
 <p id="rfc.section.5.5.2.p.6">For environments where there may be NAT gateways or firewalls on the path, it is RECOMMENDED that clients request, and servers grant, a keepalive interval of 15 minutes. In other environments it is RECOMMENDED that clients request, and servers grant, a keepalive interval of 60 minutes.</p>
 <p id="rfc.section.5.5.2.p.7">Note that the lower the keepalive interval value, the higher the load on client and server. For example, an keepalive interval value of 100ms would result in a continuous stream of at least ten messages per second, in both directions, to keep the DSO Session alive. And, in this extreme example, a single packet loss and retransmission over a long path could introduce a momentary pause in the stream of messages, long enough to cause the server to overzealously abort the connection.</p>
 <p id="rfc.section.5.5.2.p.8">Because of this concern, the server MUST NOT send a Keepalive message (either a response to a client-initiated request, or a server-initiated message) with an keepalive interval value less than ten seconds.  If a client receives an Keepalive message specifying an keepalive interval value less than ten seconds this is an error and the client MUST immediately terminate the connection with a TCP RST (or equivalent for other protocols).</p>
+<p id="rfc.section.5.5.2.p.9">A keepalive interval value of 0xFFFFFFFF (2^32-1 milliseconds, approximately 49.7 days) informs the client that it should generate no keepalive traffic.  Note that after signaling that the client should generate no keepalive traffic in this way, at any point the server may revise that keepalive traffic requirement by sending a new Keepalive TLV dictating new Session Timeout values to the client.</p>
 <p></p>
 <h1 id="rfc.section.5.6">
 <a href="#rfc.section.5.6">5.6.</a> <a href="#server-initiated-termination-on-error" id="server-initiated-termination-on-error">Server-Initiated Termination on Error</a>
@@ -1114,21 +1132,82 @@
 <p id="rfc.section.7.3.p.5">The length of padding is intentionally not specified in this document and is a function of current best practices with respect to the type and length of data in the preceding TLVs <a href="#I-D.ietf-dprive-padding-policy" class="xref">[I-D.ietf-dprive-padding-policy]</a>.</p>
 <p></p>
 <h1 id="rfc.section.8">
-<a href="#rfc.section.8">8.</a> <a href="#iana-considerations" id="iana-considerations">IANA Considerations</a>
+<a href="#rfc.section.8">8.</a> <a href="#summary" id="summary">Summary</a>
 </h1>
+<p id="rfc.section.8.p.1">This section summarizes some noteworthy highlights about various components of the DSO protocol.</p>
 <h1 id="rfc.section.8.1">
-<a href="#rfc.section.8.1">8.1.</a> <a href="#dso-opcode-registration" id="dso-opcode-registration">DSO OPCODE Registration</a>
+<a href="#rfc.section.8.1">8.1.</a> <a href="#message-id" id="message-id">MESSAGE ID</a>
 </h1>
-<p id="rfc.section.8.1.p.1">The IANA is directed to record the value (tentatively) 6 for the DSO&#160;OPCODE in the DNS&#160;OPCODE&#160;Registry.</p>
+<p id="rfc.section.8.1.p.1">In DSO Request Messages the MESSAGE ID may be either nonzero (signaling that the responder MUST generate a response) or zero (signaling that the responder MUST NOT generate a response).</p>
+<p id="rfc.section.8.1.p.2">In DSO Response Messages the MESSAGE ID MUST NOT be zero (since this would be a response to a request that had indicated that a response is not allowed).</p>
+<p id="rfc.section.8.1.p.3">The table below illustrates the legal combinations:</p>
+<pre>
+                          +--------------------+-------------------+
+                          | Nonzero MESSAGE ID |  Zero MESSAGE ID  |
+   +----------------------+--------------------+-------------------+
+   | DSO Request Message  |         X          |         X         |
+   +----------------------+--------------------+-------------------+
+   | DSO Response Message |         X          |                   |
+   +----------------------+--------------------+-------------------+
+</pre>
+<p></p>
 <h1 id="rfc.section.8.2">
-<a href="#rfc.section.8.2">8.2.</a> <a href="#dso-rcode-registration" id="dso-rcode-registration">DSO RCODE Registration</a>
+<a href="#rfc.section.8.2">8.2.</a> <a href="#tlv-usage" id="tlv-usage">TLV Usage</a>
 </h1>
-<p id="rfc.section.8.2.p.1">The IANA is directed to record the value (tentatively) 11 for the DSONOTIMP error code in the DNS&#160;RCODE&#160;Registry.</p>
+<p id="rfc.section.8.2.p.1">The table below indicates, for each of the three TLVs defined in this document, whether they are valid in each of eight different contexts.</p>
+<p id="rfc.section.8.2.p.2">The first four contexts are requests from client to server, and the corresponding response from server back to client:</p>
+<p></p>
+
+<ul>
+<li>C-P - Primary TLV sent in DSO Request message, from client to server, with nonzero MESSAGE ID indicating that the request MUST generate response message.</li>
+<li>C-U - Primary TLV, sent in DSO Request message, from client to server, with zero MESSAGE ID indicating that the request should not generate response message.</li>
+<li>C-A - Additional TLV, optionally added to request message from client to server.</li>
+<li>C-R - Response TLV, included in response message sent to back the client in response to a client request with nonzero MESSAGE ID.</li>
+</ul>
+<p id="rfc.section.8.2.p.4">The second four contexts are the reverse: requests from server to client, and the corresponding response from client back to server.</p>
+<pre>
+                    +-----+-----+-----+-----+-----+-----+-----+-----+
+                    | C-P | C-U | C-A | C-R | S-P | S-U | S-A | S-R |
++-------------------+-----+-----+-----+-----+-----+-----+-----+-----+
+| RetryDelay        |     |     |     |  X  |     |  X  |     |     |
++-------------------+-----+-----+-----+-----+-----+-----+-----+-----+
+| KeepAlive         |  X  |     |     |  X  |     |  X  |     |     |
++-------------------+-----+-----+-----+-----+-----+-----+-----+-----+
+| EncryptionPadding |     |     |  X  |  X  |     |     |  X  |  X  |
++-------------------+-----+-----+-----+-----+-----+-----+-----+-----+
+</pre>
+<p id="rfc.section.8.2.p.5">It is recommended that definitions of future TLVs include a similar table summarizing the contexts where the new TLV is valid.</p>
 <p></p>
 <h1 id="rfc.section.8.3">
-<a href="#rfc.section.8.3">8.3.</a> <a href="#dso-type-code-registry" id="dso-type-code-registry">DSO Type Code Registry</a>
+<a href="#rfc.section.8.3">8.3.</a> <a href="#inactivity-timeout" id="inactivity-timeout">Inactivity Timeout</a>
 </h1>
-<p id="rfc.section.8.3.p.1">The IANA is directed to create the 16-bit DSO Type Code Registry, with initial (hexadecimal) values as shown below:</p>
+<p id="rfc.section.8.3.p.1">The Inactivity Timeout may have any 32-bit unsigned integer value.</p>
+<p id="rfc.section.8.3.p.2">The value zero informs the client that it should not speculatively maintain idle connections at all, and as soon as the client has completed the operation or operations relating to this server, the client should immediately begin closing this session.</p>
+<p id="rfc.section.8.3.p.3">The maximum possible value, 0xFFFFFFFF (2^32-1 milliseconds, approximately 49.7 days), informs the client that it may keep an idle connection open as long as it wishes.</p>
+<p id="rfc.section.8.3.p.4">The Inactivity timer is reset by any message <strong>except</strong> the Keepalive TLV, and remains cleared any time that an operation is outstanding.</p>
+<h1 id="rfc.section.8.4">
+<a href="#rfc.section.8.4">8.4.</a> <a href="#keepalive-interval" id="keepalive-interval">Keepalive Interval</a>
+</h1>
+<p id="rfc.section.8.4.p.1">The Keepalive Interval is a 32-bit unsigned integer value, with a minimum value of 10,000 milliseconds (10 seconds).</p>
+<p id="rfc.section.8.4.p.2">The maximum possible value, 0xFFFFFFFF (2^32-1 milliseconds, approximately 49.7 days), informs the client that it should generate no keepalive traffic.</p>
+<p id="rfc.section.8.4.p.3">Any message exchange (including the Keepalive TLV) resets the Keepalive timer.</p>
+<p></p>
+<h1 id="rfc.section.9">
+<a href="#rfc.section.9">9.</a> <a href="#iana-considerations" id="iana-considerations">IANA Considerations</a>
+</h1>
+<h1 id="rfc.section.9.1">
+<a href="#rfc.section.9.1">9.1.</a> <a href="#dso-opcode-registration" id="dso-opcode-registration">DSO OPCODE Registration</a>
+</h1>
+<p id="rfc.section.9.1.p.1">The IANA is directed to record the value (tentatively) 6 for the DSO&#160;OPCODE in the DNS&#160;OPCODE&#160;Registry.</p>
+<h1 id="rfc.section.9.2">
+<a href="#rfc.section.9.2">9.2.</a> <a href="#dso-rcode-registration" id="dso-rcode-registration">DSO RCODE Registration</a>
+</h1>
+<p id="rfc.section.9.2.p.1">The IANA is directed to record the value (tentatively) 11 for the DSONOTIMP error code in the DNS&#160;RCODE&#160;Registry.</p>
+<p></p>
+<h1 id="rfc.section.9.3">
+<a href="#rfc.section.9.3">9.3.</a> <a href="#dso-type-code-registry" id="dso-type-code-registry">DSO Type Code Registry</a>
+</h1>
+<p id="rfc.section.9.3.p.1">The IANA is directed to create the 16-bit DSO Type Code Registry, with initial (hexadecimal) values as shown below:</p>
 <table cellpadding="3" cellspacing="0" class="tt full center">
 <thead><tr>
 <th class="left">Type</th>
@@ -1151,7 +1230,7 @@
 </tr>
 <tr>
 <td class="left">0002</td>
-<td class="left">Encryption Padding</td>
+<td class="left">EncryptionPadding</td>
 <td class="left">Standard</td>
 <td class="left">RFC-TBD</td>
 </tr>
@@ -1181,24 +1260,24 @@
 </tr>
 </tbody>
 </table>
-<p id="rfc.section.8.3.p.2">DSO Type Codes in the &#8220;experimental/local&#8221; range F800-FBFF may be used as Experimental Use or Private Use values <a href="#RFC5226" class="xref">[RFC5226]</a> and may be used freely for development purposes, or for other purposes within a single site.  No attempt is made to prevent multiple sites from using the same value in different (and incompatible) ways.  There is no need for IANA to review such assignments (since IANA does not record them) and assignments are not generally useful for broad interoperability.  It is the responsibility of the sites making use of &#8220;experimental/local&#8221; values to ensure that no conflicts occur within the intended scope of use.</p>
-<p id="rfc.section.8.3.p.3">Registration of new DSO Type Codes in the &#8220;Reserved for future expansion&#8221; range FC00-FFFF and &#8220;Unassigned, reserved for DSO session-management TLVs&#8221; range 0003-003F requires publication of an IETF Standards Action document <a href="#RFC5226" class="xref">[RFC5226]</a>.</p>
-<p id="rfc.section.8.3.p.4">Requests to register additional new DSO Type Codes in the &#8220;Unassigned&#8221; range 0040-F7FF are to be recorded by IANA after consulation with the registry&#8217;s Designated Expert <a href="#RFC5226" class="xref">[RFC5226]</a> at that time.  At the time of publication of this document, the Designated Expert for the newly created DSO Type Code registry is [<strong>TBD</strong>].</p>
+<p id="rfc.section.9.3.p.2">DSO Type Codes in the &#8220;experimental/local&#8221; range F800-FBFF may be used as Experimental Use or Private Use values <a href="#RFC5226" class="xref">[RFC5226]</a> and may be used freely for development purposes, or for other purposes within a single site.  No attempt is made to prevent multiple sites from using the same value in different (and incompatible) ways.  There is no need for IANA to review such assignments (since IANA does not record them) and assignments are not generally useful for broad interoperability.  It is the responsibility of the sites making use of &#8220;experimental/local&#8221; values to ensure that no conflicts occur within the intended scope of use.</p>
+<p id="rfc.section.9.3.p.3">Registration of new DSO Type Codes in the &#8220;Reserved for future expansion&#8221; range FC00-FFFF and &#8220;Unassigned, reserved for DSO session-management TLVs&#8221; range 0003-003F requires publication of an IETF Standards Action document <a href="#RFC5226" class="xref">[RFC5226]</a>.</p>
+<p id="rfc.section.9.3.p.4">Requests to register additional new DSO Type Codes in the &#8220;Unassigned&#8221; range 0040-F7FF are to be recorded by IANA after consulation with the registry&#8217;s Designated Expert <a href="#RFC5226" class="xref">[RFC5226]</a> at that time.  At the time of publication of this document, the Designated Expert for the newly created DSO Type Code registry is [<strong>TBD</strong>].</p>
 <p></p>
-<h1 id="rfc.section.9">
-<a href="#rfc.section.9">9.</a> <a href="#security-considerations" id="security-considerations">Security Considerations</a>
-</h1>
-<p id="rfc.section.9.p.1">If this mechanism is to be used with DNS over TLS, then these messages are subject to the same constraints as any other DNS-over-TLS messages and MUST NOT be sent in the clear before the TLS session is established.</p>
-<p id="rfc.section.9.p.2">The data field of the &#8220;Encryption Padding&#8221; TLV could be used as a covert channel.</p>
 <h1 id="rfc.section.10">
-<a href="#rfc.section.10">10.</a> <a href="#acknowledgements" id="acknowledgements">Acknowledgements</a>
+<a href="#rfc.section.10">10.</a> <a href="#security-considerations" id="security-considerations">Security Considerations</a>
 </h1>
-<p id="rfc.section.10.p.1">Thanks to Tim Chown, Ralph Droms, Jan Komissar, Manju Shankar Rao, and Ted Lemon for their helpful contributions to this document.</p>
+<p id="rfc.section.10.p.1">If this mechanism is to be used with DNS over TLS, then these messages are subject to the same constraints as any other DNS-over-TLS messages and MUST NOT be sent in the clear before the TLS session is established.</p>
+<p id="rfc.section.10.p.2">The data field of the &#8220;Encryption Padding&#8221; TLV could be used as a covert channel.</p>
+<h1 id="rfc.section.11">
+<a href="#rfc.section.11">11.</a> <a href="#acknowledgements" id="acknowledgements">Acknowledgements</a>
+</h1>
+<p id="rfc.section.11.p.1">Thanks to Tim Chown, Ralph Droms, Jan Komissar, Manju Shankar Rao, and Ted Lemon for their helpful contributions to this document.</p>
 <p></p>
 <h1 id="rfc.references">
-<a href="#rfc.references">11.</a> References</h1>
+<a href="#rfc.references">12.</a> References</h1>
 <h1 id="rfc.references.1">
-<a href="#rfc.references.1">11.1.</a> Normative References</h1>
+<a href="#rfc.references.1">12.1.</a> Normative References</h1>
 <table><tbody>
 <tr>
 <td class="reference"><b id="RFC1034">[RFC1034]</b></td>
@@ -1257,7 +1336,7 @@
 </tr>
 </tbody></table>
 <h1 id="rfc.references.2">
-<a href="#rfc.references.2">11.2.</a> Informative References</h1>
+<a href="#rfc.references.2">12.2.</a> Informative References</h1>
 <table><tbody>
 <tr>
 <td class="reference"><b id="I-D.ietf-dnssd-push">[I-D.ietf-dnssd-push]</b></td>

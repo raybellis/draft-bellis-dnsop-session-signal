@@ -245,7 +245,7 @@ the keepalive interval respectively.
 The term "Session Timeouts" is used to refer to this pair of timeout values.
 
 Reseting a timer means resetting the timer value to zero and starting the timer again.
-Clearing a timer means resetting the timer value to zero but NOT starting the timer again. 
+Clearing a timer means resetting the timer value to zero but NOT starting the timer again.
 
 ***
 
@@ -957,10 +957,17 @@ This configuration is expected to be less common.
 A server may dictate any value it chooses for the inactivity timeout
 (either in a response to a client-initiated request, or in a server-initiated message)
 including values under one second, or even zero.
+
 An inactivity timeout of zero informs the client that it
 should not speculatively maintain idle connections at all, and
 as soon as the client has completed the operation or operations relating
 to this server, the client should immediately begin closing this session.
+
+An inactivity timeout of 0xFFFFFFFF (2^32-1 milliseconds, approximately 49.7 days)
+informs the client that it may keep an idle connection open as long as it wishes.
+Note that after granting an unlimited inactivity timeout in this way,
+at any point the server may revise that inactivity timeout by sending
+a new Keepalive TLV dictating new Session Timeout values to the client.
 
 A server will abort an idle client session after twice the
 inactivity timeout value, or five seconds, whichever is greater.
@@ -1042,6 +1049,12 @@ with an keepalive interval value less than ten seconds.
 If a client receives an Keepalive message specifying an keepalive interval value
 less than ten seconds this is an error and the client MUST immediately
 terminate the connection with a TCP RST (or equivalent for other protocols).
+
+A keepalive interval value of 0xFFFFFFFF (2^32-1 milliseconds, approximately 49.7 days)
+informs the client that it should generate no keepalive traffic.
+Note that after signaling that the client should generate no keepalive traffic in this way,
+at any point the server may revise that keepalive traffic requirement by sending
+a new Keepalive TLV dictating new Session Timeout values to the client.
 
 ***
 
@@ -1495,6 +1508,98 @@ of data in the preceding TLVs {{?I-D.ietf-dprive-padding-policy}}.
 
 ***
 
+# Summary
+
+This section summarizes some noteworthy highlights about
+various components of the DSO protocol.
+
+## MESSAGE ID
+
+In DSO Request Messages the MESSAGE ID may be either
+nonzero (signaling that the responder MUST generate a response)
+or zero (signaling that the responder MUST NOT generate a response).
+
+In DSO Response Messages the MESSAGE ID MUST NOT be zero
+(since this would be a response to a request that had
+indicated that a response is not allowed).
+
+The table below illustrates the legal combinations:
+
+                              +--------------------+-------------------+
+                              | Nonzero MESSAGE ID |  Zero MESSAGE ID  |
+       +----------------------+--------------------+-------------------+
+       | DSO Request Message  |         X          |         X         |
+       +----------------------+--------------------+-------------------+
+       | DSO Response Message |         X          |                   |
+       +----------------------+--------------------+-------------------+
+
+***
+
+## TLV Usage
+
+The table below indicates, for each of the three TLVs defined in this
+document, whether they are valid in each of eight different contexts.
+
+The first four contexts are requests from client to server,
+and the corresponding response from server back to client:
+
+* C-P - Primary TLV sent in DSO Request message,
+from client to server, with nonzero MESSAGE ID indicating
+that the request MUST generate response message.
+* C-U - Primary TLV, sent in DSO Request message,
+from client to server, with zero MESSAGE ID indicating
+that the request should not generate response message.
+* C-A - Additional TLV, optionally added to request message from client to server.
+* C-R - Response TLV, included in response message sent to back the client
+in response to a client request with nonzero MESSAGE ID.
+
+The second four contexts are the reverse: requests from server to client,
+and the corresponding response from client back to server.
+
+                        +-----+-----+-----+-----+-----+-----+-----+-----+
+                        | C-P | C-U | C-A | C-R | S-P | S-U | S-A | S-R |
+    +-------------------+-----+-----+-----+-----+-----+-----+-----+-----+
+    | RetryDelay        |     |     |     |  X  |     |  X  |     |     |
+    +-------------------+-----+-----+-----+-----+-----+-----+-----+-----+
+    | KeepAlive         |  X  |     |     |  X  |     |  X  |     |     |
+    +-------------------+-----+-----+-----+-----+-----+-----+-----+-----+
+    | EncryptionPadding |     |     |  X  |  X  |     |     |  X  |  X  |
+    +-------------------+-----+-----+-----+-----+-----+-----+-----+-----+
+
+It is recommended that definitions of future TLVs include a
+similar table summarizing the contexts where the new TLV is valid.
+
+***
+
+## Inactivity Timeout
+
+The Inactivity Timeout may have any 32-bit unsigned integer value.
+
+The value zero informs the client that it
+should not speculatively maintain idle connections at all, and
+as soon as the client has completed the operation or operations relating
+to this server, the client should immediately begin closing this session.
+
+The maximum possible value,
+0xFFFFFFFF (2^32-1 milliseconds, approximately 49.7 days),
+informs the client that it may keep an idle connection open as long as it wishes.
+
+The Inactivity timer is reset by any message **except** the Keepalive TLV,
+and remains cleared any time that an operation is outstanding.
+
+## Keepalive Interval
+
+The Keepalive Interval is a 32-bit unsigned integer value,
+with a minimum value of 10,000 milliseconds (10 seconds).
+
+The maximum possible value,
+0xFFFFFFFF (2^32-1 milliseconds, approximately 49.7 days),
+informs the client that it should generate no keepalive traffic.
+
+Any message exchange (including the Keepalive TLV) resets the Keepalive timer.
+
+***
+
 # IANA Considerations
 
 ## DSO OPCODE Registration
@@ -1518,7 +1623,7 @@ with initial (hexadecimal) values as shown below:
 |------|------|--------|-----------|
 | 0000 | RetryDelay | Standard | RFC-TBD |
 | 0001 | KeepAlive | Standard | RFC-TBD |
-| 0002 | Encryption Padding | Standard | RFC-TBD |
+| 0002 | EncryptionPadding | Standard | RFC-TBD |
 | 0003-003F | Unassigned, reserved for    DSO session-management TLVs | | |
 | 0040-F7FF | Unassigned | | |
 | F800-FBFF | Reserved for experimental/local use | | |
