@@ -126,10 +126,10 @@ All three of the TLVs defined here are mandatory for all implementations of DSO.
 Further TLVs may be defined in additional specifications.
 
 It should be noted that the format for DSO messages
-(see {{format}}) differs from the traditional DNS message
+(see {{format}}) differs somewhat from the traditional DNS message
 format used for standard queries and responses.
 The standard twelve-octet header is used, but the four count fields
-(QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT) are set to zero and their
+(QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT) are set to zero and accordingly their
 corresponding sections are not present.
 The actual data pertaining to DNS Stateful Operations
 (expressed in TLV syntax) is appended to the end of the DNS message header.
@@ -142,9 +142,9 @@ to recognize, decode, and display the DSO data.
 
 This new format has distinct advantages over an RR-based format because it
 is more explicit and more compact. Each TLV definition is specific
-to the use case, and as a result contains no redundant or overloaded fields.
-Importantly, it completely avoids conflating DNS Stateful Operations in anyway 
-with normal DNS operations or with existing EDNS(0) based functionality.
+to its use case, and as a result contains no redundant or overloaded fields.
+Importantly, it completely avoids conflating DNS Stateful Operations in any way 
+with normal DNS operations or with existing EDNS(0)-based functionality.
 A goal of this approach is to avoid the operational issues that have
 befallen EDNS(0), particularly relating to middle-box behaviour.
 
@@ -168,6 +168,8 @@ Each DSO request message communicates just one primary operation,
 and the RCODE in the corresponding response message indicates the
 success or failure of that operation.
 
+***
+
 # Terminology
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
@@ -190,7 +192,7 @@ DNS messages over a connection where:
 
 A "DSO Session" is established between two endpoints that
 acknowledge persistent DNS state via the exchange of DSO messages
-over the connection. This is distinct from, for example a DNS-over-TCP session
+over the connection. This is distinct from a DNS-over-TCP session
 as described in RC7766.
 
 A "DSO Session" is terminated when the underlying connection is closed.
@@ -229,7 +231,7 @@ any other TLVs in a DSO request message are referred to as "Additional TLVs"
 and serve as modifiers affecting the primary operation.
 
 A DSO response message may contain no TLVs, or it may contain one
-or more TLVs as appropriate to the information being communicated.
+or more Response TLVs as appropriate to the information being communicated.
 In the context of DSO response messages the qualifiers
 "Primary" and "Additional" do not apply.
 
@@ -246,12 +248,14 @@ Reseting a timer means resetting the timer value to zero and starting the timer
 again. Clearing a timer means resetting the timer value to zero but NOT starting 
 the time again. 
 
+***
+
 # Discussion
 
 There are several use cases for DNS Stateful operations that can 
 be described here. 
 
-Firstly, establishing session parameters such as server defined timeouts is of 
+Firstly, establishing session parameters such as server-defined timeouts is of 
 great use in the 
 general management of persistent connections. For example, using DSO sessions 
 for stub to recursive DNS-over-TLS {{?RFC7858}} is more flexible for both the 
@@ -281,6 +285,8 @@ and extensibility of this specification.
 including definitions of three TLVs for session management and encryption padding.
 {{lifecycle}} presents a detailed discussion of the DSO Session lifecycle
 including an in-depth discussion of keepalive traffic and session termination.
+
+***
 
 # Protocol Details {#details}
 
@@ -356,14 +362,16 @@ clients and servers should behave as described in this specification with
 regard to inactivity timeouts and connection close, not as prescribed in
 the previous specification for DNS over TCP {{!RFC7766}}.
 
+***
+
 ### Middle-box Considerations
 
 Where an application-layer middle box (e.g., a DNS proxy, forwarder, or
 session multiplexer) is in the path the middle box MUST NOT blindly
 forward DSO messages in either direction, and MUST treat the inbound
 and outbound connections as separate sessions.  This does not preclude
-the use of DSO messages in the presence of an IP-layer middle box such
-as a NAT that rewrites IP-layer and/or transport-layer headers, but
+the use of DSO messages in the presence of an IP-layer middle box, such
+as a NAT that rewrites IP-layer and/or transport-layer headers but
 otherwise preserves the effect of a single session between the client
 and the server.
 
@@ -379,6 +387,8 @@ have made Push Notification subscriptions {{?I-D.ietf-dnssd-push}} and
 make its own subscription(s) on their behalf, relaying any subsequent
 notifications to the client (or clients) that have subscribed to that
 particular notification.
+
+***
 
 ## Message Format {#format}
 
@@ -414,6 +424,8 @@ unless a future document specifies otherwise.
        /                                                               /
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
+***
+
 ### Header {#header}
 
 In an unacknowledged request message the MESSAGE ID field MUST be set to zero.
@@ -426,14 +438,18 @@ or if the client has used it to setup state that it has not yet deleted.
 For example, state could be a Push Notification subscription {{?I-D.ietf-dnssd-push}}
 or a Discovery Relay interface subscription {{?I-D.sctl-dnssd-mdns-relay}}.
 
-In a response message the MESSAGE ID field MUST contain a copy of the value of
+In a request message the DNS Header QR bit MUST be zero (QR=0).  
+If the QR bit is not zero the message is not a request message.
+
+In a response message the DNS Header QR bit MUST be one (QR=1).  
+If the QR bit is not one the message is not a response message.
+
+In a response message (QR=1) the MESSAGE ID field MUST contain a copy of the value of
 the MESSAGE ID field in the acknowledged request message being responded to.
-
-In a request the DNS Header QR bit MUST be zero (QR=0).
-If the QR bit is not zero the message is not a request.
-
-In a response the DNS Header QR bit MUST be one (QR=1).
-If the QR bit is not one the message is not a response.
+In a response message (QR=1) the MESSAGE ID field MUST NOT be zero.
+If a response message (QR=1) is received where the MESSAGE ID is zero
+this is a fatal error and the receiver MUST immediately terminate
+the connection with a TCP RST (or equivalent for other protocols).
 
 The DNS Header OPCODE field holds the DSO OPCODE value (tentatively 6).
 
@@ -447,7 +463,9 @@ and silently ignored on reception, except where specified otherwise
 (for example, the Retry Delay request message (see {{delay}}),
 where the RCODE indicates the reason for termination).
 
-The RCODE value in a response may be one of the following values:
+***
+
+The RCODE value in a response message (QR=1) may be one of the following values:
 
 | Code | Mnemonic | Description |
 |-----:|----------|-------------|
@@ -464,8 +482,11 @@ Use of the above RCODEs is likely to be common in DSO but
 does not preclude the definition and use of other codes in future documents that 
 make use of DSO.
 
-If a document describing a DSO makes use of either NXDOMAIN (Name Error)
-or NOTAUTH then that document MUST explain the meaning.
+If a document defining a new DSO TLV makes use of NXDOMAIN (Name Error)
+or NOTAUTH (Not Authoritative) then that document MUST specify the specific
+interpretation of these RCODE values in the context of that new DSO TLV.
+
+***
 
 ### DSO Data {#dsodata}
 
@@ -490,7 +511,7 @@ such as the Encryption Padding TLV ({{padding}}),
 and these extra TLVs are referred to as the "Additional TLVs".
 
 A DSO response message may contain no TLVs,
-or it may contain one or more TLVs.
+or it may contain one or more Response TLVs.
 In the context of DSO response messages,
 the qualifiers "Primary" and "Additional" do not apply.
 A DSO response message is specified to carry TLVs
@@ -507,10 +528,10 @@ it may be appropriate to use unacknowledged request messages.
 Unacknowledged request messages can be more efficient on the network,
 because they don't generate a stream of corresponding reply messages.
 Using unacknowledged request messages can also simplify software
-in some cases, by removing need for the software to maintain
+in some cases, by removing need for an initiator to maintain
 state while it waits to receive replies it doesn't care about.
 When the specification for a particular TLV states that,
-when used as the Primary (i.e., first) TLV in a request message,
+when used as a Primary TLV (i.e., first) in a request message,
 that request message is to be unacknowledged,
 the MESSAGE ID field MUST be set to zero and
 the receiver MUST NOT generate any response message
@@ -534,19 +555,21 @@ which to associate a response with its corresponding request).
 Unacknowledged request messages are only appropriate in cases where
 the sender already knows that the receiver supports and wishes to
 receive these messages.
-For example, after a client has subscribed for Push Notifications,
-the subsequent event notifications are then sent as unacknowledged
-request messages, and this is appropriate because the client initiated
-the message stream by virtue of its Push Notification subscription,
-thereby indicating its support of Push Notifications, and its
-desire to receive event notifications {{?I-D.ietf-dnssd-push}}.
+For example, after a client has subscribed for Push Notifications
+{{?I-D.ietf-dnssd-push}}, the subsequent event notifications are
+then sent as unacknowledged messages, and this is appropriate
+because the client initiated the message stream by virtue of its
+Push Notification subscription, thereby indicating its support of
+Push Notifications, and its desire to receive those notifications.
 After an mDNS Relay client has subscribed to receive inbound mDNS
 traffic from an mDNS Relay, the subsequent stream of received
-packets is then sent using unacknowledged request messages, and
-this is appropriate because the client initiated the message stream
+packets is then sent using unacknowledged messages, and this
+is appropriate because the client initiated the message stream
 by virtue of its mDNS Relay link subscription, thereby indicating
 its support of mDNS Relay, and its desire to receive inbound mDNS
 packets over that DSO session {{?I-D.sctl-dnssd-mdns-relay}}.
+
+***
 
 #### TLV Syntax {#tlvsyntax}
 
@@ -575,7 +598,7 @@ depending on what is stated in the specification for that TLV.
 
 DSO-TYPE:
 : A 16-bit unsigned integer in network (big endian) byte order
-giving the type of the current DSO TLV per the IANA DSO Type Codes Registry.
+giving the type of the current DSO TLV per the IANA DSO Type Code Registry.
 
 DSO DATA LENGTH:
 : A 16-bit unsigned integer in network (big endian) byte order
@@ -584,10 +607,13 @@ giving the size in octets of the TYPE-DEPENDENT DATA.
 TYPE-DEPENDENT DATA:
 : Type-code specific format.
 
-Where domain names appear within TYPE-DEPENDENT DATA, they MAY be compressed 
-using standard DNS name compression. However, the compression MUST NOT point
-outside of the TYPE-DEPENDENT DATA section and offsets MUST be from the start
-of the TYPE-DEPENDENT DATA.
+Where domain names appear within TYPE-DEPENDENT DATA, they MAY  
+be compressed using standard DNS name compression {{!RFC1035}}.  
+However, the compression offsets MUST be relative to
+the start of the TYPE-DEPENDENT DATA and MUST NOT
+extend beyond the end of the TYPE-DEPENDENT DATA.
+
+***
 
 #### Primary TLV
 
@@ -620,6 +646,8 @@ and the required TLV(s) are not present, then this is a fatal
 error and the recipient of the defective response message MUST immediately
 terminate the connection with a TCP RST (or equivalent for other protocols).
 
+***
+
 #### Unrecognized TLVs
 
 If DSO request is received containing an unrecognized Primary TLV,
@@ -641,6 +669,8 @@ Similarly, if a DSO response message is received containing one
 or more unrecognized TLVs, the unrecognized TLVs MUST be silently
 ignored, and the remainder of the message is interpreted and
 handled as if the unrecognized parts were not present.
+
+***
 
 ### EDNS(0) and TSIG
 
@@ -664,8 +694,8 @@ signature calculation.
 If use of signatures with DSO messages becomes necessary in the 
 future, a new DSO TLV needs to be defined to perform this function.
 
-Note however that, while DSO *messages* cannot include
-EDNS(0) or TSIG records, a DSO *session* is typically used to 
+Note however that, while DSO **messages** cannot include
+EDNS(0) or TSIG records, a DSO **session** is typically used to 
 carry a whole series of DNS messages of different kinds, including DSO
 messages, and other DNS message types like Query {{!RFC1034}} 
 {{!RFC1035}} and Update {{!RFC2136}}, and those messages can carry EDNS(0) and 
@@ -673,9 +703,11 @@ TSIG records.
 
 This specification explicitly prohibits use of the
 EDNS(0) TCP Keepalive Option {{!RFC7828}}
-in *any* messages sent on a DSO Session (because it duplicates
+in **any** messages sent on a DSO Session (because it is obsoleted by
 the functionality provided by the DSO Keepalive operation),
 but messages may contain other EDNS(0) options as appropriate.
+
+***
 
 ## Message Handling
 
@@ -692,7 +724,7 @@ elicit a response from the client.
 A DSO request message (QR=0) with a zero MESSAGE ID field MUST NOT elicit a response.
 
 The namespaces of 16-bit MESSAGE IDs are disjoint in each direction.
-For example, it is *not* an error for both client and server to send a request
+For example, it is **not** an error for both client and server to send a request
 message with the same ID. In effect, the 16-bit MESSAGE ID combined with the 
 identity of the initiator (client or server) serves as a 17-bit unique 
 identifier for a particular operation on a DSO Session.
@@ -709,10 +741,12 @@ specification for the DSO in question.
 (For a long-lived state the MESSAGE ID for the operation
 MUST NOT be reused whilst that state remains active.)
 
-If a client or server receives a response (QR=1) where the MESSAGE ID does not
-match any of its outstanding operations, this is a fatal error and it MUST 
-immediately terminate the connection with a TCP RST (or equivalent for other 
-protocols).
+If a client or server receives a response (QR=1) where the MESSAGE ID is zero,
+or does not match the MESSAGE ID of any of its outstanding operations,
+this is a fatal error and the recipient MUST immediately terminate
+the connection with a TCP RST (or equivalent for other protocols).
+
+***
 
 ## DSO Response Generation
 
@@ -733,22 +767,26 @@ and only then does it send the TCP ack and window update.
 In conjunction with Nagle's Algorithm at the sender,
 this can delay the sender's transmission of its next
 (non-full-sized) TCP segment, while the sender is waiting for
-its previous (non-full-sized) TCP segment to be acknowledged.
+its previous (non-full-sized) TCP segment to be acknowledged,
+which won't happen until the Delayed ACK timer fires.
 Nagle's Algorithm exists to combine multiple small
 application writes into more efficient large TCP segments,
 to guard against wasteful use of the network by applications
 that would otherwise transmit a stream of small TCP segments,
 but in this case Nagle's Algorithm (created to improve network efficiency)
 can interact badly with TCP's Delayed ACK feature
-(also created to improve network efficiency) {{NagleDA}}.
+(also created to improve network efficiency) {{NagleDA}}
+with the result of delaying some messages by up to 200 milliseconds.
 
 Possible mitigations for this problem include:
 
-* Disabling Nagle's Algorithm at the sender.
-This is not great, because it results in less efficient use of the network.
+* Disabling Nagle's Algorithm at the sender.  
+This is not great, because it results  
+in less efficient use of the network.
 
-* Disabling Delayed ACK at the receiver.
-This is not great, because it results in less efficient use of the network.
+* Disabling Delayed ACK at the receiver.  
+This is not great, because it results  
+in less efficient use of the network.
 
 * Using a networking API that lets the receiver signal to the TCP
 implementation that the receiver has received and processed a client
@@ -763,19 +801,19 @@ immediately, without waiting for the Delayed ACK timer.
 Unfortunately it is not known at this time which (if any) of the
 widely-available networking APIs currently include this capability.
 
+***
+
 # DSO Session Lifecycle and Timers {#lifecycle}
 
 ## DSO Session Initiation
 
-A session begins when a client makes a new connection to a server.
-
-A DSO Session begin as described in {{establishment}}.
+A DSO Session begins as described in {{establishment}}.
 
 The client may perform as many DNS operations as it wishes using the
 newly created DSO Session. Operations SHOULD be pipelined (i.e., the
 client doesn't need wait for a response before sending the next message).
 The server MUST act on messages in the order they are transmitted, but
-responses to those messages MAY be sent out of order, if appropriate.
+responses to those messages SHOULD be sent out of order when appropriate.
 
 ## DSO Session Timeouts {#sessiontimeouts}
 
@@ -803,6 +841,8 @@ On a new DSO Session, if no explicit DSO Keepalive message exchange has taken
 place, the default value for both timeouts is 15 seconds.
 For both timeouts, lower values of the timeout result in higher network traffic
 and higher CPU load on the server.
+
+***
 
 ## Inactive DSO Sessions {#inactivetimer}
 
@@ -833,6 +873,8 @@ timers: the inactivity timeout, and the keepalive interval.
 Just because a DSO Session has no traffic for an extended period of time
 does not automatically make that DSO Session "inactive",
 if it has an active state that is awaiting events.
+
+***
 
 ## The Inactivity Timeout
 
@@ -888,8 +930,8 @@ longer timeout values, as described in {{keepalive}}.
 
 For the inactivity timeout value, lower values result in
 more frequent DSO Session teardown and re-establishment.
-Higher values result in larger memory burden to maintain state for
-inactive DSO Sessions, but lower traffic and CPU load on the server.
+Higher values result in lower traffic and CPU load on the server,
+but higher memory burden to maintain state for inactive DSO Sessions.
 
 A server may dictate (in a server-initiated Keepalive message,
 or in a response to a client-initiated Keepalive request message)
@@ -959,7 +1001,7 @@ protocols).
 
 ### Values for the Keepalive Interval
 
-For the keepalive interval value, lower values result in higher volume keepalive 
+For the keepalive interval value, lower values result in a higher volume of keepalive 
 traffic. Higher values of the keepalive interval reduce traffic and CPU load, 
 but have minimal effect on the memory burden
 at the server, because clients keep a DSO Session open for the same length of time
@@ -983,7 +1025,7 @@ at an address outside that IPv4 private address block,
 may conclude that there is likely to be a NAT gateway on the path,
 and accordingly request a lower keepalive interval.
 
-For environments where there is a NAT gateway or firewalls on the path, it is
+For environments where there may be NAT gateways or firewalls on the path, it is
 RECOMMENDED that clients request, and servers grant, a keepalive interval of 15
 minutes. In other environments it is RECOMMENDED that clients request, and 
 servers grant, a keepalive interval of 60 minutes.
@@ -1002,6 +1044,8 @@ If a client receives an Keepalive message specifying an keepalive interval value
 less than ten seconds this is an error and the client MUST immediately
 terminate the connection with a TCP RST (or equivalent for other protocols).
 
+***
+
 ## Server-Initiated Termination on Error
 
 After sending an error response to a client, the server MAY end the DSO Session,
@@ -1013,7 +1057,7 @@ immediate future, the server SHOULD return an error response to the client and
 then end the DSO Session by sending a Retry Delay request message, as described in 
 {{delay}}.
 
-## Client Behaviour in Receiving an Error {#error}
+## Client Behaviour upon Receiving an Error {#error}
 
 Upon receiving an error response from the server, a client SHOULD NOT
 automatically close the DSO Session. An error relating to one particular operation
@@ -1025,6 +1069,8 @@ condition pertains to this particular operation, or would also apply to any
 subsequent operations. If the server does not end the DSO Session by
 sending the client a Retry Delay message (see {{delay}}) then the client
 SHOULD continue to use that DSO Session for subsequent operations.
+
+***
 
 ## Server-Initiated Termination on Overload
 
@@ -1047,7 +1093,7 @@ is shutting down or restarting.
 (perhaps due to a bug that makes it crash).
 
 * The client fails to meets its obligation to generate keepalive
-traffic or close an inactive session by the prescribed times
+traffic or close an inactive session by the prescribed time
 (twice the time interval dictated by the server, or five seconds,
 whichever is greater, as described in {{sessiontimeouts}}).
 
@@ -1063,13 +1109,15 @@ the server SHOULD, whenever possible, send a Retry Delay request message
 being closed, and allow the client five seconds to receive it
 before the server resorts to forcibly aborting the connection.
 
+***
+
 ## Retry Delay TLV {#retry}
 
 There may be rare cases where a server is overloaded and wishes to shed load.
 If a server is low on resources it MAY simply terminate a client connection with 
 a TCP RST (or equivalent for other protocols).
 However, the likely behavior of the client may be simply to to treat this as a
-network failure and connect
+network failure and reconnect
 immediately, putting more burden on the server.
 
 Therefore to avoid this reconnection implosion, a server SHOULD instead choose 
@@ -1136,6 +1184,8 @@ period, it should use a value closer to the expected maintenance window and
 not default to a very large delay value or clients may not attempt to reconnect
 after it resumes service.
 
+***
+
 # Connection Sharing {#sharing}
 
 As previously specified for DNS over TCP {{!RFC7766}},
@@ -1172,7 +1222,12 @@ the same client IP address.
 Because of these constraints, a DNS server MUST be prepared to accept
 multiple connections from different source ports on the same client IP address.
 
+***
+
 # Base TLVs for DNS Stateful Operations
+
+This section describes the three Base TLVs for DNS Stateful Operations,
+Retry Delay, Keepalive, and Encryption Padding.
 
 ## Retry Delay TLV {#delay}
 
@@ -1239,6 +1294,8 @@ either in a DSO request message, or in a DSO response message.
 If a server receives a DSO message containing a Retry Delay TLV,
 this is a fatal error and the server MUST immediately terminate
 the connection with a TCP RST (or equivalent for other protocols).
+
+***
 
 ## Keepalive TLV {#keepalive}
 
@@ -1401,6 +1458,8 @@ EDNS(0) TCP Keepalive option, this is an error and the receiver of the
 EDNS(0) TCP Keepalive option MUST immediately
 terminate the connection with a TCP RST (or equivalent for other protocols).
 
+***
+
 ## Encryption Padding TLV {#padding}
 
 The Encryption Padding TLV (DSO-TYPE=2) can only be used as
@@ -1435,40 +1494,68 @@ The length of padding is intentionally not specified in this document and
 is a function of current best practices with respect to the type and length
 of data in the preceding TLVs {{?I-D.ietf-dprive-padding-policy}}.
 
+***
+
 # IANA Considerations
 
 ## DSO OPCODE Registration
 
-IANA are directed to assign a value (tentatively 6)
-in the DNS OPCODEs Registry for the DSO OPCODE.
+The IANA is directed to record the value (tentatively) 6 for the DSO OPCODE
+in the DNS OPCODE Registry.
 
 ## DSO RCODE Registration
 
-IANA are directed to assign a value (tentatively 11)
-in the DNS RCODE Registry for the DSONOTIMP error code.
+The IANA is directed to record the value (tentatively) 11 for the DSONOTIMP error code
+in the DNS RCODE Registry.
 
-## DSO Type Codes Registry
+***
 
-IANA are directed to create the 16-bit DSO Type Codes
-Registry, with initial values as follows:
+## DSO Type Code Registry
+
+The IANA is directed to create the 16-bit DSO Type Code Registry,
+with initial (hexadecimal) values as shown below:
 
 | Type | Name | Status | Reference |
 |--:|------|--------|-----------|
-| 0x0000 | RetryDelay | Standard | RFC-TBD |
-| 0x0001 | KeepAlive | Standard | RFC-TBD |
-| 0x0002 | Encryption Padding | Standard | RFC-TBD |
-| 0x0003 - 0x003F | Unassigned, reserved for DSO session-management TLVs | | |
-| 0x0040 - 0xF7FF | Unassigned | | |
-| 0xF800 - 0xFBFF | Reserved for local / experimental use | | |
-| 0xFC00 - 0xFFFF | Reserved for future expansion | | |
+| 0000 | RetryDelay | Standard | RFC-TBD |
+| 0001 | KeepAlive | Standard | RFC-TBD |
+| 0002 | Encryption Padding | Standard | RFC-TBD |
+| 0003-003F | Unassigned, reserved for    DSO session-management TLVs | | |
+| 0040-F7FF | Unassigned | | |
+| F800-FBFF | Reserved for experimental/local use | | |
+| FC00-FFFF | Reserved for future expansion | | |
 
-Registration of additional DSO Type Codes requires publication
-of an appropriate IETF "Standards Action" or "IESG Approval" document {{!RFC5226}}.
+DSO Type Codes in the "experimental/local" range F800-FBFF
+may be used as Experimental Use or Private Use values {{!RFC5226}}
+and may be used freely for development purposes,
+or for other purposes within a single site.
+No attempt is made to prevent multiple sites from using
+the same value in different (and incompatible) ways.
+There is no need for IANA to review such assignments
+(since IANA does not record them) and assignments
+are not generally useful for broad interoperability.
+It is the responsibility of the sites making use of
+"experimental/local" values to ensure that no
+conflicts occur within the intended scope of use.
+
+Registration of new DSO Type Codes in
+the "Reserved for future expansion" range FC00-FFFF
+and "Unassigned, reserved for DSO session-management TLVs" range 0003-003F
+requires publication of an IETF Standards Action document {{!RFC5226}}.
+
+Requests to register additional new DSO Type Codes
+in the "Unassigned" range 0040-F7FF
+are to be recorded by IANA after consulation with the
+registry's Designated Expert {{!RFC5226}} at that time.
+At the time of publication of this document, the Designated Expert
+for the newly created DSO Type Code registry is \[**TBD**\].
+
+***
 
 # Security Considerations
 
 If this mechanism is to be used with DNS over TLS, then these messages
-are subject to the same constraints as any other DNS over TLS messages
+are subject to the same constraints as any other DNS-over-TLS messages
 and MUST NOT be sent in the clear before the TLS session is established.
 
 The data field of the "Encryption Padding" TLV could be used as a covert channel.
@@ -1482,5 +1569,7 @@ Jan Komissar,
 Manju Shankar Rao,
 and Ted Lemon
 for their helpful contributions to this document.
+
+***
 
 --- back
