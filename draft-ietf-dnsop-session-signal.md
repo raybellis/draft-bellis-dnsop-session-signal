@@ -1543,29 +1543,32 @@ document, whether they are valid in each of eight different contexts.
 The first four contexts are requests from client to server,
 and the corresponding response from server back to client:
 
-* C-P - Primary TLV sent in DSO Request message,
-from client to server, with nonzero MESSAGE ID indicating
-that the request MUST generate response message.
-* C-U - Primary TLV, sent in DSO Request message,
-from client to server, with zero MESSAGE ID indicating
-that the request should not generate response message.
+* C-P - Primary TLV,
+sent in DSO Request message,
+from client to server,
+with nonzero MESSAGE ID indicating that this request MUST generate response message.
+* C-U - Primary TLV (unacknowledged),
+sent in DSO Request message,
+from client to server,
+with zero MESSAGE ID indicating that the request MUST NOT generate response message.
 * C-A - Additional TLV, optionally added to request message from client to server.
 * C-R - Response TLV, included in response message sent to back the client
-in response to a client request with nonzero MESSAGE ID.
+in response to a client "C-P" request
+(a request with nonzero MESSAGE ID indicating that a response is required).
 
 The second four contexts are the reverse: requests from server to client,
 and the corresponding response from client back to server.
 
-                        +-----+-----+-----+-----+-----+-----+-----+-----+
-                        | C-P | C-U | C-A | C-R | S-P | S-U | S-A | S-R |
-    +-------------------+-----+-----+-----+-----+-----+-----+-----+-----+
-    | RetryDelay        |     |     |     |  X  |     |  X  |     |     |
-    +-------------------+-----+-----+-----+-----+-----+-----+-----+-----+
-    | KeepAlive         |  X  |     |     |  X  |     |  X  |     |     |
-    +-------------------+-----+-----+-----+-----+-----+-----+-----+-----+
-    | EncryptionPadding |     |     |  X  |  X  |     |     |  X  |  X  |
-    +-------------------+-----+-----+-----+-----+-----+-----+-----+-----+
-
+                  ++-----+-----+-----+-----++-----+-----+-----+-----++
+                  || C-P | C-U | C-A | C-R || S-P | S-U | S-A | S-R ||
+     +------------++-----+-----+-----+-----++-----+-----+-----+-----++
+     | RetryDelay ||     |     |     |  X  ||     |  X  |     |     ||
+     +------------++-----+-----+-----+-----++-----+-----+-----+-----++
+     | KeepAlive  ||  X  |     |     |  X  ||     |  X  |     |     ||
+     +------------++-----+-----+-----+-----++-----+-----+-----+-----++
+     | Padding    ||     |     |  X  |  X  ||     |     |  X  |  X  ||
+     +------------++-----+-----+-----+-----++-----+-----+-----+-----++
+  
 It is recommended that definitions of future TLVs include a
 similar table summarizing the contexts where the new TLV is valid.
 
