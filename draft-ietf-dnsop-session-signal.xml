@@ -1663,7 +1663,7 @@ with nonzero MESSAGE ID indicating that this request MUST generate response mess
   <t>C-U - Primary TLV (unacknowledged),
 sent in DSO Request message,
 from client to server,
-with zero MESSAGE ID indicating that the request MUST NOT generate response message.</t>
+with zero MESSAGE ID indicating that this request MUST NOT generate response message.</t>
   <t>C-A - Additional TLV, optionally added to request message from client to server.</t>
   <t>C-R - Response TLV, included in response message sent to back the client
 in response to a client “C-P” request
@@ -1880,7 +1880,7 @@ for their helpful contributions to this document.</t>
   </back>
 
 <!-- ##markdown-source:
-H4sIAPRtUFoAA+2963obR7Ig+D+fopb+YVINwKRky7bOt982LVI2T+vWJNWX
+H4sIANluUFoAA+2963obR7Ig+D+fopb+YVINwKRky7bOt982LVI2T+vWJNWX
 s7M7XwEokGUBVThVBVJoSe8yzzJPNnHNjKwLSMlyT+/sqA+PSaAqMzIyMjLu
 MR6PXZM3y+xJcvLyIrlo0iZbbJbJq3VWpU1eFrWbl7MiXcED8ypdNOM8axbj
 eVGX63Gd1TU8Mq7zqyJdjg+/c3N4/Uny8PDo+/HR0fjRocvX1ZOkqTZ18/Dw
@@ -2340,37 +2340,37 @@ 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
-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
+ACENiTrE3y3flHv3a4uLdVMvELo3MXTJfhxeefAbwP10WCOO2Q/vMcBrVBtE
+qFclUJ1BEcg65aIya21AechzGNLqR6NINGmDwaGoaAyizQ6+Yfus8Wwne0AC
+ewqP2w/s+b57GrNrDXxUXu0LMrXpmm8kTHbLnrSIvJPjei8il/UokfvU3C5r
++cMfDLOI/v/wFz3DfPhAx+cDkekH2vwPtF/wxQV9cUFfXNAXF/SF67K0z4fm
+A2cbcbLRhw+Glfr//7fEfPG31tdfGppg0KFJ29P9k6FRQTdJOrj5Wxeazhdf
+DhqxZ2C+6mqF1S9EzpEEGHKmw/0gaZp0z3jR3YmlTu4qlVtNbWQ+USEUBG2R
+YsOgK8hYdc6C0VDctXxGu5+TVCq9y7eDwWCaoYljsBb2/8Mm0pfWp6hlWCTf
+87N7BY1+h0bS7a1mlwZXFsw468EYXh884GLlDx507cnMj9mDhRETWcpJ41vj
+mE4L29qGO9ZJpddJKxcxtNG8vO7tbUyq5U4iHGmVQzWUmf5mo8PDwwjtyX4o
+ynDwP2UH79fuyR2b/fDu2v1QgqqzMQc2PuFPcXxCUInPjl8eY6k3cjdp4RjY
+EZSgXr2mfOVzoHjSqrzDgV5CnZ8au6kQg10BaTKproc2AznSB8ljm//53/8b
+D+3UZfzyQj/67/9NpttOPBznXw6MoyMLB8hwZy9e+15H8ywC6LwDj/JOMjqj
+meIpvKOAbYeBkgxJHPnoMVFu/whCuRw5tEz2r7N3KQbVrdLlgZrfUsoGuy1Y
+VQG5/QMPBPomBuV8oByOTU3yACkXoIJ/cB/40or/Y37B32GkQzwesSSB42F5
+tzl+/uzp+PKnk0QePYqu+V1PPoSPgtlJL+Ndbzwaw88z+PxNkdZ8ysnIhjya
+rWnwD7EozHfMTcvJAkW35gf8H4317eH42ffP4rH8189+OISvf6Kvz+3wWJAR
+dA0knuU3y3IG+4F+K//eU3zvWfc9ubnh9bQg2yW/4aIdr9WatdedZg9ro8LZ
+9pA5sQpp/ZZT8wqlxcOsr6XjJ/4phMImxe8ePnz88SPxaDvMArTYJaezzLGf
+brkmzEkCc00hbcYtJB97p5yvk5djlPXL0tcTwEhVKa2IoV44Ziiclzcafsm9
+UBuNJPPeyqAQ73NSEV7lcHiBCR9g/g2HoVRiC+IygggmHTo6/Tc5iDzi8MGt
+puqzaoqix0xOqbKKFVfRtW+gVhICvlFd48AaTl+qsLIbBWbRvabtgc58wlDc
+OMjnKBAGVulbKdGIeXm9FGDK6hb1Rsu+FSWG8y2WObYoL2ezTaUbwh72huXJ
+egZAUU3NGgUyyzfxU5QJO8RIe7G3k5A9XSrlE1HtDZ7PHYdTh/LnXBs319I+
+2AMLksPZ6eUzzyjq5FjKmam52ZI5rTaExVa0crTVByW8u3rl+WYlAT7hHU4K
+jUqlmWrOkRRET+yVpvbF4rTXoCVXCV//uk5OMjLC4oVA5zcGnFODU452mGjF
+e42ebeEkMrezuNoZ3ektB+tdanGXeevaUfCQaP/L//3gAbDfBw/+y/9j7OUg
+lWN0d0dAOBMoVhkKInm9ksBAZS+EgVAF9vlFiHgx5ecJq8bj4/mBKbbHibRb
+YUQw5BiHHMOQZhhb8V4TcH2cP1YGNMEh+GYdwmeiqAG6wMnZwP5cObZ7XY/J
+HqlV3m0VSmtR9c2G4qGLjBwBQLHeRsW8BaZJi7eIMAcqVvIUr/ORO0+Xa0Aa
+sEdgv/+OjVRLDF1Lq5F7kRa/brAKb/EWFnOelix0X8Kkz7OV1JAFSPMquc6W
+a2RTqAxW+XRjimYaqtEthmufbCTufwAdx+L4gDUBAA==
 
 -->
 

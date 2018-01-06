@@ -2311,7 +2311,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
       generate response message.
 
    o  C-U - Primary TLV (unacknowledged), sent in DSO Request message,
-      from client to server, with zero MESSAGE ID indicating that the
+      from client to server, with zero MESSAGE ID indicating that this
       request MUST NOT generate response message.
 
    o  C-A - Additional TLV, optionally added to request message from

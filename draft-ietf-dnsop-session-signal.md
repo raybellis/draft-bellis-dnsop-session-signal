@@ -1550,7 +1550,7 @@ with nonzero MESSAGE ID indicating that this request MUST generate response mess
 * C-U - Primary TLV (unacknowledged),
 sent in DSO Request message,
 from client to server,
-with zero MESSAGE ID indicating that the request MUST NOT generate response message.
+with zero MESSAGE ID indicating that this request MUST NOT generate response message.
 * C-A - Additional TLV, optionally added to request message from client to server.
 * C-R - Response TLV, included in response message sent to back the client
 in response to a client "C-P" request
