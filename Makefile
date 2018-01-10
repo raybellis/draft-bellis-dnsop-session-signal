@@ -104,7 +104,7 @@ tag:
 
 %.html: %.xml
 	$(xml2rfc) $< -o $@ --html
-	sed -i "" 's/\(<br>\)\{3,\}//g' $@
+	@sed -i "" 's/\(<br>\)\{3,\}//g' $@
 
 %.pdf: %.txt
 	$(enscript) --margins 76::76: -G -q -p - $^ | $(ps2pdf) - $@
