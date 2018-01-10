@@ -231,9 +231,13 @@ any other TLVs in a DSO request message are referred to as "Additional TLVs"
 and serve as modifiers affecting the primary operation.
 
 A DSO response message may contain no TLVs, or it may contain one
-or more Response TLVs as appropriate to the information being communicated.
-In the context of DSO response messages the qualifiers
-"Primary" and "Additional" do not apply.
+or more TLVs as appropriate to the information being communicated.
+In the context of DSO response messages,
+one or more TLVs with the same DSO-TYPE as the Primary TLV in the
+corresponding DSO request message are referred to as "Response TLVs".
+Any other TLVs with different DSO-TYPEs are referred to as "Extra TLVs".
+The Response TLV(s), if present, MUST occur first in the response message,
+before any Extra TLVs.
 
 Two timers (elapsed time since an event) are defined in this document: 
 
@@ -510,15 +514,22 @@ such as the Encryption Padding TLV ({{padding}}),
 and these extra TLVs are referred to as the "Additional TLVs".
 
 A DSO response message may contain no TLVs,
-or it may contain one or more Response TLVs.
-In the context of DSO response messages,
-the qualifiers "Primary" and "Additional" do not apply.
-A DSO response message is specified to carry TLVs
+or it may be specified to contain one or more TLVs
 appropriate to the information being communicated.
-A DSO response message may contain the same TLV type as the Primary TLV from
-the corresponding DSO request message, but it is not required to do so.
+
+A DSO response message may contain one or more TLVs with
+DSO-TYPE the same as the Primary TLV from the corresponding DSO request message,
+in which case those TLV(s) are referred to as "Response TLVs".
+A DSO response message is not required to carry Response TLVs.
 The MESSAGE ID field in the DNS message header is sufficient to identify
 to which DSO request message this response message relates.
+
+A DSO response message may contain one or more TLVs with
+DSO-TYPEs different from the Primary TLV from the corresponding DSO request message,
+in which case those TLV(s) are referred to as "Extra TLVs".
+
+Response TLV(s), if present, MUST occur first in the response message,
+before any Extra TLVs.
 
 It is anticipated that most DSO request messages will be acknowledged
 request messages, specified to generate corresponding responses.
@@ -1244,7 +1255,7 @@ Retry Delay, Keepalive, and Encryption Padding.
 
 The Retry Delay TLV (DSO-TYPE=0) can be used as a
 Primary TLV (unacknowledged) in a server-to-client message,
-or as a response TLV in a server-to-client response to a client-to-server request message.
+or as an Extra TLV in a server-to-client response to a client-to-server request message.
 
 The TYPE-DEPENDENT DATA for the the Retry Delay TLV is as follows:
 
@@ -1261,7 +1272,7 @@ within which the client MUST NOT retry this operation, or retry connecting to th
 
 The RECOMMENDED value is 10 seconds.
 
-### Use as a Primary TLV
+### Retry Delay TLV used as a Primary TLV
 
 When sent in a DSO request message, from server to client, the 
 Retry Delay TLV (0) is used as a Primary TLV. It is used by a server
@@ -1290,7 +1301,7 @@ A Retry Delay request is an unacknowledged request message;
 the MESSAGE ID MUST be set to zero in the request
 and the client MUST NOT send a response.
 
-### Use as a Response TLV
+### Retry Delay TLV used as an Extra TLV
 
 In the case of a client request that returns a nonzero RCODE value,
 the server MAY append a Retry Delay TLV (0) to the response,
@@ -1300,7 +1311,7 @@ SHOULD NOT attempt this operation again.
 The indicated time interval during which the client SHOULD NOT retry
 applies only to the failed operation, not to the DSO Session as a whole.
 
-### Use by Client
+### Retry Delay TLV is used by server only
 
 A client MUST NOT send a Retry Delay TLV to a server,
 either in a DSO request message, or in a DSO response message.
@@ -1350,6 +1361,14 @@ then this is a fatal error and the client MUST immediately terminate
 the connection with a TCP RST (or equivalent for other protocols).
 
 The Keepalive TLV is not used as an Additional TLV.
+
+The Keepalive TLV is only used as a Response TLV in response messages
+replying to a Keepalive request message from the client.
+A Keepalive TLV MUST NOT be added as to other responses an Extra TLV.
+If the server wishes to update a client's Session Timeout values
+other than in response to a Keepalive request message from the client,
+then it does so by sending an unacknowledged Keepalive request message
+of its own, as described above.
 
 It is not required that the Keepalive TLV be used in every DSO Session.
 While many DNS Stateful operations
@@ -1478,7 +1497,7 @@ terminate the connection with a TCP RST (or equivalent for other protocols).
 ## Encryption Padding TLV {#padding}
 
 The Encryption Padding TLV (DSO-TYPE=2) can only be used as
-an Additional or Response TLV.
+an Additional or Extra TLV.
 It is only applicable when the DSO Transport layer uses encryption
 such as TLS.
 
@@ -1541,10 +1560,10 @@ The table below illustrates the legal combinations:
 ## TLV Usage
 
 The table below indicates, for each of the three TLVs defined in this
-document, whether they are valid in each of eight different contexts.
+document, whether they are valid in each of ten different contexts.
 
-The first four contexts are requests from client to server,
-and the corresponding response from server back to client:
+The first five contexts are requests from client to server,
+and the corresponding responses from server back to client:
 
 * C-P - Primary TLV,
 sent in DSO Request message,
@@ -1556,22 +1575,25 @@ from client to server,
 with zero MESSAGE ID indicating that this request MUST NOT generate response message.
 * C-A - Additional TLV, optionally added to request message from client to server.
 * C-R - Response TLV, included in response message sent to back the client
-in response to a client "C-P" request
-(a request with nonzero MESSAGE ID indicating that a response is required).
+(in response to a client "C-P" request with nonzero MESSAGE ID indicating that a response is required)
+where the DSO-TYPE of the Response TLV matches the DSO-TYPE of the Primary TLV in the request.
+* C-E - Extra TLV, included in response message sent to back the client
+(in response to a client "C-P" request with nonzero MESSAGE ID indicating that a response is required)
+where the DSO-TYPE of the Response TLV does not match the DSO-TYPE of the Primary TLV in the request.
 
-The second four contexts are the reverse: requests from server to client,
-and the corresponding response from client back to server.
+The second five contexts are the reverse: requests from server to client,
+and the corresponding responses from client back to server.
 
-                  ++-----+-----+-----+-----++-----+-----+-----+-----++
-                  || C-P | C-U | C-A | C-R || S-P | S-U | S-A | S-R ||
-     +------------++-----+-----+-----+-----++-----+-----+-----+-----++
-     | RetryDelay ||     |     |     |  X  ||     |  X  |     |     ||
-     +------------++-----+-----+-----+-----++-----+-----+-----+-----++
-     | KeepAlive  ||  X  |     |     |  X  ||     |  X  |     |     ||
-     +------------++-----+-----+-----+-----++-----+-----+-----+-----++
-     | Padding    ||     |     |  X  |  X  ||     |     |  X  |  X  ||
-     +------------++-----+-----+-----+-----++-----+-----+-----+-----++
-  
+                  +-------------------------+-------------------------+
+                  | C-P  C-U  C-A  C-R  C-E | S-P  S-U  S-A  S-R  S-E |
+     +------------+-------------------------+-------------------------+
+     | RetryDelay |                      X  |       X                 |
+     +------------+-------------------------+-------------------------+
+     | KeepAlive  |  X              X       |       X                 |
+     +------------+-------------------------+-------------------------+
+     | Padding    |            X         X  |            X         X  |
+     +------------+-------------------------+-------------------------+
+
 It is recommended that definitions of future TLVs include a
 similar table summarizing the contexts where the new TLV is valid.
 
