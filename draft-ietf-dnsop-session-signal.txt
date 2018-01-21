@@ -1530,11 +1530,13 @@ Internet-Draft           DNS Stateful Operations           November 2017
    there is likely to be a NAT gateway on the path, and accordingly
    request a lower keepalive interval.
 
-   For environments where there may be NAT gateways or firewalls on the
-   path, it is RECOMMENDED that clients request, and servers grant, a
-   keepalive interval of 15 minutes.  In other environments it is
-   RECOMMENDED that clients request, and servers grant, a keepalive
-   interval of 60 minutes.
+   By default it is RECOMMENDED that clients request, and servers grant,
+   a keepalive interval of 60 minutes.  This keepalive interval provides
+   for reasonably timely detection if a client abruptly disconnects
+   without cleanly closing the session, and is sufficient to maintain
+   state in firewalls and NAT gateways that follow the IETF recommended
+   Best Current Practice that the "established connection idle-timeout"
+   used by middleboxes be at least 2 hours 4 minutes [RFC5382].
 
    Note that the lower the keepalive interval value, the higher the load
    on client and server.  For example, an keepalive interval value of
@@ -1559,8 +1561,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
    should generate no keepalive traffic in this way, at any point the
    server may revise that keepalive traffic requirement by sending a new
    Keepalive TLV dictating new Session Timeout values to the client.
-
-
 
 
 
@@ -2614,15 +2614,15 @@ Internet-Draft           DNS Stateful Operations           November 2017
               DOI 10.17487/RFC5226, May 2008,
               <https://www.rfc-editor.org/info/rfc5226>.
 
+   [RFC5382]  Guha, S., Ed., Biswas, K., Ford, B., Sivakumar, S., and P.
+              Srisuresh, "NAT Behavioral Requirements for TCP", BCP 142,
+              RFC 5382, DOI 10.17487/RFC5382, October 2008,
+              <https://www.rfc-editor.org/info/rfc5382>.
+
    [RFC6891]  Damas, J., Graff, M., and P. Vixie, "Extension Mechanisms
               for DNS (EDNS(0))", STD 75, RFC 6891,
               DOI 10.17487/RFC6891, April 2013,
               <https://www.rfc-editor.org/info/rfc6891>.
-
-   [RFC7766]  Dickinson, J., Dickinson, S., Bellis, R., Mankin, A., and
-              D. Wessels, "DNS Transport over TCP - Implementation
-              Requirements", RFC 7766, DOI 10.17487/RFC7766, March 2016,
-              <https://www.rfc-editor.org/info/rfc7766>.
 
 
 
@@ -2633,6 +2633,11 @@ Bellis, et al.            Expires June 3, 2018                 [Page 47]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
+
+   [RFC7766]  Dickinson, J., Dickinson, S., Bellis, R., Mankin, A., and
+              D. Wessels, "DNS Transport over TCP - Implementation
+              Requirements", RFC 7766, DOI 10.17487/RFC7766, March 2016,
+              <https://www.rfc-editor.org/info/rfc7766>.
 
    [RFC7828]  Wouters, P., Abley, J., Dickinson, S., and R. Bellis, "The
               edns-tcp-keepalive EDNS0 Option", RFC 7828,
@@ -2651,8 +2656,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
    [I-D.ietf-dprive-padding-policy]
               Mayrhofer, A., "Padding Policy for EDNS(0)", draft-ietf-
-              dprive-padding-policy-02 (work in progress), September
-              2017.
+              dprive-padding-policy-03 (work in progress), January 2018.
 
    [I-D.sctl-dnssd-mdns-relay]
               Cheshire, S. and T. Lemon, "Multicast DNS Discovery
@@ -2677,10 +2681,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
               Discovery", RFC 6763, DOI 10.17487/RFC6763, February 2013,
               <https://www.rfc-editor.org/info/rfc6763>.
 
-   [RFC7858]  Hu, Z., Zhu, L., Heidemann, J., Mankin, A., Wessels, D.,
-              and P. Hoffman, "Specification for DNS over Transport
-              Layer Security (TLS)", RFC 7858, DOI 10.17487/RFC7858, May
-              2016, <https://www.rfc-editor.org/info/rfc7858>.
 
 
 
@@ -2689,6 +2689,11 @@ Bellis, et al.            Expires June 3, 2018                 [Page 48]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
+
+   [RFC7858]  Hu, Z., Zhu, L., Heidemann, J., Mankin, A., Wessels, D.,
+              and P. Hoffman, "Specification for DNS over Transport
+              Layer Security (TLS)", RFC 7858, DOI 10.17487/RFC7858, May
+              2016, <https://www.rfc-editor.org/info/rfc7858>.
 
 Authors' Addresses
 
@@ -2732,11 +2737,6 @@ Authors' Addresses
    Email: sara@sinodun.com
 
 
-   Allison Mankin
-   Salesforce
-
-   Email: allison.mankin@gmail.com
-
 
 
 
@@ -2746,6 +2746,12 @@ Bellis, et al.            Expires June 3, 2018                 [Page 49]
 Internet-Draft           DNS Stateful Operations           November 2017
 
 
+   Allison Mankin
+   Salesforce
+
+   Email: allison.mankin@gmail.com
+
+
    Tom Pusateri
    Unaffiliated
    Raleigh  NC 27608
@@ -2753,12 +2759,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
    Phone: +1 919 867 1330
    Email: pusateri@bangj.com
-
-
-
-
-
-
 
 
 

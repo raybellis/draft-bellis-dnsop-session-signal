@@ -1041,10 +1041,14 @@ at an address outside that IPv4 private address block,
 may conclude that there is likely to be a NAT gateway on the path,
 and accordingly request a lower keepalive interval.
 
-For environments where there may be NAT gateways or firewalls on the path, it is
-RECOMMENDED that clients request, and servers grant, a keepalive interval of 15
-minutes. In other environments it is RECOMMENDED that clients request, and 
-servers grant, a keepalive interval of 60 minutes.
+By default it is RECOMMENDED that clients request,
+and servers grant, a keepalive interval of 60 minutes.
+This keepalive interval provides for reasonably timely detection if
+a client abruptly disconnects without cleanly closing the session,
+and is sufficient to maintain state in firewalls and NAT gateways
+that follow the IETF recommended Best Current Practice that the
+"established connection idle-timeout" used by middleboxes
+be at least 2 hours 4 minutes {{!RFC5382}}.
 
 Note that the lower the keepalive interval value, the higher the load on client
 and server. For example, an keepalive interval value of 100ms would result in a

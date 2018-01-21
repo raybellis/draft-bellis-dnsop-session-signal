@@ -963,7 +963,7 @@
 <p id="rfc.section.5.5.2.p.3">A corporate DNS server that knows it is serving only clients on the internal network, with no intervening NAT gateways or firewalls, can impose a higher keepalive interval, because frequent keepalive traffic is not required.</p>
 <p id="rfc.section.5.5.2.p.4">A public DNS server that is serving primarily residential consumer clients, where it is likely there will be a NAT gateway on the path, may impose a lower keepalive interval, to generate more frequent keepalive traffic.</p>
 <p id="rfc.section.5.5.2.p.5">A smart client may be adaptive to its environment. A client using a private IPv4 address <a href="#RFC1918" class="xref">[RFC1918]</a> to communicate with a DNS server at an address outside that IPv4 private address block, may conclude that there is likely to be a NAT gateway on the path, and accordingly request a lower keepalive interval.</p>
-<p id="rfc.section.5.5.2.p.6">For environments where there may be NAT gateways or firewalls on the path, it is RECOMMENDED that clients request, and servers grant, a keepalive interval of 15 minutes. In other environments it is RECOMMENDED that clients request, and servers grant, a keepalive interval of 60 minutes.</p>
+<p id="rfc.section.5.5.2.p.6">By default it is RECOMMENDED that clients request, and servers grant, a keepalive interval of 60 minutes.  This keepalive interval provides for reasonably timely detection if a client abruptly disconnects without cleanly closing the session, and is sufficient to maintain state in firewalls and NAT gateways that follow the IETF recommended Best Current Practice that the &#8220;established connection idle-timeout&#8221; used by middleboxes be at least 2 hours 4 minutes <a href="#RFC5382" class="xref">[RFC5382]</a>.</p>
 <p id="rfc.section.5.5.2.p.7">Note that the lower the keepalive interval value, the higher the load on client and server. For example, an keepalive interval value of 100ms would result in a continuous stream of at least ten messages per second, in both directions, to keep the DSO Session alive. And, in this extreme example, a single packet loss and retransmission over a long path could introduce a momentary pause in the stream of messages, long enough to cause the server to overzealously abort the connection.</p>
 <p id="rfc.section.5.5.2.p.8">Because of this concern, the server MUST NOT send a Keepalive message (either a response to a client-initiated request, or a server-initiated message) with an keepalive interval value less than ten seconds.  If a client receives an Keepalive message specifying an keepalive interval value less than ten seconds this is an error and the client MUST immediately terminate the connection with a TCP RST (or equivalent for other protocols).</p>
 <p id="rfc.section.5.5.2.p.9">A keepalive interval value of 0xFFFFFFFF (2^32-1 milliseconds, approximately 49.7 days) informs the client that it should generate no keepalive traffic.  Note that after signaling that the client should generate no keepalive traffic in this way, at any point the server may revise that keepalive traffic requirement by sending a new Keepalive TLV dictating new Session Timeout values to the client.</p>
@@ -1321,6 +1321,11 @@
 <a>Narten, T.</a> and <a>H. Alvestrand</a>, "<a href="https://tools.ietf.org/html/rfc5226">Guidelines for Writing an IANA Considerations Section in RFCs</a>", RFC 5226, DOI 10.17487/RFC5226, May 2008.</td>
 </tr>
 <tr>
+<td class="reference"><b id="RFC5382">[RFC5382]</b></td>
+<td class="top">
+<a>Guha, S.</a>, <a>Biswas, K.</a>, <a>Ford, B.</a>, <a>Sivakumar, S.</a> and <a>P. Srisuresh</a>, "<a href="https://tools.ietf.org/html/rfc5382">NAT Behavioral Requirements for TCP</a>", BCP 142, RFC 5382, DOI 10.17487/RFC5382, October 2008.</td>
+</tr>
+<tr>
 <td class="reference"><b id="RFC6891">[RFC6891]</b></td>
 <td class="top">
 <a>Damas, J.</a>, <a>Graff, M.</a> and <a>P. Vixie</a>, "<a href="https://tools.ietf.org/html/rfc6891">Extension Mechanisms for DNS (EDNS(0))</a>", STD 75, RFC 6891, DOI 10.17487/RFC6891, April 2013.</td>
@@ -1352,7 +1357,7 @@
 <tr>
 <td class="reference"><b id="I-D.ietf-dprive-padding-policy">[I-D.ietf-dprive-padding-policy]</b></td>
 <td class="top">
-<a>Mayrhofer, A.</a>, "<a href="https://tools.ietf.org/html/draft-ietf-dprive-padding-policy-02">Padding Policy for EDNS(0)</a>", Internet-Draft draft-ietf-dprive-padding-policy-02, September 2017.</td>
+<a>Mayrhofer, A.</a>, "<a href="https://tools.ietf.org/html/draft-ietf-dprive-padding-policy-03">Padding Policy for EDNS(0)</a>", Internet-Draft draft-ietf-dprive-padding-policy-03, January 2018.</td>
 </tr>
 <tr>
 <td class="reference"><b id="I-D.sctl-dnssd-mdns-relay">[I-D.sctl-dnssd-mdns-relay]</b></td>
