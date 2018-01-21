@@ -124,7 +124,7 @@ used to manage session timeouts, termination, and encryption padding.
 All three of the TLVs defined here are mandatory for all implementations of DSO.
 Further TLVs may be defined in additional specifications.
 
-It should be noted that the format for DSO messages
+The format for DSO messages
 (see {{format}}) differs somewhat from the traditional DNS message
 format used for standard queries and responses.
 The standard twelve-octet header is used, but the four count fields
@@ -247,7 +247,7 @@ The timeouts associated with these timers are called the inactivity timeout and
 the keepalive interval respectively. 
 The term "Session Timeouts" is used to refer to this pair of timeout values.
 
-Reseting a timer means resetting the timer value to zero and starting the timer again.
+Resetting a timer means resetting the timer value to zero and starting the timer again.
 Clearing a timer means resetting the timer value to zero but NOT starting the timer again.
 
 ***
@@ -316,11 +316,11 @@ Similarly, unless it is known in advance by other means that a server
 does support DSO, a client MUST NOT initiate non-response-requiring
 DSO request messages until after a DSO Session has been mutually established.
 
-Many, but not all, DSO request messages sent by an initiator
-elicit a response from the responder.
 Whether or not a given DSO request message elicits a response is
 determined by whether or not the first DSO TLV (see {{tlvsyntax}})
 in the message (the Primary TLV) is one that is specified to generate a response.
+Whether a Primary TLV will be specified to elicit a response will depend
+on the intended use pattern for that particular TLV.
 
 A DSO Session is established over a connection by the client
 sending a DSO request message of a kind that requires a response,
@@ -436,9 +436,18 @@ be set to a unique nonzero value, that the initiator is not
 currently using for any other active operation on this connection.
 For the purposes here, a MESSAGE ID is in use in this DSO Session if the
 initiator has used it in a request for which it is still awaiting a response,
-or if the client has used it to setup state that it has not yet deleted.
+or if the client has used it to setup state that has not yet been deleted.
 For example, state could be a Push Notification subscription {{?I-D.ietf-dnssd-push}}
 or a Discovery Relay interface subscription {{?I-D.sctl-dnssd-mdns-relay}}.
+
+Whether a message is acknowledged or unacknowledged is
+determined only by the specification for the Primary TLV.
+An acknowledgment cannot be requested by including a nonzero message ID
+in a message the primary TLV of which is specified to be unacknowledged,
+nor can an acknowledgment be prevented by sending a message ID of zero
+in a message with a primary TLV that is specified to be acknowledged.
+A responder that receives either such malformed message MUST treat it
+as a programming error and terminate the connection.
 
 In a request message the DNS Header QR bit MUST be zero (QR=0).  
 If the QR bit is not zero the message is not a request message.
@@ -462,7 +471,7 @@ on reception, unless a future document specifies otherwise.
 
 In a request message (QR=0) the RCODE is generally set to zero on transmission,
 and silently ignored on reception, except where specified otherwise
-(for example, the Retry Delay request message (see {{delay}}),
+(for example, the Retry Delay request message (see {{retry}}),
 where the RCODE indicates the reason for termination).
 
 ***
@@ -530,10 +539,10 @@ in which case those TLV(s) are referred to as "Extra TLVs".
 Response TLV(s), if present, MUST occur first in the response message,
 before any Extra TLVs.
 
-It is anticipated that most DSO request messages will be acknowledged
-request messages, specified to generate corresponding responses.
+It is anticipated that by default most DSO request messages will be specified
+to be acknowledged request messages, which generate corresponding responses.
 In some specialized high-traffic use cases,
-it may be appropriate to use unacknowledged request messages.
+it may be appropriate to specify unacknowledged request messages.
 Unacknowledged request messages can be more efficient on the network,
 because they don't generate a stream of corresponding reply messages.
 Using unacknowledged request messages can also simplify software
@@ -564,12 +573,14 @@ which to associate a response with its corresponding request).
 Unacknowledged request messages are only appropriate in cases where
 the sender already knows that the receiver supports and wishes to
 receive these messages.
+
 For example, after a client has subscribed for Push Notifications
 {{?I-D.ietf-dnssd-push}}, the subsequent event notifications are
 then sent as unacknowledged messages, and this is appropriate
 because the client initiated the message stream by virtue of its
 Push Notification subscription, thereby indicating its support of
 Push Notifications, and its desire to receive those notifications.
+
 After an mDNS Relay client has subscribed to receive inbound mDNS
 traffic from an mDNS Relay, the subsequent stream of received
 packets is then sent using unacknowledged messages, and this
@@ -1080,7 +1091,7 @@ error response to the client and leave the DSO Session open for further operatio
 For error conditions that are likely to make all operations unsuccessful in the
 immediate future, the server SHOULD return an error response to the client and 
 then end the DSO Session by sending a Retry Delay request message, as described in 
-{{delay}}.
+{{retry}}.
 
 ## Client Behaviour upon Receiving an Error {#error}
 
@@ -1092,7 +1103,7 @@ should assume that the server will make its own decision about whether or not to
 end the DSO Session, based on the server's determination of whether the error
 condition pertains to this particular operation, or would also apply to any
 subsequent operations. If the server does not end the DSO Session by
-sending the client a Retry Delay message (see {{delay}}) then the client
+sending the client a Retry Delay message (see {{retry}}) then the client
 SHOULD continue to use that DSO Session for subsequent operations.
 
 ***
@@ -1239,7 +1250,7 @@ This is to reduce unnecessary connection load on the DNS server.
 
 However, server implementers and operators should be aware that connection
 sharing may not be possible in all cases.
-A single client device may be home to multiple independent client software
+A single host device may be home to multiple independent client software
 instances that don't coordinate with each other.
 Similarly, multiple independent client devices behind the same NAT gateway
 will also typically appear to the DNS server as different source ports on
