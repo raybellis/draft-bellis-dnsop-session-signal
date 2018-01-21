@@ -88,13 +88,12 @@ informative:
 
 --- abstract
 
-This document defines a new DNS OPCODE, DSO (tentatively 6), for DNS Stateful Operations.
-DSO messages are used to communicate operations within persistent
-stateful sessions, expressed using type-length-value (TLV) syntax.
-This document defines an initial set of three TLVs,
-used to manage session timeouts, termination, and encryption padding,
-and defines a framework for new stateful operations
-not supported by the existing EDNS(0) mechanism.
+This document defines a new DNS OPCODE for DNS Stateful Operations (DSO).
+DSO messages communicate operations within persistent
+stateful sessions, using type-length-value (TLV) syntax.
+Three TLVs are defined that manage session timeouts,
+termination, and encryption padding, and 
+a framework is defined for extensions to enable new stateful operations.
 
 --- middle
 

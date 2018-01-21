@@ -21,13 +21,12 @@ Expires: June 3, 2018                                       S. Dickinson
 
 Abstract
 
-   This document defines a new DNS OPCODE, DSO (tentatively 6), for DNS
-   Stateful Operations.  DSO messages are used to communicate operations
-   within persistent stateful sessions, expressed using type-length-
-   value (TLV) syntax.  This document defines an initial set of three
-   TLVs, used to manage session timeouts, termination, and encryption
-   padding, and defines a framework for new stateful operations not
-   supported by the existing EDNS(0) mechanism.
+   This document defines a new DNS OPCODE for DNS Stateful Operations
+   (DSO).  DSO messages communicate operations within persistent
+   stateful sessions, using type-length-value (TLV) syntax.  Three TLVs
+   are defined that manage session timeouts, termination, and encryption
+   padding, and a framework is defined for extensions to enable new
+   stateful operations.
 
 Status of This Memo
 
@@ -46,9 +45,10 @@ Status of This Memo
 
    This Internet-Draft will expire on June 3, 2018.
 
+Copyright Notice
 
-
-
+   Copyright (c) 2017 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
 
 
 
@@ -57,11 +57,6 @@ Bellis, et al.            Expires June 3, 2018                  [Page 1]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
-
-Copyright Notice
-
-   Copyright (c) 2017 IETF Trust and the persons identified as the
-   document authors.  All rights reserved.
 
    This document is subject to BCP 78 and the IETF Trust's Legal
    Provisions Relating to IETF Documents
@@ -106,6 +101,11 @@ Table of Contents
    6.  Connection Sharing  . . . . . . . . . . . . . . . . . . . . .  33
    7.  Base TLVs for DNS Stateful Operations . . . . . . . . . . . .  34
      7.1.  Retry Delay TLV . . . . . . . . . . . . . . . . . . . . .  34
+       7.1.1.  Retry Delay TLV used as a Primary TLV . . . . . . . .  34
+       7.1.2.  Retry Delay TLV used as an Extra TLV  . . . . . . . .  35
+       7.1.3.  Retry Delay TLV is used by server only  . . . . . . .  35
+     7.2.  Keepalive TLV . . . . . . . . . . . . . . . . . . . . . .  36
+       7.2.1.  Client handling of received Session Timeout values  .  38
 
 
 
@@ -114,11 +114,6 @@ Bellis, et al.            Expires June 3, 2018                  [Page 2]
 Internet-Draft           DNS Stateful Operations           November 2017
 
 
-       7.1.1.  Retry Delay TLV used as a Primary TLV . . . . . . . .  34
-       7.1.2.  Retry Delay TLV used as an Extra TLV  . . . . . . . .  35
-       7.1.3.  Retry Delay TLV is used by server only  . . . . . . .  35
-     7.2.  Keepalive TLV . . . . . . . . . . . . . . . . . . . . . .  36
-       7.2.1.  Client handling of received Session Timeout values  .  38
        7.2.2.  Relation to EDNS(0) TCP Keepalive Option  . . . . . .  39
      7.3.  Encryption Padding TLV  . . . . . . . . . . . . . . . . .  40
    8.  Summary . . . . . . . . . . . . . . . . . . . . . . . . . . .  41
@@ -161,7 +156,12 @@ Internet-Draft           DNS Stateful Operations           November 2017
    Stateful Operations.  DSO messages are used to communicate operations
    within persistent stateful sessions, expressed using type-length-
    value (TLV) syntax.  This document defines an initial set of three
+   TLVs, used to manage session timeouts, termination, and encryption
+   padding.
 
+   All three of the TLVs defined here are mandatory for all
+   implementations of DSO.  Further TLVs may be defined in additional
+   specifications.
 
 
 
@@ -169,13 +169,6 @@ Bellis, et al.            Expires June 3, 2018                  [Page 3]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
-
-   TLVs, used to manage session timeouts, termination, and encryption
-   padding.
-
-   All three of the TLVs defined here are mandatory for all
-   implementations of DSO.  Further TLVs may be defined in additional
-   specifications.
 
    It should be noted that the format for DSO messages (see Section 4.2)
    differs somewhat from the traditional DNS message format used for
@@ -217,6 +210,13 @@ Internet-Draft           DNS Stateful Operations           November 2017
    DSO request message communicates just one primary operation, and the
    RCODE in the corresponding response message indicates the success or
    failure of that operation.
+
+
+
+
+
+
+
 
 
 
