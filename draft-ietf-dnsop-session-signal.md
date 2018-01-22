@@ -238,16 +238,17 @@ In a DSO request message the first TLV is referred to as the "Primary TLV"
 and determines the nature of the operation being performed,
 including whether it is an acknowledged or unacknowledged operation;
 any other TLVs in a DSO request message are referred to as "Additional TLVs"
-and serve as modifiers affecting the primary operation.
+and serve additional non-primary purposes, which may be related to
+the primary purpose, or not, as in the case of the encryption padding TLV.
 
 A DSO response message may contain no TLVs, or it may contain one
 or more TLVs as appropriate to the information being communicated.
 In the context of DSO response messages,
 one or more TLVs with the same DSO-TYPE as the Primary TLV in the
-corresponding DSO request message are referred to as "Response TLVs".
-Any other TLVs with different DSO-TYPEs are referred to as "Extra TLVs".
-The Response TLV(s), if present, MUST occur first in the response message,
-before any Extra TLVs.
+corresponding DSO request message are referred to as "Response Primary TLVs".
+Any other TLVs with different DSO-TYPEs are referred to as "Response Additional TLVs".
+The Response Primary TLV(s), if present, MUST occur first in the response message,
+before any Response Additional TLVs.
 
 Two timers (elapsed time since an event) are defined in this document: 
 
@@ -535,17 +536,17 @@ appropriate to the information being communicated.
 
 A DSO response message may contain one or more TLVs with
 DSO-TYPE the same as the Primary TLV from the corresponding DSO request message,
-in which case those TLV(s) are referred to as "Response TLVs".
-A DSO response message is not required to carry Response TLVs.
+in which case those TLV(s) are referred to as "Response Primary TLVs".
+A DSO response message is not required to carry Response Primary TLVs.
 The MESSAGE ID field in the DNS message header is sufficient to identify
 to which DSO request message this response message relates.
 
 A DSO response message may contain one or more TLVs with
 DSO-TYPEs different from the Primary TLV from the corresponding DSO request message,
-in which case those TLV(s) are referred to as "Extra TLVs".
+in which case those TLV(s) are referred to as "Response Additional TLVs".
 
-Response TLV(s), if present, MUST occur first in the response message,
-before any Extra TLVs.
+Response Primary TLV(s), if present, MUST occur first in the response message,
+before any Response Additional TLVs.
 
 It is anticipated that by default most DSO request messages will be specified
 to be acknowledged request messages, which generate corresponding responses.
@@ -1324,7 +1325,7 @@ Retry Delay, Keepalive, and Encryption Padding.
 
 The Retry Delay TLV (DSO-TYPE=0) can be used as a
 Primary TLV (unacknowledged) in a server-to-client message,
-or as an Extra TLV in a server-to-client response to a client-to-server request message.
+or as an Response Additional TLV in a server-to-client response to a client-to-server request message.
 
 The TYPE-DEPENDENT DATA for the the Retry Delay TLV is as follows:
 
@@ -1370,7 +1371,7 @@ A Retry Delay request is an unacknowledged request message;
 the MESSAGE ID MUST be set to zero in the request
 and the client MUST NOT send a response.
 
-### Retry Delay TLV used as an Extra TLV
+### Retry Delay TLV used as an Response Additional TLV
 
 In the case of a client request that returns a nonzero RCODE value,
 the server MAY append a Retry Delay TLV (0) to the response,
@@ -1430,7 +1431,7 @@ The Keepalive TLV is not used as an Additional TLV.
 
 The Keepalive TLV is only used as a Response TLV in response messages
 replying to a Keepalive request message from the client.
-A Keepalive TLV MUST NOT be added as to other responses an Extra TLV.
+A Keepalive TLV MUST NOT be added as to other responses a Response Additional TLV.
 If the server wishes to update a client's Session Timeout values
 other than in response to a Keepalive request message from the client,
 then it does so by sending an unacknowledged Keepalive request message
@@ -1560,7 +1561,7 @@ EDNS(0) TCP Keepalive option MUST forcibly abort the connection immediately.
 ## Encryption Padding TLV {#padding}
 
 The Encryption Padding TLV (DSO-TYPE=2) can only be used as
-an Additional or Extra TLV.
+an Additional or Response Additional TLV.
 It is only applicable when the DSO Transport layer uses encryption
 such as TLS.
 
@@ -1637,10 +1638,10 @@ sent in DSO Request message,
 from client to server,
 with zero MESSAGE ID indicating that this request MUST NOT generate response message.
 * C-A - Additional TLV, optionally added to request message from client to server.
-* C-R - Response TLV, included in response message sent to back the client
+* CRP - Response Primary TLV, included in response message sent to back the client
 (in response to a client "C-P" request with nonzero MESSAGE ID indicating that a response is required)
 where the DSO-TYPE of the Response TLV matches the DSO-TYPE of the Primary TLV in the request.
-* C-E - Extra TLV, included in response message sent to back the client
+* CRA - Response Additional TLV, included in response message sent to back the client
 (in response to a client "C-P" request with nonzero MESSAGE ID indicating that a response is required)
 where the DSO-TYPE of the Response TLV does not match the DSO-TYPE of the Primary TLV in the request.
 
@@ -1648,7 +1649,7 @@ The second five contexts are the reverse: requests from server to client,
 and the corresponding responses from client back to server.
 
                   +-------------------------+-------------------------+
-                  | C-P  C-U  C-A  C-R  C-E | S-P  S-U  S-A  S-R  S-E |
+                  | C-P  C-U  C-A  CRP  CRA | S-P  S-U  S-A  SRP  SRA |
      +------------+-------------------------+-------------------------+
      | RetryDelay |                      X  |       X                 |
      +------------+-------------------------+-------------------------+

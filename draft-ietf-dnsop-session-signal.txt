@@ -101,7 +101,7 @@ Table of Contents
    7.  Base TLVs for DNS Stateful Operations . . . . . . . . . . . .  34
      7.1.  Retry Delay TLV . . . . . . . . . . . . . . . . . . . . .  34
        7.1.1.  Retry Delay TLV used as a Primary TLV . . . . . . . .  34
-       7.1.2.  Retry Delay TLV used as an Extra TLV  . . . . . . . .  35
+       7.1.2.  Retry Delay TLV used as an Response Additional TLV  .  35
        7.1.3.  Retry Delay TLV is used by server only  . . . . . . .  35
      7.2.  Keepalive TLV . . . . . . . . . . . . . . . . . . . . . .  36
        7.2.1.  Client handling of received Session Timeout values  .  38
@@ -306,17 +306,18 @@ Internet-Draft           DNS Stateful Operations           November 2017
    TLV" and determines the nature of the operation being performed,
    including whether it is an acknowledged or unacknowledged operation;
    any other TLVs in a DSO request message are referred to as
-   "Additional TLVs" and serve as modifiers affecting the primary
-   operation.
+   "Additional TLVs" and serve additional non-primary purposes, which
+   may be related to the primary purpose, or not, as in the case of the
+   encryption padding TLV.
 
    A DSO response message may contain no TLVs, or it may contain one or
    more TLVs as appropriate to the information being communicated.  In
    the context of DSO response messages, one or more TLVs with the same
    DSO-TYPE as the Primary TLV in the corresponding DSO request message
-   are referred to as "Response TLVs".  Any other TLVs with different
-   DSO-TYPEs are referred to as "Extra TLVs".  The Response TLV(s), if
-   present, MUST occur first in the response message, before any Extra
-   TLVs.
+   are referred to as "Response Primary TLVs".  Any other TLVs with
+   different DSO-TYPEs are referred to as "Response Additional TLVs".
+   The Response Primary TLV(s), if present, MUST occur first in the
+   response message, before any Response Additional TLVs.
 
    Two timers (elapsed time since an event) are defined in this
    document:
@@ -328,7 +329,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
    The timeouts associated with these timers are called the inactivity
    timeout and the keepalive interval respectively.  The term "Session
    Timeouts" is used to refer to this pair of timeout values.
-
 
 
 
@@ -757,17 +757,19 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
    A DSO response message may contain one or more TLVs with DSO-TYPE the
    same as the Primary TLV from the corresponding DSO request message,
-   in which case those TLV(s) are referred to as "Response TLVs".  A DSO
-   response message is not required to carry Response TLVs.  The MESSAGE
-   ID field in the DNS message header is sufficient to identify to which
-   DSO request message this response message relates.
+   in which case those TLV(s) are referred to as "Response Primary
+   TLVs".  A DSO response message is not required to carry Response
+   Primary TLVs.  The MESSAGE ID field in the DNS message header is
+   sufficient to identify to which DSO request message this response
+   message relates.
 
    A DSO response message may contain one or more TLVs with DSO-TYPEs
    different from the Primary TLV from the corresponding DSO request
-   message, in which case those TLV(s) are referred to as "Extra TLVs".
+   message, in which case those TLV(s) are referred to as "Response
+   Additional TLVs".
 
-   Response TLV(s), if present, MUST occur first in the response
-   message, before any Extra TLVs.
+   Response Primary TLV(s), if present, MUST occur first in the response
+   message, before any Response Additional TLVs.
 
    It is anticipated that by default most DSO request messages will be
    specified to be acknowledged request messages, which generate
@@ -776,8 +778,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
    Unacknowledged request messages can be more efficient on the network,
    because they don't generate a stream of corresponding reply messages.
    Using unacknowledged request messages can also simplify software in
-   some cases, by removing need for an initiator to maintain state while
-   it waits to receive replies it doesn't care about.  When the
 
 
 
@@ -786,6 +786,8 @@ Bellis, et al.            Expires June 3, 2018                 [Page 14]
 Internet-Draft           DNS Stateful Operations           November 2017
 
 
+   some cases, by removing need for an initiator to maintain state while
+   it waits to receive replies it doesn't care about.  When the
    specification for a particular TLV states that, when used as a
    Primary TLV (i.e., first) in a request message, that request message
    is to be unacknowledged, the MESSAGE ID field MUST be set to zero and
@@ -824,8 +826,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
    Relay link subscription, thereby indicating its support of mDNS
    Relay, and its desire to receive inbound mDNS packets over that DSO
    session [I-D.sctl-dnssd-mdns-relay].
-
-
 
 
 
@@ -1858,8 +1858,9 @@ Internet-Draft           DNS Stateful Operations           November 2017
 7.1.  Retry Delay TLV
 
    The Retry Delay TLV (DSO-TYPE=0) can be used as a Primary TLV
-   (unacknowledged) in a server-to-client message, or as an Extra TLV in
-   a server-to-client response to a client-to-server request message.
+   (unacknowledged) in a server-to-client message, or as an Response
+   Additional TLV in a server-to-client response to a client-to-server
+   request message.
 
    The TYPE-DEPENDENT DATA for the the Retry Delay TLV is as follows:
 
@@ -1900,7 +1901,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-
 Bellis, et al.            Expires June 3, 2018                 [Page 34]
 
 Internet-Draft           DNS Stateful Operations           November 2017
@@ -1920,7 +1920,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
    MESSAGE ID MUST be set to zero in the request and the client MUST NOT
    send a response.
 
-7.1.2.  Retry Delay TLV used as an Extra TLV
+7.1.2.  Retry Delay TLV used as an Response Additional TLV
 
    In the case of a client request that returns a nonzero RCODE value,
    the server MAY append a Retry Delay TLV (0) to the response,
@@ -2009,7 +2009,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
    The Keepalive TLV is only used as a Response TLV in response messages
    replying to a Keepalive request message from the client.  A Keepalive
-   TLV MUST NOT be added as to other responses an Extra TLV.  If the
+   TLV MUST NOT be added as to other responses a Response Additional
 
 
 
@@ -2018,10 +2018,10 @@ Bellis, et al.            Expires June 3, 2018                 [Page 36]
 Internet-Draft           DNS Stateful Operations           November 2017
 
 
-   server wishes to update a client's Session Timeout values other than
-   in response to a Keepalive request message from the client, then it
-   does so by sending an unacknowledged Keepalive request message of its
-   own, as described above.
+   TLV.  If the server wishes to update a client's Session Timeout
+   values other than in response to a Keepalive request message from the
+   client, then it does so by sending an unacknowledged Keepalive
+   request message of its own, as described above.
 
    It is not required that the Keepalive TLV be used in every DSO
    Session.  While many DNS Stateful operations will be used in
@@ -2189,8 +2189,8 @@ Internet-Draft           DNS Stateful Operations           November 2017
 7.3.  Encryption Padding TLV
 
    The Encryption Padding TLV (DSO-TYPE=2) can only be used as an
-   Additional or Extra TLV.  It is only applicable when the DSO
-   Transport layer uses encryption such as TLS.
+   Additional or Response Additional TLV.  It is only applicable when
+   the DSO Transport layer uses encryption such as TLS.
 
    The TYPE-DEPENDENT DATA for the the Padding TLV is optional and is a
    variable length field containing non-specified values.  A DATA LENGTH
@@ -2317,23 +2317,23 @@ Internet-Draft           DNS Stateful Operations           November 2017
    o  C-A - Additional TLV, optionally added to request message from
       client to server.
 
-   o  C-R - Response TLV, included in response message sent to back the
-      client (in response to a client "C-P" request with nonzero MESSAGE
-      ID indicating that a response is required) where the DSO-TYPE of
-      the Response TLV matches the DSO-TYPE of the Primary TLV in the
-      request.
+   o  CRP - Response Primary TLV, included in response message sent to
+      back the client (in response to a client "C-P" request with
+      nonzero MESSAGE ID indicating that a response is required) where
+      the DSO-TYPE of the Response TLV matches the DSO-TYPE of the
+      Primary TLV in the request.
 
-   o  C-E - Extra TLV, included in response message sent to back the
-      client (in response to a client "C-P" request with nonzero MESSAGE
-      ID indicating that a response is required) where the DSO-TYPE of
-      the Response TLV does not match the DSO-TYPE of the Primary TLV in
-      the request.
+   o  CRA - Response Additional TLV, included in response message sent
+      to back the client (in response to a client "C-P" request with
+      nonzero MESSAGE ID indicating that a response is required) where
+      the DSO-TYPE of the Response TLV does not match the DSO-TYPE of
+      the Primary TLV in the request.
 
    The second five contexts are the reverse: requests from server to
    client, and the corresponding responses from client back to server.
 
                  +-------------------------+-------------------------+
-                 | C-P  C-U  C-A  C-R  C-E | S-P  S-U  S-A  S-R  S-E |
+                 | C-P  C-U  C-A  CRP  CRA | S-P  S-U  S-A  SRP  SRA |
     +------------+-------------------------+-------------------------+
     | RetryDelay |                      X  |       X                 |
     +------------+-------------------------+-------------------------+

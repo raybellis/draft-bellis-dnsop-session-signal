@@ -405,7 +405,7 @@
 <link href="#rfc.section.7" rel="Chapter" title="7 Base TLVs for DNS Stateful Operations">
 <link href="#rfc.section.7.1" rel="Chapter" title="7.1 Retry Delay TLV">
 <link href="#rfc.section.7.1.1" rel="Chapter" title="7.1.1 Retry Delay TLV used as a Primary TLV">
-<link href="#rfc.section.7.1.2" rel="Chapter" title="7.1.2 Retry Delay TLV used as an Extra TLV">
+<link href="#rfc.section.7.1.2" rel="Chapter" title="7.1.2 Retry Delay TLV used as an Response Additional TLV">
 <link href="#rfc.section.7.1.3" rel="Chapter" title="7.1.3 Retry Delay TLV is used by server only">
 <link href="#rfc.section.7.2" rel="Chapter" title="7.2 Keepalive TLV">
 <link href="#rfc.section.7.2.1" rel="Chapter" title="7.2.1 Client handling of received Session Timeout values">
@@ -578,7 +578,7 @@
 </li>
 <ul><li>7.1.1.   <a href="#rfc.section.7.1.1">Retry Delay TLV used as a Primary TLV</a>
 </li>
-<li>7.1.2.   <a href="#rfc.section.7.1.2">Retry Delay TLV used as an Extra TLV</a>
+<li>7.1.2.   <a href="#rfc.section.7.1.2">Retry Delay TLV used as an Response Additional TLV</a>
 </li>
 <li>7.1.3.   <a href="#rfc.section.7.1.3">Retry Delay TLV is used by server only</a>
 </li>
@@ -660,8 +660,8 @@
 <p id="rfc.section.2.p.14">Likewise, the term &#8220;receiver&#8221; may apply to either a responder (when receiving a DSO request message) or an initiator (when receiving a DSO response message).</p>
 <p id="rfc.section.2.p.15">DNS Stateful Operations uses &#8220;DSO request messages&#8221; and &#8220;DSO response messages&#8221;.  DSO request messages are further subdivided into two variants, &#8220;acknowledged request messages&#8221; (which generate a corresponding response message) and &#8220;unacknowledged request messages&#8221; (which do not generate any corresponding response message).</p>
 <p id="rfc.section.2.p.16">The content of DSO messages is expressed using type-length-value (TLV) syntax.</p>
-<p id="rfc.section.2.p.17">In a DSO request message the first TLV is referred to as the &#8220;Primary TLV&#8221; and determines the nature of the operation being performed, including whether it is an acknowledged or unacknowledged operation; any other TLVs in a DSO request message are referred to as &#8220;Additional TLVs&#8221; and serve as modifiers affecting the primary operation.</p>
-<p id="rfc.section.2.p.18">A DSO response message may contain no TLVs, or it may contain one or more TLVs as appropriate to the information being communicated.  In the context of DSO response messages, one or more TLVs with the same DSO-TYPE as the Primary TLV in the corresponding DSO request message are referred to as &#8220;Response TLVs&#8221;.  Any other TLVs with different DSO-TYPEs are referred to as &#8220;Extra TLVs&#8221;.  The Response TLV(s), if present, MUST occur first in the response message, before any Extra TLVs.</p>
+<p id="rfc.section.2.p.17">In a DSO request message the first TLV is referred to as the &#8220;Primary TLV&#8221; and determines the nature of the operation being performed, including whether it is an acknowledged or unacknowledged operation; any other TLVs in a DSO request message are referred to as &#8220;Additional TLVs&#8221; and serve additional non-primary purposes, which may be related to the primary purpose, or not, as in the case of the encryption padding TLV.</p>
+<p id="rfc.section.2.p.18">A DSO response message may contain no TLVs, or it may contain one or more TLVs as appropriate to the information being communicated.  In the context of DSO response messages, one or more TLVs with the same DSO-TYPE as the Primary TLV in the corresponding DSO request message are referred to as &#8220;Response Primary TLVs&#8221;.  Any other TLVs with different DSO-TYPEs are referred to as &#8220;Response Additional TLVs&#8221;.  The Response Primary TLV(s), if present, MUST occur first in the response message, before any Response Additional TLVs.</p>
 <p id="rfc.section.2.p.19">Two timers (elapsed time since an event) are defined in this document:</p>
 <p></p>
 
@@ -805,9 +805,9 @@
 <p id="rfc.section.4.2.2.p.2">A DSO message may be either a request message or a response message, as indicated by the QR bit in the DNS message header.  DSO request messages are further subdivided into two variants, acknowledged request messages (which generate a corresponding response message) and unacknowledged request messages (which do not generate any corresponding response message).</p>
 <p id="rfc.section.4.2.2.p.3">A DSO request message MUST contain at least one TLV.  The first TLV in a DSO request message is referred to as the &#8220;Primary TLV&#8221; and determines the nature of the operation being performed, including whether it is an acknowledged or unacknowledged operation.  In some cases it may be appropriate to include other TLVs in a request message, such as the Encryption Padding TLV (<a href="#padding" class="xref">Section 7.3</a>), and these extra TLVs are referred to as the &#8220;Additional TLVs&#8221;.</p>
 <p id="rfc.section.4.2.2.p.4">A DSO response message may contain no TLVs, or it may be specified to contain one or more TLVs appropriate to the information being communicated.</p>
-<p id="rfc.section.4.2.2.p.5">A DSO response message may contain one or more TLVs with DSO-TYPE the same as the Primary TLV from the corresponding DSO request message, in which case those TLV(s) are referred to as &#8220;Response TLVs&#8221;.  A DSO response message is not required to carry Response TLVs.  The MESSAGE ID field in the DNS message header is sufficient to identify to which DSO request message this response message relates.</p>
-<p id="rfc.section.4.2.2.p.6">A DSO response message may contain one or more TLVs with DSO-TYPEs different from the Primary TLV from the corresponding DSO request message, in which case those TLV(s) are referred to as &#8220;Extra TLVs&#8221;.</p>
-<p id="rfc.section.4.2.2.p.7">Response TLV(s), if present, MUST occur first in the response message, before any Extra TLVs.</p>
+<p id="rfc.section.4.2.2.p.5">A DSO response message may contain one or more TLVs with DSO-TYPE the same as the Primary TLV from the corresponding DSO request message, in which case those TLV(s) are referred to as &#8220;Response Primary TLVs&#8221;.  A DSO response message is not required to carry Response Primary TLVs.  The MESSAGE ID field in the DNS message header is sufficient to identify to which DSO request message this response message relates.</p>
+<p id="rfc.section.4.2.2.p.6">A DSO response message may contain one or more TLVs with DSO-TYPEs different from the Primary TLV from the corresponding DSO request message, in which case those TLV(s) are referred to as &#8220;Response Additional TLVs&#8221;.</p>
+<p id="rfc.section.4.2.2.p.7">Response Primary TLV(s), if present, MUST occur first in the response message, before any Response Additional TLVs.</p>
 <p id="rfc.section.4.2.2.p.8">It is anticipated that by default most DSO request messages will be specified to be acknowledged request messages, which generate corresponding responses.  In some specialized high-traffic use cases, it may be appropriate to specify unacknowledged request messages.  Unacknowledged request messages can be more efficient on the network, because they don&#8217;t generate a stream of corresponding reply messages.  Using unacknowledged request messages can also simplify software in some cases, by removing need for an initiator to maintain state while it waits to receive replies it doesn&#8217;t care about.  When the specification for a particular TLV states that, when used as a Primary TLV (i.e., first) in a request message, that request message is to be unacknowledged, the MESSAGE ID field MUST be set to zero and the receiver MUST NOT generate any response message corresponding to this unacknowledged request message.</p>
 <p id="rfc.section.4.2.2.p.9">The previous point, that the receiver MUST NOT generate responses to unacknowledged request messages, applies even in the case of errors.  When a DSO request message is received with the MESSAGE ID field set to zero, the receiver MUST NOT generate any response.  For example, if the DSO-TYPE in the Primary TLV is unrecognized, then a DSNOTIMP error MUST NOT be returned; instead the receiver MUST forcibly abort the connection immediately.</p>
 <p id="rfc.section.4.2.2.p.10">Unacknowledged request messages MUST NOT be used &#8220;speculatively&#8221; in cases where the sender doesn&#8217;t know if the receiver supports the Primary TLV in the message, because there is no way to receive any response to indicate success or failure of the request message (the request message does not contain a unique MESSAGE ID with which to associate a response with its corresponding request).  Unacknowledged request messages are only appropriate in cases where the sender already knows that the receiver supports and wishes to receive these messages.</p>
@@ -1043,7 +1043,7 @@
 <h1 id="rfc.section.7.1">
 <a href="#rfc.section.7.1">7.1.</a> <a href="#delay" id="delay">Retry Delay TLV</a>
 </h1>
-<p id="rfc.section.7.1.p.1">The Retry Delay TLV (DSO-TYPE=0) can be used as a Primary TLV (unacknowledged) in a server-to-client message, or as an Extra TLV in a server-to-client response to a client-to-server request message.</p>
+<p id="rfc.section.7.1.p.1">The Retry Delay TLV (DSO-TYPE=0) can be used as a Primary TLV (unacknowledged) in a server-to-client message, or as an Response Additional TLV in a server-to-client response to a client-to-server request message.</p>
 <p id="rfc.section.7.1.p.2">The TYPE-DEPENDENT DATA for the the Retry Delay TLV is as follows:</p>
 <pre>
                         1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
@@ -1074,7 +1074,7 @@
 <p id="rfc.section.7.1.1.p.4">This document specifies only these three RCODE values for Retry Delay request.  Servers sending Retry Delay requests SHOULD use one of these three values.  However, future circumstances may create situations where other RCODE values are appropriate in Retry Delay requests, so clients MUST be prepared to accept Retry Delay requests with any RCODE value.</p>
 <p id="rfc.section.7.1.1.p.5">A Retry Delay request is an unacknowledged request message; the MESSAGE ID MUST be set to zero in the request and the client MUST NOT send a response.</p>
 <h1 id="rfc.section.7.1.2">
-<a href="#rfc.section.7.1.2">7.1.2.</a> <a href="#retry-delay-tlv-used-as-an-extra-tlv" id="retry-delay-tlv-used-as-an-extra-tlv">Retry Delay TLV used as an Extra TLV</a>
+<a href="#rfc.section.7.1.2">7.1.2.</a> <a href="#retry-delay-tlv-used-as-an-response-additional-tlv" id="retry-delay-tlv-used-as-an-response-additional-tlv">Retry Delay TLV used as an Response Additional TLV</a>
 </h1>
 <p id="rfc.section.7.1.2.p.1">In the case of a client request that returns a nonzero RCODE value, the server MAY append a Retry Delay TLV (0) to the response, indicating the time interval during which the client SHOULD NOT attempt this operation again.</p>
 <p id="rfc.section.7.1.2.p.2">The indicated time interval during which the client SHOULD NOT retry applies only to the failed operation, not to the DSO Session as a whole.</p>
@@ -1092,7 +1092,7 @@
 <p id="rfc.section.7.2.p.4">When sent by a client, the Keepalive request message MUST be sent as an acknowledged request, with a nonzero MESSAGE ID.  It resets a DSO Session&#8217;s keepalive timer, and at the same time requests what the Session Timeout values should be from this point forward in the DSO Session.  If a server receives a Keepalive request message with a zero MESSAGE ID then this is a fatal error and the server MUST forcibly abort the connection immediately.</p>
 <p id="rfc.section.7.2.p.5">Once a DSO Session is in progress (see <a href="#details" class="xref">Section 4</a>) the Keepalive TLV also MAY be initiated by a server.  When sent by a server, the Keepalive request message MUST be sent as an unacknowledged request, with the MESSAGE ID set to zero.  It resets a DSO Session&#8217;s keepalive timer, and unilaterally informs the client of the new Session Timeout values to use from this point forward in this DSO Session.  No client response to this unilateral declaration is required or allowed.  If a client receives a Keepalive request message with a nonzero MESSAGE ID then this is a fatal error and the client MUST forcibly abort the connection immediately.</p>
 <p id="rfc.section.7.2.p.6">The Keepalive TLV is not used as an Additional TLV.</p>
-<p id="rfc.section.7.2.p.7">The Keepalive TLV is only used as a Response TLV in response messages replying to a Keepalive request message from the client.  A Keepalive TLV MUST NOT be added as to other responses an Extra TLV.  If the server wishes to update a client&#8217;s Session Timeout values other than in response to a Keepalive request message from the client, then it does so by sending an unacknowledged Keepalive request message of its own, as described above.</p>
+<p id="rfc.section.7.2.p.7">The Keepalive TLV is only used as a Response TLV in response messages replying to a Keepalive request message from the client.  A Keepalive TLV MUST NOT be added as to other responses a Response Additional TLV.  If the server wishes to update a client&#8217;s Session Timeout values other than in response to a Keepalive request message from the client, then it does so by sending an unacknowledged Keepalive request message of its own, as described above.</p>
 <p id="rfc.section.7.2.p.8">It is not required that the Keepalive TLV be used in every DSO Session.  While many DNS Stateful operations will be used in conjunction with a long-lived session state, not all DNS Stateful operations require long-lived session state, and in some cases the default 15-second value for both the inactivity timeout and keepalive interval may be perfectly appropriate.  However, note that for clients that implement only the TLVs defined in this document it is the only way for a client to initiate a DSO Session.</p>
 <p id="rfc.section.7.2.p.9">The TYPE-DEPENDENT DATA for the the Keepalive TLV is as follows:</p>
 <pre>
@@ -1136,7 +1136,7 @@
 <h1 id="rfc.section.7.3">
 <a href="#rfc.section.7.3">7.3.</a> <a href="#padding" id="padding">Encryption Padding TLV</a>
 </h1>
-<p id="rfc.section.7.3.p.1">The Encryption Padding TLV (DSO-TYPE=2) can only be used as an Additional or Extra TLV.  It is only applicable when the DSO Transport layer uses encryption such as TLS.</p>
+<p id="rfc.section.7.3.p.1">The Encryption Padding TLV (DSO-TYPE=2) can only be used as an Additional or Response Additional TLV.  It is only applicable when the DSO Transport layer uses encryption such as TLS.</p>
 <p id="rfc.section.7.3.p.2">The TYPE-DEPENDENT DATA for the the Padding TLV is optional and is a variable length field containing non-specified values. A DATA LENGTH of 0 essentially provides for 4 octets of padding (the minimum amount).</p>
 <pre>
                                              1   1   1   1   1   1
@@ -1182,13 +1182,13 @@
 <li>C-P - Primary TLV, sent in DSO Request message, from client to server, with nonzero MESSAGE ID indicating that this request MUST generate response message.</li>
 <li>C-U - Primary TLV (unacknowledged), sent in DSO Request message, from client to server, with zero MESSAGE ID indicating that this request MUST NOT generate response message.</li>
 <li>C-A - Additional TLV, optionally added to request message from client to server.</li>
-<li>C-R - Response TLV, included in response message sent to back the client (in response to a client &#8220;C-P&#8221; request with nonzero MESSAGE ID indicating that a response is required) where the DSO-TYPE of the Response TLV matches the DSO-TYPE of the Primary TLV in the request.</li>
-<li>C-E - Extra TLV, included in response message sent to back the client (in response to a client &#8220;C-P&#8221; request with nonzero MESSAGE ID indicating that a response is required) where the DSO-TYPE of the Response TLV does not match the DSO-TYPE of the Primary TLV in the request.</li>
+<li>CRP - Response Primary TLV, included in response message sent to back the client (in response to a client &#8220;C-P&#8221; request with nonzero MESSAGE ID indicating that a response is required) where the DSO-TYPE of the Response TLV matches the DSO-TYPE of the Primary TLV in the request.</li>
+<li>CRA - Response Additional TLV, included in response message sent to back the client (in response to a client &#8220;C-P&#8221; request with nonzero MESSAGE ID indicating that a response is required) where the DSO-TYPE of the Response TLV does not match the DSO-TYPE of the Primary TLV in the request.</li>
 </ul>
 <p id="rfc.section.8.2.p.4">The second five contexts are the reverse: requests from server to client, and the corresponding responses from client back to server.</p>
 <pre>
               +-------------------------+-------------------------+
-              | C-P  C-U  C-A  C-R  C-E | S-P  S-U  S-A  S-R  S-E |
+              | C-P  C-U  C-A  CRP  CRA | S-P  S-U  S-A  SRP  SRA |
  +------------+-------------------------+-------------------------+
  | RetryDelay |                      X  |       X                 |
  +------------+-------------------------+-------------------------+
