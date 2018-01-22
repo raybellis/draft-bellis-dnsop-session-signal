@@ -200,6 +200,10 @@ The underlying connection can be closed in two ways.
 Where this specification says, "close gracefully,"
 that means sending a TLS close_notify followed by a TCP FIN,
 or the equivalents for other protocols.
+Where this specification requires a connection to be closed gracefully,
+the requirement to initiate that graceful close is placed on the client.
+This is to place the burden of TCP's TIME-WAIT state on the client
+rather than the server.
 
 Where this specification says, "forcibly abort,"
 that means sending a TCP RST,
@@ -1219,8 +1223,7 @@ the server MUST NOT send any further messages on that DSO Session.
 
 Upon receipt of a Retry Delay request from the server, the client MUST
 make note of the reconnect delay for this server, and then immediately
-close the connection.
-This is to place the burden of TCP's TIME-WAIT state on the client.
+close the connection gracefully.
 
 After sending a Retry Delay request message the server SHOULD allow the
 client five seconds to close the connection, and if the client has not

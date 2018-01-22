@@ -258,7 +258,10 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
    Where this specification says, "close gracefully," that means sending
    a TLS close_notify followed by a TCP FIN, or the equivalents for
-   other protocols.
+   other protocols.  Where this specification requires a connection to
+   be closed gracefully, the requirement to initiate that graceful close
+   is placed on the client.  This is to place the burden of TCP's TIME-
+   WAIT state on the client rather than the server.
 
    Where this specification says, "forcibly abort," that means sending a
    TCP RST, or the equivalent for other protocols.  In the BSD Sockets
@@ -271,9 +274,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
    The term "client" means the software which initiates a connection to
    the server's listening socket.
 
-   The terms "initiator" and "responder" correspond respectively to the
-   initial sender and subsequent receiver of a DSO request message,
-
 
 
 
@@ -282,6 +282,8 @@ Bellis, et al.            Expires June 3, 2018                  [Page 5]
 Internet-Draft           DNS Stateful Operations           November 2017
 
 
+   The terms "initiator" and "responder" correspond respectively to the
+   initial sender and subsequent receiver of a DSO request message,
    regardless of which was the "client" and "server" in the usual DNS
    sense.
 
@@ -326,9 +328,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
    o  a keepalive timer (see Section 7.2 and Section 5.5)
 
-   The timeouts associated with these timers are called the inactivity
-   timeout and the keepalive interval respectively.  The term "Session
-   Timeouts" is used to refer to this pair of timeout values.
+
 
 
 
@@ -337,6 +337,10 @@ Bellis, et al.            Expires June 3, 2018                  [Page 6]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
+
+   The timeouts associated with these timers are called the inactivity
+   timeout and the keepalive interval respectively.  The term "Session
+   Timeouts" is used to refer to this pair of timeout values.
 
    Resetting a timer means resetting the timer value to zero and
    starting the timer again.  Clearing a timer means resetting the timer
@@ -380,10 +384,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
    management and encryption padding.  Section 5 presents a detailed
    discussion of the DSO Session lifecycle including an in-depth
    discussion of keepalive traffic and session termination.
-
-
-
-
 
 
 
@@ -1699,8 +1699,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
    Upon receipt of a Retry Delay request from the server, the client
    MUST make note of the reconnect delay for this server, and then
-   immediately close the connection.  This is to place the burden of
-   TCP's TIME-WAIT state on the client.
+   immediately close the connection gracefully.
 
    After sending a Retry Delay request message the server SHOULD allow
    the client five seconds to close the connection, and if the client
@@ -1729,7 +1728,8 @@ Internet-Draft           DNS Stateful Operations           November 2017
    DSO Session have become invalid (perhaps because the server has been
    reconfigured and is no longer authoritative for some of the names),
    but the server is terminating all DSO Sessions en masse with a
-
+   REFUSED (5) RCODE, the RECONNECT DELAY MAY be zero, indicating that
+   the clients SHOULD immediately attempt to re-establish operations.
 
 
 
@@ -1737,9 +1737,6 @@ Bellis, et al.            Expires June 3, 2018                 [Page 31]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
-
-   REFUSED (5) RCODE, the RECONNECT DELAY MAY be zero, indicating that
-   the clients SHOULD immediately attempt to re-establish operations.
 
    It is likely that some of the attempts will be successful and some
    will not, depending on the nature of the reconfiguration.
@@ -1768,6 +1765,9 @@ Internet-Draft           DNS Stateful Operations           November 2017
    to the expected maintenance window and not default to a very large
    delay value or clients may not attempt to reconnect after it resumes
    service.
+
+
+
 
 
 
