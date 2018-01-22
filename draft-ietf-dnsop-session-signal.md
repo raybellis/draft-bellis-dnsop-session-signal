@@ -195,6 +195,17 @@ over the connection. This is distinct from a DNS-over-TCP session
 as described in RC7766.
 
 A "DSO Session" is terminated when the underlying connection is closed.
+The underlying connection can be closed in two ways.
+
+Where this specification says, "close gracefully,"
+that means sending a TLS close_notify followed by a TCP FIN,
+or the equivalents for other protocols.
+
+Where this specification says, "forcibly abort,"
+that means sending a TCP RST,
+or the equivalent for other protocols.
+In the BSD Sockets API this is achieved by setting the
+SO_LINGER option to zero before closing the socket.
 
 The term "server" means the software with a listening socket, awaiting
 incoming connection requests.
@@ -249,8 +260,6 @@ The term "Session Timeouts" is used to refer to this pair of timeout values.
 
 Resetting a timer means resetting the timer value to zero and starting the timer again.
 Clearing a timer means resetting the timer value to zero but NOT starting the timer again.
-
-***
 
 # Discussion
 
@@ -459,8 +468,7 @@ In a response message (QR=1) the MESSAGE ID field MUST contain a copy of the val
 the MESSAGE ID field in the acknowledged request message being responded to.
 In a response message (QR=1) the MESSAGE ID field MUST NOT be zero.
 If a response message (QR=1) is received where the MESSAGE ID is zero
-this is a fatal error and the receiver MUST immediately terminate
-the connection with a TCP RST (or equivalent for other protocols).
+this is a fatal error and the receiver MUST forcibly abort the connection immediately.
 
 The DNS Header OPCODE field holds the DSO OPCODE value (tentatively 6).
 
@@ -561,8 +569,7 @@ When a DSO request message is received with the MESSAGE ID field
 set to zero, the receiver MUST NOT generate any response.
 For example, if the DSO-TYPE in the Primary TLV is unrecognized,
 then a DSNOTIMP error MUST NOT be returned; instead the receiver
-MUST immediately terminate
-the connection with a TCP RST (or equivalent for other protocols).
+MUST forcibly abort the connection immediately.
 
 Unacknowledged request messages MUST NOT be used "speculatively"
 in cases where the sender doesn't know if the receiver supports
@@ -662,8 +669,8 @@ what TLVs are required in a response to a request using that TLV.
 If a DSO response is received for an operation where the specification
 requires that the response carry a particular TLV or TLVs,
 and the required TLV(s) are not present, then this is a fatal
-error and the recipient of the defective response message MUST immediately
-terminate the connection with a TCP RST (or equivalent for other protocols).
+error and the recipient of the defective response message MUST
+forcibly abort the connection immediately.
 
 ***
 
@@ -762,8 +769,7 @@ MUST NOT be reused whilst that state remains active.)
 
 If a client or server receives a response (QR=1) where the MESSAGE ID is zero,
 or any other value that does not match the MESSAGE ID of any of its outstanding operations,
-this is a fatal error and the recipient MUST immediately terminate
-the connection with a TCP RST (or equivalent for other protocols).
+this is a fatal error and the recipient MUST forcibly abort the connection immediately.
 
 ***
 
@@ -954,21 +960,14 @@ future need for an inactive DSO Session, then the client SHOULD close that conne
 If, at any time during the life of the DSO Session,
 the inactivity timeout value (i.e., 15 seconds by default) elapses
 without there being any operation active on the DSO Session,
-the client MUST gracefully close the connection with a
-TLS close_notify followed by a TCP FIN (or equivalent for other protocols).
+the client MUST close the connection gracefully.
 
 If, at any time during the life of the DSO Session,
 twice the inactivity timeout value (i.e., 30 seconds by default),
 or five seconds, if twice the inactivity timeout value is less than five seconds,
 elapses without there being any operation active on the DSO Session,
 the server SHOULD consider the client delinquent,
-and forcibly abort the DSO Session.
-For DSO Sessions over TCP (or over TLS over TCP),
-to avoid the burden of having a connection in TIME-WAIT state,
-instead of closing the connection gracefully the server SHOULD abort
-the connection with a TCP RST (or equivalent for other protocols).
-(In the BSD Sockets API this is achieved by setting the
-SO_LINGER option to zero before closing the socket.)
+and SHOULD forcibly abort the DSO Session.
 
 In this context, an operation being active on a DSO Session includes
 a query waiting for a response, an update waiting for a response,
@@ -1059,8 +1058,7 @@ If, at any time during the life of the DSO Session,
 twice the keepalive interval value (i.e., 30 seconds by default) elapses
 without any DNS messages being sent or received on a DSO Session,
 the server SHOULD consider the client delinquent,
-and forcibly abort the connection with a TCP RST (or equivalent for other 
-protocols).
+and SHOULD forcibly abort the DSO Session.
 
 ### Values for the Keepalive Interval
 
@@ -1108,8 +1106,8 @@ Because of this concern, the server MUST NOT send a Keepalive message
 (either a response to a client-initiated request, or a server-initiated message)
 with an keepalive interval value less than ten seconds.
 If a client receives an Keepalive message specifying an keepalive interval value
-less than ten seconds this is an error and the client MUST immediately
-terminate the connection with a TCP RST (or equivalent for other protocols).
+less than ten seconds this is an error and the client MUST
+forcibly abort the connection immediately.
 
 A keepalive interval value of 0xFFFFFFFF (2^32-1 milliseconds, approximately 49.7 days)
 informs the client that it should generate no keepalive traffic.
@@ -1133,7 +1131,7 @@ which operations need to be cancelled.
 This section discusses various reasons a session may be terminated,
 and the mechanisms for doing so.
 
-### Server-Initiated Session Termination on Error
+### Server-Initiated Session Termination on Error {#error}
 
 After sending an error response to a client, the server MAY end the DSO Session,
 or may allow the DSO Session to remain open. For error conditions
@@ -1143,8 +1141,6 @@ For error conditions that are likely to make all operations unsuccessful in the
 immediate future, the server SHOULD return an error response to the client and 
 then end the DSO Session by sending a Retry Delay request message, as described in 
 {{retry}}.
-
-#### Client Behaviour upon Receiving an Error Response Code {#error}
 
 Upon receiving an error response from the server, a client SHOULD NOT
 automatically close the DSO Session. An error relating to one particular operation
@@ -1207,8 +1203,8 @@ before the server resorts to forcibly aborting the connection.
 ### Retry Delay Request Message {#retry}
 
 There may be rare cases where a server is overloaded and wishes to shed load.
-If a server is low on resources it MAY simply terminate a client connection with 
-a TCP RST (or equivalent for other protocols).
+If a server is low on resources it MAY simply terminate a client connection
+by forcibly aborting it.
 However, the likely behavior of the client may be simply to to treat this as a
 network failure and reconnect
 immediately, putting more burden on the server.
@@ -1227,13 +1223,12 @@ This is to place the burden of TCP's TIME-WAIT state on the client.
 
 After sending a Retry Delay request message the server SHOULD allow the
 client five seconds to close the connection, and if the client has not
-closed the connection after five seconds then the server SHOULD abort
-the connection with a TCP RST (or equivalent for other protocols).
+closed the connection after five seconds then the server SHOULD
+forcibly abort the connection.
 
 A Retry Delay request message MUST NOT be initiated by a client.
 If a server receives a Retry Delay request message this is an error
-and the server MUST immediately terminate the connection with a TCP RST
-(or equivalent for other protocols).
+and the server MUST forcibly abort the connection immediately.
 
 #### Outstanding Operations
 
@@ -1390,8 +1385,7 @@ applies only to the failed operation, not to the DSO Session as a whole.
 A client MUST NOT send a Retry Delay TLV to a server,
 either in a DSO request message, or in a DSO response message.
 If a server receives a DSO message containing a Retry Delay TLV,
-this is a fatal error and the server MUST immediately terminate
-the connection with a TCP RST (or equivalent for other protocols).
+this is a fatal error and the server MUST forcibly abort the connection immediately.
 
 ***
 
@@ -1421,8 +1415,7 @@ be sent as an acknowledged request, with a nonzero MESSAGE ID.
 It resets a DSO Session's keepalive timer, and at the same time requests what the
 Session Timeout values should be from this point forward in the DSO Session.
 If a server receives a Keepalive request message with a zero MESSAGE ID
-then this is a fatal error and the server MUST immediately terminate
-the connection with a TCP RST (or equivalent for other protocols).
+then this is a fatal error and the server MUST forcibly abort the connection immediately.
 
 Once a DSO Session is in progress (see {{details}}) the Keepalive TLV also MAY be initiated by a server.
 When sent by a server, the Keepalive request message MUST
@@ -1431,8 +1424,7 @@ It resets a DSO Session's keepalive timer, and unilaterally informs the client o
 the new Session Timeout values to use from this point forward in this DSO Session.
 No client response to this unilateral declaration is required or allowed.
 If a client receives a Keepalive request message with a nonzero MESSAGE ID
-then this is a fatal error and the client MUST immediately terminate
-the connection with a TCP RST (or equivalent for other protocols).
+then this is a fatal error and the client MUST forcibly abort the connection immediately.
 
 The Keepalive TLV is not used as an Additional TLV.
 
@@ -1470,8 +1462,7 @@ This is the timeout at which the client MUST begin closing an inactive DSO Sessi
 The inactivity timeout can be any value of the server's choosing.
 If the client does not gracefully close an inactive DSO
 Session, then after twice this interval, or five seconds,
-whichever is greater, the server will forcibly terminate the
-connection with a TCP RST (or equivalent for other protocols).
+whichever is greater, the server will forcibly abort the connection.
 
 KEEPALIVE INTERVAL:
 : the keepalive interval for the current DSO Session, specified as
@@ -1480,8 +1471,7 @@ This is the interval at which a client MUST generate keepalive
 traffic to maintain connection state.
 The keepalive interval MUST NOT be less than ten seconds.
 If the client does not generate the mandated keepalive traffic,
-then after twice this interval the server will forcibly terminate
-the connection with a TCP RST (or equivalent for other protocols).
+then after twice this interval the server will forcibly abort the connection.
 Since the minimum allowed keepalive interval is ten seconds, the
 minimum time at which a server will forcibly disconnect a client for
 failing to generate the mandated keepalive traffic is twenty seconds.
@@ -1549,7 +1539,7 @@ new inactivity timeout, then the client is immediately considered delinquent
 and the client MUST immediately begin closing this DSO Session.
 However if a server abruptly reduces the inactivity timeout in this
 way, then, to give the client time to close the connection gracefully
-before the server resorts to terminating it forcibly, the server
+before the server resorts to forcibly aborting it, the server
 SHOULD give the client an additional grace period of one quarter
 of the new inactivity timeout, or five seconds, whichever is greater.
 
@@ -1563,8 +1553,7 @@ Session has been established.
 Once a DSO Session has been established, if either
 client or server receives a DNS message over the DSO Session that contains an
 EDNS(0) TCP Keepalive option, this is an error and the receiver of the
-EDNS(0) TCP Keepalive option MUST immediately
-terminate the connection with a TCP RST (or equivalent for other protocols).
+EDNS(0) TCP Keepalive option MUST forcibly abort the connection immediately.
 
 ***
 
