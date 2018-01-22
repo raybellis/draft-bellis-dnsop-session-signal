@@ -378,6 +378,30 @@ clients and servers should behave as described in this specification with
 regard to inactivity timeouts and connection close, not as prescribed in
 the previous specification for DNS over TCP {{!RFC7766}}.
 
+### Zero Round-Trip Operation
+
+There is increased awareness today of the performance benefits
+of eliminating round trips in session establishment.
+Technologies like TCP Fast Open {{?RFC7413}}
+and TLS 1.3 {{?I-D.ietf-tls-tls13}}
+provide mechanisms to reduce or eliminate
+round trips in session establishment.
+
+Similarly, DSO supports zero round-trip operation.
+
+Having initiated a connection to a server, possibly using
+zero round-trip TCP Fast Open and/or
+zero round-trip TLS 1.3, a client MAY send multiple
+response-requiring DSO request messages to the server in succession
+without having to wait for a response to the first request message
+to confirm successful establishment of a DSO session.
+
+However, a client MUST NOT send non-response-requiring DSO request
+messages until after a DSO Session has been mutually established.
+Similarly, a server MUST NOT send DSO request messages until it
+has received a response-requiring DSO request message from a
+client and transmitted a sucessful NOERROR response for that request.
+
 ***
 
 ### Middlebox Considerations

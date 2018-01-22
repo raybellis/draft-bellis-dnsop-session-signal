@@ -75,7 +75,8 @@ Table of Contents
    3.  Discussion  . . . . . . . . . . . . . . . . . . . . . . . . .   7
    4.  Protocol Details  . . . . . . . . . . . . . . . . . . . . . .   8
      4.1.  DSO Session Establishment . . . . . . . . . . . . . . . .   8
-       4.1.1.  Middlebox Considerations  . . . . . . . . . . . . . .  10
+       4.1.1.  Zero Round-Trip Operation . . . . . . . . . . . . . .   9
+       4.1.2.  Middlebox Considerations  . . . . . . . . . . . . . .  10
      4.2.  Message Format  . . . . . . . . . . . . . . . . . . . . .  11
        4.2.1.  Header  . . . . . . . . . . . . . . . . . . . . . . .  12
        4.2.2.  DSO Data  . . . . . . . . . . . . . . . . . . . . . .  14
@@ -105,7 +106,6 @@ Table of Contents
        7.1.3.  Retry Delay TLV is used by server only  . . . . . . .  35
      7.2.  Keepalive TLV . . . . . . . . . . . . . . . . . . . . . .  36
        7.2.1.  Client handling of received Session Timeout values  .  38
-       7.2.2.  Relation to EDNS(0) TCP Keepalive Option  . . . . . .  39
 
 
 
@@ -114,6 +114,7 @@ Bellis, et al.            Expires June 3, 2018                  [Page 2]
 Internet-Draft           DNS Stateful Operations           November 2017
 
 
+       7.2.2.  Relation to EDNS(0) TCP Keepalive Option  . . . . . .  39
      7.3.  Encryption Padding TLV  . . . . . . . . . . . . . . . . .  40
    8.  Summary . . . . . . . . . . . . . . . . . . . . . . . . . . .  41
      8.1.  MESSAGE ID  . . . . . . . . . . . . . . . . . . . . . . .  41
@@ -161,7 +162,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
    All three of the TLVs defined here are mandatory for all
    implementations of DSO.  Further TLVs may be defined in additional
    specifications.
-
 
 
 
@@ -477,27 +477,27 @@ Internet-Draft           DNS Stateful Operations           November 2017
    timeouts and connection close, not as prescribed in the previous
    specification for DNS over TCP [RFC7766].
 
+4.1.1.  Zero Round-Trip Operation
 
+   There is increased awareness today of the performance benefits of
+   eliminating round trips in session establishment.  Technologies like
+   TCP Fast Open [RFC7413] and TLS 1.3 [I-D.ietf-tls-tls13] provide
+   mechanisms to reduce or eliminate round trips in session
+   establishment.
 
+   Similarly, DSO supports zero round-trip operation.
 
+   Having initiated a connection to a server, possibly using zero round-
+   trip TCP Fast Open and/or zero round-trip TLS 1.3, a client MAY send
+   multiple response-requiring DSO request messages to the server in
+   succession without having to wait for a response to the first request
+   message to confirm successful establishment of a DSO session.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+   However, a client MUST NOT send non-response-requiring DSO request
+   messages until after a DSO Session has been mutually established.
+   Similarly, a server MUST NOT send DSO request messages until it has
+   received a response-requiring DSO request message from a client and
+   transmitted a sucessful NOERROR response for that request.
 
 
 
@@ -506,7 +506,7 @@ Bellis, et al.            Expires June 3, 2018                  [Page 9]
 Internet-Draft           DNS Stateful Operations           November 2017
 
 
-4.1.1.  Middlebox Considerations
+4.1.2.  Middlebox Considerations
 
    Where an application-layer middlebox (e.g., a DNS proxy, forwarder,
    or session multiplexer) is in the path the middlebox MUST NOT blindly
@@ -2658,6 +2658,11 @@ Internet-Draft           DNS Stateful Operations           November 2017
               Mayrhofer, A., "Padding Policy for EDNS(0)", draft-ietf-
               dprive-padding-policy-03 (work in progress), January 2018.
 
+   [I-D.ietf-tls-tls13]
+              Rescorla, E., "The Transport Layer Security (TLS) Protocol
+              Version 1.3", draft-ietf-tls-tls13-23 (work in progress),
+              January 2018.
+
    [I-D.sctl-dnssd-mdns-relay]
               Cheshire, S. and T. Lemon, "Multicast DNS Discovery
               Relay", draft-sctl-dnssd-mdns-relay-02 (work in progress),
@@ -2677,11 +2682,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
               DOI 10.17487/RFC1122, October 1989,
               <https://www.rfc-editor.org/info/rfc1122>.
 
-   [RFC6763]  Cheshire, S. and M. Krochmal, "DNS-Based Service
-              Discovery", RFC 6763, DOI 10.17487/RFC6763, February 2013,
-              <https://www.rfc-editor.org/info/rfc6763>.
-
-
 
 
 
@@ -2689,6 +2689,14 @@ Bellis, et al.            Expires June 3, 2018                 [Page 48]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
+
+   [RFC6763]  Cheshire, S. and M. Krochmal, "DNS-Based Service
+              Discovery", RFC 6763, DOI 10.17487/RFC6763, February 2013,
+              <https://www.rfc-editor.org/info/rfc6763>.
+
+   [RFC7413]  Cheng, Y., Chu, J., Radhakrishnan, S., and A. Jain, "TCP
+              Fast Open", RFC 7413, DOI 10.17487/RFC7413, December 2014,
+              <https://www.rfc-editor.org/info/rfc7413>.
 
    [RFC7858]  Hu, Z., Zhu, L., Heidemann, J., Mankin, A., Wessels, D.,
               and P. Hoffman, "Specification for DNS over Transport
@@ -2727,14 +2735,6 @@ Authors' Addresses
    Email: jad@sinodun.com
 
 
-   Sara Dickinson
-   Sinodun Internet Technologies
-   Magadalen Centre
-   Oxford Science Park
-   Oxford  OX4 4GA
-   United Kingdom
-
-   Email: sara@sinodun.com
 
 
 
@@ -2744,6 +2744,16 @@ Authors' Addresses
 Bellis, et al.            Expires June 3, 2018                 [Page 49]
 
 Internet-Draft           DNS Stateful Operations           November 2017
+
+
+   Sara Dickinson
+   Sinodun Internet Technologies
+   Magadalen Centre
+   Oxford Science Park
+   Oxford  OX4 4GA
+   United Kingdom
+
+   Email: sara@sinodun.com
 
 
    Allison Mankin
@@ -2759,16 +2769,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
    Phone: +1 919 867 1330
    Email: pusateri@bangj.com
-
-
-
-
-
-
-
-
-
-
 
 
 

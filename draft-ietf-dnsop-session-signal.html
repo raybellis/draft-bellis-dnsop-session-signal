@@ -379,7 +379,8 @@
 <link href="#rfc.section.3" rel="Chapter" title="3 Discussion">
 <link href="#rfc.section.4" rel="Chapter" title="4 Protocol Details">
 <link href="#rfc.section.4.1" rel="Chapter" title="4.1 DSO Session Establishment">
-<link href="#rfc.section.4.1.1" rel="Chapter" title="4.1.1 Middlebox Considerations">
+<link href="#rfc.section.4.1.1" rel="Chapter" title="4.1.1 Zero Round-Trip Operation">
+<link href="#rfc.section.4.1.2" rel="Chapter" title="4.1.2 Middlebox Considerations">
 <link href="#rfc.section.4.2" rel="Chapter" title="4.2 Message Format">
 <link href="#rfc.section.4.2.1" rel="Chapter" title="4.2.1 Header">
 <link href="#rfc.section.4.2.2" rel="Chapter" title="4.2.2 DSO Data">
@@ -526,7 +527,9 @@
 </li>
 <ul><li>4.1.   <a href="#rfc.section.4.1">DSO Session Establishment</a>
 </li>
-<ul><li>4.1.1.   <a href="#rfc.section.4.1.1">Middlebox Considerations</a>
+<ul><li>4.1.1.   <a href="#rfc.section.4.1.1">Zero Round-Trip Operation</a>
+</li>
+<li>4.1.2.   <a href="#rfc.section.4.1.2">Middlebox Considerations</a>
 </li>
 </ul><li>4.2.   <a href="#rfc.section.4.2">Message Format</a>
 </li>
@@ -699,12 +702,19 @@
 <p id="rfc.section.4.1.p.10">When the client receives the server&#8217;s NOERROR response to its DSO request message, the client considers the DSO Session established.</p>
 <p id="rfc.section.4.1.p.11">Once a DSO Session has been established, either end may unilaterally send DSO messages at any time, and therefore either client or server may be the initiator of a message.</p>
 <p id="rfc.section.4.1.p.12">Once a DSO Session has been established, clients and servers should behave as described in this specification with regard to inactivity timeouts and connection close, not as prescribed in the previous specification for DNS over TCP <a href="#RFC7766" class="xref">[RFC7766]</a>.</p>
-<p></p>
 <h1 id="rfc.section.4.1.1">
-<a href="#rfc.section.4.1.1">4.1.1.</a> <a href="#middlebox-considerations" id="middlebox-considerations">Middlebox Considerations</a>
+<a href="#rfc.section.4.1.1">4.1.1.</a> <a href="#zero-round-trip-operation" id="zero-round-trip-operation">Zero Round-Trip Operation</a>
 </h1>
-<p id="rfc.section.4.1.1.p.1">Where an application-layer middlebox (e.g., a DNS proxy, forwarder, or session multiplexer) is in the path the middlebox MUST NOT blindly forward DSO messages in either direction, and MUST treat the inbound and outbound connections as separate sessions.  This does not preclude the use of DSO messages in the presence of an IP-layer middlebox, such as a NAT that rewrites IP-layer and/or transport-layer headers but otherwise preserves the effect of a single session between the client and the server.</p>
-<p id="rfc.section.4.1.1.p.2">To illustrate the above, consider a network where a middlebox terminates one or more TCP connections from clients and multiplexes the queries therein over a single TCP connection to an upstream server.  The DSO messages and any associated state are specific to the individual TCP connections.  A DSO-aware middlebox MAY in some circumstances be able to retain associated state and pass it between the client and server (or vice versa) but this would be highly TLV-specific.  For example, the middlebox may be able to maintain a list of which clients have made Push Notification subscriptions <a href="#I-D.ietf-dnssd-push" class="xref">[I-D.ietf-dnssd-push]</a> and make its own subscription(s) on their behalf, relaying any subsequent notifications to the client (or clients) that have subscribed to that particular notification.</p>
+<p id="rfc.section.4.1.1.p.1">There is increased awareness today of the performance benefits of eliminating round trips in session establishment.  Technologies like TCP Fast Open <a href="#RFC7413" class="xref">[RFC7413]</a> and TLS 1.3 <a href="#I-D.ietf-tls-tls13" class="xref">[I-D.ietf-tls-tls13]</a> provide mechanisms to reduce or eliminate round trips in session establishment.</p>
+<p id="rfc.section.4.1.1.p.2">Similarly, DSO supports zero round-trip operation.</p>
+<p id="rfc.section.4.1.1.p.3">Having initiated a connection to a server, possibly using zero round-trip TCP Fast Open and/or zero round-trip TLS 1.3, a client MAY send multiple response-requiring DSO request messages to the server in succession without having to wait for a response to the first request message to confirm successful establishment of a DSO session.</p>
+<p id="rfc.section.4.1.1.p.4">However, a client MUST NOT send non-response-requiring DSO request messages until after a DSO Session has been mutually established.  Similarly, a server MUST NOT send DSO request messages until it has received a response-requiring DSO request message from a client and transmitted a sucessful NOERROR response for that request.</p>
+<p></p>
+<h1 id="rfc.section.4.1.2">
+<a href="#rfc.section.4.1.2">4.1.2.</a> <a href="#middlebox-considerations" id="middlebox-considerations">Middlebox Considerations</a>
+</h1>
+<p id="rfc.section.4.1.2.p.1">Where an application-layer middlebox (e.g., a DNS proxy, forwarder, or session multiplexer) is in the path the middlebox MUST NOT blindly forward DSO messages in either direction, and MUST treat the inbound and outbound connections as separate sessions.  This does not preclude the use of DSO messages in the presence of an IP-layer middlebox, such as a NAT that rewrites IP-layer and/or transport-layer headers but otherwise preserves the effect of a single session between the client and the server.</p>
+<p id="rfc.section.4.1.2.p.2">To illustrate the above, consider a network where a middlebox terminates one or more TCP connections from clients and multiplexes the queries therein over a single TCP connection to an upstream server.  The DSO messages and any associated state are specific to the individual TCP connections.  A DSO-aware middlebox MAY in some circumstances be able to retain associated state and pass it between the client and server (or vice versa) but this would be highly TLV-specific.  For example, the middlebox may be able to maintain a list of which clients have made Push Notification subscriptions <a href="#I-D.ietf-dnssd-push" class="xref">[I-D.ietf-dnssd-push]</a> and make its own subscription(s) on their behalf, relaying any subsequent notifications to the client (or clients) that have subscribed to that particular notification.</p>
 <p></p>
 <h1 id="rfc.section.4.2">
 <a href="#rfc.section.4.2">4.2.</a> <a href="#format" id="format">Message Format</a>
@@ -1375,6 +1385,11 @@
 <a>Mayrhofer, A.</a>, "<a href="https://tools.ietf.org/html/draft-ietf-dprive-padding-policy-03">Padding Policy for EDNS(0)</a>", Internet-Draft draft-ietf-dprive-padding-policy-03, January 2018.</td>
 </tr>
 <tr>
+<td class="reference"><b id="I-D.ietf-tls-tls13">[I-D.ietf-tls-tls13]</b></td>
+<td class="top">
+<a>Rescorla, E.</a>, "<a href="https://tools.ietf.org/html/draft-ietf-tls-tls13-23">The Transport Layer Security (TLS) Protocol Version 1.3</a>", Internet-Draft draft-ietf-tls-tls13-23, January 2018.</td>
+</tr>
+<tr>
 <td class="reference"><b id="I-D.sctl-dnssd-mdns-relay">[I-D.sctl-dnssd-mdns-relay]</b></td>
 <td class="top">
 <a>Cheshire, S.</a> and <a>T. Lemon</a>, "<a href="https://tools.ietf.org/html/draft-sctl-dnssd-mdns-relay-02">Multicast DNS Discovery Relay</a>", Internet-Draft draft-sctl-dnssd-mdns-relay-02, November 2017.</td>
@@ -1398,6 +1413,11 @@
 <td class="reference"><b id="RFC6763">[RFC6763]</b></td>
 <td class="top">
 <a>Cheshire, S.</a> and <a>M. Krochmal</a>, "<a href="https://tools.ietf.org/html/rfc6763">DNS-Based Service Discovery</a>", RFC 6763, DOI 10.17487/RFC6763, February 2013.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC7413">[RFC7413]</b></td>
+<td class="top">
+<a>Cheng, Y.</a>, <a>Chu, J.</a>, <a>Radhakrishnan, S.</a> and <a>A. Jain</a>, "<a href="https://tools.ietf.org/html/rfc7413">TCP Fast Open</a>", RFC 7413, DOI 10.17487/RFC7413, December 2014.</td>
 </tr>
 <tr>
 <td class="reference"><b id="RFC7858">[RFC7858]</b></td>
