@@ -820,6 +820,43 @@ immediately, without waiting for the Delayed ACK timer.
 Unfortunately it is not known at this time which (if any) of the
 widely-available networking APIs currently include this capability.
 
+## Responder-Initiated Operation Cancellation {#cancellation}
+
+This document, the base specification for DNS Stateful Operations,
+does not itself define any long-lived operations,
+but it defines a framework for supporting long-lived operations
+such as Push Notification subscriptions {{?I-D.ietf-dnssd-push}}
+and Discovery Relay interface subscriptions {{?I-D.sctl-dnssd-mdns-relay}}.
+
+Generally speaking, a long-lived operation is initiated by the initiator,
+and, if successful, remains active until the initiator terminates the operation.
+
+However, it is possible that a long-lived operation may be valid
+at the time it was initiated, but then a later change of circumstances
+may render that previously valid operation invalid.
+
+For example, a long-lived client operation may pertain to a name
+that the server is authoritative for, but then the server configuration
+is changed such that it is no longer authoritative for that name.
+
+In such cases, instead of terminating the entire session
+it may be desirable for the responder to be able to cancel
+selectively only those operations that have become invalid.
+
+The responder performs this selective cancellation by sending
+a new response message, with the MESSAGE ID field containing the
+MESSAGE ID of the long-lived operation that is to be terminated
+(that it had previously acknowledged with a NOERROR RCODE), and the
+RCODE field of the new response message giving the reason for cancellation.
+
+After a response message with nonzero RCODE has been sent,
+that operation has been terminated from the responder's point of view,
+and the responder sends no more messages relating to that operation.
+
+After a response message with nonzero RCODE has been received by the initiator,
+that operation has been terminated from the initiator's point of view,
+and its MESSAGE ID is now free for reuse.
+
 ***
 
 # DSO Session Lifecycle and Timers {#lifecycle}
@@ -1082,7 +1119,21 @@ a new Keepalive TLV dictating new Session Timeout values to the client.
 
 ***
 
-## Server-Initiated Termination on Error
+## Server-Initiated Session Termination
+
+In addition to cancelling individual operations selectively (see {{cancellation}})
+there are also occasions where a server may need to terminate
+one or more entire sessions wholesale.
+An entire session may need to be terminated if the client is defective in some way,
+or departs from the network without closing its session.
+Sessions may also need to be terminated if the server becomes overloaded,
+or if the server is reconfigured and lacks the ability to be selective about
+which operations need to be cancelled.
+
+This section discusses various reasons a session may be terminated,
+and the mechanisms for doing so.
+
+### Server-Initiated Session Termination on Error
 
 After sending an error response to a client, the server MAY end the DSO Session,
 or may allow the DSO Session to remain open. For error conditions
@@ -1093,7 +1144,7 @@ immediate future, the server SHOULD return an error response to the client and
 then end the DSO Session by sending a Retry Delay request message, as described in 
 {{retry}}.
 
-## Client Behaviour upon Receiving an Error {#error}
+#### Client Behaviour upon Receiving an Error Response Code {#error}
 
 Upon receiving an error response from the server, a client SHOULD NOT
 automatically close the DSO Session. An error relating to one particular operation
@@ -1108,7 +1159,7 @@ SHOULD continue to use that DSO Session for subsequent operations.
 
 ***
 
-## Server-Initiated Termination on Overload
+### Server-Initiated Session Termination on Overload
 
 A server MUST NOT close a DSO Session with a client,
 except in certain exceptional circumstances, as outlined below.
@@ -1119,14 +1170,20 @@ and the inactivity timeout value dictated by the server.
 
 Some exceptional situations where a server may terminate a DSO Session include:
 
-* The server is undergoing reconfiguration or maintenance procedures
-that require clients to be disconnected.
-
 * The server application software or underlying operating system
 is shutting down or restarting.
 
 * The server application software terminates unexpectedly
 (perhaps due to a bug that makes it crash).
+
+* The server is undergoing a reconfiguration or maintenance
+procedure, that, due to the way the server software is
+implemented, requires clients to be disconnected.
+For example, some software is implemented such that it reads
+a configuration file at startup, and changing the server's
+configuration entails modifiying the configuration file
+and then killing and restarting the server software,
+which generally entails a loss of network connections.
 
 * The client fails to meets its obligation to generate keepalive
 traffic or close an inactive session by the prescribed time
@@ -1147,7 +1204,7 @@ before the server resorts to forcibly aborting the connection.
 
 ***
 
-## Retry Delay Request {#retry}
+### Retry Delay Request Message {#retry}
 
 There may be rare cases where a server is overloaded and wishes to shed load.
 If a server is low on resources it MAY simply terminate a client connection with 
@@ -1158,26 +1215,27 @@ immediately, putting more burden on the server.
 
 Therefore to avoid this reconnection implosion, a server SHOULD instead choose 
 to shed client load by sending a Retry Delay request message, with an RCODE of 
-SERVFAIL, to inform the client of the overload situation. After sending a Retry 
-Delay request message, the server MUST NOT send any further messages on that 
-DSO Session.
-
-After sending the Retry Delay request the server SHOULD allow the
-client five seconds to close the connection, and if the client has not
-closed the connection after five seconds then the server SHOULD abort
-the connection with a TCP RST (or equivalent for other protocols).
+SERVFAIL, to inform the client of the overload situation.
+The format of the Retry Delay TLV is described in {{delay}}.
+After sending a Retry Delay request message,
+the server MUST NOT send any further messages on that DSO Session.
 
 Upon receipt of a Retry Delay request from the server, the client MUST
 make note of the reconnect delay for this server, and then immediately
 close the connection.
 This is to place the burden of TCP's TIME-WAIT state on the client.
 
+After sending a Retry Delay request message the server SHOULD allow the
+client five seconds to close the connection, and if the client has not
+closed the connection after five seconds then the server SHOULD abort
+the connection with a TCP RST (or equivalent for other protocols).
+
 A Retry Delay request message MUST NOT be initiated by a client.
 If a server receives a Retry Delay request message this is an error
 and the server MUST immediately terminate the connection with a TCP RST
 (or equivalent for other protocols).
 
-### Outstanding Operations
+#### Outstanding Operations
 
 At the moment a server chooses to initiate a Retry Delay request message
 there may be DNS requests already in flight from client to server on this 
@@ -1196,7 +1254,9 @@ longer authoritative for some of the names),
 but the server is terminating all DSO Sessions en masse with a REFUSED (5) RCODE,
 the RECONNECT DELAY MAY be zero, indicating that the clients SHOULD immediately
 attempt to re-establish operations.
-It is likely that some of the attempts will be successful and some will not.
+
+It is likely that some of the attempts will be successful and some will not,
+depending on the nature of the reconfiguration.
 
 In the case where a server is terminating a large number of DSO Sessions at once
 (e.g., if the system is restarting) and the server doesn't want to be inundated 
@@ -1206,7 +1266,7 @@ These adjustments MAY be selected randomly, pseudorandomly, or deterministically
 (e.g., incrementing the time value by one tenth of a second for each successive
 client, yielding a post-restart reconnection rate of ten clients per second).
 
-### Client Reconnection
+#### Client Reconnection
 
 After a DSO Session is closed by the server, the client SHOULD try to reconnect,
 to that server, or to another suitable server, if more than one is available.

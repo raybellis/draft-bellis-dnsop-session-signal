@@ -82,6 +82,7 @@ Table of Contents
        4.2.3.  EDNS(0) and TSIG  . . . . . . . . . . . . . . . . . .  20
      4.3.  Message Handling  . . . . . . . . . . . . . . . . . . . .  21
      4.4.  DSO Response Generation . . . . . . . . . . . . . . . . .  22
+     4.5.  Responder-Initiated Operation Cancellation  . . . . . . .  23
    5.  DSO Session Lifecycle and Timers  . . . . . . . . . . . . . .  24
      5.1.  DSO Session Initiation  . . . . . . . . . . . . . . . . .  24
      5.2.  DSO Session Timeouts  . . . . . . . . . . . . . . . . . .  24
@@ -92,12 +93,10 @@ Table of Contents
      5.5.  The Keepalive Interval  . . . . . . . . . . . . . . . . .  28
        5.5.1.  Keepalive Interval Expiry . . . . . . . . . . . . . .  28
        5.5.2.  Values for the Keepalive Interval . . . . . . . . . .  28
-     5.6.  Server-Initiated Termination on Error . . . . . . . . . .  30
-     5.7.  Client Behaviour upon Receiving an Error  . . . . . . . .  30
-     5.8.  Server-Initiated Termination on Overload  . . . . . . . .  31
-     5.9.  Retry Delay Request . . . . . . . . . . . . . . . . . . .  32
-       5.9.1.  Outstanding Operations  . . . . . . . . . . . . . . .  32
-       5.9.2.  Client Reconnection . . . . . . . . . . . . . . . . .  33
+     5.6.  Server-Initiated Session Termination  . . . . . . . . . .  30
+       5.6.1.  Server-Initiated Session Termination on Error . . . .  30
+       5.6.2.  Server-Initiated Session Termination on Overload  . .  31
+       5.6.3.  Retry Delay Request Message . . . . . . . . . . . . .  32
    6.  Connection Sharing  . . . . . . . . . . . . . . . . . . . . .  34
    7.  Base TLVs for DNS Stateful Operations . . . . . . . . . . . .  35
      7.1.  Retry Delay TLV . . . . . . . . . . . . . . . . . . . . .  35
@@ -106,6 +105,7 @@ Table of Contents
        7.1.3.  Retry Delay TLV is used by server only  . . . . . . .  36
      7.2.  Keepalive TLV . . . . . . . . . . . . . . . . . . . . . .  37
        7.2.1.  Client handling of received Session Timeout values  .  39
+       7.2.2.  Relation to EDNS(0) TCP Keepalive Option  . . . . . .  40
 
 
 
@@ -114,7 +114,6 @@ Bellis, et al.            Expires June 3, 2018                  [Page 2]
 Internet-Draft           DNS Stateful Operations           November 2017
 
 
-       7.2.2.  Relation to EDNS(0) TCP Keepalive Option  . . . . . .  40
      7.3.  Encryption Padding TLV  . . . . . . . . . . . . . . . . .  41
    8.  Summary . . . . . . . . . . . . . . . . . . . . . . . . . . .  42
      8.1.  MESSAGE ID  . . . . . . . . . . . . . . . . . . . . . . .  42
@@ -162,6 +161,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
    All three of the TLVs defined here are mandatory for all
    implementations of DSO.  Further TLVs may be defined in additional
    specifications.
+
 
 
 
@@ -674,7 +674,7 @@ Bellis, et al.            Expires June 3, 2018                 [Page 12]
 Internet-Draft           DNS Stateful Operations           November 2017
 
 
-   (see Section 5.9), where the RCODE indicates the reason for
+   (see Section 5.6.3), where the RCODE indicates the reason for
    termination).
 
 
@@ -1239,43 +1239,43 @@ Internet-Draft           DNS Stateful Operations           November 2017
       of the widely-available networking APIs currently include this
       capability.
 
+4.5.  Responder-Initiated Operation Cancellation
 
+   This document, the base specification for DNS Stateful Operations,
+   does not itself define any long-lived operations, but it defines a
+   framework for supporting long-lived operations such as Push
+   Notification subscriptions [I-D.ietf-dnssd-push] and Discovery Relay
+   interface subscriptions [I-D.sctl-dnssd-mdns-relay].
 
+   Generally speaking, a long-lived operation is initiated by the
+   initiator, and, if successful, remains active until the initiator
+   terminates the operation.
 
+   However, it is possible that a long-lived operation may be valid at
+   the time it was initiated, but then a later change of circumstances
+   may render that previously valid operation invalid.
 
+   For example, a long-lived client operation may pertain to a name that
+   the server is authoritative for, but then the server configuration is
+   changed such that it is no longer authoritative for that name.
 
+   In such cases, instead of terminating the entire session it may be
+   desirable for the responder to be able to cancel selectively only
+   those operations that have become invalid.
 
+   The responder performs this selective cancellation by sending a new
+   response message, with the MESSAGE ID field containing the MESSAGE ID
+   of the long-lived operation that is to be terminated (that it had
+   previously acknowledged with a NOERROR RCODE), and the RCODE field of
+   the new response message giving the reason for cancellation.
 
+   After a response message with nonzero RCODE has been sent, that
+   operation has been terminated from the responder's point of view, and
+   the responder sends no more messages relating to that operation.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+   After a response message with nonzero RCODE has been received by the
+   initiator, that operation has been terminated from the initiator's
+   point of view, and its MESSAGE ID is now free for reuse.
 
 
 
@@ -1626,7 +1626,21 @@ Bellis, et al.            Expires June 3, 2018                 [Page 29]
 Internet-Draft           DNS Stateful Operations           November 2017
 
 
-5.6.  Server-Initiated Termination on Error
+5.6.  Server-Initiated Session Termination
+
+   In addition to cancelling individual operations selectively (see
+   Section 4.5) there are also occasions where a server may need to
+   terminate one or more entire sessions wholesale.  An entire session
+   may need to be terminated if the client is defective in some way, or
+   departs from the network without closing its session.  Sessions may
+   also need to be terminated if the server becomes overloaded, or if
+   the server is reconfigured and lacks the ability to be selective
+   about which operations need to be cancelled.
+
+   This section discusses various reasons a session may be terminated,
+   and the mechanisms for doing so.
+
+5.6.1.  Server-Initiated Session Termination on Error
 
    After sending an error response to a client, the server MAY end the
    DSO Session, or may allow the DSO Session to remain open.  For error
@@ -1636,9 +1650,9 @@ Internet-Draft           DNS Stateful Operations           November 2017
    are likely to make all operations unsuccessful in the immediate
    future, the server SHOULD return an error response to the client and
    then end the DSO Session by sending a Retry Delay request message, as
-   described in Section 5.9.
+   described in Section 5.6.3.
 
-5.7.  Client Behaviour upon Receiving an Error
+5.6.1.1.  Client Behaviour upon Receiving an Error Response Code
 
    Upon receiving an error response from the server, a client SHOULD NOT
    automatically close the DSO Session.  An error relating to one
@@ -1649,23 +1663,9 @@ Internet-Draft           DNS Stateful Operations           November 2017
    Session, based on the server's determination of whether the error
    condition pertains to this particular operation, or would also apply
    to any subsequent operations.  If the server does not end the DSO
-   Session by sending the client a Retry Delay message (see Section 5.9)
-   then the client SHOULD continue to use that DSO Session for
-   subsequent operations.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+   Session by sending the client a Retry Delay message (see
+   Section 5.6.3) then the client SHOULD continue to use that DSO
+   Session for subsequent operations.
 
 
 
@@ -1682,7 +1682,7 @@ Bellis, et al.            Expires June 3, 2018                 [Page 30]
 Internet-Draft           DNS Stateful Operations           November 2017
 
 
-5.8.  Server-Initiated Termination on Overload
+5.6.2.  Server-Initiated Session Termination on Overload
 
    A server MUST NOT close a DSO Session with a client, except in
    certain exceptional circumstances, as outlined below.  In normal
@@ -1694,14 +1694,20 @@ Internet-Draft           DNS Stateful Operations           November 2017
    Some exceptional situations where a server may terminate a DSO
    Session include:
 
-   o  The server is undergoing reconfiguration or maintenance procedures
-      that require clients to be disconnected.
-
    o  The server application software or underlying operating system is
       shutting down or restarting.
 
    o  The server application software terminates unexpectedly (perhaps
       due to a bug that makes it crash).
+
+   o  The server is undergoing a reconfiguration or maintenance
+      procedure, that, due to the way the server software is
+      implemented, requires clients to be disconnected.  For example,
+      some software is implemented such that it reads a configuration
+      file at startup, and changing the server's configuration entails
+      modifiying the configuration file and then killing and restarting
+      the server software, which generally entails a loss of network
+      connections.
 
    o  The client fails to meets its obligation to generate keepalive
       traffic or close an inactive session by the prescribed time (twice
@@ -1710,10 +1716,10 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
    o  The client sends a grossly invalid or malformed request that is
       indicative of a seriously defective client implementation (see
-      Section 5.7).
+      Section 5.6.1.1).
 
    o  The server is over capacity and needs to shed some load (see
-      Section 5.9).
+      Section 5.6.3).
 
    When a server has to close a DSO Session with a client (because of
    exceptional circumstances such as those outlined above) the server
@@ -1727,18 +1733,12 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-
-
-
-
-
-
 Bellis, et al.            Expires June 3, 2018                 [Page 31]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
 
-5.9.  Retry Delay Request
+5.6.3.  Retry Delay Request Message
 
    There may be rare cases where a server is overloaded and wishes to
    shed load.  If a server is low on resources it MAY simply terminate a
@@ -1750,26 +1750,27 @@ Internet-Draft           DNS Stateful Operations           November 2017
    Therefore to avoid this reconnection implosion, a server SHOULD
    instead choose to shed client load by sending a Retry Delay request
    message, with an RCODE of SERVFAIL, to inform the client of the
-   overload situation.  After sending a Retry Delay request message, the
+   overload situation.  The format of the Retry Delay TLV is described
+   in Section 7.1.  After sending a Retry Delay request message, the
    server MUST NOT send any further messages on that DSO Session.
-
-   After sending the Retry Delay request the server SHOULD allow the
-   client five seconds to close the connection, and if the client has
-   not closed the connection after five seconds then the server SHOULD
-   abort the connection with a TCP RST (or equivalent for other
-   protocols).
 
    Upon receipt of a Retry Delay request from the server, the client
    MUST make note of the reconnect delay for this server, and then
    immediately close the connection.  This is to place the burden of
    TCP's TIME-WAIT state on the client.
 
+   After sending a Retry Delay request message the server SHOULD allow
+   the client five seconds to close the connection, and if the client
+   has not closed the connection after five seconds then the server
+   SHOULD abort the connection with a TCP RST (or equivalent for other
+   protocols).
+
    A Retry Delay request message MUST NOT be initiated by a client.  If
    a server receives a Retry Delay request message this is an error and
    the server MUST immediately terminate the connection with a TCP RST
    (or equivalent for other protocols).
 
-5.9.1.  Outstanding Operations
+5.6.3.1.  Outstanding Operations
 
    At the moment a server chooses to initiate a Retry Delay request
    message there may be DNS requests already in flight from client to
@@ -1785,7 +1786,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
    In the case where some, but not all, of the existing operations on a
    DSO Session have become invalid (perhaps because the server has been
-   reconfigured and is no longer authoritative for some of the names),
 
 
 
@@ -1794,11 +1794,13 @@ Bellis, et al.            Expires June 3, 2018                 [Page 32]
 Internet-Draft           DNS Stateful Operations           November 2017
 
 
+   reconfigured and is no longer authoritative for some of the names),
    but the server is terminating all DSO Sessions en masse with a
    REFUSED (5) RCODE, the RECONNECT DELAY MAY be zero, indicating that
    the clients SHOULD immediately attempt to re-establish operations.
+
    It is likely that some of the attempts will be successful and some
-   will not.
+   will not, depending on the nature of the reconfiguration.
 
    In the case where a server is terminating a large number of DSO
    Sessions at once (e.g., if the system is restarting) and the server
@@ -1809,7 +1811,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
    a second for each successive client, yielding a post-restart
    reconnection rate of ten clients per second).
 
-5.9.2.  Client Reconnection
+5.6.3.2.  Client Reconnection
 
    After a DSO Session is closed by the server, the client SHOULD try to
    reconnect, to that server, or to another suitable server, if more
@@ -1824,8 +1826,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
    to the expected maintenance window and not default to a very large
    delay value or clients may not attempt to reconnect after it resumes
    service.
-
-
 
 
 
@@ -1940,8 +1940,8 @@ Internet-Draft           DNS Stateful Operations           November 2017
    and not to reconnect for the indicated time interval.
 
    In this case it applies to the DSO Session as a whole, and the client
-   MUST begin closing the DSO Session, as described in Section 5.9.  The
-   RCODE in the message header MUST indicate the reason for the
+   MUST begin closing the DSO Session, as described in Section 5.6.3.
+   The RCODE in the message header MUST indicate the reason for the
    termination:
 
    o  NOERROR indicates a routine shutdown.
