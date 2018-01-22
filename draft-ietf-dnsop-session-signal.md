@@ -259,8 +259,9 @@ Two timers (elapsed time since an event) are defined in this document:
 * an inactivity timer (see {{keepalive}} and {{inactivetimer}})
 * a keepalive timer (see {{keepalive}} and {{keepalivetimer}})
 
-The timeouts associated with these timers are called the inactivity timeout and 
-the keepalive interval respectively. 
+The timeouts associated with these timers are called
+the inactivity timeout and 
+the keepalive interval, respectively. 
 The term "Session Timeouts" is used to refer to this pair of timeout values.
 
 Resetting a timer means resetting the timer value to zero and starting the timer again.
@@ -276,8 +277,8 @@ great use in the
 general management of persistent connections. For example, using DSO sessions 
 for stub to recursive DNS-over-TLS {{?RFC7858}} is more flexible for both the 
 client and the server than attempting to manage sessions using just the EDNS(0)
-TCP Keepalive option
-{{?RFC7828}}. The simple set of TLVs defined in this document is
+TCP Keepalive option {{?RFC7828}}.
+The simple set of TLVs defined in this document is
 sufficient to greatly enhance connection management for this use case.
 
 Secondly, DNS-SD {{?RFC6763}} has evolved into a naturally session based mechanism where,
@@ -346,9 +347,9 @@ If the RCODE is set to DSONOTIMP (tentatively 11) this indicates
 that the server does support DSO, but does not support the particular
 operation the client requested.
 A server MUST NOT return DSONOTIMP for the DSO Keepalive TLV,
-but this could happen in the future, if a client attempts to
+but a DSONOTIMP response could happen in the future, if a client attempts to
 establish a DSO Session using a future response-requiring DSO TLV
-which the server does not understand.
+that the server does not understand.
 If the server returns DSONOTIMP then a DSO Session is not
 considered established, but the client is permitted to continue
 sending DNS messages on the connection,
@@ -375,8 +376,8 @@ and therefore either client or server may be the initiator of a message.
 
 Once a DSO Session has been established,
 clients and servers should behave as described in this specification with
-regard to inactivity timeouts and connection close, not as prescribed in
-the previous specification for DNS over TCP {{!RFC7766}}.
+regard to inactivity timeouts and session termination, not as previously
+prescribed in the earlier specification for DNS over TCP {{!RFC7766}}.
 
 ### Zero Round-Trip Operation
 
@@ -398,11 +399,10 @@ to confirm successful establishment of a DSO session.
 
 However, a client MUST NOT send non-response-requiring DSO request
 messages until after a DSO Session has been mutually established.
+
 Similarly, a server MUST NOT send DSO request messages until it
 has received a response-requiring DSO request message from a
 client and transmitted a sucessful NOERROR response for that request.
-
-***
 
 ### Middlebox Considerations
 
@@ -442,7 +442,7 @@ set to zero on transmission.
 
 If a DSO message is received where any of the count fields are
 not zero, then a FORMERR MUST be returned,
-unless a future document specifies otherwise.
+unless a future IETF Standard specifies otherwise.
 
                                                  1   1   1   1   1   1
          0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
@@ -504,7 +504,7 @@ The DNS Header OPCODE field holds the DSO OPCODE value (tentatively 6).
 The Z bits are currently unused in DSO messages,
 and in both DSO requests and DSO responses the
 Z bits MUST be set to zero (0) on transmission and MUST be silently ignored
-on reception, unless a future document specifies otherwise.
+on reception, unless a future IETF Standard specifies otherwise.
 
 In a request message (QR=0) the RCODE is generally set to zero on transmission,
 and silently ignored on reception, except where specified otherwise
@@ -784,9 +784,9 @@ message with the same ID. In effect, the 16-bit MESSAGE ID combined with the
 identity of the initiator (client or server) serves as a 17-bit unique 
 identifier for a particular operation on a DSO Session.
 
-As described in {{header}} An initiator MUST NOT reuse a MESSAGE ID that is 
-already in use for an 
-outstanding request, unless specified otherwise by the relevant specification 
+As described in {{header}} An initiator MUST NOT reuse a
+MESSAGE ID that is already in use for an outstanding request,
+unless specified otherwise by the relevant specification
 for the DSO in question. At the very least, this means 
 that a MESSAGE ID MUST NOT be reused in a particular direction
 on a particular DSO Session while the initiator is waiting for a response to a 
@@ -940,12 +940,11 @@ and higher CPU load on the server.
 At both servers and clients, the generation or reception of any complete
 DNS message, including DNS requests, responses, updates, or DSO
 messages, resets both timers for that DSO Session, with the exception
-that a DSO Keepalive message resets only the keepalive timer, not the inactivity 
-timeout timer.
+that a DSO Keepalive message resets only the keepalive timer,
+not the inactivity timeout timer.
 
 In addition, for as long as the client has an outstanding operation in progress,
-the inactivity timer remains cleared, and an inactivity 
-timeout cannot occur.
+the inactivity timer remains cleared, and an inactivity timeout cannot occur.
 
 For short-lived DNS operations like traditional queries and updates,
 an operation is considered in progress for the time between request and 
@@ -963,7 +962,7 @@ inactivity timeout, and this is not an error. This is why there are two separate
 timers: the inactivity timeout, and the keepalive interval.
 Just because a DSO Session has no traffic for an extended period of time
 does not automatically make that DSO Session "inactive",
-if it has an active state that is awaiting events.
+if it has active state that is awaiting events.
 
 ***
 
@@ -1000,8 +999,7 @@ and SHOULD forcibly abort the DSO Session.
 
 In this context, an operation being active on a DSO Session includes
 a query waiting for a response, an update waiting for a response,
-or active state,
-but not a DSO Keepalive message exchange itself.
+or active state, but not a DSO Keepalive message exchange itself.
 A DSO Keepalive message exchange resets only the keepalive
 interval timer, not the inactivity timeout timer.
 
@@ -1014,7 +1012,7 @@ longer timeout values, as described in {{keepalive}}.
 
 For the inactivity timeout value, lower values result in
 more frequent DSO Session teardown and re-establishment.
-Higher values result in lower traffic and CPU load on the server,
+Higher values result in lower traffic and lower CPU load on the server,
 but higher memory burden to maintain state for inactive DSO Sessions.
 
 A server may dictate (in a server-initiated Keepalive message,
@@ -1125,16 +1123,16 @@ that follow the IETF recommended Best Current Practice that the
 be at least 2 hours 4 minutes {{!RFC5382}}.
 
 Note that the lower the keepalive interval value, the higher the load on client
-and server. For example, an keepalive interval value of 100ms would result in a
-continuous stream of at least ten messages per second, in both directions,
+and server. For example, a hypothetical keepalive interval value of 100ms would result
+in a continuous stream of at least ten messages per second, in both directions,
 to keep the DSO Session alive. And, in this extreme example, a single packet loss and
 retransmission over a long path could introduce a momentary pause in the stream of messages,
 long enough to cause the server to overzealously abort the connection.
 
 Because of this concern, the server MUST NOT send a Keepalive message
 (either a response to a client-initiated request, or a server-initiated message)
-with an keepalive interval value less than ten seconds.
-If a client receives an Keepalive message specifying an keepalive interval value
+with a keepalive interval value less than ten seconds.
+If a client receives a Keepalive message specifying a keepalive interval value
 less than ten seconds this is an error and the client MUST
 forcibly abort the connection immediately.
 
@@ -1234,9 +1232,8 @@ before the server resorts to forcibly aborting the connection.
 There may be rare cases where a server is overloaded and wishes to shed load.
 If a server is low on resources it MAY simply terminate a client connection
 by forcibly aborting it.
-However, the likely behavior of the client may be simply to to treat this as a
-network failure and reconnect
-immediately, putting more burden on the server.
+However, the likely behavior of the client may be simply to to treat this as
+a network failure and reconnect immediately, putting more burden on the server.
 
 Therefore to avoid this reconnection implosion, a server SHOULD instead choose 
 to shed client load by sending a Retry Delay request message, with an RCODE of 
@@ -1296,7 +1293,7 @@ to that server, or to another suitable server, if more than one is available.
 If reconnecting to the same server, the client MUST respect the indicated delay
 before attempting to reconnect.
 
-If a particular server does not want a client to reconnect (it is being
+If a particular server does not want a client to reconnect (the server is being
 de-commissioned), it SHOULD set the retry delay to the maximum value (which is
 approximately 49.7 days). If the server will only be out of service for a maintenance
 period, it should use a value closer to the expected maintenance window and
@@ -1350,9 +1347,9 @@ Retry Delay, Keepalive, and Encryption Padding.
 
 ## Retry Delay TLV {#delay}
 
-The Retry Delay TLV (DSO-TYPE=0) can be used as a
-Primary TLV (unacknowledged) in a server-to-client message,
-or as an Response Additional TLV in a server-to-client response to a client-to-server request message.
+The Retry Delay TLV (DSO-TYPE=0) can be used as
+a Primary TLV (unacknowledged) in a server-to-client message,
+or as a Response Additional TLV in a server-to-client response to a client-to-server request message.
 
 The TYPE-DEPENDENT DATA for the the Retry Delay TLV is as follows:
 
@@ -1363,7 +1360,7 @@ The TYPE-DEPENDENT DATA for the the Retry Delay TLV is as follows:
        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 RETRY DELAY:
-: a time value, specified as
+: A time value, specified as
 a 32-bit unsigned integer in network (big endian) byte order in units of milliseconds,
 within which the client MUST NOT retry this operation, or retry connecting to this server.
 
@@ -1398,7 +1395,7 @@ A Retry Delay request is an unacknowledged request message;
 the MESSAGE ID MUST be set to zero in the request
 and the client MUST NOT send a response.
 
-### Retry Delay TLV used as an Response Additional TLV
+### Retry Delay TLV used as a Response Additional TLV
 
 In the case of a client request that returns a nonzero RCODE value,
 the server MAY append a Retry Delay TLV (0) to the response,
@@ -1435,7 +1432,8 @@ keepalive traffic can be sent.
 Sending keepalive traffic is considered a maintenance activity
 that is performed in service of other client activities.
 Sending keepalive traffic itself is not considered a client activity.
-For a DSO Session to be considered active, it must be carrying something more than just keepalive traffic.
+For a DSO Session to be considered active,
+it must be carrying something more than just keepalive traffic.
 This is why merely sending a Keepalive TLV does not reset the inactivity timer.
 
 When sent by a client, the Keepalive request message MUST
@@ -1445,7 +1443,8 @@ Session Timeout values should be from this point forward in the DSO Session.
 If a server receives a Keepalive request message with a zero MESSAGE ID
 then this is a fatal error and the server MUST forcibly abort the connection immediately.
 
-Once a DSO Session is in progress (see {{details}}) the Keepalive TLV also MAY be initiated by a server.
+Once a DSO Session is in progress (see {{details}})
+the Keepalive TLV also MAY be initiated by a server.
 When sent by a server, the Keepalive request message MUST
 be sent as an unacknowledged request, with the MESSAGE ID set to zero.
 It resets a DSO Session's keepalive timer, and unilaterally informs the client of
@@ -1484,7 +1483,7 @@ The TYPE-DEPENDENT DATA for the the Keepalive TLV is as follows:
        +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 INACTIVITY TIMEOUT:
-: the inactivity timeout for the current DSO Session, specified as
+: The inactivity timeout for the current DSO Session, specified as
 a 32-bit unsigned integer in network (big endian) byte order in units of milliseconds.
 This is the timeout at which the client MUST begin closing an inactive DSO Session.
 The inactivity timeout can be any value of the server's choosing.
@@ -1493,7 +1492,7 @@ Session, then after twice this interval, or five seconds,
 whichever is greater, the server will forcibly abort the connection.
 
 KEEPALIVE INTERVAL:
-: the keepalive interval for the current DSO Session, specified as
+: The keepalive interval for the current DSO Session, specified as
 a 32-bit unsigned integer in network (big endian) byte order in units of milliseconds.
 This is the interval at which a client MUST generate keepalive
 traffic to maintain connection state.
@@ -1543,7 +1542,7 @@ or received on this DSO Session, if the DSO Session is to remain alive.
 In the case of the inactivity timeout, the handling of the received value 
 is a little more subtle, though the meaning of the inactivity 
 timeout is unchanged --- it still indicates the maximum permissible time allowed 
-without activity on a DSO Session.
+without useful activity on a DSO Session.
 The act of receiving the message containing the DSO Keepalive TLV does not
 itself reset the inactivity timer. The time elapsed since the last useful
 activity on this DSO Session is unaffected by exchange of DSO Keepalive messages.
@@ -1612,7 +1611,7 @@ PADDING octets of any value MUST be accepted in the messages received.
    
 The Encryption Padding TLV may be included in either a DSO request, response, or both.
 As specified for the EDNS(0) Padding Option {{!RFC7830}}
-if a request is received with a Encryption Padding TLV,
+if a request is received with an Encryption Padding TLV,
 then the response MUST also include an Encryption Padding TLV.
 
 The length of padding is intentionally not specified in this document and
