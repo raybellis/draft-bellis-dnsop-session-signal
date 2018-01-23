@@ -201,9 +201,8 @@ Where this specification says, "close gracefully,"
 that means sending a TLS close_notify followed by a TCP FIN,
 or the equivalents for other protocols.
 Where this specification requires a connection to be closed gracefully,
-the requirement to initiate that graceful close is placed on the client.
-This is to place the burden of TCP's TIME-WAIT state on the client
-rather than the server.
+the requirement to initiate that graceful close is placed on the client,
+to place the burden of TCP's TIME-WAIT state on the client rather than the server.
 
 Where this specification says, "forcibly abort,"
 that means sending a TCP RST,
@@ -228,6 +227,19 @@ or a responder (when sending a DSO response message).
 Likewise, the term "receiver" may apply to
 either a responder (when receiving a DSO request message)
 or an initiator (when receiving a DSO response message).
+
+The term "long-lived operations" refers to operations
+such as Push Notification subscriptions {{?I-D.ietf-dnssd-push}},
+Discovery Relay interface subscriptions {{?I-D.sctl-dnssd-mdns-relay}},
+and other future long-lived DNS operations that choose to use
+DSO as their basis, that establish state that persists beyond
+the lifetime of a traditional brief request/response transaction.
+This document, the base specification for DNS Stateful Operations,
+defines a framework for supporting long-lived operations,
+but does not itself define any long-lived operations.
+Nonetheless, to appreciate the design rationale behind
+DNS Stateful Operations, it is helpful to understand
+the long-lived operations that it is intended to support.
 
 DNS Stateful Operations uses "DSO request messages" and "DSO response messages".
 DSO request messages are further subdivided into two variants,
@@ -266,6 +278,8 @@ The term "Session Timeouts" is used to refer to this pair of timeout values.
 
 Resetting a timer means resetting the timer value to zero and starting the timer again.
 Clearing a timer means resetting the timer value to zero but NOT starting the timer again.
+
+***
 
 # Discussion
 
@@ -364,7 +378,7 @@ sending DNS messages on that connection, but the client SHOULD NOT
 issue further DSO messages on that connection.
 
 When the server receives a response-requiring DSO request message
-from a client, and transmits a sucessful NOERROR response to that
+from a client, and transmits a successful NOERROR response to that
 request, the server considers the DSO Session established.
 
 When the client receives the server's NOERROR response to its
@@ -402,7 +416,7 @@ messages until after a DSO Session has been mutually established.
 
 Similarly, a server MUST NOT send DSO request messages until it
 has received a response-requiring DSO request message from a
-client and transmitted a sucessful NOERROR response for that request.
+client and transmitted a successful NOERROR response for that request.
 
 ### Middlebox Considerations
 
@@ -417,8 +431,8 @@ and the server.
 
 To illustrate the above, consider a network where a middlebox
 terminates one or more TCP connections from clients and multiplexes the
-queries therein over a single TCP connection to an upstream server.  The
-DSO messages and any associated state are specific to the individual
+queries therein over a single TCP connection to an upstream server.
+The DSO messages and any associated state are specific to the individual
 TCP connections.  A DSO-aware middlebox MAY in some circumstances be
 able to retain associated state and pass it between the client and
 server (or vice versa) but this would be highly TLV-specific.  For
@@ -464,8 +478,6 @@ unless a future IETF Standard specifies otherwise.
        /                                                               /
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
-***
-
 ### Header {#header}
 
 In an unacknowledged request message the MESSAGE ID field MUST be set to zero.
@@ -474,9 +486,10 @@ be set to a unique nonzero value, that the initiator is not
 currently using for any other active operation on this connection.
 For the purposes here, a MESSAGE ID is in use in this DSO Session if the
 initiator has used it in a request for which it is still awaiting a response,
-or if the client has used it to setup state that has not yet been deleted.
-For example, state could be a Push Notification subscription {{?I-D.ietf-dnssd-push}}
-or a Discovery Relay interface subscription {{?I-D.sctl-dnssd-mdns-relay}}.
+or if the client has used it to setup a long-lived operation that has not yet been cancelled.
+For example, a long-lived operation could be
+a Push Notification subscription {{?I-D.ietf-dnssd-push}} or
+a Discovery Relay interface subscription {{?I-D.sctl-dnssd-mdns-relay}}.
 
 Whether a message is acknowledged or unacknowledged is
 determined only by the specification for the Primary TLV.
@@ -597,7 +610,7 @@ unacknowledged request messages, applies even in the case of errors.
 When a DSO request message is received with the MESSAGE ID field
 set to zero, the receiver MUST NOT generate any response.
 For example, if the DSO-TYPE in the Primary TLV is unrecognized,
-then a DSNOTIMP error MUST NOT be returned; instead the receiver
+then a DSONOTIMP error MUST NOT be returned; instead the receiver
 MUST forcibly abort the connection immediately.
 
 Unacknowledged request messages MUST NOT be used "speculatively"
@@ -793,8 +806,8 @@ on a particular DSO Session while the initiator is waiting for a response to a
 previous request using that MESSAGE ID on that DSO Session,
 unless specified otherwise by the relevant 
 specification for the DSO in question.
-(For a long-lived state the MESSAGE ID for the operation
-MUST NOT be reused whilst that state remains active.)
+(For a long-lived operation the MESSAGE ID for the operation
+MUST NOT be reused whilst that operation remains active.)
 
 If a client or server receives a response (QR=1) where the MESSAGE ID is zero,
 or any other value that does not match the MESSAGE ID of any of its outstanding operations,
@@ -860,8 +873,8 @@ widely-available networking APIs currently include this capability.
 This document, the base specification for DNS Stateful Operations,
 does not itself define any long-lived operations,
 but it defines a framework for supporting long-lived operations
-such as Push Notification subscriptions {{?I-D.ietf-dnssd-push}}
-and Discovery Relay interface subscriptions {{?I-D.sctl-dnssd-mdns-relay}}.
+such as Push Notification subscriptions {{?I-D.ietf-dnssd-push}} and
+Discovery Relay interface subscriptions {{?I-D.sctl-dnssd-mdns-relay}}.
 
 Generally speaking, a long-lived operation is initiated by the initiator,
 and, if successful, remains active until the initiator terminates the operation.
@@ -923,7 +936,7 @@ The two timeout values are independent. The inactivity timeout may be lower, the
 same, or higher than the keepalive interval, though in most cases the inactivity 
 timeout is expected to be shorter than the keepalive interval.
 
-Only when the client has a very long-lived low-traffic state does the 
+Only when the client has a very long-lived low-traffic operation does the 
 keepalive interval come into play, to ensure that a sufficient residual
 amount of traffic is generated to maintain NAT and firewall state
 and to assure client and server that they still have connectivity to each other.
@@ -954,15 +967,19 @@ request and remains cleared until reception of the corresponding response.
 At the server, the inactivity timer is cleared upon reception of a request
 and remains cleared until transmission of the corresponding response.
 
-For long-lived DNS Stateful operations, an operation is considered in progress
-for as long as the state is active, until it is cancelled.
-This means that a DSO Session can exist, with a state 
-active, with no messages flowing in either direction, for far longer than the 
-inactivity timeout, and this is not an error. This is why there are two separate 
-timers: the inactivity timeout, and the keepalive interval.
+For long-lived DNS Stateful operations (such as
+a Push Notification subscription {{?I-D.ietf-dnssd-push}} or
+a Discovery Relay interface subscription {{?I-D.sctl-dnssd-mdns-relay}}),
+an operation is considered in progress
+for as long as the operation is active, until it is cancelled.
+This means that a DSO Session can exist, with active operations,
+with no messages flowing in either direction, for far longer than the 
+inactivity timeout, and this is not an error.
+This is why there are two separate timers:
+the inactivity timeout, and the keepalive interval.
 Just because a DSO Session has no traffic for an extended period of time
 does not automatically make that DSO Session "inactive",
-if it has active state that is awaiting events.
+if it has an active operation that is awaiting events.
 
 ***
 
@@ -999,7 +1016,7 @@ and SHOULD forcibly abort the DSO Session.
 
 In this context, an operation being active on a DSO Session includes
 a query waiting for a response, an update waiting for a response,
-or active state, but not a DSO Keepalive message exchange itself.
+or an active long-lived operation, but not a DSO Keepalive message exchange itself.
 A DSO Keepalive message exchange resets only the keepalive
 interval timer, not the inactivity timeout timer.
 
@@ -1078,7 +1095,7 @@ not the inactivity timer.
 
 If a client disconnects from the network abruptly,
 without cleanly closing its DSO Session,
-leaving long-lived state uncanceled,
+leaving a long-lived operation uncanceled,
 the server learns of this after failing to
 receive the required keepalive traffic from that client.
 If, at any time during the life of the DSO Session,
@@ -1204,7 +1221,7 @@ procedure, that, due to the way the server software is
 implemented, requires clients to be disconnected.
 For example, some software is implemented such that it reads
 a configuration file at startup, and changing the server's
-configuration entails modifiying the configuration file
+configuration entails modifying the configuration file
 and then killing and restarting the server software,
 which generally entails a loss of network connections.
 
@@ -1347,7 +1364,7 @@ Retry Delay, Keepalive, and Encryption Padding.
 
 ## Retry Delay TLV {#delay}
 
-The Retry Delay TLV (DSO-TYPE=0) can be used as
+The Retry Delay TLV (DSO-TYPE=1) can be used as
 a Primary TLV (unacknowledged) in a server-to-client message,
 or as a Response Additional TLV in a server-to-client response to a client-to-server request message.
 
@@ -1416,7 +1433,7 @@ this is a fatal error and the server MUST forcibly abort the connection immediat
 
 ## Keepalive TLV {#keepalive}
 
-The Keepalive TLV (DSO-TYPE=1) performs two functions: to reset the
+The Keepalive TLV (DSO-TYPE=2) performs two functions: to reset the
 keepalive timer for the DSO Session and to establish the values for the Session Timeouts. 
 
 The Keepalive TLV resets only the keepalive timer, not the inactivity timer.
@@ -1572,7 +1589,7 @@ of the new inactivity timeout, or five seconds, whichever is greater.
 
 ### Relation to EDNS(0) TCP Keepalive Option
 
-The inactivity timeout value in the Keepalive TLV (DSO-TYPE=1) has similar
+The inactivity timeout value in the Keepalive TLV (DSO-TYPE=2) has similar
 intent to the EDNS(0) TCP Keepalive Option {{!RFC7828}}.
 A client/server pair that supports DSO MUST NOT use the
 EDNS(0) TCP KeepAlive option within any message after a DSO 
@@ -1586,7 +1603,7 @@ EDNS(0) TCP Keepalive option MUST forcibly abort the connection immediately.
 
 ## Encryption Padding TLV {#padding}
 
-The Encryption Padding TLV (DSO-TYPE=2) can only be used as
+The Encryption Padding TLV (DSO-TYPE=3) can only be used as
 an Additional or Response Additional TLV.
 It is only applicable when the DSO Transport layer uses encryption
 such as TLS.
@@ -1739,10 +1756,11 @@ with initial (hexadecimal) values as shown below:
 
 | Type | Name | Status | Reference |
 |------|------|--------|-----------|
-| 0000 | RetryDelay | Standard | RFC-TBD |
-| 0001 | KeepAlive | Standard | RFC-TBD |
-| 0002 | EncryptionPadding | Standard | RFC-TBD |
-| 0003-003F | Unassigned, reserved for    DSO session-management TLVs | | |
+| 0000 | Reserved | Standard | RFC-TBD |
+| 0001 | RetryDelay | Standard | RFC-TBD |
+| 0002 | KeepAlive | Standard | RFC-TBD |
+| 0003 | EncryptionPadding | Standard | RFC-TBD |
+| 0004-003F | Unassigned, reserved for    DSO session-management TLVs | | |
 | 0040-F7FF | Unassigned | | |
 | F800-FBFF | Reserved for experimental/local use | | |
 | FC00-FFFF | Reserved for future expansion | | |
@@ -1767,7 +1785,7 @@ requires publication of an IETF Standards Action document {{!RFC5226}}.
 
 Requests to register additional new DSO Type Codes
 in the "Unassigned" range 0040-F7FF
-are to be recorded by IANA after consulation with the
+are to be recorded by IANA after consultation with the
 registry's Designated Expert {{!RFC5226}} at that time.
 At the time of publication of this document, the Designated Expert
 for the newly created DSO Type Code registry is \[**TBD**\].

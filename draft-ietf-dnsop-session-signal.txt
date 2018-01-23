@@ -72,40 +72,40 @@ Table of Contents
 
    1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   3
    2.  Terminology . . . . . . . . . . . . . . . . . . . . . . . . .   5
-   3.  Discussion  . . . . . . . . . . . . . . . . . . . . . . . . .   7
-   4.  Protocol Details  . . . . . . . . . . . . . . . . . . . . . .   8
-     4.1.  DSO Session Establishment . . . . . . . . . . . . . . . .   8
-       4.1.1.  Zero Round-Trip Operation . . . . . . . . . . . . . .   9
-       4.1.2.  Middlebox Considerations  . . . . . . . . . . . . . .  10
-     4.2.  Message Format  . . . . . . . . . . . . . . . . . . . . .  11
+   3.  Discussion  . . . . . . . . . . . . . . . . . . . . . . . . .   8
+   4.  Protocol Details  . . . . . . . . . . . . . . . . . . . . . .   9
+     4.1.  DSO Session Establishment . . . . . . . . . . . . . . . .   9
+       4.1.1.  Zero Round-Trip Operation . . . . . . . . . . . . . .  10
+       4.1.2.  Middlebox Considerations  . . . . . . . . . . . . . .  11
+     4.2.  Message Format  . . . . . . . . . . . . . . . . . . . . .  12
        4.2.1.  Header  . . . . . . . . . . . . . . . . . . . . . . .  12
-       4.2.2.  DSO Data  . . . . . . . . . . . . . . . . . . . . . .  14
-       4.2.3.  EDNS(0) and TSIG  . . . . . . . . . . . . . . . . . .  19
-     4.3.  Message Handling  . . . . . . . . . . . . . . . . . . . .  20
-     4.4.  DSO Response Generation . . . . . . . . . . . . . . . . .  21
-     4.5.  Responder-Initiated Operation Cancellation  . . . . . . .  22
-   5.  DSO Session Lifecycle and Timers  . . . . . . . . . . . . . .  23
-     5.1.  DSO Session Initiation  . . . . . . . . . . . . . . . . .  23
-     5.2.  DSO Session Timeouts  . . . . . . . . . . . . . . . . . .  23
-     5.3.  Inactive DSO Sessions . . . . . . . . . . . . . . . . . .  24
-     5.4.  The Inactivity Timeout  . . . . . . . . . . . . . . . . .  25
-       5.4.1.  Closing Inactive DSO Sessions . . . . . . . . . . . .  25
-       5.4.2.  Values for the Inactivity Timeout . . . . . . . . . .  26
-     5.5.  The Keepalive Interval  . . . . . . . . . . . . . . . . .  27
-       5.5.1.  Keepalive Interval Expiry . . . . . . . . . . . . . .  27
-       5.5.2.  Values for the Keepalive Interval . . . . . . . . . .  27
-     5.6.  Server-Initiated Session Termination  . . . . . . . . . .  29
-       5.6.1.  Server-Initiated Session Termination on Error . . . .  29
-       5.6.2.  Server-Initiated Session Termination on Overload  . .  30
-       5.6.3.  Retry Delay Request Message . . . . . . . . . . . . .  31
-   6.  Connection Sharing  . . . . . . . . . . . . . . . . . . . . .  33
-   7.  Base TLVs for DNS Stateful Operations . . . . . . . . . . . .  34
-     7.1.  Retry Delay TLV . . . . . . . . . . . . . . . . . . . . .  34
-       7.1.1.  Retry Delay TLV used as a Primary TLV . . . . . . . .  34
-       7.1.2.  Retry Delay TLV used as a Response Additional TLV . .  35
-       7.1.3.  Retry Delay TLV is used by server only  . . . . . . .  35
-     7.2.  Keepalive TLV . . . . . . . . . . . . . . . . . . . . . .  36
-       7.2.1.  Client handling of received Session Timeout values  .  38
+       4.2.2.  DSO Data  . . . . . . . . . . . . . . . . . . . . . .  15
+       4.2.3.  EDNS(0) and TSIG  . . . . . . . . . . . . . . . . . .  20
+     4.3.  Message Handling  . . . . . . . . . . . . . . . . . . . .  21
+     4.4.  DSO Response Generation . . . . . . . . . . . . . . . . .  22
+     4.5.  Responder-Initiated Operation Cancellation  . . . . . . .  23
+   5.  DSO Session Lifecycle and Timers  . . . . . . . . . . . . . .  24
+     5.1.  DSO Session Initiation  . . . . . . . . . . . . . . . . .  24
+     5.2.  DSO Session Timeouts  . . . . . . . . . . . . . . . . . .  24
+     5.3.  Inactive DSO Sessions . . . . . . . . . . . . . . . . . .  25
+     5.4.  The Inactivity Timeout  . . . . . . . . . . . . . . . . .  26
+       5.4.1.  Closing Inactive DSO Sessions . . . . . . . . . . . .  26
+       5.4.2.  Values for the Inactivity Timeout . . . . . . . . . .  27
+     5.5.  The Keepalive Interval  . . . . . . . . . . . . . . . . .  28
+       5.5.1.  Keepalive Interval Expiry . . . . . . . . . . . . . .  28
+       5.5.2.  Values for the Keepalive Interval . . . . . . . . . .  28
+     5.6.  Server-Initiated Session Termination  . . . . . . . . . .  30
+       5.6.1.  Server-Initiated Session Termination on Error . . . .  30
+       5.6.2.  Server-Initiated Session Termination on Overload  . .  31
+       5.6.3.  Retry Delay Request Message . . . . . . . . . . . . .  32
+   6.  Connection Sharing  . . . . . . . . . . . . . . . . . . . . .  34
+   7.  Base TLVs for DNS Stateful Operations . . . . . . . . . . . .  35
+     7.1.  Retry Delay TLV . . . . . . . . . . . . . . . . . . . . .  35
+       7.1.1.  Retry Delay TLV used as a Primary TLV . . . . . . . .  35
+       7.1.2.  Retry Delay TLV used as a Response Additional TLV . .  36
+       7.1.3.  Retry Delay TLV is used by server only  . . . . . . .  36
+     7.2.  Keepalive TLV . . . . . . . . . . . . . . . . . . . . . .  37
+       7.2.1.  Client handling of received Session Timeout values  .  39
 
 
 
@@ -114,23 +114,23 @@ Bellis, et al.            Expires June 3, 2018                  [Page 2]
 Internet-Draft           DNS Stateful Operations           November 2017
 
 
-       7.2.2.  Relation to EDNS(0) TCP Keepalive Option  . . . . . .  39
-     7.3.  Encryption Padding TLV  . . . . . . . . . . . . . . . . .  40
-   8.  Summary . . . . . . . . . . . . . . . . . . . . . . . . . . .  41
-     8.1.  MESSAGE ID  . . . . . . . . . . . . . . . . . . . . . . .  41
-     8.2.  TLV Usage . . . . . . . . . . . . . . . . . . . . . . . .  42
-     8.3.  Inactivity Timeout  . . . . . . . . . . . . . . . . . . .  43
-     8.4.  Keepalive Interval  . . . . . . . . . . . . . . . . . . .  43
-   9.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  44
-     9.1.  DSO OPCODE Registration . . . . . . . . . . . . . . . . .  44
-     9.2.  DSO RCODE Registration  . . . . . . . . . . . . . . . . .  44
-     9.3.  DSO Type Code Registry  . . . . . . . . . . . . . . . . .  45
-   10. Security Considerations . . . . . . . . . . . . . . . . . . .  46
-   11. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  46
-   12. References  . . . . . . . . . . . . . . . . . . . . . . . . .  47
-     12.1.  Normative References . . . . . . . . . . . . . . . . . .  47
-     12.2.  Informative References . . . . . . . . . . . . . . . . .  48
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  49
+       7.2.2.  Relation to EDNS(0) TCP Keepalive Option  . . . . . .  40
+     7.3.  Encryption Padding TLV  . . . . . . . . . . . . . . . . .  41
+   8.  Summary . . . . . . . . . . . . . . . . . . . . . . . . . . .  42
+     8.1.  MESSAGE ID  . . . . . . . . . . . . . . . . . . . . . . .  42
+     8.2.  TLV Usage . . . . . . . . . . . . . . . . . . . . . . . .  43
+     8.3.  Inactivity Timeout  . . . . . . . . . . . . . . . . . . .  44
+     8.4.  Keepalive Interval  . . . . . . . . . . . . . . . . . . .  44
+   9.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  45
+     9.1.  DSO OPCODE Registration . . . . . . . . . . . . . . . . .  45
+     9.2.  DSO RCODE Registration  . . . . . . . . . . . . . . . . .  45
+     9.3.  DSO Type Code Registry  . . . . . . . . . . . . . . . . .  46
+   10. Security Considerations . . . . . . . . . . . . . . . . . . .  47
+   11. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  47
+   12. References  . . . . . . . . . . . . . . . . . . . . . . . . .  48
+     12.1.  Normative References . . . . . . . . . . . . . . . . . .  48
+     12.2.  Informative References . . . . . . . . . . . . . . . . .  49
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  50
 
 1.  Introduction
 
@@ -260,8 +260,8 @@ Internet-Draft           DNS Stateful Operations           November 2017
    a TLS close_notify followed by a TCP FIN, or the equivalents for
    other protocols.  Where this specification requires a connection to
    be closed gracefully, the requirement to initiate that graceful close
-   is placed on the client.  This is to place the burden of TCP's TIME-
-   WAIT state on the client rather than the server.
+   is placed on the client, to place the burden of TCP's TIME-WAIT state
+   on the client rather than the server.
 
    Where this specification says, "forcibly abort," that means sending a
    TCP RST, or the equivalent for other protocols.  In the BSD Sockets
@@ -295,6 +295,18 @@ Internet-Draft           DNS Stateful Operations           November 2017
    receiving a DSO request message) or an initiator (when receiving a
    DSO response message).
 
+   The term "long-lived operations" refers to operations such as Push
+   Notification subscriptions [I-D.ietf-dnssd-push], Discovery Relay
+   interface subscriptions [I-D.sctl-dnssd-mdns-relay], and other future
+   long-lived DNS operations that choose to use DSO as their basis, that
+   establish state that persists beyond the lifetime of a traditional
+   brief request/response transaction.  This document, the base
+   specification for DNS Stateful Operations, defines a framework for
+   supporting long-lived operations, but does not itself define any
+   long-lived operations.  Nonetheless, to appreciate the design
+   rationale behind DNS Stateful Operations, it is helpful to understand
+   the long-lived operations that it is intended to support.
+
    DNS Stateful Operations uses "DSO request messages" and "DSO response
    messages".  DSO request messages are further subdivided into two
    variants, "acknowledged request messages" (which generate a
@@ -318,6 +330,14 @@ Internet-Draft           DNS Stateful Operations           November 2017
    DSO-TYPE as the Primary TLV in the corresponding DSO request message
    are referred to as "Response Primary TLVs".  Any other TLVs with
    different DSO-TYPEs are referred to as "Response Additional TLVs".
+
+
+
+Bellis, et al.            Expires June 3, 2018                  [Page 6]
+
+Internet-Draft           DNS Stateful Operations           November 2017
+
+
    The Response Primary TLV(s), if present, MUST occur first in the
    response message, before any Response Additional TLVs.
 
@@ -328,16 +348,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
    o  a keepalive timer (see Section 7.2 and Section 5.5)
 
-
-
-
-
-
-Bellis, et al.            Expires June 3, 2018                  [Page 6]
-
-Internet-Draft           DNS Stateful Operations           November 2017
-
-
    The timeouts associated with these timers are called the inactivity
    timeout and the keepalive interval, respectively.  The term "Session
    Timeouts" is used to refer to this pair of timeout values.
@@ -345,6 +355,44 @@ Internet-Draft           DNS Stateful Operations           November 2017
    Resetting a timer means resetting the timer value to zero and
    starting the timer again.  Clearing a timer means resetting the timer
    value to zero but NOT starting the timer again.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Bellis, et al.            Expires June 3, 2018                  [Page 7]
+
+Internet-Draft           DNS Stateful Operations           November 2017
+
 
 3.  Discussion
 
@@ -389,7 +437,15 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                  [Page 7]
+
+
+
+
+
+
+
+
+Bellis, et al.            Expires June 3, 2018                  [Page 8]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -445,7 +501,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                  [Page 8]
+Bellis, et al.            Expires June 3, 2018                  [Page 9]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -463,7 +519,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
    issue further DSO messages on that connection.
 
    When the server receives a response-requiring DSO request message
-   from a client, and transmits a sucessful NOERROR response to that
+   from a client, and transmits a successful NOERROR response to that
    request, the server considers the DSO Session established.
 
    When the client receives the server's NOERROR response to its DSO
@@ -501,14 +557,14 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                  [Page 9]
+Bellis, et al.            Expires June 3, 2018                 [Page 10]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
 
    Similarly, a server MUST NOT send DSO request messages until it has
    received a response-requiring DSO request message from a client and
-   transmitted a sucessful NOERROR response for that request.
+   transmitted a successful NOERROR response for that request.
 
 4.1.2.  Middlebox Considerations
 
@@ -557,7 +613,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 10]
+Bellis, et al.            Expires June 3, 2018                 [Page 11]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -596,28 +652,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
       /                                                               /
       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Bellis, et al.            Expires June 3, 2018                 [Page 11]
-
-Internet-Draft           DNS Stateful Operations           November 2017
-
-
 4.2.1.  Header
 
    In an unacknowledged request message the MESSAGE ID field MUST be set
@@ -626,10 +660,19 @@ Internet-Draft           DNS Stateful Operations           November 2017
    currently using for any other active operation on this connection.
    For the purposes here, a MESSAGE ID is in use in this DSO Session if
    the initiator has used it in a request for which it is still awaiting
-   a response, or if the client has used it to setup state that has not
-   yet been deleted.  For example, state could be a Push Notification
-   subscription [I-D.ietf-dnssd-push] or a Discovery Relay interface
-   subscription [I-D.sctl-dnssd-mdns-relay].
+   a response, or if the client has used it to setup a long-lived
+   operation that has not yet been cancelled.  For example, a long-lived
+   operation could be a Push Notification subscription
+   [I-D.ietf-dnssd-push] or a Discovery Relay interface subscription
+   [I-D.sctl-dnssd-mdns-relay].
+
+
+
+
+Bellis, et al.            Expires June 3, 2018                 [Page 12]
+
+Internet-Draft           DNS Stateful Operations           November 2017
+
 
    Whether a message is acknowledged or unacknowledged is determined
    only by the specification for the Primary TLV.  An acknowledgment
@@ -669,7 +712,20 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 12]
+
+
+
+
+
+
+
+
+
+
+
+
+
+Bellis, et al.            Expires June 3, 2018                 [Page 13]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -725,7 +781,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 13]
+Bellis, et al.            Expires June 3, 2018                 [Page 14]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -781,7 +837,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 14]
+Bellis, et al.            Expires June 3, 2018                 [Page 15]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -798,7 +854,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
    unacknowledged request messages, applies even in the case of errors.
    When a DSO request message is received with the MESSAGE ID field set
    to zero, the receiver MUST NOT generate any response.  For example,
-   if the DSO-TYPE in the Primary TLV is unrecognized, then a DSNOTIMP
+   if the DSO-TYPE in the Primary TLV is unrecognized, then a DSONOTIMP
    error MUST NOT be returned; instead the receiver MUST forcibly abort
    the connection immediately.
 
@@ -837,7 +893,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 15]
+Bellis, et al.            Expires June 3, 2018                 [Page 16]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -893,7 +949,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 16]
+Bellis, et al.            Expires June 3, 2018                 [Page 17]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -949,7 +1005,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 17]
+Bellis, et al.            Expires June 3, 2018                 [Page 18]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1005,7 +1061,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 18]
+Bellis, et al.            Expires June 3, 2018                 [Page 19]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1061,7 +1117,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 19]
+Bellis, et al.            Expires June 3, 2018                 [Page 20]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1095,8 +1151,8 @@ Internet-Draft           DNS Stateful Operations           November 2017
    the initiator is waiting for a response to a previous request using
    that MESSAGE ID on that DSO Session, unless specified otherwise by
    the relevant specification for the DSO in question.  (For a long-
-   lived state the MESSAGE ID for the operation MUST NOT be reused
-   whilst that state remains active.)
+   lived operation the MESSAGE ID for the operation MUST NOT be reused
+   whilst that operation remains active.)
 
    If a client or server receives a response (QR=1) where the MESSAGE ID
    is zero, or any other value that does not match the MESSAGE ID of any
@@ -1117,7 +1173,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 20]
+Bellis, et al.            Expires June 3, 2018                 [Page 21]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1173,7 +1229,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 21]
+Bellis, et al.            Expires June 3, 2018                 [Page 22]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1229,7 +1285,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 22]
+Bellis, et al.            Expires June 3, 2018                 [Page 23]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1265,8 +1321,8 @@ Internet-Draft           DNS Stateful Operations           November 2017
    most cases the inactivity timeout is expected to be shorter than the
    keepalive interval.
 
-   Only when the client has a very long-lived low-traffic state does the
-   keepalive interval come into play, to ensure that a sufficient
+   Only when the client has a very long-lived low-traffic operation does
+   the keepalive interval come into play, to ensure that a sufficient
    residual amount of traffic is generated to maintain NAT and firewall
    state and to assure client and server that they still have
    connectivity to each other.
@@ -1285,7 +1341,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 23]
+Bellis, et al.            Expires June 3, 2018                 [Page 24]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1311,15 +1367,17 @@ Internet-Draft           DNS Stateful Operations           November 2017
    cleared upon reception of a request and remains cleared until
    transmission of the corresponding response.
 
-   For long-lived DNS Stateful operations, an operation is considered in
-   progress for as long as the state is active, until it is cancelled.
-   This means that a DSO Session can exist, with a state active, with no
-   messages flowing in either direction, for far longer than the
-   inactivity timeout, and this is not an error.  This is why there are
-   two separate timers: the inactivity timeout, and the keepalive
-   interval.  Just because a DSO Session has no traffic for an extended
-   period of time does not automatically make that DSO Session
-   "inactive", if it has active state that is awaiting events.
+   For long-lived DNS Stateful operations (such as a Push Notification
+   subscription [I-D.ietf-dnssd-push] or a Discovery Relay interface
+   subscription [I-D.sctl-dnssd-mdns-relay]), an operation is considered
+   in progress for as long as the operation is active, until it is
+   cancelled.  This means that a DSO Session can exist, with active
+   operations, with no messages flowing in either direction, for far
+   longer than the inactivity timeout, and this is not an error.  This
+   is why there are two separate timers: the inactivity timeout, and the
+   keepalive interval.  Just because a DSO Session has no traffic for an
+   extended period of time does not automatically make that DSO Session
+   "inactive", if it has an active operation that is awaiting events.
 
 
 
@@ -1339,9 +1397,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-
-
-Bellis, et al.            Expires June 3, 2018                 [Page 24]
+Bellis, et al.            Expires June 3, 2018                 [Page 25]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1382,9 +1438,9 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
    In this context, an operation being active on a DSO Session includes
    a query waiting for a response, an update waiting for a response, or
-   active state, but not a DSO Keepalive message exchange itself.  A DSO
-   Keepalive message exchange resets only the keepalive interval timer,
-   not the inactivity timeout timer.
+   an active long-lived operation, but not a DSO Keepalive message
+   exchange itself.  A DSO Keepalive message exchange resets only the
+   keepalive interval timer, not the inactivity timeout timer.
 
    If the client wishes to keep an inactive DSO Session open for longer
    than the default duration without having to send traffic every 15
@@ -1397,7 +1453,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 25]
+Bellis, et al.            Expires June 3, 2018                 [Page 26]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1453,7 +1509,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 26]
+Bellis, et al.            Expires June 3, 2018                 [Page 27]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1480,13 +1536,13 @@ Internet-Draft           DNS Stateful Operations           November 2017
    only the keepalive timer, not the inactivity timer.
 
    If a client disconnects from the network abruptly, without cleanly
-   closing its DSO Session, leaving long-lived state uncanceled, the
-   server learns of this after failing to receive the required keepalive
-   traffic from that client.  If, at any time during the life of the DSO
-   Session, twice the keepalive interval value (i.e., 30 seconds by
-   default) elapses without any DNS messages being sent or received on a
-   DSO Session, the server SHOULD consider the client delinquent, and
-   SHOULD forcibly abort the DSO Session.
+   closing its DSO Session, leaving a long-lived operation uncanceled,
+   the server learns of this after failing to receive the required
+   keepalive traffic from that client.  If, at any time during the life
+   of the DSO Session, twice the keepalive interval value (i.e., 30
+   seconds by default) elapses without any DNS messages being sent or
+   received on a DSO Session, the server SHOULD consider the client
+   delinquent, and SHOULD forcibly abort the DSO Session.
 
 5.5.2.  Values for the Keepalive Interval
 
@@ -1509,7 +1565,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 27]
+Bellis, et al.            Expires June 3, 2018                 [Page 28]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1565,7 +1621,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 28]
+Bellis, et al.            Expires June 3, 2018                 [Page 29]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1621,7 +1677,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 29]
+Bellis, et al.            Expires June 3, 2018                 [Page 30]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1649,7 +1705,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
       implemented, requires clients to be disconnected.  For example,
       some software is implemented such that it reads a configuration
       file at startup, and changing the server's configuration entails
-      modifiying the configuration file and then killing and restarting
+      modifying the configuration file and then killing and restarting
       the server software, which generally entails a loss of network
       connections.
 
@@ -1677,7 +1733,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 30]
+Bellis, et al.            Expires June 3, 2018                 [Page 31]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1733,7 +1789,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 31]
+Bellis, et al.            Expires June 3, 2018                 [Page 32]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1789,7 +1845,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 32]
+Bellis, et al.            Expires June 3, 2018                 [Page 33]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1845,7 +1901,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 33]
+Bellis, et al.            Expires June 3, 2018                 [Page 34]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1857,7 +1913,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 7.1.  Retry Delay TLV
 
-   The Retry Delay TLV (DSO-TYPE=0) can be used as a Primary TLV
+   The Retry Delay TLV (DSO-TYPE=1) can be used as a Primary TLV
    (unacknowledged) in a server-to-client message, or as a Response
    Additional TLV in a server-to-client response to a client-to-server
    request message.
@@ -1901,7 +1957,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 34]
+Bellis, et al.            Expires June 3, 2018                 [Page 35]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -1957,14 +2013,14 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 35]
+Bellis, et al.            Expires June 3, 2018                 [Page 36]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
 
 7.2.  Keepalive TLV
 
-   The Keepalive TLV (DSO-TYPE=1) performs two functions: to reset the
+   The Keepalive TLV (DSO-TYPE=2) performs two functions: to reset the
    keepalive timer for the DSO Session and to establish the values for
    the Session Timeouts.
 
@@ -2013,7 +2069,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 36]
+Bellis, et al.            Expires June 3, 2018                 [Page 37]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -2069,7 +2125,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 37]
+Bellis, et al.            Expires June 3, 2018                 [Page 38]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -2125,7 +2181,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 38]
+Bellis, et al.            Expires June 3, 2018                 [Page 39]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -2152,7 +2208,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 7.2.2.  Relation to EDNS(0) TCP Keepalive Option
 
-   The inactivity timeout value in the Keepalive TLV (DSO-TYPE=1) has
+   The inactivity timeout value in the Keepalive TLV (DSO-TYPE=2) has
    similar intent to the EDNS(0) TCP Keepalive Option [RFC7828].  A
    client/server pair that supports DSO MUST NOT use the EDNS(0) TCP
    KeepAlive option within any message after a DSO Session has been
@@ -2181,14 +2237,14 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 39]
+Bellis, et al.            Expires June 3, 2018                 [Page 40]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
 
 7.3.  Encryption Padding TLV
 
-   The Encryption Padding TLV (DSO-TYPE=2) can only be used as an
+   The Encryption Padding TLV (DSO-TYPE=3) can only be used as an
    Additional or Response Additional TLV.  It is only applicable when
    the DSO Transport layer uses encryption such as TLS.
 
@@ -2237,7 +2293,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 40]
+Bellis, et al.            Expires June 3, 2018                 [Page 41]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -2293,7 +2349,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 41]
+Bellis, et al.            Expires June 3, 2018                 [Page 42]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -2349,7 +2405,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 42]
+Bellis, et al.            Expires June 3, 2018                 [Page 43]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -2405,7 +2461,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 43]
+Bellis, et al.            Expires June 3, 2018                 [Page 44]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -2461,7 +2517,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 44]
+Bellis, et al.            Expires June 3, 2018                 [Page 45]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -2474,13 +2530,15 @@ Internet-Draft           DNS Stateful Operations           November 2017
    +-----------+--------------------------------+----------+-----------+
    | Type      | Name                           | Status   | Reference |
    +-----------+--------------------------------+----------+-----------+
-   | 0000      | RetryDelay                     | Standard | RFC-TBD   |
+   | 0000      | Reserved                       | Standard | RFC-TBD   |
    |           |                                |          |           |
-   | 0001      | KeepAlive                      | Standard | RFC-TBD   |
+   | 0001      | RetryDelay                     | Standard | RFC-TBD   |
    |           |                                |          |           |
-   | 0002      | EncryptionPadding              | Standard | RFC-TBD   |
+   | 0002      | KeepAlive                      | Standard | RFC-TBD   |
    |           |                                |          |           |
-   | 0003-003F | Unassigned, reserved for       |          |           |
+   | 0003      | EncryptionPadding              | Standard | RFC-TBD   |
+   |           |                                |          |           |
+   | 0004-003F | Unassigned, reserved for       |          |           |
    |           | DSO session-management TLVs    |          |           |
    |           |                                |          |           |
    | 0040-F7FF | Unassigned                     |          |           |
@@ -2509,15 +2567,13 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
    Requests to register additional new DSO Type Codes in the
    "Unassigned" range 0040-F7FF are to be recorded by IANA after
-   consulation with the registry's Designated Expert [RFC5226] at that
+   consultation with the registry's Designated Expert [RFC5226] at that
    time.  At the time of publication of this document, the Designated
    Expert for the newly created DSO Type Code registry is [*TBD*].
 
 
 
-
-
-Bellis, et al.            Expires June 3, 2018                 [Page 45]
+Bellis, et al.            Expires June 3, 2018                 [Page 46]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -2573,7 +2629,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 46]
+Bellis, et al.            Expires June 3, 2018                 [Page 47]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -2629,7 +2685,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 47]
+Bellis, et al.            Expires June 3, 2018                 [Page 48]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -2685,7 +2741,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 48]
+Bellis, et al.            Expires June 3, 2018                 [Page 49]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -2741,7 +2797,7 @@ Authors' Addresses
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 49]
+Bellis, et al.            Expires June 3, 2018                 [Page 50]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
@@ -2797,4 +2853,4 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
 
 
-Bellis, et al.            Expires June 3, 2018                 [Page 50]
+Bellis, et al.            Expires June 3, 2018                 [Page 51]

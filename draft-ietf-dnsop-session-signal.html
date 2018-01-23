@@ -654,26 +654,28 @@
 </ul>
 <p id="rfc.section.2.p.6">A &#8220;DSO Session&#8221; is established between two endpoints that acknowledge persistent DNS state via the exchange of DSO messages over the connection. This is distinct from a DNS-over-TCP session as described in RC7766.</p>
 <p id="rfc.section.2.p.7">A &#8220;DSO Session&#8221; is terminated when the underlying connection is closed.  The underlying connection can be closed in two ways.</p>
-<p id="rfc.section.2.p.8">Where this specification says, &#8220;close gracefully,&#8221; that means sending a TLS close_notify followed by a TCP FIN, or the equivalents for other protocols.  Where this specification requires a connection to be closed gracefully, the requirement to initiate that graceful close is placed on the client.  This is to place the burden of TCP&#8217;s TIME-WAIT state on the client rather than the server.</p>
+<p id="rfc.section.2.p.8">Where this specification says, &#8220;close gracefully,&#8221; that means sending a TLS close_notify followed by a TCP FIN, or the equivalents for other protocols.  Where this specification requires a connection to be closed gracefully, the requirement to initiate that graceful close is placed on the client, to place the burden of TCP&#8217;s TIME-WAIT state on the client rather than the server.</p>
 <p id="rfc.section.2.p.9">Where this specification says, &#8220;forcibly abort,&#8221; that means sending a TCP RST, or the equivalent for other protocols.  In the BSD Sockets API this is achieved by setting the SO_LINGER option to zero before closing the socket.</p>
 <p id="rfc.section.2.p.10">The term &#8220;server&#8221; means the software with a listening socket, awaiting incoming connection requests.</p>
 <p id="rfc.section.2.p.11">The term &#8220;client&#8221; means the software which initiates a connection to the server&#8217;s listening socket.</p>
 <p id="rfc.section.2.p.12">The terms &#8220;initiator&#8221; and &#8220;responder&#8221; correspond respectively to the initial sender and subsequent receiver of a DSO request message, regardless of which was the &#8220;client&#8221; and &#8220;server&#8221; in the usual DNS sense.</p>
 <p id="rfc.section.2.p.13">The term &#8220;sender&#8221; may apply to either an initiator (when sending a DSO request message) or a responder (when sending a DSO response message).</p>
 <p id="rfc.section.2.p.14">Likewise, the term &#8220;receiver&#8221; may apply to either a responder (when receiving a DSO request message) or an initiator (when receiving a DSO response message).</p>
-<p id="rfc.section.2.p.15">DNS Stateful Operations uses &#8220;DSO request messages&#8221; and &#8220;DSO response messages&#8221;.  DSO request messages are further subdivided into two variants, &#8220;acknowledged request messages&#8221; (which generate a corresponding response message) and &#8220;unacknowledged request messages&#8221; (which do not generate any corresponding response message).</p>
-<p id="rfc.section.2.p.16">The content of DSO messages is expressed using type-length-value (TLV) syntax.</p>
-<p id="rfc.section.2.p.17">In a DSO request message the first TLV is referred to as the &#8220;Primary TLV&#8221; and determines the nature of the operation being performed, including whether it is an acknowledged or unacknowledged operation; any other TLVs in a DSO request message are referred to as &#8220;Additional TLVs&#8221; and serve additional non-primary purposes, which may be related to the primary purpose, or not, as in the case of the encryption padding TLV.</p>
-<p id="rfc.section.2.p.18">A DSO response message may contain no TLVs, or it may contain one or more TLVs as appropriate to the information being communicated.  In the context of DSO response messages, one or more TLVs with the same DSO-TYPE as the Primary TLV in the corresponding DSO request message are referred to as &#8220;Response Primary TLVs&#8221;.  Any other TLVs with different DSO-TYPEs are referred to as &#8220;Response Additional TLVs&#8221;.  The Response Primary TLV(s), if present, MUST occur first in the response message, before any Response Additional TLVs.</p>
-<p id="rfc.section.2.p.19">Two timers (elapsed time since an event) are defined in this document:</p>
+<p id="rfc.section.2.p.15">The term &#8220;long-lived operations&#8221; refers to operations such as Push Notification subscriptions <a href="#I-D.ietf-dnssd-push" class="xref">[I-D.ietf-dnssd-push]</a>, Discovery Relay interface subscriptions <a href="#I-D.sctl-dnssd-mdns-relay" class="xref">[I-D.sctl-dnssd-mdns-relay]</a>, and other future long-lived DNS operations that choose to use DSO as their basis, that establish state that persists beyond the lifetime of a traditional brief request/response transaction.  This document, the base specification for DNS Stateful Operations, defines a framework for supporting long-lived operations, but does not itself define any long-lived operations.  Nonetheless, to appreciate the design rationale behind DNS Stateful Operations, it is helpful to understand the long-lived operations that it is intended to support.</p>
+<p id="rfc.section.2.p.16">DNS Stateful Operations uses &#8220;DSO request messages&#8221; and &#8220;DSO response messages&#8221;.  DSO request messages are further subdivided into two variants, &#8220;acknowledged request messages&#8221; (which generate a corresponding response message) and &#8220;unacknowledged request messages&#8221; (which do not generate any corresponding response message).</p>
+<p id="rfc.section.2.p.17">The content of DSO messages is expressed using type-length-value (TLV) syntax.</p>
+<p id="rfc.section.2.p.18">In a DSO request message the first TLV is referred to as the &#8220;Primary TLV&#8221; and determines the nature of the operation being performed, including whether it is an acknowledged or unacknowledged operation; any other TLVs in a DSO request message are referred to as &#8220;Additional TLVs&#8221; and serve additional non-primary purposes, which may be related to the primary purpose, or not, as in the case of the encryption padding TLV.</p>
+<p id="rfc.section.2.p.19">A DSO response message may contain no TLVs, or it may contain one or more TLVs as appropriate to the information being communicated.  In the context of DSO response messages, one or more TLVs with the same DSO-TYPE as the Primary TLV in the corresponding DSO request message are referred to as &#8220;Response Primary TLVs&#8221;.  Any other TLVs with different DSO-TYPEs are referred to as &#8220;Response Additional TLVs&#8221;.  The Response Primary TLV(s), if present, MUST occur first in the response message, before any Response Additional TLVs.</p>
+<p id="rfc.section.2.p.20">Two timers (elapsed time since an event) are defined in this document:</p>
 <p></p>
 
 <ul>
 <li>an inactivity timer (see <a href="#keepalive" class="xref">Section 7.2</a> and <a href="#inactivetimer" class="xref">Section 5.3</a>)</li>
 <li>a keepalive timer (see <a href="#keepalive" class="xref">Section 7.2</a> and <a href="#keepalivetimer" class="xref">Section 5.5</a>)</li>
 </ul>
-<p id="rfc.section.2.p.21">The timeouts associated with these timers are called the inactivity timeout and the keepalive interval, respectively.  The term &#8220;Session Timeouts&#8221; is used to refer to this pair of timeout values.</p>
-<p id="rfc.section.2.p.22">Resetting a timer means resetting the timer value to zero and starting the timer again.  Clearing a timer means resetting the timer value to zero but NOT starting the timer again.</p>
+<p id="rfc.section.2.p.22">The timeouts associated with these timers are called the inactivity timeout and the keepalive interval, respectively.  The term &#8220;Session Timeouts&#8221; is used to refer to this pair of timeout values.</p>
+<p id="rfc.section.2.p.23">Resetting a timer means resetting the timer value to zero and starting the timer again.  Clearing a timer means resetting the timer value to zero but NOT starting the timer again.</p>
+<p></p>
 <h1 id="rfc.section.3">
 <a href="#rfc.section.3">3.</a> <a href="#discussion" id="discussion">Discussion</a>
 </h1>
@@ -698,7 +700,7 @@
 <p id="rfc.section.4.1.p.6">A DSO Session is established over a connection by the client sending a DSO request message of a kind that requires a response, such as the DSO Keepalive TLV (see <a href="#keepalive" class="xref">Section 7.2</a>), and receiving a response, with matching MESSAGE ID, and RCODE set to NOERROR (0), indicating that the DSO request was successful.</p>
 <p id="rfc.section.4.1.p.7">If the RCODE is set to DSONOTIMP (tentatively 11) this indicates that the server does support DSO, but does not support the particular operation the client requested.  A server MUST NOT return DSONOTIMP for the DSO Keepalive TLV, but a DSONOTIMP response could happen in the future, if a client attempts to establish a DSO Session using a future response-requiring DSO TLV that the server does not understand.  If the server returns DSONOTIMP then a DSO Session is not considered established, but the client is permitted to continue sending DNS messages on the connection, including other response-requiring DSO messages such as the DSO Keepalive, which may result in a successful NOERROR response, yielding the establishment of a DSO Session.</p>
 <p id="rfc.section.4.1.p.8">If the RCODE is set to any value other than NOERROR (0) or DSONOTIMP (tentatively 11), then the client should assume that the server does not support DSO. In this case the client is permitted to continue sending DNS messages on that connection, but the client SHOULD NOT issue further DSO messages on that connection.</p>
-<p id="rfc.section.4.1.p.9">When the server receives a response-requiring DSO request message from a client, and transmits a sucessful NOERROR response to that request, the server considers the DSO Session established.</p>
+<p id="rfc.section.4.1.p.9">When the server receives a response-requiring DSO request message from a client, and transmits a successful NOERROR response to that request, the server considers the DSO Session established.</p>
 <p id="rfc.section.4.1.p.10">When the client receives the server&#8217;s NOERROR response to its DSO request message, the client considers the DSO Session established.</p>
 <p id="rfc.section.4.1.p.11">Once a DSO Session has been established, either end may unilaterally send DSO messages at any time, and therefore either client or server may be the initiator of a message.</p>
 <p id="rfc.section.4.1.p.12">Once a DSO Session has been established, clients and servers should behave as described in this specification with regard to inactivity timeouts and session termination, not as previously prescribed in the earlier specification for DNS over TCP <a href="#RFC7766" class="xref">[RFC7766]</a>.</p>
@@ -709,7 +711,7 @@
 <p id="rfc.section.4.1.1.p.2">Similarly, DSO supports zero round-trip operation.</p>
 <p id="rfc.section.4.1.1.p.3">Having initiated a connection to a server, possibly using zero round-trip TCP Fast Open and/or zero round-trip TLS 1.3, a client MAY send multiple response-requiring DSO request messages to the server in succession without having to wait for a response to the first request message to confirm successful establishment of a DSO session.</p>
 <p id="rfc.section.4.1.1.p.4">However, a client MUST NOT send non-response-requiring DSO request messages until after a DSO Session has been mutually established.</p>
-<p id="rfc.section.4.1.1.p.5">Similarly, a server MUST NOT send DSO request messages until it has received a response-requiring DSO request message from a client and transmitted a sucessful NOERROR response for that request.</p>
+<p id="rfc.section.4.1.1.p.5">Similarly, a server MUST NOT send DSO request messages until it has received a response-requiring DSO request message from a client and transmitted a successful NOERROR response for that request.</p>
 <h1 id="rfc.section.4.1.2">
 <a href="#rfc.section.4.1.2">4.1.2.</a> <a href="#middlebox-considerations" id="middlebox-considerations">Middlebox Considerations</a>
 </h1>
@@ -742,11 +744,10 @@
    /                                                               /
    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 </pre>
-<p></p>
 <h1 id="rfc.section.4.2.1">
 <a href="#rfc.section.4.2.1">4.2.1.</a> <a href="#header" id="header">Header</a>
 </h1>
-<p id="rfc.section.4.2.1.p.1">In an unacknowledged request message the MESSAGE ID field MUST be set to zero.  In an acknowledged request message the MESSAGE ID field MUST be set to a unique nonzero value, that the initiator is not currently using for any other active operation on this connection.  For the purposes here, a MESSAGE ID is in use in this DSO Session if the initiator has used it in a request for which it is still awaiting a response, or if the client has used it to setup state that has not yet been deleted.  For example, state could be a Push Notification subscription <a href="#I-D.ietf-dnssd-push" class="xref">[I-D.ietf-dnssd-push]</a> or a Discovery Relay interface subscription <a href="#I-D.sctl-dnssd-mdns-relay" class="xref">[I-D.sctl-dnssd-mdns-relay]</a>.</p>
+<p id="rfc.section.4.2.1.p.1">In an unacknowledged request message the MESSAGE ID field MUST be set to zero.  In an acknowledged request message the MESSAGE ID field MUST be set to a unique nonzero value, that the initiator is not currently using for any other active operation on this connection.  For the purposes here, a MESSAGE ID is in use in this DSO Session if the initiator has used it in a request for which it is still awaiting a response, or if the client has used it to setup a long-lived operation that has not yet been cancelled.  For example, a long-lived operation could be a Push Notification subscription <a href="#I-D.ietf-dnssd-push" class="xref">[I-D.ietf-dnssd-push]</a> or a Discovery Relay interface subscription <a href="#I-D.sctl-dnssd-mdns-relay" class="xref">[I-D.sctl-dnssd-mdns-relay]</a>.</p>
 <p id="rfc.section.4.2.1.p.2">Whether a message is acknowledged or unacknowledged is determined only by the specification for the Primary TLV.  An acknowledgment cannot be requested by including a nonzero message ID in a message the primary TLV of which is specified to be unacknowledged, nor can an acknowledgment be prevented by sending a message ID of zero in a message with a primary TLV that is specified to be acknowledged.  A responder that receives either such malformed message MUST treat it as a programming error and terminate the connection.</p>
 <p id="rfc.section.4.2.1.p.3">In a request message the DNS Header QR bit MUST be zero (QR=0).<br> If the QR bit is not zero the message is not a request message.</p>
 <p id="rfc.section.4.2.1.p.4">In a response message the DNS Header QR bit MUST be one (QR=1).<br> If the QR bit is not one the message is not a response message.</p>
@@ -819,7 +820,7 @@
 <p id="rfc.section.4.2.2.p.6">A DSO response message may contain one or more TLVs with DSO-TYPEs different from the Primary TLV from the corresponding DSO request message, in which case those TLV(s) are referred to as &#8220;Response Additional TLVs&#8221;.</p>
 <p id="rfc.section.4.2.2.p.7">Response Primary TLV(s), if present, MUST occur first in the response message, before any Response Additional TLVs.</p>
 <p id="rfc.section.4.2.2.p.8">It is anticipated that by default most DSO request messages will be specified to be acknowledged request messages, which generate corresponding responses.  In some specialized high-traffic use cases, it may be appropriate to specify unacknowledged request messages.  Unacknowledged request messages can be more efficient on the network, because they don&#8217;t generate a stream of corresponding reply messages.  Using unacknowledged request messages can also simplify software in some cases, by removing need for an initiator to maintain state while it waits to receive replies it doesn&#8217;t care about.  When the specification for a particular TLV states that, when used as a Primary TLV (i.e., first) in a request message, that request message is to be unacknowledged, the MESSAGE ID field MUST be set to zero and the receiver MUST NOT generate any response message corresponding to this unacknowledged request message.</p>
-<p id="rfc.section.4.2.2.p.9">The previous point, that the receiver MUST NOT generate responses to unacknowledged request messages, applies even in the case of errors.  When a DSO request message is received with the MESSAGE ID field set to zero, the receiver MUST NOT generate any response.  For example, if the DSO-TYPE in the Primary TLV is unrecognized, then a DSNOTIMP error MUST NOT be returned; instead the receiver MUST forcibly abort the connection immediately.</p>
+<p id="rfc.section.4.2.2.p.9">The previous point, that the receiver MUST NOT generate responses to unacknowledged request messages, applies even in the case of errors.  When a DSO request message is received with the MESSAGE ID field set to zero, the receiver MUST NOT generate any response.  For example, if the DSO-TYPE in the Primary TLV is unrecognized, then a DSONOTIMP error MUST NOT be returned; instead the receiver MUST forcibly abort the connection immediately.</p>
 <p id="rfc.section.4.2.2.p.10">Unacknowledged request messages MUST NOT be used &#8220;speculatively&#8221; in cases where the sender doesn&#8217;t know if the receiver supports the Primary TLV in the message, because there is no way to receive any response to indicate success or failure of the request message (the request message does not contain a unique MESSAGE ID with which to associate a response with its corresponding request).  Unacknowledged request messages are only appropriate in cases where the sender already knows that the receiver supports and wishes to receive these messages.</p>
 <p id="rfc.section.4.2.2.p.11">For example, after a client has subscribed for Push Notifications <a href="#I-D.ietf-dnssd-push" class="xref">[I-D.ietf-dnssd-push]</a>, the subsequent event notifications are then sent as unacknowledged messages, and this is appropriate because the client initiated the message stream by virtue of its Push Notification subscription, thereby indicating its support of Push Notifications, and its desire to receive those notifications.</p>
 <p id="rfc.section.4.2.2.p.12">After an mDNS Relay client has subscribed to receive inbound mDNS traffic from an mDNS Relay, the subsequent stream of received packets is then sent using unacknowledged messages, and this is appropriate because the client initiated the message stream by virtue of its mDNS Relay link subscription, thereby indicating its support of mDNS Relay, and its desire to receive inbound mDNS packets over that DSO session <a href="#I-D.sctl-dnssd-mdns-relay" class="xref">[I-D.sctl-dnssd-mdns-relay]</a>.</p>
@@ -891,7 +892,7 @@
 <p id="rfc.section.4.3.p.1">The initiator MUST set the value of the QR bit in the DNS header to zero (0), and the responder MUST set it to one (1).  Every DSO request message (QR=0) with a nonzero MESSAGE ID field MUST elicit a corresponding response (QR=1), which MUST have the same MESSAGE ID in the DNS message header as in the corresponding request.  DSO request messages sent by the client with a nonzero MESSAGE ID field elicit a response from the server, and DSO request messages sent by the server with a nonzero MESSAGE ID field elicit a response from the client.</p>
 <p id="rfc.section.4.3.p.2">A DSO request message (QR=0) with a zero MESSAGE ID field MUST NOT elicit a response.</p>
 <p id="rfc.section.4.3.p.3">The namespaces of 16-bit MESSAGE IDs are disjoint in each direction.  For example, it is <strong>not</strong> an error for both client and server to send a request message with the same ID. In effect, the 16-bit MESSAGE ID combined with the identity of the initiator (client or server) serves as a 17-bit unique identifier for a particular operation on a DSO Session.</p>
-<p id="rfc.section.4.3.p.4">As described in <a href="#header" class="xref">Section 4.2.1</a> An initiator MUST NOT reuse a MESSAGE ID that is already in use for an outstanding request, unless specified otherwise by the relevant specification for the DSO in question. At the very least, this means that a MESSAGE ID MUST NOT be reused in a particular direction on a particular DSO Session while the initiator is waiting for a response to a previous request using that MESSAGE ID on that DSO Session, unless specified otherwise by the relevant specification for the DSO in question.  (For a long-lived state the MESSAGE ID for the operation MUST NOT be reused whilst that state remains active.)</p>
+<p id="rfc.section.4.3.p.4">As described in <a href="#header" class="xref">Section 4.2.1</a> An initiator MUST NOT reuse a MESSAGE ID that is already in use for an outstanding request, unless specified otherwise by the relevant specification for the DSO in question. At the very least, this means that a MESSAGE ID MUST NOT be reused in a particular direction on a particular DSO Session while the initiator is waiting for a response to a previous request using that MESSAGE ID on that DSO Session, unless specified otherwise by the relevant specification for the DSO in question.  (For a long-lived operation the MESSAGE ID for the operation MUST NOT be reused whilst that operation remains active.)</p>
 <p id="rfc.section.4.3.p.5">If a client or server receives a response (QR=1) where the MESSAGE ID is zero, or any other value that does not match the MESSAGE ID of any of its outstanding operations, this is a fatal error and the recipient MUST forcibly abort the connection immediately.</p>
 <p></p>
 <h1 id="rfc.section.4.4">
@@ -934,7 +935,7 @@
 <p id="rfc.section.5.2.p.2">The first timeout value, the inactivity timeout, is the maximum time for which a client may speculatively keep a DSO Session open in the expectation that it may have future requests to send to that server.</p>
 <p id="rfc.section.5.2.p.3">The second timeout value, the keepalive interval, is the maximum permitted interval between client messages to the server if the client wishes to keep the DSO Session alive.</p>
 <p id="rfc.section.5.2.p.4">The two timeout values are independent. The inactivity timeout may be lower, the same, or higher than the keepalive interval, though in most cases the inactivity timeout is expected to be shorter than the keepalive interval.</p>
-<p id="rfc.section.5.2.p.5">Only when the client has a very long-lived low-traffic state does the keepalive interval come into play, to ensure that a sufficient residual amount of traffic is generated to maintain NAT and firewall state and to assure client and server that they still have connectivity to each other.</p>
+<p id="rfc.section.5.2.p.5">Only when the client has a very long-lived low-traffic operation does the keepalive interval come into play, to ensure that a sufficient residual amount of traffic is generated to maintain NAT and firewall state and to assure client and server that they still have connectivity to each other.</p>
 <p id="rfc.section.5.2.p.6">On a new DSO Session, if no explicit DSO Keepalive message exchange has taken place, the default value for both timeouts is 15 seconds.  For both timeouts, lower values of the timeout result in higher network traffic and higher CPU load on the server.</p>
 <p></p>
 <h1 id="rfc.section.5.3">
@@ -943,7 +944,7 @@
 <p id="rfc.section.5.3.p.1">At both servers and clients, the generation or reception of any complete DNS message, including DNS requests, responses, updates, or DSO messages, resets both timers for that DSO Session, with the exception that a DSO Keepalive message resets only the keepalive timer, not the inactivity timeout timer.</p>
 <p id="rfc.section.5.3.p.2">In addition, for as long as the client has an outstanding operation in progress, the inactivity timer remains cleared, and an inactivity timeout cannot occur.</p>
 <p id="rfc.section.5.3.p.3">For short-lived DNS operations like traditional queries and updates, an operation is considered in progress for the time between request and response, typically a period of a few hundred milliseconds at most.  At the client, the inactivity timer is cleared upon transmission of a request and remains cleared until reception of the corresponding response.  At the server, the inactivity timer is cleared upon reception of a request and remains cleared until transmission of the corresponding response.</p>
-<p id="rfc.section.5.3.p.4">For long-lived DNS Stateful operations, an operation is considered in progress for as long as the state is active, until it is cancelled.  This means that a DSO Session can exist, with a state active, with no messages flowing in either direction, for far longer than the inactivity timeout, and this is not an error. This is why there are two separate timers: the inactivity timeout, and the keepalive interval.  Just because a DSO Session has no traffic for an extended period of time does not automatically make that DSO Session &#8220;inactive&#8221;, if it has active state that is awaiting events.</p>
+<p id="rfc.section.5.3.p.4">For long-lived DNS Stateful operations (such as a Push Notification subscription <a href="#I-D.ietf-dnssd-push" class="xref">[I-D.ietf-dnssd-push]</a> or a Discovery Relay interface subscription <a href="#I-D.sctl-dnssd-mdns-relay" class="xref">[I-D.sctl-dnssd-mdns-relay]</a>), an operation is considered in progress for as long as the operation is active, until it is cancelled.  This means that a DSO Session can exist, with active operations, with no messages flowing in either direction, for far longer than the inactivity timeout, and this is not an error.  This is why there are two separate timers: the inactivity timeout, and the keepalive interval.  Just because a DSO Session has no traffic for an extended period of time does not automatically make that DSO Session &#8220;inactive&#8221;, if it has an active operation that is awaiting events.</p>
 <p></p>
 <h1 id="rfc.section.5.4">
 <a href="#rfc.section.5.4">5.4.</a> <a href="#the-inactivity-timeout" id="the-inactivity-timeout">The Inactivity Timeout</a>
@@ -955,7 +956,7 @@
 <p id="rfc.section.5.4.1.p.1">A client is NOT required to wait until the inactivity timeout expires before closing a DSO Session.  A client MAY close a DSO Session at any time, at the client&#8217;s discretion.  If a client determines that it has no current or reasonably anticipated future need for an inactive DSO Session, then the client SHOULD close that connection.</p>
 <p id="rfc.section.5.4.1.p.2">If, at any time during the life of the DSO Session, the inactivity timeout value (i.e., 15 seconds by default) elapses without there being any operation active on the DSO Session, the client MUST close the connection gracefully.</p>
 <p id="rfc.section.5.4.1.p.3">If, at any time during the life of the DSO Session, twice the inactivity timeout value (i.e., 30 seconds by default), or five seconds, if twice the inactivity timeout value is less than five seconds, elapses without there being any operation active on the DSO Session, the server SHOULD consider the client delinquent, and SHOULD forcibly abort the DSO Session.</p>
-<p id="rfc.section.5.4.1.p.4">In this context, an operation being active on a DSO Session includes a query waiting for a response, an update waiting for a response, or active state, but not a DSO Keepalive message exchange itself.  A DSO Keepalive message exchange resets only the keepalive interval timer, not the inactivity timeout timer.</p>
+<p id="rfc.section.5.4.1.p.4">In this context, an operation being active on a DSO Session includes a query waiting for a response, an update waiting for a response, or an active long-lived operation, but not a DSO Keepalive message exchange itself.  A DSO Keepalive message exchange resets only the keepalive interval timer, not the inactivity timeout timer.</p>
 <p id="rfc.section.5.4.1.p.5">If the client wishes to keep an inactive DSO Session open for longer than the default duration without having to send traffic every 15 seconds, then it uses the DSO Keepalive message to request longer timeout values, as described in <a href="#keepalive" class="xref">Section 7.2</a>.</p>
 <h1 id="rfc.section.5.4.2">
 <a href="#rfc.section.5.4.2">5.4.2.</a> <a href="#values-for-the-inactivity-timeout" id="values-for-the-inactivity-timeout">Values for the Inactivity Timeout</a>
@@ -976,7 +977,7 @@
 <a href="#rfc.section.5.5.1">5.5.1.</a> <a href="#keepalive-interval-expiry" id="keepalive-interval-expiry">Keepalive Interval Expiry</a>
 </h1>
 <p id="rfc.section.5.5.1.p.1">If, at any time during the life of the DSO Session, the keepalive interval value (i.e., 15 seconds by default) elapses without any DNS messages being sent or received on a DSO Session, the client MUST take action to keep the DSO Session alive, by sending a DSO Keepalive message (see <a href="#keepalive" class="xref">Section 7.2</a>).  A DSO Keepalive message exchange resets only the keepalive timer, not the inactivity timer.</p>
-<p id="rfc.section.5.5.1.p.2">If a client disconnects from the network abruptly, without cleanly closing its DSO Session, leaving long-lived state uncanceled, the server learns of this after failing to receive the required keepalive traffic from that client.  If, at any time during the life of the DSO Session, twice the keepalive interval value (i.e., 30 seconds by default) elapses without any DNS messages being sent or received on a DSO Session, the server SHOULD consider the client delinquent, and SHOULD forcibly abort the DSO Session.</p>
+<p id="rfc.section.5.5.1.p.2">If a client disconnects from the network abruptly, without cleanly closing its DSO Session, leaving a long-lived operation uncanceled, the server learns of this after failing to receive the required keepalive traffic from that client.  If, at any time during the life of the DSO Session, twice the keepalive interval value (i.e., 30 seconds by default) elapses without any DNS messages being sent or received on a DSO Session, the server SHOULD consider the client delinquent, and SHOULD forcibly abort the DSO Session.</p>
 <h1 id="rfc.section.5.5.2">
 <a href="#rfc.section.5.5.2">5.5.2.</a> <a href="#values-for-the-keepalive-interval" id="values-for-the-keepalive-interval">Values for the Keepalive Interval</a>
 </h1>
@@ -1011,7 +1012,7 @@
 <ul>
 <li>The server application software or underlying operating system is shutting down or restarting.</li>
 <li>The server application software terminates unexpectedly (perhaps due to a bug that makes it crash).</li>
-<li>The server is undergoing a reconfiguration or maintenance procedure, that, due to the way the server software is implemented, requires clients to be disconnected.  For example, some software is implemented such that it reads a configuration file at startup, and changing the server&#8217;s configuration entails modifiying the configuration file and then killing and restarting the server software, which generally entails a loss of network connections.</li>
+<li>The server is undergoing a reconfiguration or maintenance procedure, that, due to the way the server software is implemented, requires clients to be disconnected.  For example, some software is implemented such that it reads a configuration file at startup, and changing the server&#8217;s configuration entails modifying the configuration file and then killing and restarting the server software, which generally entails a loss of network connections.</li>
 <li>The client fails to meets its obligation to generate keepalive traffic or close an inactive session by the prescribed time (twice the time interval dictated by the server, or five seconds, whichever is greater, as described in <a href="#sessiontimeouts" class="xref">Section 5.2</a>).</li>
 <li>The client sends a grossly invalid or malformed request that is indicative of a seriously defective client implementation (see <a href="#error" class="xref">Section 5.6.1</a>).</li>
 <li>The server is over capacity and needs to shed some load (see <a href="#retry" class="xref">Section 5.6.3</a>).</li>
@@ -1053,7 +1054,7 @@
 <h1 id="rfc.section.7.1">
 <a href="#rfc.section.7.1">7.1.</a> <a href="#delay" id="delay">Retry Delay TLV</a>
 </h1>
-<p id="rfc.section.7.1.p.1">The Retry Delay TLV (DSO-TYPE=0) can be used as a Primary TLV (unacknowledged) in a server-to-client message, or as a Response Additional TLV in a server-to-client response to a client-to-server request message.</p>
+<p id="rfc.section.7.1.p.1">The Retry Delay TLV (DSO-TYPE=1) can be used as a Primary TLV (unacknowledged) in a server-to-client message, or as a Response Additional TLV in a server-to-client response to a client-to-server request message.</p>
 <p id="rfc.section.7.1.p.2">The TYPE-DEPENDENT DATA for the the Retry Delay TLV is as follows:</p>
 <pre>
                         1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
@@ -1096,7 +1097,7 @@
 <h1 id="rfc.section.7.2">
 <a href="#rfc.section.7.2">7.2.</a> <a href="#keepalive" id="keepalive">Keepalive TLV</a>
 </h1>
-<p id="rfc.section.7.2.p.1">The Keepalive TLV (DSO-TYPE=1) performs two functions: to reset the keepalive timer for the DSO Session and to establish the values for the Session Timeouts.</p>
+<p id="rfc.section.7.2.p.1">The Keepalive TLV (DSO-TYPE=2) performs two functions: to reset the keepalive timer for the DSO Session and to establish the values for the Session Timeouts.</p>
 <p id="rfc.section.7.2.p.2">The Keepalive TLV resets only the keepalive timer, not the inactivity timer.  The reason for this is that periodic Keepalive TLVs are sent for the sole purpose of keeping a DSO Session alive, because that DSO Session has current or recent non-maintenance activity that warrants keeping the DSO Session alive.  If sending keepalive traffic itself were to reset the inactivity timer, then that would create a circular livelock where keepalive traffic would be sent indefinitely to keep a DSO Session alive, where the only activity on that DSO Session would be the keepalive traffic keeping the DSO Session alive so that further keepalive traffic can be sent.</p>
 <p id="rfc.section.7.2.p.3">Sending keepalive traffic is considered a maintenance activity that is performed in service of other client activities.  Sending keepalive traffic itself is not considered a client activity.  For a DSO Session to be considered active, it must be carrying something more than just keepalive traffic.  This is why merely sending a Keepalive TLV does not reset the inactivity timer.</p>
 <p id="rfc.section.7.2.p.4">When sent by a client, the Keepalive request message MUST be sent as an acknowledged request, with a nonzero MESSAGE ID.  It resets a DSO Session&#8217;s keepalive timer, and at the same time requests what the Session Timeout values should be from this point forward in the DSO Session.  If a server receives a Keepalive request message with a zero MESSAGE ID then this is a fatal error and the server MUST forcibly abort the connection immediately.</p>
@@ -1141,12 +1142,12 @@
 <h1 id="rfc.section.7.2.2">
 <a href="#rfc.section.7.2.2">7.2.2.</a> <a href="#relation-to-edns0-tcp-keepalive-option" id="relation-to-edns0-tcp-keepalive-option">Relation to EDNS(0) TCP Keepalive Option</a>
 </h1>
-<p id="rfc.section.7.2.2.p.1">The inactivity timeout value in the Keepalive TLV (DSO-TYPE=1) has similar intent to the EDNS(0) TCP Keepalive Option <a href="#RFC7828" class="xref">[RFC7828]</a>.  A client/server pair that supports DSO MUST NOT use the EDNS(0) TCP KeepAlive option within any message after a DSO Session has been established.  Once a DSO Session has been established, if either client or server receives a DNS message over the DSO Session that contains an EDNS(0) TCP Keepalive option, this is an error and the receiver of the EDNS(0) TCP Keepalive option MUST forcibly abort the connection immediately.</p>
+<p id="rfc.section.7.2.2.p.1">The inactivity timeout value in the Keepalive TLV (DSO-TYPE=2) has similar intent to the EDNS(0) TCP Keepalive Option <a href="#RFC7828" class="xref">[RFC7828]</a>.  A client/server pair that supports DSO MUST NOT use the EDNS(0) TCP KeepAlive option within any message after a DSO Session has been established.  Once a DSO Session has been established, if either client or server receives a DNS message over the DSO Session that contains an EDNS(0) TCP Keepalive option, this is an error and the receiver of the EDNS(0) TCP Keepalive option MUST forcibly abort the connection immediately.</p>
 <p></p>
 <h1 id="rfc.section.7.3">
 <a href="#rfc.section.7.3">7.3.</a> <a href="#padding" id="padding">Encryption Padding TLV</a>
 </h1>
-<p id="rfc.section.7.3.p.1">The Encryption Padding TLV (DSO-TYPE=2) can only be used as an Additional or Response Additional TLV.  It is only applicable when the DSO Transport layer uses encryption such as TLS.</p>
+<p id="rfc.section.7.3.p.1">The Encryption Padding TLV (DSO-TYPE=3) can only be used as an Additional or Response Additional TLV.  It is only applicable when the DSO Transport layer uses encryption such as TLS.</p>
 <p id="rfc.section.7.3.p.2">The TYPE-DEPENDENT DATA for the the Padding TLV is optional and is a variable length field containing non-specified values. A DATA LENGTH of 0 essentially provides for 4 octets of padding (the minimum amount).</p>
 <pre>
                                              1   1   1   1   1   1
@@ -1249,24 +1250,30 @@
 <tbody>
 <tr>
 <td class="left">0000</td>
-<td class="left">RetryDelay</td>
+<td class="left">Reserved</td>
 <td class="left">Standard</td>
 <td class="left">RFC-TBD</td>
 </tr>
 <tr>
 <td class="left">0001</td>
-<td class="left">KeepAlive</td>
+<td class="left">RetryDelay</td>
 <td class="left">Standard</td>
 <td class="left">RFC-TBD</td>
 </tr>
 <tr>
 <td class="left">0002</td>
+<td class="left">KeepAlive</td>
+<td class="left">Standard</td>
+<td class="left">RFC-TBD</td>
+</tr>
+<tr>
+<td class="left">0003</td>
 <td class="left">EncryptionPadding</td>
 <td class="left">Standard</td>
 <td class="left">RFC-TBD</td>
 </tr>
 <tr>
-<td class="left">0003-003F</td>
+<td class="left">0004-003F</td>
 <td class="left">Unassigned, reserved for    DSO session-management TLVs</td>
 <td class="left"></td>
 <td class="left"></td>
@@ -1293,7 +1300,7 @@
 </table>
 <p id="rfc.section.9.3.p.2">DSO Type Codes in the &#8220;experimental/local&#8221; range F800-FBFF may be used as Experimental Use or Private Use values <a href="#RFC5226" class="xref">[RFC5226]</a> and may be used freely for development purposes, or for other purposes within a single site.  No attempt is made to prevent multiple sites from using the same value in different (and incompatible) ways.  There is no need for IANA to review such assignments (since IANA does not record them) and assignments are not generally useful for broad interoperability.  It is the responsibility of the sites making use of &#8220;experimental/local&#8221; values to ensure that no conflicts occur within the intended scope of use.</p>
 <p id="rfc.section.9.3.p.3">Registration of new DSO Type Codes in the &#8220;Reserved for future expansion&#8221; range FC00-FFFF and &#8220;Unassigned, reserved for DSO session-management TLVs&#8221; range 0003-003F requires publication of an IETF Standards Action document <a href="#RFC5226" class="xref">[RFC5226]</a>.</p>
-<p id="rfc.section.9.3.p.4">Requests to register additional new DSO Type Codes in the &#8220;Unassigned&#8221; range 0040-F7FF are to be recorded by IANA after consulation with the registry&#8217;s Designated Expert <a href="#RFC5226" class="xref">[RFC5226]</a> at that time.  At the time of publication of this document, the Designated Expert for the newly created DSO Type Code registry is [<strong>TBD</strong>].</p>
+<p id="rfc.section.9.3.p.4">Requests to register additional new DSO Type Codes in the &#8220;Unassigned&#8221; range 0040-F7FF are to be recorded by IANA after consultation with the registry&#8217;s Designated Expert <a href="#RFC5226" class="xref">[RFC5226]</a> at that time.  At the time of publication of this document, the Designated Expert for the newly created DSO Type Code registry is [<strong>TBD</strong>].</p>
 <p></p>
 <h1 id="rfc.section.10">
 <a href="#rfc.section.10">10.</a> <a href="#security-considerations" id="security-considerations">Security Considerations</a>
