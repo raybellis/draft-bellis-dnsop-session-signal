@@ -189,10 +189,10 @@ DNS messages over a connection where:
   long-lived (i.e., minutes or hours, rather than seconds).
 - Either end of the connection may initiate messages to the other.
 
-A "DSO Session" is established between two endpoints that
-acknowledge persistent DNS state via the exchange of DSO messages
-over the connection. This is distinct from a DNS-over-TCP session
-as described in RC7766.
+A "DSO Session" is established between two endpoints that acknowledge
+persistent DNS state via the exchange of DSO messages over the connection.
+This is distinct from a DNS-over-TCP session as described in
+the previous specification for DNS over TCP {{!RFC7766}}.
 
 A "DSO Session" is terminated when the underlying connection is closed.
 The underlying connection can be closed in two ways.

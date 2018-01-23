@@ -652,7 +652,7 @@
 <li>The connection between client and server is persistent and relatively long-lived (i.e., minutes or hours, rather than seconds).</li>
 <li>Either end of the connection may initiate messages to the other.</li>
 </ul>
-<p id="rfc.section.2.p.6">A &#8220;DSO Session&#8221; is established between two endpoints that acknowledge persistent DNS state via the exchange of DSO messages over the connection. This is distinct from a DNS-over-TCP session as described in RC7766.</p>
+<p id="rfc.section.2.p.6">A &#8220;DSO Session&#8221; is established between two endpoints that acknowledge persistent DNS state via the exchange of DSO messages over the connection.  This is distinct from a DNS-over-TCP session as described in the previous specification for DNS over TCP <a href="#RFC7766" class="xref">[RFC7766]</a>.</p>
 <p id="rfc.section.2.p.7">A &#8220;DSO Session&#8221; is terminated when the underlying connection is closed.  The underlying connection can be closed in two ways.</p>
 <p id="rfc.section.2.p.8">Where this specification says, &#8220;close gracefully,&#8221; that means sending a TLS close_notify followed by a TCP FIN, or the equivalents for other protocols.  Where this specification requires a connection to be closed gracefully, the requirement to initiate that graceful close is placed on the client, to place the burden of TCP&#8217;s TIME-WAIT state on the client rather than the server.</p>
 <p id="rfc.section.2.p.9">Where this specification says, &#8220;forcibly abort,&#8221; that means sending a TCP RST, or the equivalent for other protocols.  In the BSD Sockets API this is achieved by setting the SO_LINGER option to zero before closing the socket.</p>
