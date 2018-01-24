@@ -704,6 +704,7 @@
 <p id="rfc.section.4.1.p.10">When the client receives the server&#8217;s NOERROR response to its DSO request message, the client considers the DSO Session established.</p>
 <p id="rfc.section.4.1.p.11">Once a DSO Session has been established, either end may unilaterally send DSO messages at any time, and therefore either client or server may be the initiator of a message.</p>
 <p id="rfc.section.4.1.p.12">Once a DSO Session has been established, clients and servers should behave as described in this specification with regard to inactivity timeouts and session termination, not as previously prescribed in the earlier specification for DNS over TCP <a href="#RFC7766" class="xref">[RFC7766]</a>.</p>
+<p></p>
 <h1 id="rfc.section.4.1.1">
 <a href="#rfc.section.4.1.1">4.1.1.</a> <a href="#zero-round-trip-operation" id="zero-round-trip-operation">Zero Round-Trip Operation</a>
 </h1>
@@ -744,6 +745,7 @@
    /                                                               /
    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 </pre>
+<p></p>
 <h1 id="rfc.section.4.2.1">
 <a href="#rfc.section.4.2.1">4.2.1.</a> <a href="#header" id="header">Header</a>
 </h1>
@@ -752,10 +754,10 @@
 <p id="rfc.section.4.2.1.p.3">In a request message the DNS Header QR bit MUST be zero (QR=0).<br> If the QR bit is not zero the message is not a request message.</p>
 <p id="rfc.section.4.2.1.p.4">In a response message the DNS Header QR bit MUST be one (QR=1).<br> If the QR bit is not one the message is not a response message.</p>
 <p id="rfc.section.4.2.1.p.5">In a response message (QR=1) the MESSAGE ID field MUST contain a copy of the value of the MESSAGE ID field in the acknowledged request message being responded to.  In a response message (QR=1) the MESSAGE ID field MUST NOT be zero.  If a response message (QR=1) is received where the MESSAGE ID is zero this is a fatal error and the receiver MUST forcibly abort the connection immediately.</p>
-<p id="rfc.section.4.2.1.p.6">The DNS Header OPCODE field holds the DSO OPCODE value (tentatively 6).</p>
+<p id="rfc.section.4.2.1.p.6">The DNS Header OPCODE field holds the DSO OPCODE value (tent. 6).</p>
 <p id="rfc.section.4.2.1.p.7">The Z bits are currently unused in DSO messages, and in both DSO requests and DSO responses the Z bits MUST be set to zero (0) on transmission and MUST be silently ignored on reception, unless a future IETF Standard specifies otherwise.</p>
-<p id="rfc.section.4.2.1.p.8">In a request message (QR=0) the RCODE is generally set to zero on transmission, and silently ignored on reception, except where specified otherwise (for example, the Retry Delay request message (see <a href="#retry" class="xref">Section 5.6.3</a>), where the RCODE indicates the reason for termination).</p>
 <p></p>
+<p id="rfc.section.4.2.1.p.9">In a request message (QR=0) the RCODE is generally set to zero on transmission, and silently ignored on reception, except where specified otherwise (for example, the Retry Delay request message (see <a href="#retry" class="xref">Section 5.6.3</a>), where the RCODE indicates the reason for termination).</p>
 <p id="rfc.section.4.2.1.p.10">The RCODE value in a response message (QR=1) may be one of the following values:</p>
 <table cellpadding="3" cellspacing="0" class="tt full center">
 <thead><tr>
@@ -856,26 +858,23 @@
 <p id="rfc.section.4.2.2.1.p.4">Where domain names appear within TYPE-DEPENDENT DATA, they MAY<br> be compressed using standard DNS name compression <a href="#RFC1035" class="xref">[RFC1035]</a>.<br> However, the compression offsets MUST be relative to the start of the TYPE-DEPENDENT DATA and MUST NOT extend beyond the end of the TYPE-DEPENDENT DATA.</p>
 <p></p>
 <h1 id="rfc.section.4.2.2.2">
-<a href="#rfc.section.4.2.2.2">4.2.2.2.</a> <a href="#primary-tlv" id="primary-tlv">Primary TLV</a>
+<a href="#rfc.section.4.2.2.2">4.2.2.2.</a> <a href="#request-tlvs" id="request-tlvs">Request TLVs</a>
 </h1>
-<p id="rfc.section.4.2.2.2.p.1">The Primary (first) TLV in a DSO request message indicates the operation to be performed.  A DSO request message MUST contain at at least one TLV, the Primary TLV.</p>
+<p id="rfc.section.4.2.2.2.p.1">The first TLV in a DSO request message is the &#8220;Primary TLV&#8221; and indicates the operation to be performed.  A DSO request message MUST contain at at least one TLV, the Primary TLV.</p>
+<p id="rfc.section.4.2.2.2.p.2">Immediately following the Primary TLV, a DSO request message MAY contain one or more &#8220;Additional TLVs&#8221;, which specify additional parameters relating to the operation.</p>
 <h1 id="rfc.section.4.2.2.3">
-<a href="#rfc.section.4.2.2.3">4.2.2.3.</a> <a href="#additional-tlvs" id="additional-tlvs">Additional TLVs</a>
+<a href="#rfc.section.4.2.2.3">4.2.2.3.</a> <a href="#response-tlvs" id="response-tlvs">Response TLVs</a>
 </h1>
-<p id="rfc.section.4.2.2.3.p.1">An &#8220;Additional TLV&#8221; specifies additional parameters relating to the operation. Immediately following the Primary TLV a DSO request message MAY contain one or more Additional TLVs.</p>
-<h1 id="rfc.section.4.2.2.4">
-<a href="#rfc.section.4.2.2.4">4.2.2.4.</a> <a href="#response-tlvs" id="response-tlvs">Response TLVs</a>
-</h1>
-<p id="rfc.section.4.2.2.4.p.1">Depending on the operation, a DSO response message MAY contain no TLVs, because it is simply a response to a previous request message, and the MESSAGE ID in the header is sufficient to identify the request in question.  Or it may contain a single response TLV, with the same DSO-TYPE as the Primary TLV in the request message.  Alternatively it may contain one or more TLVs of other types, or a combination of the above, as appropriate for the information that needs to be communicated.  The specification for each DSO TLV determines what TLVs are required in a response to a request using that TLV.</p>
-<p id="rfc.section.4.2.2.4.p.2">If a DSO response is received for an operation where the specification requires that the response carry a particular TLV or TLVs, and the required TLV(s) are not present, then this is a fatal error and the recipient of the defective response message MUST forcibly abort the connection immediately.</p>
+<p id="rfc.section.4.2.2.3.p.1">Depending on the operation, a DSO response message MAY contain no TLVs, because it is simply a response to a previous request message, and the MESSAGE ID in the header is sufficient to identify the request in question.  Or it may contain a single response TLV, with the same DSO-TYPE as the Primary TLV in the request message.  Alternatively it may contain one or more TLVs of other types, or a combination of the above, as appropriate for the information that needs to be communicated.  The specification for each DSO TLV determines what TLVs are required in a response to a request using that TLV.</p>
+<p id="rfc.section.4.2.2.3.p.2">If a DSO response is received for an operation where the specification requires that the response carry a particular TLV or TLVs, and the required TLV(s) are not present, then this is a fatal error and the recipient of the defective response message MUST forcibly abort the connection immediately.</p>
 <p></p>
-<h1 id="rfc.section.4.2.2.5">
-<a href="#rfc.section.4.2.2.5">4.2.2.5.</a> <a href="#unrecognized-tlvs" id="unrecognized-tlvs">Unrecognized TLVs</a>
+<h1 id="rfc.section.4.2.2.4">
+<a href="#rfc.section.4.2.2.4">4.2.2.4.</a> <a href="#unrecognized-tlvs" id="unrecognized-tlvs">Unrecognized TLVs</a>
 </h1>
-<p id="rfc.section.4.2.2.5.p.1">If DSO request is received containing an unrecognized Primary TLV, with a nonzero MESSAGE ID (indicating that a response is expected), then the receiver MUST send a response with matching MESSAGE ID, and RCODE DSONOTIMP (tentatively 11).  The response MUST NOT contain a copy of the unrecognized Primary TLV.</p>
-<p id="rfc.section.4.2.2.5.p.2">If DSO request is received containing an unrecognized Primary TLV, with a zero MESSAGE ID (indicating that no response is expected), the receiver MUST silently ignore the message. A response MUST NOT be sent.</p>
-<p id="rfc.section.4.2.2.5.p.3">If a DSO request message is received where the Primary TLV is recognized, containing one or more unrecognized Additional TLVs, the unrecognized Additional TLVs MUST be silently ignored, and the remainder of the message is interpreted and handled as if the unrecognized parts were not present.</p>
-<p id="rfc.section.4.2.2.5.p.4">Similarly, if a DSO response message is received containing one or more unrecognized TLVs, the unrecognized TLVs MUST be silently ignored, and the remainder of the message is interpreted and handled as if the unrecognized parts were not present.</p>
+<p id="rfc.section.4.2.2.4.p.1">If DSO request is received containing an unrecognized Primary TLV, with a nonzero MESSAGE ID (indicating that a response is expected), then the receiver MUST send a response with matching MESSAGE ID, and RCODE DSONOTIMP (tentatively 11).  The response MUST NOT contain a copy of the unrecognized Primary TLV.</p>
+<p id="rfc.section.4.2.2.4.p.2">If DSO request is received containing an unrecognized Primary TLV, with a zero MESSAGE ID (indicating that no response is expected), the receiver MUST silently ignore the message. A response MUST NOT be sent.</p>
+<p id="rfc.section.4.2.2.4.p.3">If a DSO request message is received where the Primary TLV is recognized, containing one or more unrecognized Additional TLVs, the unrecognized Additional TLVs MUST be silently ignored, and the remainder of the message is interpreted and handled as if the unrecognized parts were not present.</p>
+<p id="rfc.section.4.2.2.4.p.4">Similarly, if a DSO response message is received containing one or more unrecognized TLVs, the unrecognized TLVs MUST be silently ignored, and the remainder of the message is interpreted and handled as if the unrecognized parts were not present.</p>
 <p></p>
 <h1 id="rfc.section.4.2.3">
 <a href="#rfc.section.4.2.3">4.2.3.</a> <a href="#edns0-and-tsig" id="edns0-and-tsig">EDNS(0) and TSIG</a>
@@ -1123,9 +1122,10 @@
 <dt>KEEPALIVE INTERVAL:</dt>
 <dd style="margin-left: 8">The keepalive interval for the current DSO Session, specified as a 32-bit unsigned integer in network (big endian) byte order in units of milliseconds.  This is the interval at which a client MUST generate keepalive traffic to maintain connection state.  The keepalive interval MUST NOT be less than ten seconds.  If the client does not generate the mandated keepalive traffic, then after twice this interval the server will forcibly abort the connection.  Since the minimum allowed keepalive interval is ten seconds, the minimum time at which a server will forcibly disconnect a client for failing to generate the mandated keepalive traffic is twenty seconds.</dd>
 </dl>
-<p id="rfc.section.7.2.p.11">In a client-initiated DSO Keepalive message, the Session Timeouts contain the client&#8217;s requested values.  In a server response to a client-initiated message, the Session Timeouts contain the server&#8217;s chosen values, which the client MUST respect.  This is modeled after the DHCP protocol, where the client requests a certain lease lifetime using DHCP option 51 <a href="#RFC2132" class="xref">[RFC2132]</a>, but the server is the ultimate authority for deciding what lease lifetime is actually granted.</p>
-<p id="rfc.section.7.2.p.12">In a server-initiated DSO Keepalive message, the Session Timeouts unilaterally inform the client of the new values from this point forward in this DSO Session. The client MUST NOT generate a response to the server-initiated DSO Keepalive message.</p>
-<p id="rfc.section.7.2.p.13">When a client is sending its second and subsequent Keepalive DSO requests to the server, the client SHOULD continue to request its preferred values each time. This allows flexibility, so that if conditions change during the lifetime of a DSO Session, the server can adapt its responses to better fit the client&#8217;s needs.</p>
+<p></p>
+<p id="rfc.section.7.2.p.12">In a client-initiated DSO Keepalive message, the Session Timeouts contain the client&#8217;s requested values.  In a server response to a client-initiated message, the Session Timeouts contain the server&#8217;s chosen values, which the client MUST respect.  This is modeled after the DHCP protocol, where the client requests a certain lease lifetime using DHCP option 51 <a href="#RFC2132" class="xref">[RFC2132]</a>, but the server is the ultimate authority for deciding what lease lifetime is actually granted.</p>
+<p id="rfc.section.7.2.p.13">In a server-initiated DSO Keepalive message, the Session Timeouts unilaterally inform the client of the new values from this point forward in this DSO Session. The client MUST NOT generate a response to the server-initiated DSO Keepalive message.</p>
+<p id="rfc.section.7.2.p.14">When a client is sending its second and subsequent Keepalive DSO requests to the server, the client SHOULD continue to request its preferred values each time. This allows flexibility, so that if conditions change during the lifetime of a DSO Session, the server can adapt its responses to better fit the client&#8217;s needs.</p>
 <h1 id="rfc.section.7.2.1">
 <a href="#rfc.section.7.2.1">7.2.1.</a> <a href="#client-handling-of-received-session-timeout-values" id="client-handling-of-received-session-timeout-values">Client handling of received Session Timeout values</a>
 </h1>
@@ -1311,7 +1311,6 @@
 <a href="#rfc.section.11">11.</a> <a href="#acknowledgements" id="acknowledgements">Acknowledgements</a>
 </h1>
 <p id="rfc.section.11.p.1">Thanks to Tim Chown, Ralph Droms, Jan Komissar, Manju Shankar Rao, and Ted Lemon for their helpful contributions to this document.</p>
-<p></p>
 <h1 id="rfc.references">
 <a href="#rfc.references">12.</a> References</h1>
 <h1 id="rfc.references.1">

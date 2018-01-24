@@ -393,6 +393,8 @@ clients and servers should behave as described in this specification with
 regard to inactivity timeouts and session termination, not as previously
 prescribed in the earlier specification for DNS over TCP {{!RFC7766}}.
 
+***
+
 ### Zero Round-Trip Operation
 
 There is increased awareness today of the performance benefits
@@ -478,6 +480,8 @@ unless a future IETF Standard specifies otherwise.
        /                                                               /
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
+***
+
 ### Header {#header}
 
 In an unacknowledged request message the MESSAGE ID field MUST be set to zero.
@@ -512,19 +516,19 @@ In a response message (QR=1) the MESSAGE ID field MUST NOT be zero.
 If a response message (QR=1) is received where the MESSAGE ID is zero
 this is a fatal error and the receiver MUST forcibly abort the connection immediately.
 
-The DNS Header OPCODE field holds the DSO OPCODE value (tentatively 6).
+The DNS Header OPCODE field holds the DSO OPCODE value (tent. 6).
 
 The Z bits are currently unused in DSO messages,
 and in both DSO requests and DSO responses the
 Z bits MUST be set to zero (0) on transmission and MUST be silently ignored
 on reception, unless a future IETF Standard specifies otherwise.
 
+***
+
 In a request message (QR=0) the RCODE is generally set to zero on transmission,
 and silently ignored on reception, except where specified otherwise
 (for example, the Retry Delay request message (see {{retry}}),
 where the RCODE indicates the reason for termination).
-
-***
 
 The RCODE value in a response message (QR=1) may be one of the following values:
 
@@ -684,16 +688,15 @@ extend beyond the end of the TYPE-DEPENDENT DATA.
 
 ***
 
-#### Primary TLV
+#### Request TLVs
 
-The Primary (first) TLV in a DSO request message indicates the operation to be performed.
+The first TLV in a DSO request message is the "Primary TLV"
+and indicates the operation to be performed.
 A DSO request message MUST contain at at least one TLV, the Primary TLV.
 
-#### Additional TLVs
-
-An "Additional TLV" specifies additional parameters
-relating to the operation. Immediately following the Primary TLV
-a DSO request message MAY contain one or more Additional TLVs.
+Immediately following the Primary TLV, a DSO request message
+MAY contain one or more "Additional TLVs", which specify
+additional parameters relating to the operation.
 
 #### Response TLVs
 
@@ -1520,6 +1523,8 @@ Since the minimum allowed keepalive interval is ten seconds, the
 minimum time at which a server will forcibly disconnect a client for
 failing to generate the mandated keepalive traffic is twenty seconds.
 
+***
+
 In a client-initiated DSO Keepalive message,
 the Session Timeouts contain the client's requested values.
 In a server response to a client-initiated message, the Session Timeouts contain 
@@ -1809,7 +1814,5 @@ Jan Komissar,
 Manju Shankar Rao,
 and Ted Lemon
 for their helpful contributions to this document.
-
-***
 
 --- back
