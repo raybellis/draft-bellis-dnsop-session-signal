@@ -482,7 +482,7 @@ unless a future IETF Standard specifies otherwise.
 
 ***
 
-### Header {#header}
+### DNS Header Fields in DSO Messages {#header}
 
 In an unacknowledged request message the MESSAGE ID field MUST be set to zero.
 In an acknowledged request message the MESSAGE ID field MUST
@@ -516,7 +516,7 @@ In a response message (QR=1) the MESSAGE ID field MUST NOT be zero.
 If a response message (QR=1) is received where the MESSAGE ID is zero
 this is a fatal error and the receiver MUST forcibly abort the connection immediately.
 
-The DNS Header OPCODE field holds the DSO OPCODE value (tent. 6).
+The DNS Header OPCODE field holds the DSO OPCODE value (tentatively 6).
 
 The Z bits are currently unused in DSO messages,
 and in both DSO requests and DSO responses the
@@ -634,8 +634,8 @@ because the client initiated the message stream by virtue of its
 Push Notification subscription, thereby indicating its support of
 Push Notifications, and its desire to receive those notifications.
 
-After an mDNS Relay client has subscribed to receive inbound mDNS
-traffic from an mDNS Relay, the subsequent stream of received
+Similarly, after an mDNS Relay client has subscribed to receive inbound
+mDNS traffic from an mDNS Relay, the subsequent stream of received
 packets is then sent using unacknowledged messages, and this
 is appropriate because the client initiated the message stream
 by virtue of its mDNS Relay link subscription, thereby indicating
@@ -646,8 +646,8 @@ packets over that DSO session {{?I-D.sctl-dnssd-mdns-relay}}.
 
 #### TLV Syntax {#tlvsyntax}
 
-All TLVs, whether used as "Primary", "Additional", or in responses,
-use the same encoding syntax.
+All TLVs, whether used as "Primary", "Additional", "Response Primary",
+or "Response Additional", use the same encoding syntax.
 
 The specification for a TLV determines whether,
 when used as the Primary (i.e., first) TLV in a request message,
@@ -1247,7 +1247,7 @@ before the server resorts to forcibly aborting the connection.
 
 ***
 
-### Retry Delay Request Message {#retry}
+### Server-Initiated Retry Delay Request Message {#retry}
 
 There may be rare cases where a server is overloaded and wishes to shed load.
 If a server is low on resources it MAY simply terminate a client connection
@@ -1362,7 +1362,7 @@ multiple connections from different source ports on the same client IP address.
 
 # Base TLVs for DNS Stateful Operations
 
-This section describes the three Base TLVs for DNS Stateful Operations,
+This section describes the three base TLVs for DNS Stateful Operations:
 Retry Delay, Keepalive, and Encryption Padding.
 
 ## Retry Delay TLV {#delay}
@@ -1770,6 +1770,20 @@ with initial (hexadecimal) values as shown below:
 | F800-FBFF | Reserved for experimental/local use | | |
 | FC00-FFFF | Reserved for future expansion | | |
 
+DSO Type Code zero is reserved and is not currently intended for allocation.
+
+Registrations of new DSO Type Codes in
+the "Reserved for DSO session-management" range 0004-003F
+and the "Reserved for future expansion" range FC00-FFFF
+require publication of an IETF Standards Action document {{!RFC5226}}.
+
+Requests to register additional new DSO Type Codes
+in the "Unassigned" range 0040-F7FF
+are to be recorded by IANA after consultation with the
+registry's Designated Expert {{!RFC5226}} at that time.
+At the time of publication of this document, the Designated Expert
+for the newly created DSO Type Code registry is \[**TBD**\].
+
 DSO Type Codes in the "experimental/local" range F800-FBFF
 may be used as Experimental Use or Private Use values {{!RFC5226}}
 and may be used freely for development purposes,
@@ -1782,18 +1796,6 @@ are not generally useful for broad interoperability.
 It is the responsibility of the sites making use of
 "experimental/local" values to ensure that no
 conflicts occur within the intended scope of use.
-
-Registration of new DSO Type Codes in
-the "Reserved for future expansion" range FC00-FFFF
-and "Unassigned, reserved for DSO session-management TLVs" range 0003-003F
-requires publication of an IETF Standards Action document {{!RFC5226}}.
-
-Requests to register additional new DSO Type Codes
-in the "Unassigned" range 0040-F7FF
-are to be recorded by IANA after consultation with the
-registry's Designated Expert {{!RFC5226}} at that time.
-At the time of publication of this document, the Designated Expert
-for the newly created DSO Type Code registry is \[**TBD**\].
 
 ***
 

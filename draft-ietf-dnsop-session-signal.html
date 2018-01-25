@@ -382,7 +382,7 @@
 <link href="#rfc.section.4.1.1" rel="Chapter" title="4.1.1 Zero Round-Trip Operation">
 <link href="#rfc.section.4.1.2" rel="Chapter" title="4.1.2 Middlebox Considerations">
 <link href="#rfc.section.4.2" rel="Chapter" title="4.2 Message Format">
-<link href="#rfc.section.4.2.1" rel="Chapter" title="4.2.1 Header">
+<link href="#rfc.section.4.2.1" rel="Chapter" title="4.2.1 DNS Header Fields in DSO Messages">
 <link href="#rfc.section.4.2.2" rel="Chapter" title="4.2.2 DSO Data">
 <link href="#rfc.section.4.2.3" rel="Chapter" title="4.2.3 EDNS(0) and TSIG">
 <link href="#rfc.section.4.3" rel="Chapter" title="4.3 Message Handling">
@@ -401,7 +401,7 @@
 <link href="#rfc.section.5.6" rel="Chapter" title="5.6 Server-Initiated Session Termination">
 <link href="#rfc.section.5.6.1" rel="Chapter" title="5.6.1 Server-Initiated Session Termination on Error">
 <link href="#rfc.section.5.6.2" rel="Chapter" title="5.6.2 Server-Initiated Session Termination on Overload">
-<link href="#rfc.section.5.6.3" rel="Chapter" title="5.6.3 Retry Delay Request Message">
+<link href="#rfc.section.5.6.3" rel="Chapter" title="5.6.3 Server-Initiated Retry Delay Request Message">
 <link href="#rfc.section.6" rel="Chapter" title="6 Connection Sharing">
 <link href="#rfc.section.7" rel="Chapter" title="7 Base TLVs for DNS Stateful Operations">
 <link href="#rfc.section.7.1" rel="Chapter" title="7.1 Retry Delay TLV">
@@ -533,7 +533,7 @@
 </li>
 </ul><li>4.2.   <a href="#rfc.section.4.2">Message Format</a>
 </li>
-<ul><li>4.2.1.   <a href="#rfc.section.4.2.1">Header</a>
+<ul><li>4.2.1.   <a href="#rfc.section.4.2.1">DNS Header Fields in DSO Messages</a>
 </li>
 <li>4.2.2.   <a href="#rfc.section.4.2.2">DSO Data</a>
 </li>
@@ -571,7 +571,7 @@
 </li>
 <li>5.6.2.   <a href="#rfc.section.5.6.2">Server-Initiated Session Termination on Overload</a>
 </li>
-<li>5.6.3.   <a href="#rfc.section.5.6.3">Retry Delay Request Message</a>
+<li>5.6.3.   <a href="#rfc.section.5.6.3">Server-Initiated Retry Delay Request Message</a>
 </li>
 </ul></ul><li>6.   <a href="#rfc.section.6">Connection Sharing</a>
 </li>
@@ -747,14 +747,14 @@
 </pre>
 <p></p>
 <h1 id="rfc.section.4.2.1">
-<a href="#rfc.section.4.2.1">4.2.1.</a> <a href="#header" id="header">Header</a>
+<a href="#rfc.section.4.2.1">4.2.1.</a> <a href="#header" id="header">DNS Header Fields in DSO Messages</a>
 </h1>
 <p id="rfc.section.4.2.1.p.1">In an unacknowledged request message the MESSAGE ID field MUST be set to zero.  In an acknowledged request message the MESSAGE ID field MUST be set to a unique nonzero value, that the initiator is not currently using for any other active operation on this connection.  For the purposes here, a MESSAGE ID is in use in this DSO Session if the initiator has used it in a request for which it is still awaiting a response, or if the client has used it to setup a long-lived operation that has not yet been cancelled.  For example, a long-lived operation could be a Push Notification subscription <a href="#I-D.ietf-dnssd-push" class="xref">[I-D.ietf-dnssd-push]</a> or a Discovery Relay interface subscription <a href="#I-D.sctl-dnssd-mdns-relay" class="xref">[I-D.sctl-dnssd-mdns-relay]</a>.</p>
 <p id="rfc.section.4.2.1.p.2">Whether a message is acknowledged or unacknowledged is determined only by the specification for the Primary TLV.  An acknowledgment cannot be requested by including a nonzero message ID in a message the primary TLV of which is specified to be unacknowledged, nor can an acknowledgment be prevented by sending a message ID of zero in a message with a primary TLV that is specified to be acknowledged.  A responder that receives either such malformed message MUST treat it as a programming error and terminate the connection.</p>
 <p id="rfc.section.4.2.1.p.3">In a request message the DNS Header QR bit MUST be zero (QR=0).<br> If the QR bit is not zero the message is not a request message.</p>
 <p id="rfc.section.4.2.1.p.4">In a response message the DNS Header QR bit MUST be one (QR=1).<br> If the QR bit is not one the message is not a response message.</p>
 <p id="rfc.section.4.2.1.p.5">In a response message (QR=1) the MESSAGE ID field MUST contain a copy of the value of the MESSAGE ID field in the acknowledged request message being responded to.  In a response message (QR=1) the MESSAGE ID field MUST NOT be zero.  If a response message (QR=1) is received where the MESSAGE ID is zero this is a fatal error and the receiver MUST forcibly abort the connection immediately.</p>
-<p id="rfc.section.4.2.1.p.6">The DNS Header OPCODE field holds the DSO OPCODE value (tent. 6).</p>
+<p id="rfc.section.4.2.1.p.6">The DNS Header OPCODE field holds the DSO OPCODE value (tentatively 6).</p>
 <p id="rfc.section.4.2.1.p.7">The Z bits are currently unused in DSO messages, and in both DSO requests and DSO responses the Z bits MUST be set to zero (0) on transmission and MUST be silently ignored on reception, unless a future IETF Standard specifies otherwise.</p>
 <p></p>
 <p id="rfc.section.4.2.1.p.9">In a request message (QR=0) the RCODE is generally set to zero on transmission, and silently ignored on reception, except where specified otherwise (for example, the Retry Delay request message (see <a href="#retry" class="xref">Section 5.6.3</a>), where the RCODE indicates the reason for termination).</p>
@@ -825,12 +825,12 @@
 <p id="rfc.section.4.2.2.p.9">The previous point, that the receiver MUST NOT generate responses to unacknowledged request messages, applies even in the case of errors.  When a DSO request message is received with the MESSAGE ID field set to zero, the receiver MUST NOT generate any response.  For example, if the DSO-TYPE in the Primary TLV is unrecognized, then a DSONOTIMP error MUST NOT be returned; instead the receiver MUST forcibly abort the connection immediately.</p>
 <p id="rfc.section.4.2.2.p.10">Unacknowledged request messages MUST NOT be used &#8220;speculatively&#8221; in cases where the sender doesn&#8217;t know if the receiver supports the Primary TLV in the message, because there is no way to receive any response to indicate success or failure of the request message (the request message does not contain a unique MESSAGE ID with which to associate a response with its corresponding request).  Unacknowledged request messages are only appropriate in cases where the sender already knows that the receiver supports and wishes to receive these messages.</p>
 <p id="rfc.section.4.2.2.p.11">For example, after a client has subscribed for Push Notifications <a href="#I-D.ietf-dnssd-push" class="xref">[I-D.ietf-dnssd-push]</a>, the subsequent event notifications are then sent as unacknowledged messages, and this is appropriate because the client initiated the message stream by virtue of its Push Notification subscription, thereby indicating its support of Push Notifications, and its desire to receive those notifications.</p>
-<p id="rfc.section.4.2.2.p.12">After an mDNS Relay client has subscribed to receive inbound mDNS traffic from an mDNS Relay, the subsequent stream of received packets is then sent using unacknowledged messages, and this is appropriate because the client initiated the message stream by virtue of its mDNS Relay link subscription, thereby indicating its support of mDNS Relay, and its desire to receive inbound mDNS packets over that DSO session <a href="#I-D.sctl-dnssd-mdns-relay" class="xref">[I-D.sctl-dnssd-mdns-relay]</a>.</p>
+<p id="rfc.section.4.2.2.p.12">Similarly, after an mDNS Relay client has subscribed to receive inbound mDNS traffic from an mDNS Relay, the subsequent stream of received packets is then sent using unacknowledged messages, and this is appropriate because the client initiated the message stream by virtue of its mDNS Relay link subscription, thereby indicating its support of mDNS Relay, and its desire to receive inbound mDNS packets over that DSO session <a href="#I-D.sctl-dnssd-mdns-relay" class="xref">[I-D.sctl-dnssd-mdns-relay]</a>.</p>
 <p></p>
 <h1 id="rfc.section.4.2.2.1">
 <a href="#rfc.section.4.2.2.1">4.2.2.1.</a> <a href="#tlvsyntax" id="tlvsyntax">TLV Syntax</a>
 </h1>
-<p id="rfc.section.4.2.2.1.p.1">All TLVs, whether used as &#8220;Primary&#8221;, &#8220;Additional&#8221;, or in responses, use the same encoding syntax.</p>
+<p id="rfc.section.4.2.2.1.p.1">All TLVs, whether used as &#8220;Primary&#8221;, &#8220;Additional&#8221;, &#8220;Response Primary&#8221;, or &#8220;Response Additional&#8221;, use the same encoding syntax.</p>
 <p id="rfc.section.4.2.2.1.p.2">The specification for a TLV determines whether, when used as the Primary (i.e., first) TLV in a request message, that request message is to be acknowledged.  If the request message is to be acknowledged, the specification also states which TLVs, if any, are to be included in the response.  The Primary TLV may or may not be contained in the response, depending on what is stated in the specification for that TLV.</p>
 <pre>
                                              1   1   1   1   1   1
@@ -1019,7 +1019,7 @@
 <p id="rfc.section.5.6.2.p.4">When a server has to close a DSO Session with a client (because of exceptional circumstances such as those outlined above) the server SHOULD, whenever possible, send a Retry Delay request message (see below) informing the client of the reason for the DSO Session being closed, and allow the client five seconds to receive it before the server resorts to forcibly aborting the connection.</p>
 <p></p>
 <h1 id="rfc.section.5.6.3">
-<a href="#rfc.section.5.6.3">5.6.3.</a> <a href="#retry" id="retry">Retry Delay Request Message</a>
+<a href="#rfc.section.5.6.3">5.6.3.</a> <a href="#retry" id="retry">Server-Initiated Retry Delay Request Message</a>
 </h1>
 <p id="rfc.section.5.6.3.p.1">There may be rare cases where a server is overloaded and wishes to shed load.  If a server is low on resources it MAY simply terminate a client connection by forcibly aborting it.  However, the likely behavior of the client may be simply to to treat this as a network failure and reconnect immediately, putting more burden on the server.</p>
 <p id="rfc.section.5.6.3.p.2">Therefore to avoid this reconnection implosion, a server SHOULD instead choose to shed client load by sending a Retry Delay request message, with an RCODE of SERVFAIL, to inform the client of the overload situation.  The format of the Retry Delay TLV is described in <a href="#delay" class="xref">Section 7.1</a>.  After sending a Retry Delay request message, the server MUST NOT send any further messages on that DSO Session.</p>
@@ -1049,7 +1049,7 @@
 <h1 id="rfc.section.7">
 <a href="#rfc.section.7">7.</a> <a href="#base-tlvs-for-dns-stateful-operations" id="base-tlvs-for-dns-stateful-operations">Base TLVs for DNS Stateful Operations</a>
 </h1>
-<p id="rfc.section.7.p.1">This section describes the three Base TLVs for DNS Stateful Operations, Retry Delay, Keepalive, and Encryption Padding.</p>
+<p id="rfc.section.7.p.1">This section describes the three base TLVs for DNS Stateful Operations: Retry Delay, Keepalive, and Encryption Padding.</p>
 <h1 id="rfc.section.7.1">
 <a href="#rfc.section.7.1">7.1.</a> <a href="#delay" id="delay">Retry Delay TLV</a>
 </h1>
@@ -1298,9 +1298,10 @@
 </tr>
 </tbody>
 </table>
-<p id="rfc.section.9.3.p.2">DSO Type Codes in the &#8220;experimental/local&#8221; range F800-FBFF may be used as Experimental Use or Private Use values <a href="#RFC5226" class="xref">[RFC5226]</a> and may be used freely for development purposes, or for other purposes within a single site.  No attempt is made to prevent multiple sites from using the same value in different (and incompatible) ways.  There is no need for IANA to review such assignments (since IANA does not record them) and assignments are not generally useful for broad interoperability.  It is the responsibility of the sites making use of &#8220;experimental/local&#8221; values to ensure that no conflicts occur within the intended scope of use.</p>
-<p id="rfc.section.9.3.p.3">Registration of new DSO Type Codes in the &#8220;Reserved for future expansion&#8221; range FC00-FFFF and &#8220;Unassigned, reserved for DSO session-management TLVs&#8221; range 0003-003F requires publication of an IETF Standards Action document <a href="#RFC5226" class="xref">[RFC5226]</a>.</p>
+<p id="rfc.section.9.3.p.2">DSO Type Code zero is reserved and is not currently intended for allocation.</p>
+<p id="rfc.section.9.3.p.3">Registrations of new DSO Type Codes in the &#8220;Reserved for DSO session-management&#8221; range 0004-003F and the &#8220;Reserved for future expansion&#8221; range FC00-FFFF require publication of an IETF Standards Action document <a href="#RFC5226" class="xref">[RFC5226]</a>.</p>
 <p id="rfc.section.9.3.p.4">Requests to register additional new DSO Type Codes in the &#8220;Unassigned&#8221; range 0040-F7FF are to be recorded by IANA after consultation with the registry&#8217;s Designated Expert <a href="#RFC5226" class="xref">[RFC5226]</a> at that time.  At the time of publication of this document, the Designated Expert for the newly created DSO Type Code registry is [<strong>TBD</strong>].</p>
+<p id="rfc.section.9.3.p.5">DSO Type Codes in the &#8220;experimental/local&#8221; range F800-FBFF may be used as Experimental Use or Private Use values <a href="#RFC5226" class="xref">[RFC5226]</a> and may be used freely for development purposes, or for other purposes within a single site.  No attempt is made to prevent multiple sites from using the same value in different (and incompatible) ways.  There is no need for IANA to review such assignments (since IANA does not record them) and assignments are not generally useful for broad interoperability.  It is the responsibility of the sites making use of &#8220;experimental/local&#8221; values to ensure that no conflicts occur within the intended scope of use.</p>
 <p></p>
 <h1 id="rfc.section.10">
 <a href="#rfc.section.10">10.</a> <a href="#security-considerations" id="security-considerations">Security Considerations</a>
