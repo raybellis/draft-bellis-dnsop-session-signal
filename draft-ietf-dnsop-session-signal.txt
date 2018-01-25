@@ -100,12 +100,12 @@ Table of Contents
        5.6.2.  Server-Initiated Session Termination on Overload  . .  32
        5.6.3.  Server-Initiated Retry Delay Request Message  . . . .  33
    6.  Base TLVs for DNS Stateful Operations . . . . . . . . . . . .  35
-     6.1.  Retry Delay TLV . . . . . . . . . . . . . . . . . . . . .  35
-       6.1.1.  Retry Delay TLV used as a Primary TLV . . . . . . . .  35
-       6.1.2.  Retry Delay TLV used as a Response Additional TLV . .  36
-       6.1.3.  Retry Delay TLV is used by server only  . . . . . . .  36
-     6.2.  Keepalive TLV . . . . . . . . . . . . . . . . . . . . . .  37
-       6.2.1.  Client handling of received Session Timeout values  .  39
+     6.1.  Keepalive TLV . . . . . . . . . . . . . . . . . . . . . .  35
+       6.1.1.  Client handling of received Session Timeout values  .  37
+       6.1.2.  Relation to EDNS(0) TCP Keepalive Option  . . . . . .  38
+     6.2.  Retry Delay TLV . . . . . . . . . . . . . . . . . . . . .  39
+       6.2.1.  Retry Delay TLV used as a Primary TLV . . . . . . . .  39
+       6.2.2.  Retry Delay TLV used as a Response Additional TLV . .  40
 
 
 
@@ -114,7 +114,7 @@ Bellis, et al.            Expires June 3, 2018                  [Page 2]
 Internet-Draft           DNS Stateful Operations           November 2017
 
 
-       6.2.2.  Relation to EDNS(0) TCP Keepalive Option  . . . . . .  40
+       6.2.3.  Retry Delay TLV is used by server only  . . . . . . .  40
      6.3.  Encryption Padding TLV  . . . . . . . . . . . . . . . . .  41
    7.  Summary . . . . . . . . . . . . . . . . . . . . . . . . . . .  42
      7.1.  MESSAGE ID  . . . . . . . . . . . . . . . . . . . . . . .  42
@@ -344,9 +344,9 @@ Internet-Draft           DNS Stateful Operations           November 2017
    Two timers (elapsed time since an event) are defined in this
    document:
 
-   o  an inactivity timer (see Section 6.2 and Section 5.3)
+   o  an inactivity timer (see Section 6.1 and Section 5.3)
 
-   o  a keepalive timer (see Section 6.2 and Section 5.5)
+   o  a keepalive timer (see Section 6.1 and Section 5.5)
 
    The timeouts associated with these timers are called the inactivity
    timeout and the keepalive interval, respectively.  The term "Session
@@ -487,7 +487,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
 
    A DSO Session is established over a connection by the client sending
    a DSO request message of a kind that requires a response, such as the
-   DSO Keepalive TLV (see Section 6.2), and receiving a response, with
+   DSO Keepalive TLV (see Section 6.1), and receiving a response, with
    matching MESSAGE ID, and RCODE set to NOERROR (0), indicating that
    the DSO request was successful.
 
@@ -1487,7 +1487,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
    If the client wishes to keep an inactive DSO Session open for longer
    than the default duration without having to send traffic every 15
    seconds, then it uses the DSO Keepalive message to request longer
-   timeout values, as described in Section 6.2.
+   timeout values, as described in Section 6.1.
 
 5.4.2.  Values for the Inactivity Timeout
 
@@ -1585,7 +1585,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
    interval value (i.e., 15 seconds by default) elapses without any DNS
    messages being sent or received on a DSO Session, the client MUST
    take action to keep the DSO Session alive, by sending a DSO Keepalive
-   message (see Section 6.2).  A DSO Keepalive message exchange resets
+   message (see Section 6.1).  A DSO Keepalive message exchange resets
    only the keepalive timer, not the inactivity timer.
 
    If a client disconnects from the network abruptly, without cleanly
@@ -1806,7 +1806,7 @@ Internet-Draft           DNS Stateful Operations           November 2017
    instead choose to shed client load by sending a Retry Delay request
    message, with an RCODE of SERVFAIL, to inform the client of the
    overload situation.  The format of the Retry Delay TLV is described
-   in Section 6.1.  After sending a Retry Delay request message, the
+   in Section 6.2.  After sending a Retry Delay request message, the
    server MUST NOT send any further messages on that DSO Session.
 
    Upon receipt of a Retry Delay request from the server, the client
@@ -1909,184 +1909,13 @@ Internet-Draft           DNS Stateful Operations           November 2017
 6.  Base TLVs for DNS Stateful Operations
 
    This section describes the three base TLVs for DNS Stateful
-   Operations: Retry Delay, Keepalive, and Encryption Padding.
+   Operations: Keepalive, Retry Delay, and Encryption Padding.
 
-6.1.  Retry Delay TLV
+6.1.  Keepalive TLV
 
-   The Retry Delay TLV (DSO-TYPE=1) can be used as a Primary TLV
-   (unacknowledged) in a server-to-client message, or as a Response
-   Additional TLV in a server-to-client response to a client-to-server
-   request message.
-
-   The TYPE-DEPENDENT DATA for the the Retry Delay TLV is as follows:
-
-                           1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
-       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-      |                     RETRY DELAY (32 bits)                     |
-      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-
-   RETRY DELAY:  A time value, specified as a 32-bit unsigned integer in
-      network (big endian) byte order in units of milliseconds, within
-      which the client MUST NOT retry this operation, or retry
-      connecting to this server.
-
-   The RECOMMENDED value is 10 seconds.
-
-6.1.1.  Retry Delay TLV used as a Primary TLV
-
-   When sent in a DSO request message, from server to client, the Retry
-   Delay TLV (0) is used as a Primary TLV.  It is used by a server to
-   instruct a client to close the DSO Session and underlying connection,
-   and not to reconnect for the indicated time interval.
-
-   In this case it applies to the DSO Session as a whole, and the client
-   MUST begin closing the DSO Session, as described in Section 5.6.3.
-   The RCODE in the message header MUST indicate the reason for the
-   termination:
-
-   o  NOERROR indicates a routine shutdown.
-
-   o  SERVFAIL indicates that the server is overloaded due to resource
-      exhaustion.
-
-   o  REFUSED indicates that the server has been reconfigured and is no
-      longer able to perform one or more of the functions currently
-      being performed on this DSO Session (for example, a DNS Push
-      Notification server could be reconfigured such that is is no
-
-
-
-Bellis, et al.            Expires June 3, 2018                 [Page 35]
-
-Internet-Draft           DNS Stateful Operations           November 2017
-
-
-      longer accepting DNS Push Notification requests for one or more of
-      the currently subscribed names).
-
-   This document specifies only these three RCODE values for Retry Delay
-   request.  Servers sending Retry Delay requests SHOULD use one of
-   these three values.  However, future circumstances may create
-   situations where other RCODE values are appropriate in Retry Delay
-   requests, so clients MUST be prepared to accept Retry Delay requests
-   with any RCODE value.
-
-   A Retry Delay request is an unacknowledged request message; the
-   MESSAGE ID MUST be set to zero in the request and the client MUST NOT
-   send a response.
-
-6.1.2.  Retry Delay TLV used as a Response Additional TLV
-
-   In the case of a client request that returns a nonzero RCODE value,
-   the server MAY append a Retry Delay TLV (0) to the response,
-   indicating the time interval during which the client SHOULD NOT
-   attempt this operation again.
-
-   The indicated time interval during which the client SHOULD NOT retry
-   applies only to the failed operation, not to the DSO Session as a
-   whole.
-
-6.1.3.  Retry Delay TLV is used by server only
-
-   A client MUST NOT send a Retry Delay TLV to a server, either in a DSO
-   request message, or in a DSO response message.  If a server receives
-   a DSO message containing a Retry Delay TLV, this is a fatal error and
-   the server MUST forcibly abort the connection immediately.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Bellis, et al.            Expires June 3, 2018                 [Page 36]
-
-Internet-Draft           DNS Stateful Operations           November 2017
-
-
-6.2.  Keepalive TLV
-
-   The Keepalive TLV (DSO-TYPE=2) performs two functions: to reset the
-   keepalive timer for the DSO Session and to establish the values for
+   The Keepalive TLV (DSO-TYPE=1) performs two functions: to reset the
+   keepalive timer for the DSO Session, and to establish the values for
    the Session Timeouts.
-
-   The Keepalive TLV resets only the keepalive timer, not the inactivity
-   timer.  The reason for this is that periodic Keepalive TLVs are sent
-   for the sole purpose of keeping a DSO Session alive, because that DSO
-   Session has current or recent non-maintenance activity that warrants
-   keeping the DSO Session alive.  If sending keepalive traffic itself
-   were to reset the inactivity timer, then that would create a circular
-   livelock where keepalive traffic would be sent indefinitely to keep a
-   DSO Session alive, where the only activity on that DSO Session would
-   be the keepalive traffic keeping the DSO Session alive so that
-   further keepalive traffic can be sent.
-
-   Sending keepalive traffic is considered a maintenance activity that
-   is performed in service of other client activities.  Sending
-   keepalive traffic itself is not considered a client activity.  For a
-   DSO Session to be considered active, it must be carrying something
-   more than just keepalive traffic.  This is why merely sending a
-   Keepalive TLV does not reset the inactivity timer.
-
-   When sent by a client, the Keepalive request message MUST be sent as
-   an acknowledged request, with a nonzero MESSAGE ID.  It resets a DSO
-   Session's keepalive timer, and at the same time requests what the
-   Session Timeout values should be from this point forward in the DSO
-   Session.  If a server receives a Keepalive request message with a
-   zero MESSAGE ID then this is a fatal error and the server MUST
-   forcibly abort the connection immediately.
-
-   Once a DSO Session is in progress (see Section 4) the Keepalive TLV
-   also MAY be initiated by a server.  When sent by a server, the
-   Keepalive request message MUST be sent as an unacknowledged request,
-   with the MESSAGE ID set to zero.  It resets a DSO Session's keepalive
-   timer, and unilaterally informs the client of the new Session Timeout
-   values to use from this point forward in this DSO Session.  No client
-   response to this unilateral declaration is required or allowed.  If a
-   client receives a Keepalive request message with a nonzero MESSAGE ID
-   then this is a fatal error and the client MUST forcibly abort the
-   connection immediately.
-
-   The Keepalive TLV is not used as an Additional TLV.
-
-   The Keepalive TLV is only used as a Response TLV in response messages
-   replying to a Keepalive request message from the client.  A Keepalive
-   TLV MUST NOT be added as to other responses a Response Additional
-
-
-
-Bellis, et al.            Expires June 3, 2018                 [Page 37]
-
-Internet-Draft           DNS Stateful Operations           November 2017
-
-
-   TLV.  If the server wishes to update a client's Session Timeout
-   values other than in response to a Keepalive request message from the
-   client, then it does so by sending an unacknowledged Keepalive
-   request message of its own, as described above.
-
-   It is not required that the Keepalive TLV be used in every DSO
-   Session.  While many DNS Stateful operations will be used in
-   conjunction with a long-lived session state, not all DNS Stateful
-   operations require long-lived session state, and in some cases the
-   default 15-second value for both the inactivity timeout and keepalive
-   interval may be perfectly appropriate.  However, note that for
-   clients that implement only the TLVs defined in this document it is
-   the only way for a client to initiate a DSO Session.
 
    The TYPE-DEPENDENT DATA for the the Keepalive TLV is as follows:
 
@@ -2119,29 +1948,45 @@ Internet-Draft           DNS Stateful Operations           November 2017
       server will forcibly disconnect a client for failing to generate
       the mandated keepalive traffic is twenty seconds.
 
+   The transmission or reception of DSO Keepalive messages (i.e.,
+   messages where the Keepalive TLV is the first TLV) reset only the
+   keepalive timer, not the inactivity timer.  The reason for this is
+   that periodic Keepalive messages are sent for the sole purpose of
+   keeping a DSO Session alive, when that DSO Session has current or
+   recent non-maintenance activity that warrants keeping that DSO
 
 
 
-
-
-
-Bellis, et al.            Expires June 3, 2018                 [Page 38]
+Bellis, et al.            Expires June 3, 2018                 [Page 35]
 
 Internet-Draft           DNS Stateful Operations           November 2017
 
 
-   In a client-initiated DSO Keepalive message, the Session Timeouts
-   contain the client's requested values.  In a server response to a
-   client-initiated message, the Session Timeouts contain the server's
-   chosen values, which the client MUST respect.  This is modeled after
-   the DHCP protocol, where the client requests a certain lease lifetime
+   Session alive.  Sending keepalive traffic itself is not considered a
+   client activity; it is considered a maintenance activity that is
+   performed in service of other client activities.  If keepalive
+   traffic itself were to reset the inactivity timer, then that would
+   create a circular livelock where keepalive traffic would be sent
+   indefinitely to keep a DSO Session alive, where the only activity on
+   that DSO Session would be the keepalive traffic keeping the DSO
+   Session alive so that further keepalive traffic can be sent.  For a
+   DSO Session to be considered active, it must be carrying something
+   more than just keepalive traffic.  This is why merely sending or
+   receiving a Keepalive message does not reset the inactivity timer.
+
+   When sent by a client, the Keepalive request message MUST be sent as
+   an acknowledged request, with a nonzero MESSAGE ID.  If a server
+   receives a Keepalive request message with a zero MESSAGE ID then this
+   is a fatal error and the server MUST forcibly abort the connection
+   immediately.  The Keepalive request message resets a DSO Session's
+   keepalive timer, and at the same time communicates to the server the
+   the client's requested Session Timeout values.  In a server response
+   to a client-initiated Keepalive request message, the Session Timeouts
+   contain the server's chosen values from this point forward in the DSO
+   Session, which the client MUST respect.  This is modeled after the
+   DHCP protocol, where the client requests a certain lease lifetime
    using DHCP option 51 [RFC2132], but the server is the ultimate
    authority for deciding what lease lifetime is actually granted.
-
-   In a server-initiated DSO Keepalive message, the Session Timeouts
-   unilaterally inform the client of the new values from this point
-   forward in this DSO Session.  The client MUST NOT generate a response
-   to the server-initiated DSO Keepalive message.
 
    When a client is sending its second and subsequent Keepalive DSO
    requests to the server, the client SHOULD continue to request its
@@ -2149,7 +1994,48 @@ Internet-Draft           DNS Stateful Operations           November 2017
    conditions change during the lifetime of a DSO Session, the server
    can adapt its responses to better fit the client's needs.
 
-6.2.1.  Client handling of received Session Timeout values
+   Once a DSO Session is in progress (see Section 4) a Keepalive request
+   message MAY be initiated by a server.  When sent by a server, the
+   Keepalive request message MUST be sent as an unacknowledged request,
+   with the MESSAGE ID set to zero.  The client MUST NOT generate a
+   response to a server-initiated DSO Keepalive message.  If a client
+   receives a Keepalive request message with a nonzero MESSAGE ID then
+   this is a fatal error and the client MUST forcibly abort the
+   connection immediately.  The Keepalive request message from the
+   server resets a DSO Session's keepalive timer, and at the same time
+   unilaterally informs the client of the new Session Timeout values to
+   use from this point forward in this DSO Session.  No client DSO
+   response message to this unilateral declaration is required or
+   allowed.
+
+   The Keepalive TLV is not used as a request message Additional TLV.
+
+
+
+
+Bellis, et al.            Expires June 3, 2018                 [Page 36]
+
+Internet-Draft           DNS Stateful Operations           November 2017
+
+
+   In response messages the Keepalive TLV is used only as a Response
+   Primary TLV, replying to a Keepalive request message from the client.
+   A Keepalive TLV MUST NOT be added as to other responses a Response
+   Additional TLV.  If the server wishes to update a client's Session
+   Timeout values other than in response to a Keepalive request message
+   from the client, then it does so by sending an unacknowledged
+   Keepalive request message of its own, as described above.
+
+   It is not required that the Keepalive TLV be used in every DSO
+   Session.  While many DNS Stateful operations will be used in
+   conjunction with a long-lived session state, not all DNS Stateful
+   operations require long-lived session state, and in some cases the
+   default 15-second value for both the inactivity timeout and keepalive
+   interval may be perfectly appropriate.  However, note that for
+   clients that implement only the TLVs defined in this document it is
+   the only way for a client to initiate a DSO Session.
+
+6.1.1.  Client handling of received Session Timeout values
 
    When a client receives a response to its client-initiated DSO
    Keepalive message, or receives a server-initiated DSO Keepalive
@@ -2167,6 +2053,27 @@ Internet-Draft           DNS Stateful Operations           November 2017
    another message must be sent or received on this DSO Session, if the
    DSO Session is to remain alive.
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Bellis, et al.            Expires June 3, 2018                 [Page 37]
+
+Internet-Draft           DNS Stateful Operations           November 2017
+
+
    In the case of the inactivity timeout, the handling of the received
    value is a little more subtle, though the meaning of the inactivity
    timeout is unchanged -- it still indicates the maximum permissible
@@ -2178,13 +2085,6 @@ Internet-Draft           DNS Stateful Operations           November 2017
    Keepalive TLV in the received message does update the timeout
    associated with the running inactivity timer; that becomes the new
    maximum permissible time without activity on a DSO Session.
-
-
-
-Bellis, et al.            Expires June 3, 2018                 [Page 39]
-
-Internet-Draft           DNS Stateful Operations           November 2017
-
 
    o  If the current inactivity timer value is not greater than the new
       inactivity timeout, then the DSO Session may remain open for now.
@@ -2208,9 +2108,9 @@ Internet-Draft           DNS Stateful Operations           November 2017
       client an additional grace period of one quarter of the new
       inactivity timeout, or five seconds, whichever is greater.
 
-6.2.2.  Relation to EDNS(0) TCP Keepalive Option
+6.1.2.  Relation to EDNS(0) TCP Keepalive Option
 
-   The inactivity timeout value in the Keepalive TLV (DSO-TYPE=2) has
+   The inactivity timeout value in the Keepalive TLV (DSO-TYPE=1) has
    similar intent to the EDNS(0) TCP Keepalive Option [RFC7828].  A
    client/server pair that supports DSO MUST NOT use the EDNS(0) TCP
    KeepAlive option within any message after a DSO Session has been
@@ -2219,6 +2119,106 @@ Internet-Draft           DNS Stateful Operations           November 2017
    contains an EDNS(0) TCP Keepalive option, this is an error and the
    receiver of the EDNS(0) TCP Keepalive option MUST forcibly abort the
    connection immediately.
+
+
+
+
+
+
+Bellis, et al.            Expires June 3, 2018                 [Page 38]
+
+Internet-Draft           DNS Stateful Operations           November 2017
+
+
+6.2.  Retry Delay TLV
+
+   The Retry Delay TLV (DSO-TYPE=2) can be used as a Primary TLV
+   (unacknowledged) in a server-to-client message, or as a Response
+   Additional TLV in a server-to-client response to a client-to-server
+   request message.
+
+   The TYPE-DEPENDENT DATA for the the Retry Delay TLV is as follows:
+
+                           1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+      |                     RETRY DELAY (32 bits)                     |
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   RETRY DELAY:  A time value, specified as a 32-bit unsigned integer in
+      network (big endian) byte order in units of milliseconds, within
+      which the client MUST NOT retry this operation, or retry
+      connecting to this server.
+
+   The RECOMMENDED value is 10 seconds.
+
+6.2.1.  Retry Delay TLV used as a Primary TLV
+
+   When sent in a DSO request message, from server to client, the Retry
+   Delay TLV (0) is used as a Primary TLV.  It is used by a server to
+   instruct a client to close the DSO Session and underlying connection,
+   and not to reconnect for the indicated time interval.
+
+   In this case it applies to the DSO Session as a whole, and the client
+   MUST begin closing the DSO Session, as described in Section 5.6.3.
+   The RCODE in the message header MUST indicate the reason for the
+   termination:
+
+   o  NOERROR indicates a routine shutdown.
+
+   o  SERVFAIL indicates that the server is overloaded due to resource
+      exhaustion.
+
+   o  REFUSED indicates that the server has been reconfigured and is no
+      longer able to perform one or more of the functions currently
+      being performed on this DSO Session (for example, a DNS Push
+      Notification server could be reconfigured such that is is no
+      longer accepting DNS Push Notification requests for one or more of
+      the currently subscribed names).
+
+   This document specifies only these three RCODE values for Retry Delay
+   request.  Servers sending Retry Delay requests SHOULD use one of
+
+
+
+Bellis, et al.            Expires June 3, 2018                 [Page 39]
+
+Internet-Draft           DNS Stateful Operations           November 2017
+
+
+   these three values.  However, future circumstances may create
+   situations where other RCODE values are appropriate in Retry Delay
+   requests, so clients MUST be prepared to accept Retry Delay requests
+   with any RCODE value.
+
+   A Retry Delay request is an unacknowledged request message; the
+   MESSAGE ID MUST be set to zero in the request and the client MUST NOT
+   send a response.
+
+6.2.2.  Retry Delay TLV used as a Response Additional TLV
+
+   In the case of a client request that returns a nonzero RCODE value,
+   the server MAY append a Retry Delay TLV (0) to the response,
+   indicating the time interval during which the client SHOULD NOT
+   attempt this operation again.
+
+   The indicated time interval during which the client SHOULD NOT retry
+   applies only to the failed operation, not to the DSO Session as a
+   whole.
+
+6.2.3.  Retry Delay TLV is used by server only
+
+   A client MUST NOT send a Retry Delay TLV to a server, either in a DSO
+   request message, or in a DSO response message.  If a server receives
+   a DSO message containing a Retry Delay TLV, this is a fatal error and
+   the server MUST forcibly abort the connection immediately.
+
+
+
+
+
+
+
 
 
 
@@ -2391,9 +2391,9 @@ Internet-Draft           DNS Stateful Operations           November 2017
                  +-------------------------+-------------------------+
                  | C-P  C-U  C-A  CRP  CRA | S-P  S-U  S-A  SRP  SRA |
     +------------+-------------------------+-------------------------+
-    | RetryDelay |                      X  |       X                 |
-    +------------+-------------------------+-------------------------+
     | KeepAlive  |  X              X       |       X                 |
+    +------------+-------------------------+-------------------------+
+    | RetryDelay |                      X  |       X                 |
     +------------+-------------------------+-------------------------+
     | Padding    |            X         X  |            X         X  |
     +------------+-------------------------+-------------------------+
@@ -2488,9 +2488,9 @@ Internet-Draft           DNS Stateful Operations           November 2017
    +-----------+--------------------------------+----------+-----------+
    | 0000      | Reserved                       | Standard | RFC-TBD   |
    |           |                                |          |           |
-   | 0001      | RetryDelay                     | Standard | RFC-TBD   |
+   | 0001      | KeepAlive                      | Standard | RFC-TBD   |
    |           |                                |          |           |
-   | 0002      | KeepAlive                      | Standard | RFC-TBD   |
+   | 0002      | RetryDelay                     | Standard | RFC-TBD   |
    |           |                                |          |           |
    | 0003      | EncryptionPadding              | Standard | RFC-TBD   |
    |           |                                |          |           |
