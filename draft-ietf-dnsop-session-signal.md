@@ -395,6 +395,44 @@ prescribed in the earlier specification for DNS over TCP {{!RFC7766}}.
 
 ***
 
+### Connection Sharing {#sharing}
+
+As previously specified for DNS over TCP {{!RFC7766}},
+to mitigate the risk of unintentional server overload, DNS clients
+MUST take care to minimize the number of concurrent TCP connections
+made to any individual server.  It is RECOMMENDED that for any given
+client/server interaction there SHOULD be no more than one connection
+for regular queries, one for zone transfers, and one for each
+protocol that is being used on top of TCP (for example, if the
+resolver was using TLS).
+However, it is noted that certain primary/secondary configurations
+with many busy zones might need to use more than one TCP
+connection for zone transfers for operational reasons
+(for example, to support concurrent transfers of multiple zones).
+
+A single server may support multiple services, including DNS Updates 
+{{!RFC2136}}, DNS Push Notifications {{?I-D.ietf-dnssd-push}},
+and other services, for one or more DNS zones.
+When a client discovers that the target server for several different operations
+is the same target hostname and port, the client SHOULD use a single
+shared DSO Session for all those operations.
+A client SHOULD NOT open multiple connections to the same target host and port
+just because the names being operated on are different or
+happen to fall within different zones.
+This is to reduce unnecessary connection load on the DNS server.
+
+However, server implementers and operators should be aware that connection
+sharing may not be possible in all cases.
+A single host device may be home to multiple independent client software
+instances that don't coordinate with each other.
+Similarly, multiple independent client devices behind the same NAT gateway
+will also typically appear to the DNS server as different source ports on
+the same client IP address.
+Because of these constraints, a DNS server MUST be prepared to accept
+multiple connections from different source ports on the same client IP address.
+
+***
+
 ### Zero Round-Trip Operation
 
 There is increased awareness today of the performance benefits
@@ -984,8 +1022,6 @@ Just because a DSO Session has no traffic for an extended period of time
 does not automatically make that DSO Session "inactive",
 if it has an active operation that is awaiting events.
 
-***
-
 ## The Inactivity Timeout
 
 The purpose of the inactivity timeout is for the server to balance its trade off 
@@ -1077,6 +1113,8 @@ inactivity timeout value, or five seconds, whichever is greater.
 In the case of a zero inactivity timeout value, this means that
 if a client fails to close an idle client session then the server
 will forcibly abort the idle session after five seconds.
+
+***
 
 ## The Keepalive Interval {#keepalivetimer}
 
@@ -1319,44 +1357,6 @@ approximately 49.7 days). If the server will only be out of service for a mainte
 period, it should use a value closer to the expected maintenance window and
 not default to a very large delay value or clients may not attempt to reconnect
 after it resumes service.
-
-***
-
-# Connection Sharing {#sharing}
-
-As previously specified for DNS over TCP {{!RFC7766}},
-to mitigate the risk of unintentional server overload, DNS clients
-MUST take care to minimize the number of concurrent TCP connections
-made to any individual server.  It is RECOMMENDED that for any given
-client/server interaction there SHOULD be no more than one connection
-for regular queries, one for zone transfers, and one for each
-protocol that is being used on top of TCP (for example, if the
-resolver was using TLS).
-However, it is noted that certain primary/secondary configurations
-with many busy zones might need to use more than one TCP
-connection for zone transfers for operational reasons
-(for example, to support concurrent transfers of multiple zones).
-
-A single server may support multiple services, including DNS Updates 
-{{!RFC2136}}, DNS Push Notifications {{?I-D.ietf-dnssd-push}},
-and other services, for one or more DNS zones.
-When a client discovers that the target server for several different operations
-is the same target hostname and port, the client SHOULD use a single
-shared DSO Session for all those operations.
-A client SHOULD NOT open multiple connections to the same target host and port
-just because the names being operated on are different or
-happen to fall within different zones.
-This is to reduce unnecessary connection load on the DNS server.
-
-However, server implementers and operators should be aware that connection
-sharing may not be possible in all cases.
-A single host device may be home to multiple independent client software
-instances that don't coordinate with each other.
-Similarly, multiple independent client devices behind the same NAT gateway
-will also typically appear to the DNS server as different source ports on
-the same client IP address.
-Because of these constraints, a DNS server MUST be prepared to accept
-multiple connections from different source ports on the same client IP address.
 
 ***
 
@@ -1752,8 +1752,6 @@ in the DNS OPCODE Registry.
 The IANA is directed to record the value (tentatively) 11 for the DSONOTIMP error code
 in the DNS RCODE Registry.
 
-***
-
 ## DSO Type Code Registry
 
 The IANA is directed to create the 16-bit DSO Type Code Registry,
@@ -1797,8 +1795,6 @@ It is the responsibility of the sites making use of
 "experimental/local" values to ensure that no
 conflicts occur within the intended scope of use.
 
-***
-
 # Security Considerations
 
 If this mechanism is to be used with DNS over TLS, then these messages
@@ -1816,5 +1812,7 @@ Jan Komissar,
 Manju Shankar Rao,
 and Ted Lemon
 for their helpful contributions to this document.
+
+***
 
 --- back
