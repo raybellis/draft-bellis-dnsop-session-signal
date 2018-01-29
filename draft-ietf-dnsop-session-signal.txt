@@ -17,7 +17,7 @@ Expires: July 30, 2018                                      S. Dickinson
 
 
                         DNS Stateful Operations
-                   draft-ietf-dnsop-session-signal-05
+                   draft-ietf-dnsop-session-signal-06
 
 Abstract
 
