@@ -361,9 +361,9 @@ If the RCODE is set to DSONOTIMP (tentatively 11) this indicates
 that the server does support DSO, but does not support the particular
 operation the client requested.
 A server MUST NOT return DSONOTIMP for the DSO Keepalive TLV,
-but a DSONOTIMP response could happen in the future, if a client attempts to
-establish a DSO Session using a future response-requiring DSO TLV
-that the server does not understand.
+but in the future if a client attempts to establish a DSO Session
+using a newly-defined response-requiring DSO TLV that the server
+does not understand, that would result in a DSONOTIMP response.
 If the server returns DSONOTIMP then a DSO Session is not
 considered established, but the client is permitted to continue
 sending DNS messages on the connection,
@@ -964,6 +964,7 @@ responses to those messages SHOULD be sent out of order when appropriate.
 
 Two timeout values are associated with a DSO Session: the inactivity timeout, and 
 the keepalive interval. 
+Both values are communicated in the same TLV, the DSO Keepalive TLV (see {{keepalive}}).
 
 The first timeout value, the inactivity timeout, is the maximum time for which
 a client may speculatively keep a DSO Session open in the expectation that

@@ -494,10 +494,10 @@ Internet-Draft           DNS Stateful Operations            January 2018
    If the RCODE is set to DSONOTIMP (tentatively 11) this indicates that
    the server does support DSO, but does not support the particular
    operation the client requested.  A server MUST NOT return DSONOTIMP
-   for the DSO Keepalive TLV, but a DSONOTIMP response could happen in
-   the future, if a client attempts to establish a DSO Session using a
-   future response-requiring DSO TLV that the server does not
-   understand.  If the server returns DSONOTIMP then a DSO Session is
+   for the DSO Keepalive TLV, but in the future if a client attempts to
+   establish a DSO Session using a newly-defined response-requiring DSO
+   TLV that the server does not understand, that would result in a
+   DSONOTIMP response.  If the server returns DSONOTIMP then a DSO
 
 
 
@@ -506,11 +506,11 @@ Bellis, et al.            Expires July 30, 2018                 [Page 9]
 Internet-Draft           DNS Stateful Operations            January 2018
 
 
-   not considered established, but the client is permitted to continue
-   sending DNS messages on the connection, including other response-
-   requiring DSO messages such as the DSO Keepalive, which may result in
-   a successful NOERROR response, yielding the establishment of a DSO
-   Session.
+   Session is not considered established, but the client is permitted to
+   continue sending DNS messages on the connection, including other
+   response-requiring DSO messages such as the DSO Keepalive, which may
+   result in a successful NOERROR response, yielding the establishment
+   of a DSO Session.
 
    If the RCODE is set to any value other than NOERROR (0) or DSONOTIMP
    (tentatively 11), then the client should assume that the server does
@@ -1362,7 +1362,8 @@ Internet-Draft           DNS Stateful Operations            January 2018
 5.2.  DSO Session Timeouts
 
    Two timeout values are associated with a DSO Session: the inactivity
-   timeout, and the keepalive interval.
+   timeout, and the keepalive interval.  Both values are communicated in
+   the same TLV, the DSO Keepalive TLV (see Section 6.1).
 
    The first timeout value, the inactivity timeout, is the maximum time
    for which a client may speculatively keep a DSO Session open in the
@@ -1387,7 +1388,6 @@ Internet-Draft           DNS Stateful Operations            January 2018
    has taken place, the default value for both timeouts is 15 seconds.
    For both timeouts, lower values of the timeout result in higher
    network traffic and higher CPU load on the server.
-
 
 
 
