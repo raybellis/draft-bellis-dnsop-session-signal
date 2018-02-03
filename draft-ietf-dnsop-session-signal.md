@@ -881,7 +881,7 @@ the TCP implementation generally doesn't have any way to know
 that no response will be forthcoming, so it waits fruitlessly
 for the application-layer software to generate a response,
 until the Delayed ACK timer fires {{?RFC1122}} (typically 200 milliseconds)
-and only then does it send the TCP ack and window update.
+and only then does it send the TCP ACK and window update.
 In conjunction with Nagle's Algorithm at the sender,
 this can delay the sender's transmission of its next
 (non-full-sized) TCP segment, while the sender is waiting for
@@ -910,11 +910,11 @@ in less efficient use of the network.
 implementation that the receiver has received and processed a client
 request for which it will not be generating any immediate response.
 This allows the TCP implementation to operate efficiently in both cases;
-for requests that generate a response, the TCP ack, window update, and
+for requests that generate a response, the TCP ACK, window update, and
 DSO response are transmitted together in a single TCP segment,
 and for requests that do not generate a response,
 the application-layer software informs the TCP implementation
-that it should go ahead and send the TCP ack and window update
+that it should go ahead and send the TCP ACK and window update
 immediately, without waiting for the Delayed ACK timer.
 Unfortunately it is not known at this time which (if any) of the
 widely-available networking APIs currently include this capability.

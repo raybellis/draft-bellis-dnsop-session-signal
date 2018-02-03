@@ -1250,7 +1250,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
    response will be forthcoming, so it waits fruitlessly for the
    application-layer software to generate a response, until the Delayed
    ACK timer fires [RFC1122] (typically 200 milliseconds) and only then
-   does it send the TCP ack and window update.  In conjunction with
+   does it send the TCP ACK and window update.  In conjunction with
    Nagle's Algorithm at the sender, this can delay the sender's
    transmission of its next (non-full-sized) TCP segment, while the
    sender is waiting for its previous (non-full-sized) TCP segment to be
@@ -1278,10 +1278,10 @@ Internet-Draft           DNS Stateful Operations            January 2018
       client request for which it will not be generating any immediate
       response.  This allows the TCP implementation to operate
       efficiently in both cases; for requests that generate a response,
-      the TCP ack, window update, and DSO response are transmitted
+      the TCP ACK, window update, and DSO response are transmitted
       together in a single TCP segment, and for requests that do not
       generate a response, the application-layer software informs the
-      TCP implementation that it should go ahead and send the TCP ack
+      TCP implementation that it should go ahead and send the TCP ACK
 
 
 
