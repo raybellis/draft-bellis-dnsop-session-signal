@@ -864,7 +864,31 @@ If a client or server receives a response (QR=1) where the MESSAGE ID is zero, o
 any other value that does not match the MESSAGE ID of any of its outstanding operations,
 this is a fatal error and the recipient MUST forcibly abort the connection immediately.
 
-***
+### Error Responses
+
+When a request message is unsuccessful for some reason, the responder
+returns an error code to the initiator (for acknowledged request messages)
+or aborts the connection (for unacknowledged request messages).
+
+In the case of a server returning an error code to a client, the server MAY choose
+to end the DSO Session, or MAY choose to allow the DSO Session to remain open.
+For error conditions that only affect the single operation in question, the server SHOULD
+return an error response to the client and leave the DSO Session open for further operations.
+
+For error conditions that are likely to make all operations unsuccessful in the
+immediate future, the server SHOULD return an error response to the client and then
+end the DSO Session by sending a Retry Delay request message, as described in {{retry}}.
+
+Upon receiving an error response from the server, a client SHOULD NOT
+automatically close the DSO Session. An error relating to one particular operation
+on a DSO Session does not necessarily imply that all other operations on that
+DSO Session have also failed, or that future operations will fail. The client
+should assume that the server will make its own decision about whether or not to
+end the DSO Session, based on the server's determination of whether the error
+condition pertains to this particular operation, or would also apply to any
+subsequent operations. If the server does not end the DSO Session by
+sending the client a Retry Delay message ({{retry}}) then the client
+SHOULD continue to use that DSO Session for subsequent operations.
 
 ## DSO Response Generation
 
@@ -1225,28 +1249,6 @@ which operations need to be cancelled.
 This section discusses various reasons a session may be terminated,
 and the mechanisms for doing so.
 
-### Server-Initiated Session Termination on Error {#error}
-
-After sending an error response to a client, the server MAY end the DSO Session,
-or may allow the DSO Session to remain open. For error conditions
-that only affect the single operation in question, the server SHOULD return an
-error response to the client and leave the DSO Session open for further operations.
-For error conditions that are likely to make all operations unsuccessful in the
-immediate future, the server SHOULD return an error response to the client and 
-then end the DSO Session by sending a Retry Delay request message, as described in 
-{{retry}}.
-
-Upon receiving an error response from the server, a client SHOULD NOT
-automatically close the DSO Session. An error relating to one particular operation
-on a DSO Session does not necessarily imply that all other operations on that
-DSO Session have also failed, or that future operations will fail. The client
-should assume that the server will make its own decision about whether or not to
-end the DSO Session, based on the server's determination of whether the error
-condition pertains to this particular operation, or would also apply to any
-subsequent operations. If the server does not end the DSO Session by
-sending the client a Retry Delay message ({{retry}}) then the client
-SHOULD continue to use that DSO Session for subsequent operations.
-
 ***
 
 ### Server-Initiated Session Termination on Overload
@@ -1280,8 +1282,8 @@ keepalive traffic, or to close an inactive session by the prescribed time
 (twice the time interval dictated by the server, or five seconds,
 whichever is greater, as described in {{sessiontimeouts}}).
 
-* The client sends a grossly invalid or malformed request that is
-indicative of a seriously defective client implementation ({{error}}).
+* The client sends a grossly invalid or malformed request that
+is indicative of a seriously defective client implementation.
 
 * The server is over capacity and needs to shed some load ({{retry}}).
 

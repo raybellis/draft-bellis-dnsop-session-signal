@@ -387,6 +387,7 @@
 <link href="#rfc.section.4.2.2" rel="Chapter" title="4.2.2 DSO Data">
 <link href="#rfc.section.4.2.3" rel="Chapter" title="4.2.3 EDNS(0) and TSIG">
 <link href="#rfc.section.4.3" rel="Chapter" title="4.3 Message Handling">
+<link href="#rfc.section.4.3.1" rel="Chapter" title="4.3.1 Error Responses">
 <link href="#rfc.section.4.4" rel="Chapter" title="4.4 DSO Response Generation">
 <link href="#rfc.section.4.5" rel="Chapter" title="4.5 Responder-Initiated Operation Cancellation">
 <link href="#rfc.section.5" rel="Chapter" title="5 DSO Session Lifecycle and Timers">
@@ -400,9 +401,8 @@
 <link href="#rfc.section.5.5.1" rel="Chapter" title="5.5.1 Keepalive Interval Expiry">
 <link href="#rfc.section.5.5.2" rel="Chapter" title="5.5.2 Values for the Keepalive Interval">
 <link href="#rfc.section.5.6" rel="Chapter" title="5.6 Server-Initiated Session Termination">
-<link href="#rfc.section.5.6.1" rel="Chapter" title="5.6.1 Server-Initiated Session Termination on Error">
-<link href="#rfc.section.5.6.2" rel="Chapter" title="5.6.2 Server-Initiated Session Termination on Overload">
-<link href="#rfc.section.5.6.3" rel="Chapter" title="5.6.3 Server-Initiated Retry Delay Request Message">
+<link href="#rfc.section.5.6.1" rel="Chapter" title="5.6.1 Server-Initiated Session Termination on Overload">
+<link href="#rfc.section.5.6.2" rel="Chapter" title="5.6.2 Server-Initiated Retry Delay Request Message">
 <link href="#rfc.section.6" rel="Chapter" title="6 Base TLVs for DNS Stateful Operations">
 <link href="#rfc.section.6.1" rel="Chapter" title="6.1 Keepalive TLV">
 <link href="#rfc.section.6.1.1" rel="Chapter" title="6.1.1 Client handling of received Session Timeout values">
@@ -543,7 +543,9 @@
 </li>
 </ul><li>4.3.   <a href="#rfc.section.4.3">Message Handling</a>
 </li>
-<li>4.4.   <a href="#rfc.section.4.4">DSO Response Generation</a>
+<ul><li>4.3.1.   <a href="#rfc.section.4.3.1">Error Responses</a>
+</li>
+</ul><li>4.4.   <a href="#rfc.section.4.4">DSO Response Generation</a>
 </li>
 <li>4.5.   <a href="#rfc.section.4.5">Responder-Initiated Operation Cancellation</a>
 </li>
@@ -569,11 +571,9 @@
 </li>
 </ul><li>5.6.   <a href="#rfc.section.5.6">Server-Initiated Session Termination</a>
 </li>
-<ul><li>5.6.1.   <a href="#rfc.section.5.6.1">Server-Initiated Session Termination on Error</a>
+<ul><li>5.6.1.   <a href="#rfc.section.5.6.1">Server-Initiated Session Termination on Overload</a>
 </li>
-<li>5.6.2.   <a href="#rfc.section.5.6.2">Server-Initiated Session Termination on Overload</a>
-</li>
-<li>5.6.3.   <a href="#rfc.section.5.6.3">Server-Initiated Retry Delay Request Message</a>
+<li>5.6.2.   <a href="#rfc.section.5.6.2">Server-Initiated Retry Delay Request Message</a>
 </li>
 </ul></ul><li>6.   <a href="#rfc.section.6">Base TLVs for DNS Stateful Operations</a>
 </li>
@@ -765,7 +765,7 @@
 <p id="rfc.section.4.2.1.p.6">The DNS Header OPCODE field holds the DSO OPCODE value (tentatively 6).</p>
 <p id="rfc.section.4.2.1.p.7">The Z bits are currently unused in DSO messages, and in both DSO requests and DSO responses the Z bits MUST be set to zero (0) on transmission and MUST be silently ignored on reception, unless a future IETF Standard specifies otherwise.</p>
 <p></p>
-<p id="rfc.section.4.2.1.p.9">In a request message (QR=0) the RCODE is generally set to zero on transmission, and silently ignored on reception, except where specified otherwise (for example, the Retry Delay request message (<a href="#retry" class="xref">Section 5.6.3</a>), where the RCODE indicates the reason for termination).</p>
+<p id="rfc.section.4.2.1.p.9">In a request message (QR=0) the RCODE is generally set to zero on transmission, and silently ignored on reception, except where specified otherwise (for example, the Retry Delay request message (<a href="#retry" class="xref">Section 5.6.2</a>), where the RCODE indicates the reason for termination).</p>
 <p id="rfc.section.4.2.1.p.10">The RCODE value in a response message (QR=1) may be one of the following values:</p>
 <table cellpadding="3" cellspacing="0" class="tt full center">
 <thead><tr>
@@ -901,7 +901,13 @@
 <p id="rfc.section.4.3.p.3">The namespaces of 16-bit MESSAGE IDs are disjoint in each direction.  For example, it is <strong>not</strong> an error for both client and server to send a request message with the same ID. In effect, the 16-bit MESSAGE ID combined with the identity of the initiator (client or server) serves as a 17-bit unique identifier for a particular operation on a DSO Session.</p>
 <p id="rfc.section.4.3.p.4">As described in <a href="#header" class="xref">Section 4.2.1</a>, an initiator MUST NOT reuse a MESSAGE ID that is already in use for an outstanding request (unless specified otherwise by the relevant specification for the DSO in question).  At the very least, this means that a MESSAGE ID MUST NOT be reused in a particular direction on a particular DSO Session while the initiator is waiting for a response to a previous request using that MESSAGE ID on that DSO Session (unless specified otherwise by the relevant specification for the DSO in question), and for a long-lived operation the MESSAGE ID for the operation MUST NOT be reused while that operation remains active.</p>
 <p id="rfc.section.4.3.p.5">If a client or server receives a response (QR=1) where the MESSAGE ID is zero, or is any other value that does not match the MESSAGE ID of any of its outstanding operations, this is a fatal error and the recipient MUST forcibly abort the connection immediately.</p>
-<p></p>
+<h1 id="rfc.section.4.3.1">
+<a href="#rfc.section.4.3.1">4.3.1.</a> <a href="#error-responses" id="error-responses">Error Responses</a>
+</h1>
+<p id="rfc.section.4.3.1.p.1">When a request message is unsuccessful for some reason, the responder returns an error code to the initiator (for acknowledged request messages) or aborts the connection (for unacknowledged request messages).</p>
+<p id="rfc.section.4.3.1.p.2">In the case of a server returning an error code to a client, the server MAY choose to end the DSO Session, or MAY choose to allow the DSO Session to remain open.  For error conditions that only affect the single operation in question, the server SHOULD return an error response to the client and leave the DSO Session open for further operations.</p>
+<p id="rfc.section.4.3.1.p.3">For error conditions that are likely to make all operations unsuccessful in the immediate future, the server SHOULD return an error response to the client and then end the DSO Session by sending a Retry Delay request message, as described in <a href="#retry" class="xref">Section 5.6.2</a>.</p>
+<p id="rfc.section.4.3.1.p.4">Upon receiving an error response from the server, a client SHOULD NOT automatically close the DSO Session. An error relating to one particular operation on a DSO Session does not necessarily imply that all other operations on that DSO Session have also failed, or that future operations will fail. The client should assume that the server will make its own decision about whether or not to end the DSO Session, based on the server&#8217;s determination of whether the error condition pertains to this particular operation, or would also apply to any subsequent operations. If the server does not end the DSO Session by sending the client a Retry Delay message (<a href="#retry" class="xref">Section 5.6.2</a>) then the client SHOULD continue to use that DSO Session for subsequent operations.</p>
 <h1 id="rfc.section.4.4">
 <a href="#rfc.section.4.4">4.4.</a> <a href="#dso-response-generation" id="dso-response-generation">DSO Response Generation</a>
 </h1>
@@ -1004,17 +1010,12 @@
 </h1>
 <p id="rfc.section.5.6.p.1">In addition to cancelling individual long-lived operations selectively (<a href="#cancellation" class="xref">Section 4.5</a>) there are also occasions where a server may need to terminate one or more entire sessions.  An entire session may need to be terminated if the client is defective in some way, or departs from the network without closing its session.  Sessions may also need to be terminated if the server becomes overloaded, or if the server is reconfigured and lacks the ability to be selective about which operations need to be cancelled.</p>
 <p id="rfc.section.5.6.p.2">This section discusses various reasons a session may be terminated, and the mechanisms for doing so.</p>
-<h1 id="rfc.section.5.6.1">
-<a href="#rfc.section.5.6.1">5.6.1.</a> <a href="#error" id="error">Server-Initiated Session Termination on Error</a>
-</h1>
-<p id="rfc.section.5.6.1.p.1">After sending an error response to a client, the server MAY end the DSO Session, or may allow the DSO Session to remain open. For error conditions that only affect the single operation in question, the server SHOULD return an error response to the client and leave the DSO Session open for further operations.  For error conditions that are likely to make all operations unsuccessful in the immediate future, the server SHOULD return an error response to the client and then end the DSO Session by sending a Retry Delay request message, as described in <a href="#retry" class="xref">Section 5.6.3</a>.</p>
-<p id="rfc.section.5.6.1.p.2">Upon receiving an error response from the server, a client SHOULD NOT automatically close the DSO Session. An error relating to one particular operation on a DSO Session does not necessarily imply that all other operations on that DSO Session have also failed, or that future operations will fail. The client should assume that the server will make its own decision about whether or not to end the DSO Session, based on the server&#8217;s determination of whether the error condition pertains to this particular operation, or would also apply to any subsequent operations. If the server does not end the DSO Session by sending the client a Retry Delay message (<a href="#retry" class="xref">Section 5.6.3</a>) then the client SHOULD continue to use that DSO Session for subsequent operations.</p>
 <p></p>
-<h1 id="rfc.section.5.6.2">
-<a href="#rfc.section.5.6.2">5.6.2.</a> <a href="#server-initiated-session-termination-on-overload" id="server-initiated-session-termination-on-overload">Server-Initiated Session Termination on Overload</a>
+<h1 id="rfc.section.5.6.1">
+<a href="#rfc.section.5.6.1">5.6.1.</a> <a href="#server-initiated-session-termination-on-overload" id="server-initiated-session-termination-on-overload">Server-Initiated Session Termination on Overload</a>
 </h1>
-<p id="rfc.section.5.6.2.p.1">A server MUST NOT close a DSO Session with a client, except in certain exceptional circumstances, as outlined below.  In normal operation, closing a DSO Session is the client&#8217;s responsibility.  The client makes the determination of when to close a DSO Session based on an evaluation of both its own needs, and the inactivity timeout value dictated by the server.</p>
-<p id="rfc.section.5.6.2.p.2">Some of the exceptional situations in which a server may terminate a DSO Session include:</p>
+<p id="rfc.section.5.6.1.p.1">A server MUST NOT close a DSO Session with a client, except in certain exceptional circumstances, as outlined below.  In normal operation, closing a DSO Session is the client&#8217;s responsibility.  The client makes the determination of when to close a DSO Session based on an evaluation of both its own needs, and the inactivity timeout value dictated by the server.</p>
+<p id="rfc.section.5.6.1.p.2">Some of the exceptional situations in which a server may terminate a DSO Session include:</p>
 <p></p>
 
 <ul>
@@ -1022,31 +1023,31 @@
 <li>The server application software terminates unexpectedly (perhaps due to a bug that makes it crash).</li>
 <li>The server is undergoing a reconfiguration or maintenance procedure, that, due to the way the server software is implemented, requires clients to be disconnected.  For example, some software is implemented such that it reads a configuration file at startup, and changing the server&#8217;s configuration entails modifying the configuration file and then killing and restarting the server software, which generally entails a loss of network connections.</li>
 <li>The client fails to meets its obligation to generate the required keepalive traffic, or to close an inactive session by the prescribed time (twice the time interval dictated by the server, or five seconds, whichever is greater, as described in <a href="#sessiontimeouts" class="xref">Section 5.2</a>).</li>
-<li>The client sends a grossly invalid or malformed request that is indicative of a seriously defective client implementation (<a href="#error" class="xref">Section 5.6.1</a>).</li>
-<li>The server is over capacity and needs to shed some load (<a href="#retry" class="xref">Section 5.6.3</a>).</li>
+<li>The client sends a grossly invalid or malformed request that is indicative of a seriously defective client implementation.</li>
+<li>The server is over capacity and needs to shed some load (<a href="#retry" class="xref">Section 5.6.2</a>).</li>
 </ul>
-<p id="rfc.section.5.6.2.p.4">When a server has to close a DSO Session with a client (because of exceptional circumstances such as those outlined above) the server SHOULD, whenever possible, send a Retry Delay request message (see below) informing the client of the reason for the DSO Session being closed, and allow the client five seconds to receive it before the server resorts to forcibly aborting the connection.</p>
+<p id="rfc.section.5.6.1.p.4">When a server has to close a DSO Session with a client (because of exceptional circumstances such as those outlined above) the server SHOULD, whenever possible, send a Retry Delay request message (see below) informing the client of the reason for the DSO Session being closed, and allow the client five seconds to receive it before the server resorts to forcibly aborting the connection.</p>
 <p></p>
-<h1 id="rfc.section.5.6.3">
-<a href="#rfc.section.5.6.3">5.6.3.</a> <a href="#retry" id="retry">Server-Initiated Retry Delay Request Message</a>
+<h1 id="rfc.section.5.6.2">
+<a href="#rfc.section.5.6.2">5.6.2.</a> <a href="#retry" id="retry">Server-Initiated Retry Delay Request Message</a>
 </h1>
-<p id="rfc.section.5.6.3.p.1">There may be rare cases where a server is overloaded and wishes to shed load.  If a server is low on resources it MAY simply terminate a client connection by forcibly aborting it.  However, the likely behavior of the client may be simply to to treat this as a network failure and reconnect immediately, putting more burden on the server.</p>
-<p id="rfc.section.5.6.3.p.2">Therefore to avoid this reconnection implosion, a server SHOULD instead choose to shed client load by sending a Retry Delay request message, with an RCODE of SERVFAIL, to inform the client of the overload situation.  The format of the Retry Delay TLV is described in <a href="#delay" class="xref">Section 6.2</a>.  After sending a Retry Delay request message, the server MUST NOT send any further messages on that DSO Session.</p>
-<p id="rfc.section.5.6.3.p.3">Upon receipt of a Retry Delay request message from the server, the client MUST make note of the reconnect delay for this server, and then immediately close the connection gracefully.</p>
-<p id="rfc.section.5.6.3.p.4">After sending a Retry Delay request message the server SHOULD allow the client five seconds to close the connection, and if the client has not closed the connection after five seconds then the server SHOULD forcibly abort the connection.</p>
-<p id="rfc.section.5.6.3.p.5">A Retry Delay request message MUST NOT be initiated by a client.  If a server receives a Retry Delay request message this is a fatal error and the server MUST forcibly abort the connection immediately.</p>
-<h1 id="rfc.section.5.6.3.1">
-<a href="#rfc.section.5.6.3.1">5.6.3.1.</a> <a href="#outstanding-operations" id="outstanding-operations">Outstanding Operations</a>
+<p id="rfc.section.5.6.2.p.1">There may be rare cases where a server is overloaded and wishes to shed load.  If a server is low on resources it MAY simply terminate a client connection by forcibly aborting it.  However, the likely behavior of the client may be simply to to treat this as a network failure and reconnect immediately, putting more burden on the server.</p>
+<p id="rfc.section.5.6.2.p.2">Therefore to avoid this reconnection implosion, a server SHOULD instead choose to shed client load by sending a Retry Delay request message, with an RCODE of SERVFAIL, to inform the client of the overload situation.  The format of the Retry Delay TLV is described in <a href="#delay" class="xref">Section 6.2</a>.  After sending a Retry Delay request message, the server MUST NOT send any further messages on that DSO Session.</p>
+<p id="rfc.section.5.6.2.p.3">Upon receipt of a Retry Delay request message from the server, the client MUST make note of the reconnect delay for this server, and then immediately close the connection gracefully.</p>
+<p id="rfc.section.5.6.2.p.4">After sending a Retry Delay request message the server SHOULD allow the client five seconds to close the connection, and if the client has not closed the connection after five seconds then the server SHOULD forcibly abort the connection.</p>
+<p id="rfc.section.5.6.2.p.5">A Retry Delay request message MUST NOT be initiated by a client.  If a server receives a Retry Delay request message this is a fatal error and the server MUST forcibly abort the connection immediately.</p>
+<h1 id="rfc.section.5.6.2.1">
+<a href="#rfc.section.5.6.2.1">5.6.2.1.</a> <a href="#outstanding-operations" id="outstanding-operations">Outstanding Operations</a>
 </h1>
-<p id="rfc.section.5.6.3.1.p.1">At the instant a server chooses to initiate a Retry Delay request message there may be DNS requests already in flight from client to server on this DSO Session, which will arrive at the server after its Retry Delay request message has been sent.  The server MUST silently ignore such incoming requests, and MUST NOT generate any response messages for them. When the Retry Delay request message from the server arrives at the client, the client will determine that any DNS requests it previously sent on this DSO Session, that have not yet received a response, now will certainly not be receiving any response. Such requests should be considered failed, and should be retried at a later time, as appropriate.</p>
-<p id="rfc.section.5.6.3.1.p.2">In the case where some, but not all, of the existing operations on a DSO Session have become invalid (perhaps because the server has been reconfigured and is no longer authoritative for some of the names), but the server is terminating all DSO Sessions en masse with a REFUSED (5) RCODE, the RECONNECT DELAY MAY be zero, indicating that the clients SHOULD immediately attempt to re-establish operations.</p>
-<p id="rfc.section.5.6.3.1.p.3">It is likely that some of the attempts will be successful and some will not, depending on the nature of the reconfiguration.</p>
-<p id="rfc.section.5.6.3.1.p.4">In the case where a server is terminating a large number of DSO Sessions at once (e.g., if the system is restarting) and the server doesn&#8217;t want to be inundated with a flood of simultaneous retries, it SHOULD send different RECONNECT delay values to each client.  These adjustments MAY be selected randomly, pseudorandomly, or deterministically (e.g., incrementing the time value by one tenth of a second for each successive client, yielding a post-restart reconnection rate of ten clients per second).</p>
-<h1 id="rfc.section.5.6.3.2">
-<a href="#rfc.section.5.6.3.2">5.6.3.2.</a> <a href="#client-reconnection" id="client-reconnection">Client Reconnection</a>
+<p id="rfc.section.5.6.2.1.p.1">At the instant a server chooses to initiate a Retry Delay request message there may be DNS requests already in flight from client to server on this DSO Session, which will arrive at the server after its Retry Delay request message has been sent.  The server MUST silently ignore such incoming requests, and MUST NOT generate any response messages for them. When the Retry Delay request message from the server arrives at the client, the client will determine that any DNS requests it previously sent on this DSO Session, that have not yet received a response, now will certainly not be receiving any response. Such requests should be considered failed, and should be retried at a later time, as appropriate.</p>
+<p id="rfc.section.5.6.2.1.p.2">In the case where some, but not all, of the existing operations on a DSO Session have become invalid (perhaps because the server has been reconfigured and is no longer authoritative for some of the names), but the server is terminating all DSO Sessions en masse with a REFUSED (5) RCODE, the RECONNECT DELAY MAY be zero, indicating that the clients SHOULD immediately attempt to re-establish operations.</p>
+<p id="rfc.section.5.6.2.1.p.3">It is likely that some of the attempts will be successful and some will not, depending on the nature of the reconfiguration.</p>
+<p id="rfc.section.5.6.2.1.p.4">In the case where a server is terminating a large number of DSO Sessions at once (e.g., if the system is restarting) and the server doesn&#8217;t want to be inundated with a flood of simultaneous retries, it SHOULD send different RECONNECT delay values to each client.  These adjustments MAY be selected randomly, pseudorandomly, or deterministically (e.g., incrementing the time value by one tenth of a second for each successive client, yielding a post-restart reconnection rate of ten clients per second).</p>
+<h1 id="rfc.section.5.6.2.2">
+<a href="#rfc.section.5.6.2.2">5.6.2.2.</a> <a href="#client-reconnection" id="client-reconnection">Client Reconnection</a>
 </h1>
-<p id="rfc.section.5.6.3.2.p.1">After a DSO Session is ended by the server (either by sending the client a Retry Delay request message, or by forcibly aborting the underlying transport connection) the client SHOULD try to reconnect, to that server, or to another suitable server, if more than one is available.  If reconnecting to the same server, the client MUST respect the indicated delay, if available, before attempting to reconnect.</p>
-<p id="rfc.section.5.6.3.2.p.2">If a particular server does not want a client to reconnect (the server is being de-commissioned), it SHOULD set the retry delay to the maximum value (which is approximately 49.7 days). If the server will only be out of service for a maintenance period, it should use a value closer to the expected maintenance window and not default to a very large delay value or clients may not attempt to reconnect after it resumes service.</p>
+<p id="rfc.section.5.6.2.2.p.1">After a DSO Session is ended by the server (either by sending the client a Retry Delay request message, or by forcibly aborting the underlying transport connection) the client SHOULD try to reconnect, to that server, or to another suitable server, if more than one is available.  If reconnecting to the same server, the client MUST respect the indicated delay, if available, before attempting to reconnect.</p>
+<p id="rfc.section.5.6.2.2.p.2">If a particular server does not want a client to reconnect (the server is being de-commissioned), it SHOULD set the retry delay to the maximum value (which is approximately 49.7 days). If the server will only be out of service for a maintenance period, it should use a value closer to the expected maintenance window and not default to a very large delay value or clients may not attempt to reconnect after it resumes service.</p>
 <p></p>
 <h1 id="rfc.section.6">
 <a href="#rfc.section.6">6.</a> <a href="#base-tlvs-for-dns-stateful-operations" id="base-tlvs-for-dns-stateful-operations">Base TLVs for DNS Stateful Operations</a>
@@ -1123,7 +1124,7 @@
 <a href="#rfc.section.6.2.1">6.2.1.</a> <a href="#retry-delay-tlv-used-as-a-primary-tlv" id="retry-delay-tlv-used-as-a-primary-tlv">Retry Delay TLV used as a Primary TLV</a>
 </h1>
 <p id="rfc.section.6.2.1.p.1">When sent in a DSO request message, from server to client, the Retry Delay TLV (0) is used as a Primary TLV. It is used by a server to instruct a client to close the DSO Session and underlying connection, and not to reconnect for the indicated time interval.</p>
-<p id="rfc.section.6.2.1.p.2">In this case it applies to the DSO Session as a whole, and the client MUST begin closing the DSO Session, as described in <a href="#retry" class="xref">Section 5.6.3</a>. The RCODE in the message header MUST indicate the reason for the termination:</p>
+<p id="rfc.section.6.2.1.p.2">In this case it applies to the DSO Session as a whole, and the client MUST begin closing the DSO Session, as described in <a href="#retry" class="xref">Section 5.6.2</a>. The RCODE in the message header MUST indicate the reason for the termination:</p>
 <p></p>
 
 <ul>
