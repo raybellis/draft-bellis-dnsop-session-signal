@@ -1003,16 +1003,28 @@ a client may speculatively keep a DSO Session open in the expectation that
 it may have future requests to send to that server.
 
 The second timeout value, the keepalive interval, is the maximum permitted
-interval between client messages to the server if the client wishes to keep
-the DSO Session alive.
+interval between messages if the client wishes to keep the DSO Session alive.
 
-The two timeout values are independent. The inactivity timeout may be lower, the 
-same, or higher than the keepalive interval, though in most cases the inactivity 
-timeout is expected to be shorter than the keepalive interval.
+The two timeout values are independent. The inactivity timeout may be lower,
+the same, or higher than the keepalive interval, though in most cases the
+inactivity timeout is expected to be shorter than the keepalive interval.
 
-Only when the client has a very long-lived low-traffic operation does the 
-keepalive interval come into play, to ensure that a sufficient residual
-amount of traffic is generated to maintain NAT and firewall state
+A shorter inactivity timeout with a longer keepalive interval signals
+to the client that it should not speculatively keep an inactive DSO
+Session open for very long without reason, but when it does have an
+active reason to keep a DSO Session open, it doesn't need to be sending
+an aggressive level of keepalive traffic to maintain that session.
+
+A longer inactivity timeout with a shorter keepalive interval
+signals to the client that it may speculatively keep an inactive
+DSO Session open for a long time, but to maintain that inactive
+DSO Session it should be sending a lot of keepalive traffic.
+This configuration is expected to be less common.
+
+In the usual case where the inactivity timeout is shorter than the keepalive
+interval, it is only when a client has a very long-lived, low-traffic, operation
+that the keepalive interval comes into play, to ensure that a sufficient
+residual amount of traffic is generated to maintain NAT and firewall state
 and to assure client and server that they still have connectivity to each other.
 
 On a new DSO Session, if no explicit DSO Keepalive message exchange has taken 
@@ -1069,11 +1081,13 @@ operations with that server, and then create a new DSO Session later when needed
 
 ### Closing Inactive DSO Sessions
 
-A client is NOT required to wait until the inactivity timeout expires
-before closing a DSO Session.
+When a connection's inactivity timeout is reached the client MUST
+begin closing the idle connection, but a client is NOT REQUIRED to
+keep an idle connection open until the inactivity timeout is reached.
 A client MAY close a DSO Session at any time, at the client's discretion.
-If a client determines that it has no current or reasonably anticipated
-future need for an inactive DSO Session, then the client SHOULD close that connection.
+If a client determines that it has no current or reasonably
+anticipated future need for a currently inactive DSO Session,
+then the client SHOULD gracefully close that connection.
 
 If, at any time during the life of the DSO Session,
 the inactivity timeout value (i.e., 15 seconds by default) elapses
@@ -1093,10 +1107,9 @@ or an active long-lived operation, but not a DSO Keepalive message exchange itse
 A DSO Keepalive message exchange resets only the keepalive
 interval timer, not the inactivity timeout timer.
 
-If the client wishes to keep an inactive DSO Session open for longer than
-the default duration without having to send traffic every 15 seconds,
-then it uses the DSO Keepalive message to request
-longer timeout values, as described in {{keepalive}}.
+If the client wishes to keep an inactive DSO Session open for longer
+than the default duration then it uses the DSO Keepalive message
+to request longer timeout values, as described in {{keepalive}}.
 
 ### Values for the Inactivity Timeout
 
@@ -1104,28 +1117,6 @@ For the inactivity timeout value, lower values result in
 more frequent DSO Session teardown and re-establishment.
 Higher values result in lower traffic and lower CPU load on the server,
 but higher memory burden to maintain state for inactive DSO Sessions.
-
-A server may dictate (in a server-initiated Keepalive message,
-or in a response to a client-initiated Keepalive request message)
-any value it chooses for the inactivity timeout.
-When a connection's inactivity timeout is reached the client MUST
-begin closing the idle connection, but a client is NOT REQUIRED
-to keep an idle connection open until the inactivity timeout is
-reached --- a client SHOULD begin closing the connection sooner
-if it has no reason to expect future operations with that server
-before the inactivity timeout is reached.
-
-A shorter inactivity timeout with a longer keepalive interval signals
-to the client that it should not speculatively keep an inactive DSO
-Session open for very long without reason, but when it does have an
-active reason to keep a DSO Session open, it doesn't need to be sending
-an aggressive level of keepalive traffic to maintain that session.
-
-A longer inactivity timeout with a shorter keepalive interval
-signals to the client that it may speculatively keep an inactive
-DSO Session open for a long time, but to maintain that inactive
-DSO Session it should be sending a lot of keepalive traffic.
-This configuration is expected to be less common.
 
 A server may dictate any value it chooses for the inactivity timeout
 (either in a response to a client-initiated request, or in a server-initiated message)
@@ -1136,17 +1127,17 @@ should not speculatively maintain idle connections at all, and
 as soon as the client has completed the operation or operations relating
 to this server, the client should immediately begin closing this session.
 
-An inactivity timeout of 0xFFFFFFFF (2^32-1 milliseconds, approximately 49.7 days)
-informs the client that it may keep an idle connection open as long as it wishes.
-Note that after granting an unlimited inactivity timeout in this way,
-at any point the server may revise that inactivity timeout by sending
-a new Keepalive TLV dictating new Session Timeout values to the client.
-
 A server will abort an idle client session after twice the
 inactivity timeout value, or five seconds, whichever is greater.
 In the case of a zero inactivity timeout value, this means that
 if a client fails to close an idle client session then the server
 will forcibly abort the idle session after five seconds.
+
+An inactivity timeout of 0xFFFFFFFF (2^32-1 milliseconds, approximately 49.7 days)
+informs the client that it may keep an idle connection open as long as it wishes.
+Note that after granting an unlimited inactivity timeout in this way,
+at any point the server may revise that inactivity timeout by sending
+a new Keepalive request message dictating new Session Timeout values to the client.
 
 ***
 
