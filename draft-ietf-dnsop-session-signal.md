@@ -1240,12 +1240,8 @@ which operations need to be cancelled.
 This section discusses various reasons a session may be terminated,
 and the mechanisms for doing so.
 
-***
-
-### Server-Initiated Session Termination on Overload
-
-A server MUST NOT close a DSO Session with a client,
-except in certain exceptional circumstances, as outlined below.
+Normally a server MUST NOT close a DSO Session with a client.
+A server only causes a DSO Session to be ended in the exceptional circumstances outlined below.
 In normal operation, closing a DSO Session is the client's responsibility.
 The client makes the determination of when to close a DSO
 Session based on an evaluation of both its own needs,
@@ -1276,28 +1272,26 @@ whichever is greater, as described in {{sessiontimeouts}}).
 * The client sends a grossly invalid or malformed request that
 is indicative of a seriously defective client implementation.
 
-* The server is over capacity and needs to shed some load ({{retry}}).
-
-When a server has to close a DSO Session with a client
-(because of exceptional circumstances such as those outlined above)
-the server SHOULD, whenever possible, send a Retry Delay request message
-(see below) informing the client of the reason for the DSO Session
-being closed, and allow the client five seconds to receive it
-before the server resorts to forcibly aborting the connection.
-
-***
+* The server is over capacity and needs to shed some load.
 
 ### Server-Initiated Retry Delay Request Message {#retry}
 
-There may be rare cases where a server is overloaded and wishes to shed load.
-If a server is low on resources it MAY simply terminate a client connection
-by forcibly aborting it.
-However, the likely behavior of the client may be simply to to treat this as
-a network failure and reconnect immediately, putting more burden on the server.
+In the cases described above where a server elects to terminate a
+DSO Session, it could do so simply by forcibly aborting the connection.
+However, if it did this the likely behavior of the client might be simply to to treat
+this as a network failure and reconnect immediately, putting more burden on the server.
 
-Therefore to avoid this reconnection implosion, a server SHOULD instead choose 
-to shed client load by sending a Retry Delay request message, with an RCODE of 
-SERVFAIL, to inform the client of the overload situation.
+Therefore, to avoid this reconnection implosion, a server SHOULD instead choose to
+shed client load by sending a Retry Delay request message, with an appropriate RCODE
+value informing the client of the reason the DSO Session needs to be terminated.
+For example, an RCODE value of SERVFAIL indicates that the server is overloaded
+due to resource exhaustion, or is restarting.
+An RCODE value of NOTAUTH indicates that the server has been reconfigured and is
+no longer able to perform one or more of the functions currently being performed
+on this DSO Session because it no longer has authority over the names in question.
+An RCODE value of REFUSED indicates a policy change regarding this session.
+An RCODE value of FORMERR indicates that the client requests are
+too badly malformed for the session to continue.
 The format of the Retry Delay TLV is described in {{delay}}.
 After sending a Retry Delay request message,
 the server MUST NOT send any further messages on that DSO Session.
@@ -1331,7 +1325,8 @@ failed, and should be retried at a later time, as appropriate.
 In the case where some, but not all, of the existing operations on a DSO Session 
 have become invalid (perhaps because the server has been reconfigured and is no 
 longer authoritative for some of the names),
-but the server is terminating all DSO Sessions en masse with a REFUSED (5) RCODE,
+but the server is terminating all affected DSO Sessions en masse
+by sending them all a Retry Delay request message,
 the RECONNECT DELAY MAY be zero, indicating that the clients SHOULD immediately
 attempt to re-establish operations.
 
@@ -1546,7 +1541,7 @@ EDNS(0) TCP Keepalive option MUST forcibly abort the connection immediately.
 
 The Retry Delay TLV (DSO-TYPE=2) can be used as
 a Primary TLV (unacknowledged) in a server-to-client message,
-or as a Response Additional TLV in a server-to-client response to a client-to-server request message.
+or as a Response Additional TLV in either direction.
 
 The TYPE-DEPENDENT DATA for the the Retry Delay TLV is as follows:
 
@@ -1575,15 +1570,21 @@ DSO Session, as described in {{retry}}. The RCODE in the message header
 MUST indicate the reason for the termination:
 
 * NOERROR indicates a routine shutdown. 
-* SERVFAIL indicates that the server is overloaded due to resource exhaustion. 
-* REFUSED indicates that the server has been reconfigured and is no longer able 
-to perform one or more of the functions 
-currently being performed on this DSO Session (for example, a DNS Push Notification 
-server could be reconfigured such that is is no longer accepting DNS Push 
-Notification requests for one or more of the currently subscribed names).
+* FORMERR indicates that the client requests are too badly malformed for the session to continue.
+* SERVFAIL indicates that the server is overloaded due to resource exhaustion, or is restarting.
+* REFUSED indicates that the server has been reconfigured
+and due to a policy change is no longer able to perform one or more
+of the functions currently being performed on this DSO Session
+* NOTAUTH indicates that the server has been reconfigured
+and is no longer able to perform one or more
+of the functions currently being performed on this DSO Session
+because it no longer has authority over the names in question
+(for example, a DNS Push Notification server could be reconfigured
+such that is is no longer accepting DNS Push Notification
+requests for one or more of the currently subscribed names).
 
-This document specifies only these three RCODE values for Retry Delay request.
-Servers sending Retry Delay requests SHOULD use one of these three values.
+This document specifies only these RCODE values for Retry Delay request.
+Servers sending Retry Delay requests SHOULD use one of these values.
 However, future circumstances may create situations where other RCODE values
 are appropriate in Retry Delay requests, so clients MUST be prepared
 to accept Retry Delay requests with any RCODE value.
@@ -1591,6 +1592,10 @@ to accept Retry Delay requests with any RCODE value.
 A Retry Delay request is an unacknowledged request message;
 the MESSAGE ID MUST be set to zero in the request
 and the client MUST NOT send a response.
+
+A client MUST NOT send a Retry Delay request message to a server.
+If a server receives a Retry Delay request message, this is a fatal error
+and the server MUST forcibly abort the connection immediately.
 
 ### Retry Delay TLV used as a Response Additional TLV
 
@@ -1601,13 +1606,6 @@ SHOULD NOT attempt this operation again.
 
 The indicated time interval during which the initator SHOULD NOT retry
 applies only to the failed operation, not to the DSO Session as a whole.
-
-### Retry Delay TLV is used by server only
-
-A client MUST NOT send a Retry Delay TLV to a server,
-either in a DSO request message, or in a DSO response message.
-If a server receives a DSO message containing a Retry Delay TLV,
-this is a fatal error and the server MUST forcibly abort the connection immediately.
 
 ***
 

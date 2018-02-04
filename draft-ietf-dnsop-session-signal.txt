@@ -97,15 +97,15 @@ Table of Contents
        5.5.1.  Keepalive Interval Expiry . . . . . . . . . . . . . .  31
        5.5.2.  Values for the Keepalive Interval . . . . . . . . . .  31
      5.6.  Server-Initiated Session Termination  . . . . . . . . . .  33
-       5.6.1.  Server-Initiated Session Termination on Overload  . .  34
-       5.6.2.  Server-Initiated Retry Delay Request Message  . . . .  35
-   6.  Base TLVs for DNS Stateful Operations . . . . . . . . . . . .  37
-     6.1.  Keepalive TLV . . . . . . . . . . . . . . . . . . . . . .  37
-       6.1.1.  Client handling of received Session Timeout values  .  39
-       6.1.2.  Relation to EDNS(0) TCP Keepalive Option  . . . . . .  40
-     6.2.  Retry Delay TLV . . . . . . . . . . . . . . . . . . . . .  41
-       6.2.1.  Retry Delay TLV used as a Primary TLV . . . . . . . .  41
-       6.2.2.  Retry Delay TLV used as a Response Additional TLV . .  42
+       5.6.1.  Server-Initiated Retry Delay Request Message  . . . .  34
+   6.  Base TLVs for DNS Stateful Operations . . . . . . . . . . . .  36
+     6.1.  Keepalive TLV . . . . . . . . . . . . . . . . . . . . . .  36
+       6.1.1.  Client handling of received Session Timeout values  .  38
+       6.1.2.  Relation to EDNS(0) TCP Keepalive Option  . . . . . .  39
+     6.2.  Retry Delay TLV . . . . . . . . . . . . . . . . . . . . .  40
+       6.2.1.  Retry Delay TLV used as a Primary TLV . . . . . . . .  40
+       6.2.2.  Retry Delay TLV used as a Response Additional TLV . .  41
+     6.3.  Encryption Padding TLV  . . . . . . . . . . . . . . . . .  42
 
 
 
@@ -114,23 +114,21 @@ Bellis, et al.            Expires July 30, 2018                 [Page 2]
 Internet-Draft           DNS Stateful Operations            January 2018
 
 
-       6.2.3.  Retry Delay TLV is used by server only  . . . . . . .  42
-     6.3.  Encryption Padding TLV  . . . . . . . . . . . . . . . . .  43
-   7.  Summary Highlights  . . . . . . . . . . . . . . . . . . . . .  44
-     7.1.  MESSAGE ID  . . . . . . . . . . . . . . . . . . . . . . .  44
-     7.2.  TLV Usage . . . . . . . . . . . . . . . . . . . . . . . .  45
-     7.3.  Inactivity Timeout  . . . . . . . . . . . . . . . . . . .  46
-     7.4.  Keepalive Interval  . . . . . . . . . . . . . . . . . . .  46
-   8.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  47
-     8.1.  DSO OPCODE Registration . . . . . . . . . . . . . . . . .  47
-     8.2.  DSO RCODE Registration  . . . . . . . . . . . . . . . . .  47
-     8.3.  DSO Type Code Registry  . . . . . . . . . . . . . . . . .  47
-   9.  Security Considerations . . . . . . . . . . . . . . . . . . .  48
-   10. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  48
-   11. References  . . . . . . . . . . . . . . . . . . . . . . . . .  49
-     11.1.  Normative References . . . . . . . . . . . . . . . . . .  49
-     11.2.  Informative References . . . . . . . . . . . . . . . . .  50
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  51
+   7.  Summary Highlights  . . . . . . . . . . . . . . . . . . . . .  43
+     7.1.  MESSAGE ID  . . . . . . . . . . . . . . . . . . . . . . .  43
+     7.2.  TLV Usage . . . . . . . . . . . . . . . . . . . . . . . .  44
+     7.3.  Inactivity Timeout  . . . . . . . . . . . . . . . . . . .  45
+     7.4.  Keepalive Interval  . . . . . . . . . . . . . . . . . . .  45
+   8.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  46
+     8.1.  DSO OPCODE Registration . . . . . . . . . . . . . . . . .  46
+     8.2.  DSO RCODE Registration  . . . . . . . . . . . . . . . . .  46
+     8.3.  DSO Type Code Registry  . . . . . . . . . . . . . . . . .  46
+   9.  Security Considerations . . . . . . . . . . . . . . . . . . .  47
+   10. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  47
+   11. References  . . . . . . . . . . . . . . . . . . . . . . . . .  48
+     11.1.  Normative References . . . . . . . . . . . . . . . . . .  48
+     11.2.  Informative References . . . . . . . . . . . . . . . . .  49
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  50
 
 1.  Introduction
 
@@ -162,6 +160,8 @@ Internet-Draft           DNS Stateful Operations            January 2018
    All three of the TLVs defined here are mandatory for all
    implementations of DSO.  Further TLVs may be defined in additional
    specifications.
+
+
 
 
 
@@ -789,7 +789,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
    In a request message (QR=0) the RCODE is generally set to zero on
    transmission, and silently ignored on reception, except where
    specified otherwise (for example, the Retry Delay request message
-   (Section 5.6.2), where the RCODE indicates the reason for
+   (Section 5.6.1), where the RCODE indicates the reason for
    termination).
 
    The RCODE value in a response message (QR=1) may be one of the
@@ -1240,7 +1240,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
    For error conditions that are likely to make all operations
    unsuccessful in the immediate future, the server SHOULD return an
    error response to the client and then end the DSO Session by sending
-   a Retry Delay request message, as described in Section 5.6.2.
+   a Retry Delay request message, as described in Section 5.6.1.
 
    Upon receiving an error response from the server, a client SHOULD NOT
    automatically close the DSO Session.  An error relating to one
@@ -1251,7 +1251,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
    Session, based on the server's determination of whether the error
    condition pertains to this particular operation, or would also apply
    to any subsequent operations.  If the server does not end the DSO
-   Session by sending the client a Retry Delay message (Section 5.6.2)
+   Session by sending the client a Retry Delay message (Section 5.6.1)
    then the client SHOULD continue to use that DSO Session for
    subsequent operations.
 
@@ -1808,56 +1808,13 @@ Internet-Draft           DNS Stateful Operations            January 2018
    This section discusses various reasons a session may be terminated,
    and the mechanisms for doing so.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Bellis, et al.            Expires July 30, 2018                [Page 33]
-
-Internet-Draft           DNS Stateful Operations            January 2018
-
-
-5.6.1.  Server-Initiated Session Termination on Overload
-
-   A server MUST NOT close a DSO Session with a client, except in
-   certain exceptional circumstances, as outlined below.  In normal
-   operation, closing a DSO Session is the client's responsibility.  The
-   client makes the determination of when to close a DSO Session based
-   on an evaluation of both its own needs, and the inactivity timeout
-   value dictated by the server.
+   Normally a server MUST NOT close a DSO Session with a client.  A
+   server only causes a DSO Session to be ended in the exceptional
+   circumstances outlined below.  In normal operation, closing a DSO
+   Session is the client's responsibility.  The client makes the
+   determination of when to close a DSO Session based on an evaluation
+   of both its own needs, and the inactivity timeout value dictated by
+   the server.
 
    Some of the exceptional situations in which a server may terminate a
    DSO Session include:
@@ -1886,40 +1843,38 @@ Internet-Draft           DNS Stateful Operations            January 2018
    o  The client sends a grossly invalid or malformed request that is
       indicative of a seriously defective client implementation.
 
-   o  The server is over capacity and needs to shed some load
-      (Section 5.6.2).
-
-   When a server has to close a DSO Session with a client (because of
-   exceptional circumstances such as those outlined above) the server
-   SHOULD, whenever possible, send a Retry Delay request message (see
-   below) informing the client of the reason for the DSO Session being
-   closed, and allow the client five seconds to receive it before the
-   server resorts to forcibly aborting the connection.
 
 
-
-
-
-
-Bellis, et al.            Expires July 30, 2018                [Page 34]
+Bellis, et al.            Expires July 30, 2018                [Page 33]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
 
-5.6.2.  Server-Initiated Retry Delay Request Message
+   o  The server is over capacity and needs to shed some load.
 
-   There may be rare cases where a server is overloaded and wishes to
-   shed load.  If a server is low on resources it MAY simply terminate a
-   client connection by forcibly aborting it.  However, the likely
-   behavior of the client may be simply to to treat this as a network
-   failure and reconnect immediately, putting more burden on the server.
+5.6.1.  Server-Initiated Retry Delay Request Message
 
-   Therefore to avoid this reconnection implosion, a server SHOULD
+   In the cases described above where a server elects to terminate a DSO
+   Session, it could do so simply by forcibly aborting the connection.
+   However, if it did this the likely behavior of the client might be
+   simply to to treat this as a network failure and reconnect
+   immediately, putting more burden on the server.
+
+   Therefore, to avoid this reconnection implosion, a server SHOULD
    instead choose to shed client load by sending a Retry Delay request
-   message, with an RCODE of SERVFAIL, to inform the client of the
-   overload situation.  The format of the Retry Delay TLV is described
-   in Section 6.2.  After sending a Retry Delay request message, the
-   server MUST NOT send any further messages on that DSO Session.
+   message, with an appropriate RCODE value informing the client of the
+   reason the DSO Session needs to be terminated.  For example, an RCODE
+   value of SERVFAIL indicates that the server is overloaded due to
+   resource exhaustion, or is restarting.  An RCODE value of NOTAUTH
+   indicates that the server has been reconfigured and is no longer able
+   to perform one or more of the functions currently being performed on
+   this DSO Session because it no longer has authority over the names in
+   question.  An RCODE value of REFUSED indicates a policy change
+   regarding this session.  An RCODE value of FORMERR indicates that the
+   client requests are too badly malformed for the session to continue.
+   The format of the Retry Delay TLV is described in Section 6.2.  After
+   sending a Retry Delay request message, the server MUST NOT send any
+   further messages on that DSO Session.
 
    Upon receipt of a Retry Delay request message from the server, the
    client MUST make note of the reconnect delay for this server, and
@@ -1934,7 +1889,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
    a server receives a Retry Delay request message this is a fatal error
    and the server MUST forcibly abort the connection immediately.
 
-5.6.2.1.  Outstanding Operations
+5.6.1.1.  Outstanding Operations
 
    At the instant a server chooses to initiate a Retry Delay request
    message there may be DNS requests already in flight from client to
@@ -1943,6 +1898,14 @@ Internet-Draft           DNS Stateful Operations            January 2018
    ignore such incoming requests, and MUST NOT generate any response
    messages for them.  When the Retry Delay request message from the
    server arrives at the client, the client will determine that any DNS
+
+
+
+Bellis, et al.            Expires July 30, 2018                [Page 34]
+
+Internet-Draft           DNS Stateful Operations            January 2018
+
+
    requests it previously sent on this DSO Session, that have not yet
    received a response, now will certainly not be receiving any
    response.  Such requests should be considered failed, and should be
@@ -1951,16 +1914,10 @@ Internet-Draft           DNS Stateful Operations            January 2018
    In the case where some, but not all, of the existing operations on a
    DSO Session have become invalid (perhaps because the server has been
    reconfigured and is no longer authoritative for some of the names),
-   but the server is terminating all DSO Sessions en masse with a
-   REFUSED (5) RCODE, the RECONNECT DELAY MAY be zero, indicating that
-   the clients SHOULD immediately attempt to re-establish operations.
-
-
-
-Bellis, et al.            Expires July 30, 2018                [Page 35]
-
-Internet-Draft           DNS Stateful Operations            January 2018
-
+   but the server is terminating all affected DSO Sessions en masse by
+   sending them all a Retry Delay request message, the RECONNECT DELAY
+   MAY be zero, indicating that the clients SHOULD immediately attempt
+   to re-establish operations.
 
    It is likely that some of the attempts will be successful and some
    will not, depending on the nature of the reconfiguration.
@@ -1974,7 +1931,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
    a second for each successive client, yielding a post-restart
    reconnection rate of ten clients per second).
 
-5.6.2.2.  Client Reconnection
+5.6.1.2.  Client Reconnection
 
    After a DSO Session is ended by the server (either by sending the
    client a Retry Delay request message, or by forcibly aborting the
@@ -2000,20 +1957,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-Bellis, et al.            Expires July 30, 2018                [Page 36]
+Bellis, et al.            Expires July 30, 2018                [Page 35]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -2069,7 +2013,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 37]
+Bellis, et al.            Expires July 30, 2018                [Page 36]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -2125,7 +2069,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 38]
+Bellis, et al.            Expires July 30, 2018                [Page 37]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -2181,7 +2125,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 39]
+Bellis, et al.            Expires July 30, 2018                [Page 38]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -2237,7 +2181,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 40]
+Bellis, et al.            Expires July 30, 2018                [Page 39]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -2249,8 +2193,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
    The Retry Delay TLV (DSO-TYPE=2) can be used as a Primary TLV
    (unacknowledged) in a server-to-client message, or as a Response
-   Additional TLV in a server-to-client response to a client-to-server
-   request message.
+   Additional TLV in either direction.
 
    The TYPE-DEPENDENT DATA for the the Retry Delay TLV is as follows:
 
@@ -2275,39 +2218,52 @@ Internet-Draft           DNS Stateful Operations            January 2018
    and not to reconnect for the indicated time interval.
 
    In this case it applies to the DSO Session as a whole, and the client
-   MUST begin closing the DSO Session, as described in Section 5.6.2.
+   MUST begin closing the DSO Session, as described in Section 5.6.1.
    The RCODE in the message header MUST indicate the reason for the
    termination:
 
    o  NOERROR indicates a routine shutdown.
 
+   o  FORMERR indicates that the client requests are too badly malformed
+      for the session to continue.
+
    o  SERVFAIL indicates that the server is overloaded due to resource
-      exhaustion.
+      exhaustion, or is restarting.
 
-   o  REFUSED indicates that the server has been reconfigured and is no
-      longer able to perform one or more of the functions currently
-      being performed on this DSO Session (for example, a DNS Push
-      Notification server could be reconfigured such that is is no
-      longer accepting DNS Push Notification requests for one or more of
-      the currently subscribed names).
+   o  REFUSED indicates that the server has been reconfigured and due to
+      a policy change is no longer able to perform one or more of the
+      functions currently being performed on this DSO Session
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 41]
+
+Bellis, et al.            Expires July 30, 2018                [Page 40]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
 
-   This document specifies only these three RCODE values for Retry Delay
+   o  NOTAUTH indicates that the server has been reconfigured and is no
+      longer able to perform one or more of the functions currently
+      being performed on this DSO Session because it no longer has
+      authority over the names in question (for example, a DNS Push
+      Notification server could be reconfigured such that is is no
+      longer accepting DNS Push Notification requests for one or more of
+      the currently subscribed names).
+
+   This document specifies only these RCODE values for Retry Delay
    request.  Servers sending Retry Delay requests SHOULD use one of
-   these three values.  However, future circumstances may create
-   situations where other RCODE values are appropriate in Retry Delay
-   requests, so clients MUST be prepared to accept Retry Delay requests
-   with any RCODE value.
+   these values.  However, future circumstances may create situations
+   where other RCODE values are appropriate in Retry Delay requests, so
+   clients MUST be prepared to accept Retry Delay requests with any
+   RCODE value.
 
    A Retry Delay request is an unacknowledged request message; the
    MESSAGE ID MUST be set to zero in the request and the client MUST NOT
    send a response.
+
+   A client MUST NOT send a Retry Delay request message to a server.  If
+   a server receives a Retry Delay request message, this is a fatal
+   error and the server MUST forcibly abort the connection immediately.
 
 6.2.2.  Retry Delay TLV used as a Response Additional TLV
 
@@ -2320,12 +2276,6 @@ Internet-Draft           DNS Stateful Operations            January 2018
    retry applies only to the failed operation, not to the DSO Session as
    a whole.
 
-6.2.3.  Retry Delay TLV is used by server only
-
-   A client MUST NOT send a Retry Delay TLV to a server, either in a DSO
-   request message, or in a DSO response message.  If a server receives
-   a DSO message containing a Retry Delay TLV, this is a fatal error and
-   the server MUST forcibly abort the connection immediately.
 
 
 
@@ -2343,13 +2293,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-
-
-
-
-
-
-Bellis, et al.            Expires July 30, 2018                [Page 42]
+Bellis, et al.            Expires July 30, 2018                [Page 41]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -2405,7 +2349,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 43]
+Bellis, et al.            Expires July 30, 2018                [Page 42]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -2461,7 +2405,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 44]
+Bellis, et al.            Expires July 30, 2018                [Page 43]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -2517,7 +2461,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 45]
+Bellis, et al.            Expires July 30, 2018                [Page 44]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -2573,7 +2517,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 46]
+Bellis, et al.            Expires July 30, 2018                [Page 45]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -2629,7 +2573,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 47]
+Bellis, et al.            Expires July 30, 2018                [Page 46]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -2685,7 +2629,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 48]
+Bellis, et al.            Expires July 30, 2018                [Page 47]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -2741,7 +2685,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 49]
+Bellis, et al.            Expires July 30, 2018                [Page 48]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -2797,7 +2741,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 50]
+Bellis, et al.            Expires July 30, 2018                [Page 49]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -2853,7 +2797,7 @@ Authors' Addresses
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 51]
+Bellis, et al.            Expires July 30, 2018                [Page 50]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -2909,4 +2853,4 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 52]
+Bellis, et al.            Expires July 30, 2018                [Page 51]
