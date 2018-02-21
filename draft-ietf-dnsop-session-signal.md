@@ -1809,11 +1809,17 @@ The data field of the "Encryption Padding" TLV could be used as a covert channel
 # Acknowledgements
 
 Thanks to
+Stephane Bortzmeyer,
 Tim Chown,
 Ralph Droms,
+Paul Hoffman,
 Jan Komissar,
+Ted Lemon,
+Edward Lewis,
+Rui Paulo,
+David Schinazi,
 Manju Shankar Rao,
-and Ted Lemon
+and Bernie Volz
 for their helpful contributions to this document.
 
 ***
