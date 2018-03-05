@@ -586,7 +586,7 @@ be set to a unique nonzero value, that the initiator is not
 currently using for any other active operation on this connection.
 For the purposes here, a MESSAGE ID is in use in this DSO Session if the
 initiator has used it in a request for which it is still awaiting a response,
-or if the client has used it to setup a long-lived operation that has not yet been cancelled.
+or if the client has used it to set up a long-lived operation that has not yet been cancelled.
 For example, a long-lived operation could be
 a Push Notification subscription {{?I-D.ietf-dnssd-push}} or
 a Discovery Relay interface subscription {{?I-D.sctl-dnssd-mdns-relay}}.
@@ -813,9 +813,9 @@ forcibly abort the connection immediately.
 
 If DSO request is received containing an unrecognized Primary TLV,
 with a nonzero MESSAGE ID (indicating that a response is expected),
-then the receiver MUST send a response with matching MESSAGE ID,
+then the receiver MUST send an error response with matching MESSAGE ID,
 and RCODE DSONOTIMP (tentatively 11).
-The response MUST NOT contain a copy of the unrecognized Primary TLV.
+The error response MUST NOT contain a copy of the unrecognized Primary TLV.
 
 If DSO request is received containing an unrecognized Primary TLV,
 with a zero MESSAGE ID (indicating that no response is expected),
@@ -882,7 +882,7 @@ elicit a response from the server, and
 DSO request messages sent by the server with a nonzero MESSAGE ID field
 elicit a response from the client.
 
-A DSO request message (QR=0) with a zero MESSAGE ID field MUST NOT elicit a response.
+A DNS request message (QR=0) with a zero MESSAGE ID field MUST NOT elicit a response.
 
 The namespaces of 16-bit MESSAGE IDs are disjoint in each direction.
 For example, it is **not** an error for both client and server to send a request
@@ -892,12 +892,12 @@ identifier for a particular operation on a DSO Session.
 
 As described in {{header}}, an initiator MUST NOT reuse a
 MESSAGE ID that is already in use for an outstanding request
-(unless specified otherwise by the relevant specification for the DSO in question).
+(unless specified otherwise by the relevant specification for the DSO-TYPE in question).
 At the very least, this means that a MESSAGE ID MUST NOT
 be reused in a particular direction on a particular DSO
 Session while the initiator is waiting for a response to a
 previous request using that MESSAGE ID on that DSO Session
-(unless specified otherwise by the relevant specification for the DSO in question),
+(unless specified otherwise by the relevant specification for the DSO-TYPE in question),
 and for a long-lived operation the MESSAGE ID for the operation
 MUST NOT be reused while that operation remains active.
 
@@ -1695,25 +1695,28 @@ of data in the preceding TLVs {{?I-D.ietf-dprive-padding-policy}}.
 This section summarizes some noteworthy highlights about
 various components of the DSO protocol.
 
-## MESSAGE ID
+## QR bit and MESSAGE ID
 
-In DSO Request Messages the MESSAGE ID may be either
-nonzero (signaling that the responder MUST generate a response)
-or zero (signaling that the responder MUST NOT generate a response).
+In DSO Request Messages the QR bit is 0 and the MESSAGE ID is nonzero.
 
-In DSO Response Messages the MESSAGE ID MUST NOT be zero
-(since this would be a response to a request that had
-indicated that a response is not allowed).
+In DSO Response Messages the QR bit is 1 and the MESSAGE ID is nonzero.
 
-The table below illustrates the legal combinations:
+In DSO Unacknowledged Messages the QR bit is 0 and the MESSAGE ID is zero.
 
-                              +--------------------+-------------------+
-                              | Nonzero MESSAGE ID |  Zero MESSAGE ID  |
-       +----------------------+--------------------+-------------------+
-       | DSO Request Message  |         X          |         X         |
-       +----------------------+--------------------+-------------------+
-       | DSO Response Message |         X          |                   |
-       +----------------------+--------------------+-------------------+
+The table below illustrates which combinations are legal and how they are interpreted:
+
+
+         +--------------+--------------+--------------------------+
+         |      QR      |  MESSAGE ID  |  Interpretation          |
+         +--------------+--------------+--------------------------+
+         |      0       |   Nonzero    |  Request Message         |
+         +--------------+--------------+--------------------------+
+         |      1       |   Nonzero    |  Response Message        |
+         +--------------+--------------+--------------------------+
+         |      0       |     Zero     |  Unacknowledged Message  |
+         +--------------+--------------+--------------------------+
+         |      1       |     Zero     |  Invalid                 |
+         +--------------+--------------+--------------------------+
 
 ***
 
@@ -1722,7 +1725,7 @@ The table below illustrates the legal combinations:
 The table below indicates, for each of the three TLVs defined in this
 document, whether they are valid in each of ten different contexts.
 
-The first five contexts are requests from client to server,
+The first five contexts are requests or unacknowledged messages from client to server,
 and the corresponding responses from server back to client:
 
 * C-P - Primary TLV, sent in DSO Request message, from client to server,
@@ -1738,7 +1741,7 @@ where the DSO-TYPE of the Response TLV matches the DSO-TYPE of the Primary TLV i
 where the DSO-TYPE of the Response TLV does not match the DSO-TYPE of the Primary TLV in the request.
 
 The second five contexts are their counterparts in the opposite direction:
-requests from server to client, and the corresponding responses from client back to server.
+requests or unacknowledged messages from server to client, and the corresponding responses from client back to server.
 
                   +-------------------------+-------------------------+
                   | C-P  C-U  C-A  CRP  CRA | S-P  S-U  S-A  SRP  SRA |
@@ -1754,35 +1757,6 @@ Note that some of the columns in this table are currently empty.
 The table is provided as a template for future TLV definitions to follow.
 It is recommended that definitions of future TLVs include a
 similar table summarizing the contexts where the new TLV is valid.
-
-***
-
-## Inactivity Timeout
-
-The Inactivity Timeout may have any 32-bit unsigned integer value.
-
-The value zero informs the client that it
-should not speculatively maintain idle connections at all, and
-as soon as the client has completed the operation or operations relating
-to this server, the client should immediately begin closing this session.
-
-The maximum possible value,
-0xFFFFFFFF (2^32-1 milliseconds, approximately 49.7 days),
-informs the client that it may keep an idle connection open as long as it wishes.
-
-The Inactivity timer is reset by any message **except** the Keepalive TLV,
-and remains cleared any time that an operation is outstanding.
-
-## Keepalive Interval
-
-The Keepalive Interval is a 32-bit unsigned integer value,
-with a minimum value of 10,000 milliseconds (10 seconds).
-
-The maximum possible value,
-0xFFFFFFFF (2^32-1 milliseconds, approximately 49.7 days),
-informs the client that it should generate no keepalive traffic.
-
-Any message exchange (including the Keepalive TLV) resets the Keepalive timer.
 
 ***
 
