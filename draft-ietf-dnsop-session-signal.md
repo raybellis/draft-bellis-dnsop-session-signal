@@ -1689,6 +1689,17 @@ However, future circumstances may create situations where other RCODE values
 are appropriate in Retry Delay requests, so clients MUST be prepared
 to accept Retry Delay requests with any RCODE value.
 
+The RCODE value received in the message header of a Retry Delay
+unacknowledged message is generally usually useful only for
+information purposes, such as writing to a log file for future
+human analysis regarding the nature of the disconnection.
+Generally clients do not modify their behavior depending on the RCODE value.
+The RETRY DELAY in the message tells the client how long it should
+wait before attempting a new connection to this server instance.
+
+For clients that do in some way modify their behavior depending on the RCODE value,
+they should treat unknown RCODE values the same as RCODE=NOERROR (routine shutdown).
+
 A Retry Delay message from server to client is an unacknowledged message;
 the MESSAGE ID MUST be set to zero in the outgoing message
 and the client MUST NOT send a response.
