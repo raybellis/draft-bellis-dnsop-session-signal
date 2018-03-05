@@ -467,8 +467,6 @@ Even for clients that do implement other future DSO-TYPEs, for simplicity
 they MAY elect to always send an initial DSO Keepalive
 request message as their way of initiating a DSO Session.
 
-***
-
 ### Connection Sharing {#sharing}
 
 As previously specified for DNS over TCP {{!RFC7766}}:
@@ -505,8 +503,6 @@ will also typically appear to the DNS server as different source ports on
 the same client IP address.
 Because of these constraints, a DNS server MUST be prepared to accept
 multiple connections from different source ports on the same client IP address.
-
-***
 
 ### Zero Round-Trip Operation
 
@@ -1120,8 +1116,6 @@ place, the default value for both timeouts is 15 seconds.
 For both timeouts, lower values of the timeout result in higher network traffic
 and higher CPU load on the server.
 
-***
-
 ## Inactive DSO Sessions
 
 At both servers and clients, the generation or reception of any complete
@@ -1154,6 +1148,8 @@ the inactivity timeout, and the keepalive interval.
 Just because a DSO Session has no traffic for an extended period of time
 does not automatically make that DSO Session "inactive",
 if it has an active operation that is awaiting events.
+
+***
 
 ## The Inactivity Timeout {#inactivetimer}
 
@@ -1404,6 +1400,8 @@ A Retry Delay message MUST NOT be initiated by a client.
 If a server receives a Retry Delay message this is a fatal error
 and the server MUST forcibly abort the connection immediately.
 
+***
+
 #### Outstanding Operations
 
 At the instant a server chooses to initiate a Retry Delay message
@@ -1435,6 +1433,8 @@ values to each client.
 These adjustments MAY be selected randomly, pseudorandomly, or deterministically
 (e.g., incrementing the time value by one tenth of a second for each successive
 client, yielding a post-restart reconnection rate of ten clients per second).
+
+***
 
 #### Client Reconnection
 
@@ -1631,6 +1631,8 @@ before the server resorts to forcibly aborting it, the server
 SHOULD give the client an additional grace period of one quarter
 of the new inactivity timeout, or five seconds, whichever is greater.
 
+***
+
 ### Relation to EDNS(0) TCP Keepalive Option
 
 The inactivity timeout value in the Keepalive TLV (DSO-TYPE=1) has similar
@@ -1642,6 +1644,8 @@ Once a DSO Session has been established, if either
 client or server receives a DNS message over the DSO Session that contains an
 EDNS(0) TCP Keepalive option, this is a fatal error and the receiver of the
 EDNS(0) TCP Keepalive option MUST forcibly abort the connection immediately.
+
+***
 
 ## Retry Delay TLV {#delay}
 

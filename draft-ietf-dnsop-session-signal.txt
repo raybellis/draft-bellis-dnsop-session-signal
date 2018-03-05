@@ -75,37 +75,37 @@ Table of Contents
    3.  Discussion  . . . . . . . . . . . . . . . . . . . . . . . . .   9
    4.  Protocol Details  . . . . . . . . . . . . . . . . . . . . . .  10
      4.1.  DSO Session Establishment . . . . . . . . . . . . . . . .  10
-       4.1.1.  Connection Sharing  . . . . . . . . . . . . . . . . .  13
-       4.1.2.  Zero Round-Trip Operation . . . . . . . . . . . . . .  14
-       4.1.3.  Middlebox Considerations  . . . . . . . . . . . . . .  14
-     4.2.  Message Format  . . . . . . . . . . . . . . . . . . . . .  16
-       4.2.1.  DNS Header Fields in DSO Messages . . . . . . . . . .  17
-       4.2.2.  DSO Data  . . . . . . . . . . . . . . . . . . . . . .  19
-       4.2.3.  EDNS(0) and TSIG  . . . . . . . . . . . . . . . . . .  24
-     4.3.  Message Handling  . . . . . . . . . . . . . . . . . . . .  25
-       4.3.1.  Error Responses . . . . . . . . . . . . . . . . . . .  26
-     4.4.  DSO Response Generation . . . . . . . . . . . . . . . . .  27
-     4.5.  Responder-Initiated Operation Cancellation  . . . . . . .  28
-   5.  DSO Session Lifecycle and Timers  . . . . . . . . . . . . . .  29
-     5.1.  DSO Session Initiation  . . . . . . . . . . . . . . . . .  29
-     5.2.  DSO Session Timeouts  . . . . . . . . . . . . . . . . . .  29
-     5.3.  Inactive DSO Sessions . . . . . . . . . . . . . . . . . .  31
-     5.4.  The Inactivity Timeout  . . . . . . . . . . . . . . . . .  31
-       5.4.1.  Closing Inactive DSO Sessions . . . . . . . . . . . .  32
-       5.4.2.  Values for the Inactivity Timeout . . . . . . . . . .  32
-     5.5.  The Keepalive Interval  . . . . . . . . . . . . . . . . .  34
-       5.5.1.  Keepalive Interval Expiry . . . . . . . . . . . . . .  34
-       5.5.2.  Values for the Keepalive Interval . . . . . . . . . .  34
-     5.6.  Server-Initiated Session Termination  . . . . . . . . . .  36
-       5.6.1.  Server-Initiated Retry Delay Message  . . . . . . . .  37
-   6.  Base TLVs for DNS Stateful Operations . . . . . . . . . . . .  40
-     6.1.  Keepalive TLV . . . . . . . . . . . . . . . . . . . . . .  40
-       6.1.1.  Client handling of received Session Timeout values  .  42
-       6.1.2.  Relation to EDNS(0) TCP Keepalive Option  . . . . . .  43
-     6.2.  Retry Delay TLV . . . . . . . . . . . . . . . . . . . . .  44
-       6.2.1.  Retry Delay TLV used as a Primary TLV . . . . . . . .  44
-       6.2.2.  Retry Delay TLV used as a Response Additional TLV . .  45
-     6.3.  Encryption Padding TLV  . . . . . . . . . . . . . . . . .  46
+       4.1.1.  Connection Sharing  . . . . . . . . . . . . . . . . .  12
+       4.1.2.  Zero Round-Trip Operation . . . . . . . . . . . . . .  12
+       4.1.3.  Middlebox Considerations  . . . . . . . . . . . . . .  13
+     4.2.  Message Format  . . . . . . . . . . . . . . . . . . . . .  14
+       4.2.1.  DNS Header Fields in DSO Messages . . . . . . . . . .  15
+       4.2.2.  DSO Data  . . . . . . . . . . . . . . . . . . . . . .  17
+       4.2.3.  EDNS(0) and TSIG  . . . . . . . . . . . . . . . . . .  22
+     4.3.  Message Handling  . . . . . . . . . . . . . . . . . . . .  23
+       4.3.1.  Error Responses . . . . . . . . . . . . . . . . . . .  24
+     4.4.  DSO Response Generation . . . . . . . . . . . . . . . . .  25
+     4.5.  Responder-Initiated Operation Cancellation  . . . . . . .  26
+   5.  DSO Session Lifecycle and Timers  . . . . . . . . . . . . . .  27
+     5.1.  DSO Session Initiation  . . . . . . . . . . . . . . . . .  27
+     5.2.  DSO Session Timeouts  . . . . . . . . . . . . . . . . . .  27
+     5.3.  Inactive DSO Sessions . . . . . . . . . . . . . . . . . .  28
+     5.4.  The Inactivity Timeout  . . . . . . . . . . . . . . . . .  29
+       5.4.1.  Closing Inactive DSO Sessions . . . . . . . . . . . .  29
+       5.4.2.  Values for the Inactivity Timeout . . . . . . . . . .  30
+     5.5.  The Keepalive Interval  . . . . . . . . . . . . . . . . .  31
+       5.5.1.  Keepalive Interval Expiry . . . . . . . . . . . . . .  31
+       5.5.2.  Values for the Keepalive Interval . . . . . . . . . .  31
+     5.6.  Server-Initiated Session Termination  . . . . . . . . . .  33
+       5.6.1.  Server-Initiated Retry Delay Message  . . . . . . . .  34
+   6.  Base TLVs for DNS Stateful Operations . . . . . . . . . . . .  37
+     6.1.  Keepalive TLV . . . . . . . . . . . . . . . . . . . . . .  37
+       6.1.1.  Client handling of received Session Timeout values  .  39
+       6.1.2.  Relation to EDNS(0) TCP Keepalive Option  . . . . . .  41
+     6.2.  Retry Delay TLV . . . . . . . . . . . . . . . . . . . . .  42
+       6.2.1.  Retry Delay TLV used as a Primary TLV . . . . . . . .  42
+       6.2.2.  Retry Delay TLV used as a Response Additional TLV . .  43
+     6.3.  Encryption Padding TLV  . . . . . . . . . . . . . . . . .  44
 
 
 
@@ -114,19 +114,19 @@ Bellis, et al.            Expires July 30, 2018                 [Page 2]
 Internet-Draft           DNS Stateful Operations            January 2018
 
 
-   7.  Summary Highlights  . . . . . . . . . . . . . . . . . . . . .  47
-     7.1.  QR bit and MESSAGE ID . . . . . . . . . . . . . . . . . .  47
-     7.2.  TLV Usage . . . . . . . . . . . . . . . . . . . . . . . .  48
-   8.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  50
-     8.1.  DSO OPCODE Registration . . . . . . . . . . . . . . . . .  50
-     8.2.  DSO RCODE Registration  . . . . . . . . . . . . . . . . .  50
-     8.3.  DSO Type Code Registry  . . . . . . . . . . . . . . . . .  50
-   9.  Security Considerations . . . . . . . . . . . . . . . . . . .  51
-   10. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  51
-   11. References  . . . . . . . . . . . . . . . . . . . . . . . . .  52
-     11.1.  Normative References . . . . . . . . . . . . . . . . . .  52
-     11.2.  Informative References . . . . . . . . . . . . . . . . .  53
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  54
+   7.  Summary Highlights  . . . . . . . . . . . . . . . . . . . . .  45
+     7.1.  QR bit and MESSAGE ID . . . . . . . . . . . . . . . . . .  45
+     7.2.  TLV Usage . . . . . . . . . . . . . . . . . . . . . . . .  46
+   8.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .  48
+     8.1.  DSO OPCODE Registration . . . . . . . . . . . . . . . . .  48
+     8.2.  DSO RCODE Registration  . . . . . . . . . . . . . . . . .  48
+     8.3.  DSO Type Code Registry  . . . . . . . . . . . . . . . . .  48
+   9.  Security Considerations . . . . . . . . . . . . . . . . . . .  49
+   10. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  49
+   11. References  . . . . . . . . . . . . . . . . . . . . . . . . .  50
+     11.1.  Normative References . . . . . . . . . . . . . . . . . .  50
+     11.2.  Informative References . . . . . . . . . . . . . . . . .  51
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  52
 
 1.  Introduction
 
@@ -621,59 +621,6 @@ Internet-Draft           DNS Stateful Operations            January 2018
    they MAY elect to always send an initial DSO Keepalive request
    message as their way of initiating a DSO Session.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Bellis, et al.            Expires July 30, 2018                [Page 12]
-
-Internet-Draft           DNS Stateful Operations            January 2018
-
-
 4.1.1.  Connection Sharing
 
    As previously specified for DNS over TCP [RFC7766]:
@@ -711,25 +658,6 @@ Internet-Draft           DNS Stateful Operations            January 2018
    MUST be prepared to accept multiple connections from different source
    ports on the same client IP address.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Bellis, et al.            Expires July 30, 2018                [Page 13]
-
-Internet-Draft           DNS Stateful Operations            January 2018
-
-
 4.1.2.  Zero Round-Trip Operation
 
    There is increased awareness today of the performance benefits of
@@ -737,6 +665,14 @@ Internet-Draft           DNS Stateful Operations            January 2018
    TCP Fast Open [RFC7413] and TLS 1.3 [I-D.ietf-tls-tls13] provide
    mechanisms to reduce or eliminate round trips in session
    establishment.
+
+
+
+
+Bellis, et al.            Expires July 30, 2018                [Page 12]
+
+Internet-Draft           DNS Stateful Operations            January 2018
+
 
    Similarly, DSO supports zero round-trip operation.
 
@@ -778,14 +714,6 @@ Internet-Draft           DNS Stateful Operations            January 2018
    the client and server (or vice versa) but this would be highly TLV-
    specific.  For example, the middlebox may be able to maintain a list
    of which clients have made Push Notification subscriptions
-
-
-
-Bellis, et al.            Expires July 30, 2018                [Page 14]
-
-Internet-Draft           DNS Stateful Operations            January 2018
-
-
    [I-D.ietf-dnssd-push] and make its own subscription(s) on their
    behalf, relaying any subsequent notifications to the client (or
    clients) that have subscribed to that particular notification.
@@ -797,47 +725,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Bellis, et al.            Expires July 30, 2018                [Page 15]
+Bellis, et al.            Expires July 30, 2018                [Page 13]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -893,7 +781,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 16]
+Bellis, et al.            Expires July 30, 2018                [Page 14]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -949,7 +837,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 17]
+Bellis, et al.            Expires July 30, 2018                [Page 15]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -1005,7 +893,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 18]
+Bellis, et al.            Expires July 30, 2018                [Page 16]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -1061,7 +949,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 19]
+Bellis, et al.            Expires July 30, 2018                [Page 17]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -1117,7 +1005,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 20]
+Bellis, et al.            Expires July 30, 2018                [Page 18]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -1173,7 +1061,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 21]
+Bellis, et al.            Expires July 30, 2018                [Page 19]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -1229,7 +1117,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 22]
+Bellis, et al.            Expires July 30, 2018                [Page 20]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -1285,7 +1173,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 23]
+Bellis, et al.            Expires July 30, 2018                [Page 21]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -1341,7 +1229,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 24]
+Bellis, et al.            Expires July 30, 2018                [Page 22]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -1397,7 +1285,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 25]
+Bellis, et al.            Expires July 30, 2018                [Page 23]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -1453,7 +1341,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 26]
+Bellis, et al.            Expires July 30, 2018                [Page 24]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -1509,7 +1397,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 27]
+Bellis, et al.            Expires July 30, 2018                [Page 25]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -1565,7 +1453,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 28]
+Bellis, et al.            Expires July 30, 2018                [Page 26]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -1621,7 +1509,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 29]
+Bellis, et al.            Expires July 30, 2018                [Page 27]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -1635,52 +1523,6 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
    For both timeouts, lower values of the timeout result in higher
    network traffic and higher CPU load on the server.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Bellis, et al.            Expires July 30, 2018                [Page 30]
-
-Internet-Draft           DNS Stateful Operations            January 2018
-
 
 5.3.  Inactive DSO Sessions
 
@@ -1715,6 +1557,19 @@ Internet-Draft           DNS Stateful Operations            January 2018
    extended period of time does not automatically make that DSO Session
    "inactive", if it has an active operation that is awaiting events.
 
+
+
+
+
+
+
+
+
+Bellis, et al.            Expires July 30, 2018                [Page 28]
+
+Internet-Draft           DNS Stateful Operations            January 2018
+
+
 5.4.  The Inactivity Timeout
 
    The purpose of the inactivity timeout is for the server to balance
@@ -1728,15 +1583,6 @@ Internet-Draft           DNS Stateful Operations            January 2018
    promptly close DSO Sessions whenever they have no outstanding
    operations with that server, and then create a new DSO Session later
    when needed.
-
-
-
-
-
-Bellis, et al.            Expires July 30, 2018                [Page 31]
-
-Internet-Draft           DNS Stateful Operations            January 2018
-
 
 5.4.1.  Closing Inactive DSO Sessions
 
@@ -1770,6 +1616,16 @@ Internet-Draft           DNS Stateful Operations            January 2018
    than the default duration then it uses the DSO Keepalive message to
    request longer timeout values, as described in Section 6.1.
 
+
+
+
+
+
+Bellis, et al.            Expires July 30, 2018                [Page 29]
+
+Internet-Draft           DNS Stateful Operations            January 2018
+
+
 5.4.2.  Values for the Inactivity Timeout
 
    For the inactivity timeout value, lower values result in more
@@ -1785,14 +1641,6 @@ Internet-Draft           DNS Stateful Operations            January 2018
    speculatively maintain idle connections at all, and as soon as the
    client has completed the operation or operations relating to this
    server, the client should immediately begin closing this session.
-
-
-
-
-Bellis, et al.            Expires July 30, 2018                [Page 32]
-
-Internet-Draft           DNS Stateful Operations            January 2018
-
 
    A server will abort an idle client session after twice the inactivity
    timeout value, or five seconds, whichever is greater.  In the case of
@@ -1829,23 +1677,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Bellis, et al.            Expires July 30, 2018                [Page 33]
+Bellis, et al.            Expires July 30, 2018                [Page 30]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -1901,7 +1733,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 34]
+Bellis, et al.            Expires July 30, 2018                [Page 31]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -1957,7 +1789,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 35]
+Bellis, et al.            Expires July 30, 2018                [Page 32]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -2013,7 +1845,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 36]
+Bellis, et al.            Expires July 30, 2018                [Page 33]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -2057,6 +1889,23 @@ Internet-Draft           DNS Stateful Operations            January 2018
    receives a Retry Delay message this is a fatal error and the server
    MUST forcibly abort the connection immediately.
 
+
+
+
+
+
+
+
+
+
+
+
+
+Bellis, et al.            Expires July 30, 2018                [Page 34]
+
+Internet-Draft           DNS Stateful Operations            January 2018
+
+
 5.6.1.1.  Outstanding Operations
 
    At the instant a server chooses to initiate a Retry Delay message
@@ -2066,14 +1915,6 @@ Internet-Draft           DNS Stateful Operations            January 2018
    incoming requests, and MUST NOT generate any response messages for
    them.  When the Retry Delay message from the server arrives at the
    client, the client will determine that any DNS requests it previously
-
-
-
-Bellis, et al.            Expires July 30, 2018                [Page 37]
-
-Internet-Draft           DNS Stateful Operations            January 2018
-
-
    sent on this DSO Session, that have not yet received a response, now
    will certainly not be receiving any response.  Such requests should
    be considered failed, and should be retried at a later time, as
@@ -2099,6 +1940,28 @@ Internet-Draft           DNS Stateful Operations            January 2018
    a second for each successive client, yielding a post-restart
    reconnection rate of ten clients per second).
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Bellis, et al.            Expires July 30, 2018                [Page 35]
+
+Internet-Draft           DNS Stateful Operations            January 2018
+
+
 5.6.1.2.  Client Reconnection
 
    After a DSO Session is ended by the server (either by sending the
@@ -2122,14 +1985,6 @@ Internet-Draft           DNS Stateful Operations            January 2018
    instruct a client to stay away for longer than 49.7 days.  If, after
    49.7 days, the DNS or other configuration information still indicates
    that this is the valid server instance for a particular service, then
-
-
-
-Bellis, et al.            Expires July 30, 2018                [Page 38]
-
-Internet-Draft           DNS Stateful Operations            January 2018
-
-
    clients MAY attempt to reconnect.  In reality, if a client is
    rebooted or otherwise lose state, it may well attempt to reconnect
    before 49.7 days elapses, for as long as the DNS or other
@@ -2158,30 +2013,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Bellis, et al.            Expires July 30, 2018                [Page 39]
+Bellis, et al.            Expires July 30, 2018                [Page 36]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -2237,7 +2069,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 40]
+Bellis, et al.            Expires July 30, 2018                [Page 37]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -2293,7 +2125,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 41]
+Bellis, et al.            Expires July 30, 2018                [Page 38]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -2349,7 +2181,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 42]
+Bellis, et al.            Expires July 30, 2018                [Page 39]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -2393,6 +2225,23 @@ Internet-Draft           DNS Stateful Operations            January 2018
       client an additional grace period of one quarter of the new
       inactivity timeout, or five seconds, whichever is greater.
 
+
+
+
+
+
+
+
+
+
+
+
+
+Bellis, et al.            Expires July 30, 2018                [Page 40]
+
+Internet-Draft           DNS Stateful Operations            January 2018
+
+
 6.1.2.  Relation to EDNS(0) TCP Keepalive Option
 
    The inactivity timeout value in the Keepalive TLV (DSO-TYPE=1) has
@@ -2402,16 +2251,52 @@ Internet-Draft           DNS Stateful Operations            January 2018
    established.  Once a DSO Session has been established, if either
    client or server receives a DNS message over the DSO Session that
    contains an EDNS(0) TCP Keepalive option, this is a fatal error and
+   the receiver of the EDNS(0) TCP Keepalive option MUST forcibly abort
+   the connection immediately.
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 43]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Bellis, et al.            Expires July 30, 2018                [Page 41]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
-
-   the receiver of the EDNS(0) TCP Keepalive option MUST forcibly abort
-   the connection immediately.
 
 6.2.  Retry Delay TLV
 
@@ -2457,19 +2342,18 @@ Internet-Draft           DNS Stateful Operations            January 2018
       a policy change is no longer able to perform one or more of the
       functions currently being performed on this DSO Session
 
-
-
-
-
-Bellis, et al.            Expires July 30, 2018                [Page 44]
-
-Internet-Draft           DNS Stateful Operations            January 2018
-
-
    o  NOTAUTH indicates that the server has been reconfigured and is no
       longer able to perform one or more of the functions currently
       being performed on this DSO Session because it no longer has
       authority over the names in question (for example, a DNS Push
+
+
+
+Bellis, et al.            Expires July 30, 2018                [Page 42]
+
+Internet-Draft           DNS Stateful Operations            January 2018
+
+
       Notification server could be reconfigured such that is is no
       longer accepting DNS Push Notification requests for one or more of
       the currently subscribed names).
@@ -2517,7 +2401,11 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 45]
+
+
+
+
+Bellis, et al.            Expires July 30, 2018                [Page 43]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -2573,7 +2461,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 46]
+Bellis, et al.            Expires July 30, 2018                [Page 44]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -2629,7 +2517,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 47]
+Bellis, et al.            Expires July 30, 2018                [Page 45]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -2685,7 +2573,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 48]
+Bellis, et al.            Expires July 30, 2018                [Page 46]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -2741,7 +2629,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 49]
+Bellis, et al.            Expires July 30, 2018                [Page 47]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -2797,7 +2685,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 50]
+Bellis, et al.            Expires July 30, 2018                [Page 48]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -2853,7 +2741,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 51]
+Bellis, et al.            Expires July 30, 2018                [Page 49]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -2909,7 +2797,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 52]
+Bellis, et al.            Expires July 30, 2018                [Page 50]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -2965,7 +2853,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 53]
+Bellis, et al.            Expires July 30, 2018                [Page 51]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -3021,7 +2909,7 @@ Authors' Addresses
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 54]
+Bellis, et al.            Expires July 30, 2018                [Page 52]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
@@ -3077,4 +2965,4 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
 
-Bellis, et al.            Expires July 30, 2018                [Page 55]
+Bellis, et al.            Expires July 30, 2018                [Page 53]

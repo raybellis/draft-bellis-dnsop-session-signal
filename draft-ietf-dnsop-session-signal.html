@@ -702,7 +702,6 @@
 <p id="rfc.section.4.1.p.12">Once a DSO Session has been established, either end may unilaterally send appropriate DSO messages at any time, and therefore either client or server may be the initiator of a message.</p>
 <p id="rfc.section.4.1.p.13">Once a DSO Session has been established, clients and servers should behave as described in this specification with regard to inactivity timeouts and session termination, not as previously prescribed in the earlier specification for DNS over TCP <a href="#RFC7766" class="xref">[RFC7766]</a>.</p>
 <p id="rfc.section.4.1.p.14">Note that for clients that implement only the DSO-TYPEs defined in this base specification, sending a DSO Keepalive TLV is the only DSO request message they have available to initiate a DSO Session.  Even for clients that do implement other future DSO-TYPEs, for simplicity they MAY elect to always send an initial DSO Keepalive request message as their way of initiating a DSO Session.</p>
-<p></p>
 <h1 id="rfc.section.4.1.1">
 <a href="#rfc.section.4.1.1">4.1.1.</a> <a href="#sharing" id="sharing">Connection Sharing</a>
 </h1>
@@ -722,7 +721,6 @@
 </pre>
 <p id="rfc.section.4.1.1.p.2">A single server may support multiple services, including DNS Updates <a href="#RFC2136" class="xref">[RFC2136]</a>, DNS Push Notifications <a href="#I-D.ietf-dnssd-push" class="xref">[I-D.ietf-dnssd-push]</a>, and other services, for one or more DNS zones.  When a client discovers that the target server for several different operations is the same target hostname and port, the client SHOULD use a single shared DSO Session for all those operations.  A client SHOULD NOT open multiple connections to the same target host and port just because the names being operated on are different or happen to fall within different zones.  This requirement is to reduce unnecessary connection load on the DNS server.</p>
 <p id="rfc.section.4.1.1.p.3">However, server implementers and operators should be aware that connection sharing may not be possible in all cases.  A single host device may be home to multiple independent client software instances that don&#8217;t coordinate with each other.  Similarly, multiple independent client devices behind the same NAT gateway will also typically appear to the DNS server as different source ports on the same client IP address.  Because of these constraints, a DNS server MUST be prepared to accept multiple connections from different source ports on the same client IP address.</p>
-<p></p>
 <h1 id="rfc.section.4.1.2">
 <a href="#rfc.section.4.1.2">4.1.2.</a> <a href="#zero-round-trip-operation" id="zero-round-trip-operation">Zero Round-Trip Operation</a>
 </h1>
@@ -967,7 +965,6 @@
 <p id="rfc.section.5.2.p.7">In the usual case where the inactivity timeout is shorter than the keepalive interval, it is only when a client has a very long-lived, low-traffic, operation that the keepalive interval comes into play, to ensure that a sufficient residual amount of traffic is generated to maintain NAT and firewall state and to assure client and server that they still have connectivity to each other.</p>
 <p id="rfc.section.5.2.p.8">On a new DSO Session, if no explicit DSO Keepalive message exchange has taken place, the default value for both timeouts is 15 seconds.</p>
 <p id="rfc.section.5.2.p.9">For both timeouts, lower values of the timeout result in higher network traffic and higher CPU load on the server.</p>
-<p></p>
 <h1 id="rfc.section.5.3">
 <a href="#rfc.section.5.3">5.3.</a> <a href="#inactive-dso-sessions" id="inactive-dso-sessions">Inactive DSO Sessions</a>
 </h1>
@@ -975,6 +972,7 @@
 <p id="rfc.section.5.3.p.2">In addition, for as long as the client has an outstanding operation in progress, the inactivity timer remains cleared, and an inactivity timeout cannot occur.</p>
 <p id="rfc.section.5.3.p.3">For short-lived DNS operations like traditional queries and updates, an operation is considered in progress for the time between request and response, typically a period of a few hundred milliseconds at most.  At the client, the inactivity timer is cleared upon transmission of a request and remains cleared until reception of the corresponding response.  At the server, the inactivity timer is cleared upon reception of a request and remains cleared until transmission of the corresponding response.</p>
 <p id="rfc.section.5.3.p.4">For long-lived DNS Stateful operations (such as a Push Notification subscription <a href="#I-D.ietf-dnssd-push" class="xref">[I-D.ietf-dnssd-push]</a> or a Discovery Relay interface subscription <a href="#I-D.sctl-dnssd-mdns-relay" class="xref">[I-D.sctl-dnssd-mdns-relay]</a>), an operation is considered in progress for as long as the operation is active, until it is cancelled.  This means that a DSO Session can exist, with active operations, with no messages flowing in either direction, for far longer than the inactivity timeout, and this is not an error.  This is why there are two separate timers: the inactivity timeout, and the keepalive interval.  Just because a DSO Session has no traffic for an extended period of time does not automatically make that DSO Session &#8220;inactive&#8221;, if it has an active operation that is awaiting events.</p>
+<p></p>
 <h1 id="rfc.section.5.4">
 <a href="#rfc.section.5.4">5.4.</a> <a href="#inactivetimer" id="inactivetimer">The Inactivity Timeout</a>
 </h1>
@@ -1045,6 +1043,7 @@
 <p id="rfc.section.5.6.1.p.3">Upon receipt of a Retry Delay message from the server, the client MUST make note of the reconnect delay for this server, and then immediately close the connection gracefully.</p>
 <p id="rfc.section.5.6.1.p.4">After sending a Retry Delay message the server SHOULD allow the client five seconds to close the connection, and if the client has not closed the connection after five seconds then the server SHOULD forcibly abort the connection.</p>
 <p id="rfc.section.5.6.1.p.5">A Retry Delay message MUST NOT be initiated by a client.  If a server receives a Retry Delay message this is a fatal error and the server MUST forcibly abort the connection immediately.</p>
+<p></p>
 <h1 id="rfc.section.5.6.1.1">
 <a href="#rfc.section.5.6.1.1">5.6.1.1.</a> <a href="#outstanding-operations" id="outstanding-operations">Outstanding Operations</a>
 </h1>
@@ -1052,6 +1051,7 @@
 <p id="rfc.section.5.6.1.1.p.2">In the case where some, but not all, of the existing operations on a DSO Session have become invalid (perhaps because the server has been reconfigured and is no longer authoritative for some of the names), but the server is terminating all affected DSO Sessions en masse by sending them all a Retry Delay message, the RECONNECT DELAY MAY be zero, indicating that the clients SHOULD immediately attempt to re-establish operations.</p>
 <p id="rfc.section.5.6.1.1.p.3">It is likely that some of the attempts will be successful and some will not, depending on the nature of the reconfiguration.</p>
 <p id="rfc.section.5.6.1.1.p.4">In the case where a server is terminating a large number of DSO Sessions at once (e.g., if the system is restarting) and the server doesn&#8217;t want to be inundated with a flood of simultaneous retries, it SHOULD send different RECONNECT delay values to each client.  These adjustments MAY be selected randomly, pseudorandomly, or deterministically (e.g., incrementing the time value by one tenth of a second for each successive client, yielding a post-restart reconnection rate of ten clients per second).</p>
+<p></p>
 <h1 id="rfc.section.5.6.1.2">
 <a href="#rfc.section.5.6.1.2">5.6.1.2.</a> <a href="#client-reconnection" id="client-reconnection">Client Reconnection</a>
 </h1>
@@ -1107,10 +1107,12 @@
 <li>If the current inactivity timer value is already greater than the new inactivity timeout, then this DSO Session has already been inactive for longer than the server permits, and the client MUST immediately begin closing this DSO Session.</li>
 <li>If the current inactivity timer value is already more than twice the new inactivity timeout, then the client is immediately considered delinquent (this DSO Session is immediately eligible to be forcibly terminated by the server) and the client MUST immediately begin closing this DSO Session.  However if a server abruptly reduces the inactivity timeout in this way, then, to give the client time to close the connection gracefully before the server resorts to forcibly aborting it, the server SHOULD give the client an additional grace period of one quarter of the new inactivity timeout, or five seconds, whichever is greater.</li>
 </ul>
+<p></p>
 <h1 id="rfc.section.6.1.2">
 <a href="#rfc.section.6.1.2">6.1.2.</a> <a href="#relation-to-edns0-tcp-keepalive-option" id="relation-to-edns0-tcp-keepalive-option">Relation to EDNS(0) TCP Keepalive Option</a>
 </h1>
 <p id="rfc.section.6.1.2.p.1">The inactivity timeout value in the Keepalive TLV (DSO-TYPE=1) has similar intent to the EDNS(0) TCP Keepalive Option <a href="#RFC7828" class="xref">[RFC7828]</a>.  A client/server pair that supports DSO MUST NOT use the EDNS(0) TCP KeepAlive option within any message after a DSO Session has been established.  Once a DSO Session has been established, if either client or server receives a DNS message over the DSO Session that contains an EDNS(0) TCP Keepalive option, this is a fatal error and the receiver of the EDNS(0) TCP Keepalive option MUST forcibly abort the connection immediately.</p>
+<p></p>
 <h1 id="rfc.section.6.2">
 <a href="#rfc.section.6.2">6.2.</a> <a href="#delay" id="delay">Retry Delay TLV</a>
 </h1>
