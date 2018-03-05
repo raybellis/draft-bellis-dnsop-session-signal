@@ -282,25 +282,6 @@ Bellis, et al.            Expires July 30, 2018                 [Page 5]
 Internet-Draft           DNS Stateful Operations            January 2018
 
 
-   In protocol implementation there are generally two kinds of errors
-   that software writers have to deal with.  The first is situations
-   that arise due to factors in the environment, such as temporary loss
-   of connectivity.  While undesirable, these situations do not indicate
-   a flaw in the software, and they are situations that software should
-   generally be able to recover from.  The second is situations that
-   should never happen when communicating with a correctly-implemented
-   peer.  If they do happen, they indicate a serious flaw in the
-   protocol implementation, beyond what it is reasonable to expect
-   software to recover from.  This document describes this latter form
-   of error condition as a "fatal error" and specifies that an
-   implementation encountering a fatal error condition "MUST forcibly
-   abort the connection immediately".  Given that these fatal error
-   conditions signify defective software, and given that defective
-   software is likely to remain defective for some time until it is
-   fixed, after forcibly aborting a connection, a client SHOULD refrain
-   from automatically reconnecting to that same server for at least one
-   hour.
-
    The term "server" means the software with a listening socket,
    awaiting incoming connection requests.
 
@@ -320,6 +301,54 @@ Internet-Draft           DNS Stateful Operations            January 2018
    receiving a DSO request message) or an initiator (when receiving a
    DSO response message).
 
+   In protocol implementation there are generally two kinds of errors
+   that software writers have to deal with.  The first is situations
+   that arise due to factors in the environment, such as temporary loss
+   of connectivity.  While undesirable, these situations do not indicate
+   a flaw in the software, and they are situations that software should
+   generally be able to recover from.  The second is situations that
+   should never happen when communicating with a correctly-implemented
+   peer.  If they do happen, they indicate a serious flaw in the
+   protocol implementation, beyond what it is reasonable to expect
+   software to recover from.  This document describes this latter form
+   of error condition as a "fatal error" and specifies that an
+   implementation encountering a fatal error condition "MUST forcibly
+   abort the connection immediately".  Given that these fatal error
+   conditions signify defective software, and given that defective
+   software is likely to remain defective for some time until it is
+   fixed, after forcibly aborting a connection, a client SHOULD refrain
+   from automatically reconnecting to that same server instance for at
+   least one hour.
+
+   This document uses the term "same server instance" as follows:
+
+   o  In cases where a server is specified or configured using an IP
+      address and TCP port number, two different configurations are
+      referring to the same server instance if they contain the same IP
+      address and TCP port number.
+
+   o  In cases where a server is specified or configured using a
+      hostname and TCP port number, such as in the content of a DNS SRV
+      record [RFC2782], two different configurations (or DNS SRV
+
+
+
+Bellis, et al.            Expires July 30, 2018                 [Page 6]
+
+Internet-Draft           DNS Stateful Operations            January 2018
+
+
+      records) are referring to the same server instance if they contain
+      the same hostname (subject to the usual case insensitive DNS name
+      matching rules [RFC1034] [RFC1035]) and TCP port number.  In these
+      cases, configurations with different hostnames are considered to
+      be referring to different server instances, even if those
+      different hostnames happen to be aliases, or happen to resolve to
+      the same IP address(es).  Implementations are not expected to
+      resolve hostnames and then perform matching of IP address(es) in
+      order to evaluate whether two entities should be determinated the
+      "same server instance".
+
    The term "long-lived operations" refers to operations such as Push
    Notification subscriptions [I-D.ietf-dnssd-push], Discovery Relay
    interface subscriptions [I-D.sctl-dnssd-mdns-relay], and other future
@@ -329,15 +358,6 @@ Internet-Draft           DNS Stateful Operations            January 2018
    specification for DNS Stateful Operations, defines a framework for
    supporting long-lived operations, but does not itself define any
    long-lived operations.  Nonetheless, to appreciate the design
-
-
-
-
-Bellis, et al.            Expires July 30, 2018                 [Page 6]
-
-Internet-Draft           DNS Stateful Operations            January 2018
-
-
    rationale behind DNS Stateful Operations, it is helpful to understand
    the kind of long-lived operations that it is intended to support.
 
@@ -366,6 +386,14 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
    A DSO response message may contain no TLVs, or it may contain one or
    more TLVs as appropriate to the information being communicated.  In
+
+
+
+Bellis, et al.            Expires July 30, 2018                 [Page 7]
+
+Internet-Draft           DNS Stateful Operations            January 2018
+
+
    the context of DSO response messages, one or more TLVs with the same
    DSO-TYPE as the Primary TLV in the corresponding DSO request message
    are referred to as "Response Primary TLVs".  Any other TLVs with
@@ -384,37 +412,9 @@ Internet-Draft           DNS Stateful Operations            January 2018
    timeout and the keepalive interval, respectively.  The term "Session
    Timeouts" is used to refer to this pair of timeout values.
 
-
-
-
-
-
-Bellis, et al.            Expires July 30, 2018                 [Page 7]
-
-Internet-Draft           DNS Stateful Operations            January 2018
-
-
    Resetting a timer means resetting the timer value to zero and
    starting the timer again.  Clearing a timer means resetting the timer
    value to zero but NOT starting the timer again.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1744,8 +1744,8 @@ Internet-Draft           DNS Stateful Operations            January 2018
    sufficient messages to maintain state in middleboxes (such at NAT
    gateways or firewalls) and for the client and server to periodically
    verify that they still have connectivity to each other.  This allows
-   them to clean up state when connectivity is lost, and attempt re-
-   connection if appropriate.
+   them to clean up state when connectivity is lost, and to establish a
+   new session if appropriate.
 
 5.5.1.  Keepalive Interval Expiry
 
@@ -1993,8 +1993,8 @@ Internet-Draft           DNS Stateful Operations            January 2018
    client a Retry Delay request message, or by forcibly aborting the
    underlying transport connection) the client SHOULD try to reconnect,
    to that server, or to another suitable server, if more than one is
-   available.  If reconnecting to the same server, the client MUST
-   respect the indicated delay, if available, before attempting to
+   available.  If reconnecting to the same server instance, the client
+   MUST respect the indicated delay, if available, before attempting to
    reconnect.
 
    If a particular server does not want a client to reconnect (the

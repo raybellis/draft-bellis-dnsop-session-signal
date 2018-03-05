@@ -219,25 +219,6 @@ or the equivalent for other protocols.
 In the BSD Sockets API this is achieved by setting the
 SO_LINGER option to zero before closing the socket.
 
-In protocol implementation there are generally two kinds of errors
-that software writers have to deal with.
-The first is situations that arise due to factors in the environment,
-such as temporary loss of connectivity. While undesirable, these
-situations do not indicate a flaw in the software, and they are
-situations that software should generally be able to recover from.
-The second is situations that should never happen when communicating
-with a correctly-implemented peer.
-If they do happen, they indicate a serious flaw in the protocol implementation,
-beyond what it is reasonable to expect software to recover from.
-This document describes this latter form of error condition as a
-"fatal error" and specifies that an implementation encountering
-a fatal error condition "MUST forcibly abort the connection immediately".
-Given that these fatal error conditions signify defective software,
-and given that defective software is likely to remain defective for
-some time until it is fixed, after forcibly aborting a connection,
-a client SHOULD refrain from automatically reconnecting to that same
-server for at least one hour.
-
 The term "server" means the software with a listening socket, awaiting
 incoming connection requests.
 
@@ -255,6 +236,46 @@ or a responder (when sending a DSO response message).
 Likewise, the term "receiver" may apply to
 either a responder (when receiving a DSO request message)
 or an initiator (when receiving a DSO response message).
+
+In protocol implementation there are generally two kinds of errors
+that software writers have to deal with.
+The first is situations that arise due to factors in the environment,
+such as temporary loss of connectivity. While undesirable, these
+situations do not indicate a flaw in the software, and they are
+situations that software should generally be able to recover from.
+The second is situations that should never happen when communicating
+with a correctly-implemented peer.
+If they do happen, they indicate a serious flaw in the protocol implementation,
+beyond what it is reasonable to expect software to recover from.
+This document describes this latter form of error condition as a
+"fatal error" and specifies that an implementation encountering
+a fatal error condition "MUST forcibly abort the connection immediately".
+Given that these fatal error conditions signify defective software,
+and given that defective software is likely to remain defective for
+some time until it is fixed, after forcibly aborting a connection,
+a client SHOULD refrain from automatically reconnecting to that
+same server instance for at least one hour.
+
+This document uses the term "same server instance" as follows:
+
+* In cases where a server is specified or configured using
+an IP address and TCP port number,
+two different configurations are referring to the same server instance if they
+contain the same IP address and TCP port number.
+
+* In cases where a server is specified or configured using
+a hostname and TCP port number,
+such as in the content of a DNS SRV record {{?RFC2782}},
+two different configurations (or DNS SRV records) are considered
+to be referring to the same server instance if they
+contain the same hostname (subject to the usual case insensitive
+DNS name matching rules {{!RFC1034}} {{!RFC1035}}) and TCP port number.
+In these cases, configurations with different hostnames are considered
+to be referring to different server instances, even if those different hostnames
+happen to be aliases, or happen to resolve to the same IP address(es).
+Implementations are not expected to resolve hostnames and then
+perform matching of IP address(es) in order to evaluate whether
+two entities should be determinated to be the "same server instance".
 
 The term "long-lived operations" refers to operations
 such as Push Notification subscriptions {{?I-D.ietf-dnssd-push}},
@@ -858,9 +879,8 @@ future, a new DSO TLV needs to be defined to perform this function.
 Note however that, while DSO **messages** cannot include
 EDNS(0) or TSIG records, a DSO **session** is typically used to 
 carry a whole series of DNS messages of different kinds, including DSO
-messages, and other DNS message types like Query {{!RFC1034}} 
-{{!RFC1035}} and Update {{!RFC2136}}, and those messages can carry EDNS(0) and 
-TSIG records.
+messages, and other DNS message types like Query {{!RFC1034}} {{!RFC1035}}
+and Update {{!RFC2136}}, and those messages can carry EDNS(0) and TSIG records.
 
 This specification explicitly prohibits use of the
 EDNS(0) TCP Keepalive Option {{!RFC7828}}
@@ -1204,7 +1224,7 @@ The purpose of the keepalive interval is to manage the generation of
 sufficient messages to maintain state in middleboxes (such at NAT gateways
 or firewalls) and for the client and server to periodically verify that they
 still have connectivity to each other. This allows them to clean up state
-when connectivity is lost, and attempt re-connection if appropriate.
+when connectivity is lost, and to establish a new session if appropriate.
 
 ### Keepalive Interval Expiry
 
@@ -1405,7 +1425,7 @@ After a DSO Session is ended by the server
 or by forcibly aborting the underlying transport connection)
 the client SHOULD try to reconnect,
 to that server, or to another suitable server, if more than one is available.
-If reconnecting to the same server, the client MUST respect the indicated delay,
+If reconnecting to the same server instance, the client MUST respect the indicated delay,
 if available, before attempting to reconnect.
 
 If a particular server does not want a client to reconnect (the server is being
