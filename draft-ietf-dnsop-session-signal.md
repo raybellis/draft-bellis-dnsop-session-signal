@@ -236,6 +236,25 @@ or the equivalent for other protocols.
 In the BSD Sockets API this is achieved by setting the
 SO_LINGER option to zero before closing the socket.
 
+In protocol implementation there are generally two kinds of errors
+that software writers have to deal with.
+The first is situations that arise due to factors in the environment,
+such as temporary loss of connectivity. While undesirable, these
+situations do not indicate a flaw in the software, and they are
+situations that software should generally be able to recover from.
+The second is situations that should never happen when communicating
+with a correctly-implemented peer.
+If they do happen, they indicate a serious flaw in the protocol implementation,
+beyond what it is reasonable to expect software to recover from.
+This document describes this latter form of error condition as a
+"fatal error" and specifies that an implementation encountering
+a fatal error condition "MUST forcibly abort the connection immediately".
+Given that these fatal error conditions signify defective software,
+and given that defective software is likely to remain defective for
+some time until it is fixed, after forcibly aborting a connection,
+a client SHOULD refrain from automatically reconnecting to that same
+server for at least one hour.
+
 The term "server" means the software with a listening socket, awaiting
 incoming connection requests.
 
@@ -575,7 +594,7 @@ in a message the primary TLV of which is specified to be unacknowledged,
 nor can an acknowledgment be prevented by sending a message ID of zero
 in a message with a primary TLV that is specified to be acknowledged.
 A responder that receives either such malformed message MUST treat it
-as a programming error and forcibly abort the connection immediately.
+as a fatal error and forcibly abort the connection immediately.
 
 In a request message the DNS Header QR bit MUST be zero (QR=0).  
 If the QR bit is not zero the message is not a request message.
