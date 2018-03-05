@@ -7,7 +7,7 @@ area: Internet
 wg: DNSOP Working Group
 kw: Internet-Draft
 cat: std
-updates: RFC 7766, RFC 1035
+updates: RFC 1035, RFC 7766
 
 coding: utf-8
 pi:
@@ -177,7 +177,9 @@ success or failure of that operation.
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
 "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
 "OPTIONAL" in this document are to be interpreted as described in
-"Key words for use in RFCs to Indicate Requirement Levels" {{!RFC2119}} {{!RFC8174}}.
+"Key words for use in RFCs to Indicate Requirement Levels", when,
+and only when, they appear in all capitals, as shown here
+{{!RFC2119}} {{!RFC8174}}.
 
 "DSO" is used to mean DNS Stateful Operation.
 
@@ -275,7 +277,7 @@ to be referring to different server instances, even if those different hostnames
 happen to be aliases, or happen to resolve to the same IP address(es).
 Implementations are not expected to resolve hostnames and then
 perform matching of IP address(es) in order to evaluate whether
-two entities should be determinated to be the "same server instance".
+two entities should be determined to be the "same server instance".
 
 The term "long-lived operations" refers to operations
 such as Push Notification subscriptions {{?I-D.ietf-dnssd-push}},
@@ -688,7 +690,7 @@ DSO-TYPE the same as the Primary TLV from the corresponding DSO request message,
 in which case those TLV(s) are referred to as "Response Primary TLVs".
 A DSO response message is not required to carry Response Primary TLVs.
 The MESSAGE ID field in the DNS message header is sufficient to identify
-to which DSO request message this response message relates.
+the DSO request message to which this response message relates.
 
 A DSO response message may contain one or more TLVs with
 DSO-TYPEs different from the Primary TLV from the corresponding DSO request message,
@@ -1569,9 +1571,9 @@ or received on this DSO Session, if the DSO Session is to remain alive.
 ***
 
 In the case of the inactivity timeout, the handling of the received
-value  is a little more subtle, though the meaning of the inactivity
+value is a little more subtle, though the meaning of the inactivity
 timeout remains as specified --- it still indicates the maximum
-permissible time allowed  without useful activity on a DSO Session.
+permissible time allowed without useful activity on a DSO Session.
 The act of receiving the message containing the DSO Keepalive TLV does not
 itself reset the inactivity timer. The time elapsed since the last useful
 activity on this DSO Session is unaffected by exchange of DSO Keepalive messages.
@@ -1788,7 +1790,7 @@ requests or unacknowledged messages from server to client, and the corresponding
      +------------+-------------------------+-------------------------+
 
 Note that some of the columns in this table are currently empty.
-The table is provided as a template for future TLV definitions to follow.
+The table provides a template for future TLV definitions to follow.
 It is recommended that definitions of future TLVs include a
 similar table summarizing the contexts where the new TLV is valid.
 

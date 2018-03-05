@@ -4,7 +4,7 @@
 
 DNSOP Working Group                                            R. Bellis
 Internet-Draft                                                       ISC
-Updates: RFC 7766, RFC 1035 (if                              S. Cheshire
+Updates: RFC 1035, RFC 7766 (if                              S. Cheshire
          approved)                                            Apple Inc.
 Intended status: Standards Track                            J. Dickinson
 Expires: July 30, 2018                                      S. Dickinson
@@ -231,7 +231,8 @@ Internet-Draft           DNS Stateful Operations            January 2018
    The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
    "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
    "OPTIONAL" in this document are to be interpreted as described in
-   "Key words for use in RFCs to Indicate Requirement Levels" [RFC2119]
+   "Key words for use in RFCs to Indicate Requirement Levels", when, and
+   only when, they appear in all capitals, as shown here [RFC2119]
    [RFC8174].
 
    "DSO" is used to mean DNS Stateful Operation.
@@ -272,8 +273,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
    Where this specification says, "forcibly abort," that means sending a
    TCP RST, or the equivalent for other protocols.  In the BSD Sockets
-   API this is achieved by setting the SO_LINGER option to zero before
-   closing the socket.
+
 
 
 
@@ -281,6 +281,9 @@ Bellis, et al.            Expires July 30, 2018                 [Page 5]
 
 Internet-Draft           DNS Stateful Operations            January 2018
 
+
+   API this is achieved by setting the SO_LINGER option to zero before
+   closing the socket.
 
    The term "server" means the software with a listening socket,
    awaiting incoming connection requests.
@@ -327,9 +330,6 @@ Internet-Draft           DNS Stateful Operations            January 2018
       referring to the same server instance if they contain the same IP
       address and TCP port number.
 
-   o  In cases where a server is specified or configured using a
-      hostname and TCP port number, such as in the content of a DNS SRV
-      record [RFC2782], two different configurations (or DNS SRV
 
 
 
@@ -338,6 +338,9 @@ Bellis, et al.            Expires July 30, 2018                 [Page 6]
 Internet-Draft           DNS Stateful Operations            January 2018
 
 
+   o  In cases where a server is specified or configured using a
+      hostname and TCP port number, such as in the content of a DNS SRV
+      record [RFC2782], two different configurations (or DNS SRV
       records) are considered to be referring to the same server
       instance if they contain the same hostname (subject to the usual
       case insensitive DNS name matching rules [RFC1034] [RFC1035]) and
@@ -347,7 +350,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
       or happen to resolve to the same IP address(es).  Implementations
       are not expected to resolve hostnames and then perform matching of
       IP address(es) in order to evaluate whether two entities should be
-      determinated to be the "same server instance".
+      determined to be the "same server instance".
 
    The term "long-lived operations" refers to operations such as Push
    Notification subscriptions [I-D.ietf-dnssd-push], Discovery Relay
@@ -384,9 +387,6 @@ Internet-Draft           DNS Stateful Operations            January 2018
    additional non-primary purposes, which may be related to the primary
    purpose, or not, as in the case of the encryption padding TLV.
 
-   A DSO response message may contain no TLVs, or it may contain one or
-   more TLVs as appropriate to the information being communicated.  In
-
 
 
 Bellis, et al.            Expires July 30, 2018                 [Page 7]
@@ -394,6 +394,8 @@ Bellis, et al.            Expires July 30, 2018                 [Page 7]
 Internet-Draft           DNS Stateful Operations            January 2018
 
 
+   A DSO response message may contain no TLVs, or it may contain one or
+   more TLVs as appropriate to the information being communicated.  In
    the context of DSO response messages, one or more TLVs with the same
    DSO-TYPE as the Primary TLV in the corresponding DSO request message
    are referred to as "Response Primary TLVs".  Any other TLVs with
@@ -415,8 +417,6 @@ Internet-Draft           DNS Stateful Operations            January 2018
    Resetting a timer means resetting the timer value to zero and
    starting the timer again.  Clearing a timer means resetting the timer
    value to zero but NOT starting the timer again.
-
-
 
 
 
@@ -926,7 +926,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
    in which case those TLV(s) are referred to as "Response Primary
    TLVs".  A DSO response message is not required to carry Response
    Primary TLVs.  The MESSAGE ID field in the DNS message header is
-   sufficient to identify to which DSO request message this response
+   sufficient to identify the DSO request message to which this response
    message relates.
 
    A DSO response message may contain one or more TLVs with DSO-TYPEs
@@ -2513,7 +2513,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
     +------------+-------------------------+-------------------------+
 
    Note that some of the columns in this table are currently empty.  The
-   table is provided as a template for future TLV definitions to follow.
+   table provides a template for future TLV definitions to follow.  It
 
 
 
@@ -2522,7 +2522,7 @@ Bellis, et al.            Expires July 30, 2018                [Page 45]
 Internet-Draft           DNS Stateful Operations            January 2018
 
 
-   It is recommended that definitions of future TLVs include a similar
+   is recommended that definitions of future TLVs include a similar
    table summarizing the contexts where the new TLV is valid.
 
 
