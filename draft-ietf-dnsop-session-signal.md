@@ -226,15 +226,15 @@ The term "client" means the software which initiates a connection
 to the server's listening socket.
 
 The terms "initiator" and "responder" correspond respectively to the
-initial sender and subsequent receiver of a DSO request message,
+initial sender and subsequent receiver of a DSO request message or unacknowledged message,
 regardless of which was the "client" and "server" in the usual DNS sense.
 
 The term "sender" may apply to
-either an initiator (when sending a DSO request message)
+either an initiator (when sending a DSO request message or unacknowledged message)
 or a responder (when sending a DSO response message).
 
 Likewise, the term "receiver" may apply to
-either a responder (when receiving a DSO request message)
+either a responder (when receiving a DSO request message or unacknowledged message)
 or an initiator (when receiving a DSO response message).
 
 In protocol implementation there are generally two kinds of errors
@@ -307,7 +307,7 @@ In a DSO request message or DSO unacknowledged message
 the first TLV is referred to as the "Primary TLV"
 and determines the nature of the operation being performed,
 including whether it is an acknowledged or unacknowledged operation;
-any other TLVs in a DSO request message are referred to as "Additional TLVs"
+any other TLVs in a DSO request message or unacknowledged message are referred to as "Additional TLVs"
 and serve additional non-primary purposes, which may be related to
 the primary purpose, or not, as in the case of the encryption padding TLV.
 
@@ -423,9 +423,9 @@ If the RCODE in the response is set to DSONOTIMP (tentatively 11) this indicates
 that the server does support DSO, but does not support the particular
 operation the client requested.
 A server implementing DSO MUST NOT return DSONOTIMP
-for a DSO Keepalive request message because the Keepalive TLV is mandatory to implement,
+for a DSO Keepalive request message, because the Keepalive TLV is mandatory to implement,
 but in the future if a client attempts to establish a DSO Session
-using a newly-defined response-requiring DSO TLV that the server
+using a response-requiring DSO request message using a newly-defined DSO-TYPE that the server
 does not understand, that would result in a DSONOTIMP response.
 If the server returns DSONOTIMP then a DSO Session is not
 considered established, but the client is permitted to continue
@@ -456,10 +456,10 @@ clients and servers should behave as described in this specification with
 regard to inactivity timeouts and session termination, not as previously
 prescribed in the earlier specification for DNS over TCP {{!RFC7766}}.
 
-Note that for clients that implement only the TLVs defined in this base specification,
+Note that for clients that implement only the DSO-TYPEs defined in this base specification,
 sending a DSO Keepalive TLV is the only
 DSO request message they have available to initiate a DSO Session.
-Even for clients that do implement other DSO TLVs, for simplicity
+Even for clients that do implement other future DSO-TYPEs, for simplicity
 they MAY elect to always send an initial DSO Keepalive
 request message as their way of initiating a DSO Session.
 
@@ -635,7 +635,7 @@ on reception, unless a future IETF Standard specifies otherwise.
 ***
 
 In a DNS request message (QR=0) the RCODE is set according to the definition of the request.
-For example, in a Retry Delay request message ({{retry}}) the RCODE indicates the reason for termination.
+For example, in a Retry Delay message ({{retry}}) the RCODE indicates the reason for termination.
 However, in most cases, except where clearly specified otherwise,
 in a DNS request message (QR=0) the RCODE is set to zero on transmission,
 and silently ignored on reception.
@@ -657,7 +657,7 @@ Use of the above RCODEs is likely to be common in DSO but
 does not preclude the definition and use of other codes in future documents that 
 make use of DSO.
 
-If a document defining a new DSO TLV makes use of NXDOMAIN (Name Error)
+If a document defining a new DSO-TYPE makes use of NXDOMAIN (Name Error)
 or NOTAUTH (Not Authoritative) then that document MUST specify the specific
 interpretation of these RCODE values in the context of that new DSO TLV.
 
@@ -675,7 +675,7 @@ A DSO request message or DSO unacknowledged message MUST contain at least one TL
 The first TLV in a DSO request message or DSO unacknowledged message is referred to as the "Primary TLV"
 and determines the nature of the operation being performed,
 including whether it is an acknowledged or unacknowledged operation.
-In some cases it may be appropriate to include other TLVs in a request message,
+In some cases it may be appropriate to include other TLVs in a request message or unacknowledged message,
 such as the Encryption Padding TLV ({{padding}}),
 and these extra TLVs are referred to as the "Additional TLVs".
 
@@ -777,7 +777,7 @@ depending on what is stated in the specification for that TLV.
 
 DSO-TYPE:
 : A 16-bit unsigned integer, in network (big endian) byte order,
-giving the type of the current DSO TLV per the IANA DSO Type Code Registry.
+giving the DSO-TYPE of the current DSO TLV per the IANA DSO Type Code Registry.
 
 DSO DATA LENGTH:
 : A 16-bit unsigned integer, in network (big endian) byte order,
@@ -793,11 +793,11 @@ DSO-TYPE is the responsibility of the software that implements that DSO-TYPE.
 
 #### Request TLVs
 
-The first TLV in a DSO request message is the "Primary TLV"
+The first TLV in a DSO request message or unacknowledged message is the "Primary TLV"
 and indicates the operation to be performed.
-A DSO request message MUST contain at at least one TLV, the Primary TLV.
+A DSO request message or unacknowledged message MUST contain at at least one TLV, the Primary TLV.
 
-Immediately following the Primary TLV, a DSO request message
+Immediately following the Primary TLV, a DSO request message or unacknowledged message
 MAY contain one or more "Additional TLVs", which specify
 additional parameters relating to the operation.
 
@@ -824,18 +824,18 @@ forcibly abort the connection immediately.
 
 #### Unrecognized TLVs
 
-If DSO request is received containing an unrecognized Primary TLV,
+If DSO request message is received containing an unrecognized Primary TLV,
 with a nonzero MESSAGE ID (indicating that a response is expected),
 then the receiver MUST send an error response with matching MESSAGE ID,
 and RCODE DSONOTIMP (tentatively 11).
 The error response MUST NOT contain a copy of the unrecognized Primary TLV.
 
-If DSO request is received containing an unrecognized Primary TLV,
+If DSO unacknowledged message is received containing an unrecognized Primary TLV,
 with a zero MESSAGE ID (indicating that no response is expected),
 then this is a fatal error and the recipient
 MUST forcibly abort the connection immediately.
 
-If a DSO request message is received where the Primary TLV is recognized,
+If a DSO request message or unacknowledged message is received where the Primary TLV is recognized,
 containing one or more unrecognized Additional TLVs, the unrecognized
 Additional TLVs MUST be silently ignored, and the remainder of the message
 is interpreted and handled as if the unrecognized parts were not present.
@@ -887,22 +887,29 @@ forcibly abort the connection immediately.
 
 ## Message Handling
 
-The initiator MUST set the value of the QR bit in the DNS header to
-zero (0), and the responder MUST set it to one (1).
-Every DSO request message (QR=0) with a nonzero MESSAGE ID field
-MUST elicit a corresponding response (QR=1), which MUST have the same
-MESSAGE ID in the DNS message header as in the corresponding request.
-DSO request messages sent by the client with a nonzero MESSAGE ID field
-elicit a response from the server, and
-DSO request messages sent by the server with a nonzero MESSAGE ID field
-elicit a response from the client.
+The initiator MUST set the value of the QR bit in the DNS header to zero (0),
+and the responder MUST set it to one (1).
+
+As described above in {{header}} whether an outgoing message with QR=0
+is unacknowledged or acknowledged is determined by the specification
+for the Primary TLV, which in turn determines whether the MESSAGE ID field
+in that outgoing message will be zero or nonzero.
 
 A DSO unacknowledged message has both the QR bit and the MESSAGE ID field set to zero,
 and MUST NOT elicit a response.
 
-The namespaces of 16-bit MESSAGE IDs are disjoint in each direction.
-This means it is **not** an error for both client and server to send a request
-message at the same time using the same MESSAGE ID.
+Every DSO request message (QR=0) with a nonzero MESSAGE ID field
+is an acknowledged DSO request, and MUST elicit a corresponding response (QR=1),
+which MUST have the same MESSAGE ID in the DNS message header as in the corresponding request.
+
+Valid DSO request messages sent by the client with a nonzero MESSAGE ID field
+elicit a response from the server, and
+Valid DSO request messages sent by the server with a nonzero MESSAGE ID field
+elicit a response from the client.
+
+The namespaces of 16-bit MESSAGE IDs are independent in each direction.
+This means it is **not** an error for both client and server to send request
+messages at the same time as each other, using the same MESSAGE ID, in different directions.
 This simplification is necessary in order for the protocol to be implementable.
 It would be infeasible to require the client and server
 to coordinate with each other regarding allocation of new unique MESSAGE IDs.
@@ -918,7 +925,7 @@ The least-significant 16 bits are stored explicitly in the
 MESSAGE ID field of the DSO message, and the most-significant
 bit is implicit from the direction of the message.
 
-As described in {{header}}, an initiator MUST NOT reuse a
+As described above in {{header}}, an initiator MUST NOT reuse a
 MESSAGE ID that it already has in use for an outstanding request
 (unless specified otherwise by the relevant specification for the DSO-TYPE in question).
 At the very least, this means that a MESSAGE ID MUST NOT
@@ -949,7 +956,7 @@ return an error response to the client and leave the DSO Session open for furthe
 
 For error conditions that are likely to make all operations unsuccessful in the
 immediate future, the server SHOULD return an error response to the client and then
-end the DSO Session by sending a Retry Delay request message, as described in {{retry}}.
+end the DSO Session by sending a Retry Delay message, as described in {{retry}}.
 
 Upon receiving an error response from the server, a client SHOULD NOT
 automatically close the DSO Session. An error relating to one particular operation
@@ -1209,7 +1216,7 @@ An inactivity timeout of 0xFFFFFFFF (2^32-1 milliseconds, approximately 49.7 day
 informs the client that it may keep an idle connection open as long as it wishes.
 Note that after granting an unlimited inactivity timeout in this way,
 at any point the server may revise that inactivity timeout by sending
-a new Keepalive request message dictating new Session Timeout values to the client.
+a new Keepalive message dictating new Session Timeout values to the client.
 
 ***
 
@@ -1295,7 +1302,7 @@ A keepalive interval value of 0xFFFFFFFF (2^32-1 milliseconds, approximately 49.
 informs the client that it should generate no keepalive traffic.
 Note that after signaling that the client should generate no keepalive traffic in this way,
 at any point the server may revise that keepalive traffic requirement by sending
-a new Keepalive request message dictating new Session Timeout values to the client.
+a new Keepalive message dictating new Session Timeout values to the client.
 
 ***
 
@@ -1346,7 +1353,7 @@ is indicative of a seriously defective client implementation.
 
 * The server is over capacity and needs to shed some load.
 
-### Server-Initiated Retry Delay Request Message {#retry}
+### Server-Initiated Retry Delay Message {#retry}
 
 In the cases described above where a server elects to terminate a
 DSO Session, it could do so simply by forcibly aborting the connection.
@@ -1354,7 +1361,7 @@ However, if it did this the likely behavior of the client might be simply to to 
 this as a network failure and reconnect immediately, putting more burden on the server.
 
 Therefore, to avoid this reconnection implosion, a server SHOULD instead choose to
-shed client load by sending a Retry Delay request message, with an appropriate RCODE
+shed client load by sending a Retry Delay message, with an appropriate RCODE
 value informing the client of the reason the DSO Session needs to be terminated.
 For example, an RCODE value of SERVFAIL indicates that the server is overloaded
 due to resource exhaustion, or is restarting.
@@ -1365,30 +1372,30 @@ An RCODE value of REFUSED indicates a policy change regarding this session.
 An RCODE value of FORMERR indicates that the client requests are
 too badly malformed for the session to continue.
 The format of the Retry Delay TLV is described in {{delay}}.
-After sending a Retry Delay request message,
+After sending a Retry Delay message,
 the server MUST NOT send any further messages on that DSO Session.
 
-Upon receipt of a Retry Delay request message from the server,
+Upon receipt of a Retry Delay message from the server,
 the client MUST make note of the reconnect delay for this server,
 and then immediately close the connection gracefully.
 
-After sending a Retry Delay request message the server SHOULD allow the
+After sending a Retry Delay message the server SHOULD allow the
 client five seconds to close the connection, and if the client has not
 closed the connection after five seconds then the server SHOULD
 forcibly abort the connection.
 
-A Retry Delay request message MUST NOT be initiated by a client.
-If a server receives a Retry Delay request message this is a fatal error
+A Retry Delay message MUST NOT be initiated by a client.
+If a server receives a Retry Delay message this is a fatal error
 and the server MUST forcibly abort the connection immediately.
 
 #### Outstanding Operations
 
-At the instant a server chooses to initiate a Retry Delay request message
+At the instant a server chooses to initiate a Retry Delay message
 there may be DNS requests already in flight from client to server on this 
-DSO Session, which will arrive at the server after its Retry Delay request message 
+DSO Session, which will arrive at the server after its Retry Delay message 
 has been sent.
 The server MUST silently ignore such incoming requests, and MUST NOT generate
-any response messages for them. When the Retry Delay request message from the
+any response messages for them. When the Retry Delay message from the
 server arrives at the client, the client will determine that any DNS requests
 it previously sent on this DSO Session, that have not yet received a response, now 
 will certainly not be receiving any response. Such requests should be considered
@@ -1398,7 +1405,7 @@ In the case where some, but not all, of the existing operations on a DSO Session
 have become invalid (perhaps because the server has been reconfigured and is no 
 longer authoritative for some of the names),
 but the server is terminating all affected DSO Sessions en masse
-by sending them all a Retry Delay request message,
+by sending them all a Retry Delay message,
 the RECONNECT DELAY MAY be zero, indicating that the clients SHOULD immediately
 attempt to re-establish operations.
 
@@ -1416,7 +1423,7 @@ client, yielding a post-restart reconnection rate of ten clients per second).
 #### Client Reconnection
 
 After a DSO Session is ended by the server
-(either by sending the client a Retry Delay request message,
+(either by sending the client a Retry Delay message,
 or by forcibly aborting the underlying transport connection)
 the client SHOULD try to reconnect,
 to that server, or to another suitable server, if more than one is available.
@@ -1540,7 +1547,7 @@ will be used in conjunction with a long-lived session state,
 not all DNS Stateful operations require long-lived session state,
 and in some cases the default 15-second value for both the inactivity timeout
 and keepalive interval may be perfectly appropriate.
-However, note that for clients that implement only the TLVs defined in this document,
+However, note that for clients that implement only the DSO-TYPEs defined in this document,
 a Keepalive request message is the only way for a client to initiate a DSO Session.
 
 ### Client handling of received Session Timeout values
