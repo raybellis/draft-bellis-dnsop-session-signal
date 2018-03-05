@@ -286,16 +286,21 @@ Nonetheless, to appreciate the design rationale behind
 DNS Stateful Operations, it is helpful to understand
 the kind of long-lived operations that it is intended to support.
 
-DNS Stateful Operations uses "DSO request messages" and "DSO response messages".
-DSO request messages are further subdivided into two variants,
-"acknowledged request messages"
-(which generate a corresponding response message) and
-"unacknowledged request messages"
-(which do not generate any corresponding response message).
+DNS Stateful Operations uses three kinds of message:
+"DSO request messages", "DSO response messages", and
+"DSO unacknowledged messages".
+A DSO request message elicits a DSO response message.
+DSO unacknowledged messages are unidirectional messages and do not generate any response.
+
+Both DSO request messages and DSO unacknowledged messages are formatted as DNS
+request messages (the header QR bit is set to zero, as described in {{format}}).
+One difference is that in DSO request messages the MESSAGE ID field is nonzero;
+in DSO unacknowledged messages it is zero.
 
 The content of DSO messages is expressed using type-length-value (TLV) syntax.
 
-In a DSO request message the first TLV is referred to as the "Primary TLV"
+In a DSO request message or DSO unacknowledged message
+the first TLV is referred to as the "Primary TLV"
 and determines the nature of the operation being performed,
 including whether it is an acknowledged or unacknowledged operation;
 any other TLVs in a DSO request message are referred to as "Additional TLVs"
@@ -576,7 +581,7 @@ unless a future IETF Standard specifies otherwise.
 
 ### DNS Header Fields in DSO Messages {#header}
 
-In an unacknowledged request message the MESSAGE ID field MUST be set to zero.
+In an unacknowledged message the MESSAGE ID field MUST be set to zero.
 In an acknowledged request message the MESSAGE ID field MUST
 be set to a unique nonzero value, that the initiator is not
 currently using for any other active operation on this connection.
@@ -596,14 +601,14 @@ in a message with a primary TLV that is specified to be acknowledged.
 A responder that receives either such malformed message MUST treat it
 as a fatal error and forcibly abort the connection immediately.
 
-In a request message the DNS Header QR bit MUST be zero (QR=0).  
-If the QR bit is not zero the message is not a request message.
+In a request or unacknowledged message the DNS Header QR bit MUST be zero (QR=0).
+If the QR bit is not zero the message is not a request or unacknowledged message.
 
 In a response message the DNS Header QR bit MUST be one (QR=1).  
 If the QR bit is not one the message is not a response message.
 
 In a response message (QR=1) the MESSAGE ID field MUST contain a copy of the value of
-the MESSAGE ID field in the acknowledged request message being responded to.
+the MESSAGE ID field in the request message being responded to.
 In a response message (QR=1) the MESSAGE ID field MUST NOT be zero.
 If a response message (QR=1) is received where the MESSAGE ID is zero
 this is a fatal error and the receiver MUST forcibly abort the connection immediately.
@@ -617,10 +622,10 @@ on reception, unless a future IETF Standard specifies otherwise.
 
 ***
 
-In a request message (QR=0) the RCODE is set according to the definition of the request.
+In a DNS request message (QR=0) the RCODE is set according to the definition of the request.
 For example, in a Retry Delay request message ({{retry}}) the RCODE indicates the reason for termination.
 However, in most cases, except where clearly specified otherwise,
-in a request message the RCODE is set to zero on transmission,
+in a DNS request message (QR=0) the RCODE is set to zero on transmission,
 and silently ignored on reception.
 
 The RCODE value in a response message (QR=1) may be one of the following values:
@@ -652,16 +657,10 @@ The standard twelve-byte DNS message header with its
 zero-valued count fields is followed by the DSO Data,
 expressed using TLV syntax, as described below {{tlvsyntax}}.
 
-A DSO message may be either a request message or a response message,
-as indicated by the QR bit in the DNS message header.
-DSO request messages are further subdivided into two variants,
-acknowledged request messages
-(which generate a corresponding response message)
-and unacknowledged request messages
-(which do not generate any corresponding response message).
+A DSO message may be a request message, a response message, or an unacknowledged message.
 
-A DSO request message MUST contain at least one TLV.
-The first TLV in a DSO request message is referred to as the "Primary TLV"
+A DSO request message or DSO unacknowledged message MUST contain at least one TLV.
+The first TLV in a DSO request message or DSO unacknowledged message is referred to as the "Primary TLV"
 and determines the nature of the operation being performed,
 including whether it is an acknowledged or unacknowledged operation.
 In some cases it may be appropriate to include other TLVs in a request message,
@@ -686,37 +685,37 @@ in which case those TLV(s) are referred to as "Response Additional TLVs".
 Response Primary TLV(s), if present, MUST occur first in the response message,
 before any Response Additional TLVs.
 
-It is anticipated that by default most DSO request messages will be specified
-to be acknowledged request messages, which generate corresponding responses.
+It is anticipated that most DSO operations will be specified
+to use request messages, which generate corresponding responses.
 In some specialized high-traffic use cases,
-it may be appropriate to specify unacknowledged request messages.
-Unacknowledged request messages can be more efficient on the network,
+it may be appropriate to specify unacknowledged messages.
+Unacknowledged messages can be more efficient on the network,
 because they don't generate a stream of corresponding reply messages.
-Using unacknowledged request messages can also simplify software
+Using unacknowledged messages can also simplify software
 in some cases, by removing need for an initiator to maintain
 state while it waits to receive replies it doesn't care about.
 When the specification for a particular TLV states that,
-when used as a Primary TLV (i.e., first) in a request message,
-that request message is to be unacknowledged,
+when used as a Primary TLV (i.e., first) in an outgoing DNS request message (i.e., QR=0),
+that message is to be unacknowledged,
 the MESSAGE ID field MUST be set to zero and
 the receiver MUST NOT generate any response message
-corresponding to this unacknowledged request message.
+corresponding to this unacknowledged message.
 
 The previous point, that the receiver MUST NOT generate responses to
-unacknowledged request messages, applies even in the case of errors.
-When a DSO request message is received with the MESSAGE ID field
-set to zero, the receiver MUST NOT generate any response.
+unacknowledged messages, applies even in the case of errors.
+When a DSO message is received where both the QR bit and the MESSAGE ID field
+are zero, the receiver MUST NOT generate any response.
 For example, if the DSO-TYPE in the Primary TLV is unrecognized,
 then a DSONOTIMP error MUST NOT be returned; instead the receiver
 MUST forcibly abort the connection immediately.
 
-Unacknowledged request messages MUST NOT be used "speculatively"
+Unacknowledged messages MUST NOT be used "speculatively"
 in cases where the sender doesn't know if the receiver supports
 the Primary TLV in the message, because there is no way to receive
 any response to indicate success or failure of the request message
 (the request message does not contain a unique MESSAGE ID with
 which to associate a response with its corresponding request).
-Unacknowledged request messages are only appropriate in cases
+Unacknowledged messages are only appropriate in cases
 where the sender already knows that the receiver supports,
 and wishes to receive, these messages.
 
@@ -745,9 +744,9 @@ or "Response Additional", use the same encoding syntax.
 The specification for a TLV states whether that DSO-TYPE may be used in
 "Primary", "Additional", "Response Primary", or "Response Additional" TLVs.
 The specification for a TLV also states whether,
-when used as the Primary (i.e., first) TLV in a request message,
-that request message is to be acknowledged.
-If the request message is to be acknowledged, the specification
+when used as the Primary (i.e., first) TLV in a DNS request message (i.e., QR=0),
+that DSO message is to be acknowledged.
+If the DSO message is to be acknowledged, the specification
 also states which TLVs, if any, are to be included in the response.
 The Primary TLV may or may not be contained in the response,
 depending on what is stated in the specification for that TLV.
@@ -912,11 +911,14 @@ this is a fatal error and the recipient MUST forcibly abort the connection immed
 
 ### Error Responses
 
-When a request message is unsuccessful for some reason, the responder
-returns an error code to the initiator (for acknowledged request messages)
-or aborts the connection (for unacknowledged request messages).
+When a DSO unacknowledged message is unsuccessful for some reason,
+the responder immediately aborts the connection.
 
-In the case of a server returning an error code to a client, the server MAY choose
+When a DSO request message is unsuccessful for some reason,
+the responder returns an error code to the initiator.
+
+In the case of a server returning an error code to a client
+in response to an unsuccessful DSO request message, the server MAY choose
 to end the DSO Session, or MAY choose to allow the DSO Session to remain open.
 For error conditions that only affect the single operation in question, the server SHOULD
 return an error response to the client and leave the DSO Session open for further operations.
@@ -1469,7 +1471,7 @@ does not reset the inactivity timer.
 
 When sent by a client, the Keepalive request message MUST
 be sent as an acknowledged request, with a nonzero MESSAGE ID.
-If a server receives a Keepalive request message with a zero MESSAGE ID then
+If a server receives a Keepalive DSO message with a zero MESSAGE ID then
 this is a fatal error and the server MUST forcibly abort the connection immediately.
 The Keepalive request message resets a DSO Session's keepalive timer,
 and at the same time communicates to the server the the client's
@@ -1487,25 +1489,25 @@ This allows flexibility, so that if conditions change during the lifetime of a
 DSO Session, the server can adapt its responses to better fit the client's needs.
 
 Once a DSO Session is in progress ({{establishment}})
-a Keepalive request message MAY be initiated by a server.
-When sent by a server, the Keepalive request message MUST be
-sent as an unacknowledged request, with the MESSAGE ID set to zero.
+a Keepalive message MAY be initiated by a server.
+When sent by a server, the Keepalive message MUST be
+sent as an unacknowledged message, with the MESSAGE ID set to zero.
 The client MUST NOT generate a response to a server-initiated DSO Keepalive message.
 If a client receives a Keepalive request message with a nonzero MESSAGE ID then
 this is a fatal error and the client MUST forcibly abort the connection immediately.
-The Keepalive request message from the server resets a DSO Session's keepalive timer,
+The Keepalive unacknowledged message from the server resets a DSO Session's keepalive timer,
 and at the same time unilaterally informs the client of the new
 Session Timeout values to use from this point forward in this DSO Session.
 No client DSO response message to this unilateral declaration is required or allowed.
 
-The Keepalive TLV is not used as a request message Additional TLV.
+The Keepalive TLV is not used as an Additional TLV.
 
 In response messages the Keepalive TLV is used only as a Response Primary TLV,
 replying to a Keepalive request message from the client.
 A Keepalive TLV MUST NOT be added as to other responses a Response Additional TLV.
 If the server wishes to update a client's Session Timeout values
 other than in response to a Keepalive request message from the client,
-then it does so by sending an unacknowledged Keepalive request message
+then it does so by sending an unacknowledged Keepalive message
 of its own, as described above.
 
 It is not required that the Keepalive TLV be used in every DSO Session.
@@ -1606,8 +1608,9 @@ The RECOMMENDED value is 10 seconds.
 
 ### Retry Delay TLV used as a Primary TLV
 
-When sent in a DSO request message, from server to client, the 
-Retry Delay TLV is used as a Primary TLV. It is used by a server
+When sent from server to client, the
+Retry Delay TLV is used as the Primary TLV in an unacknowledged message.
+It is used by a server
 to instruct a client to close the DSO Session and underlying connection,
 and not to reconnect for the indicated time interval.
 
@@ -1635,13 +1638,13 @@ However, future circumstances may create situations where other RCODE values
 are appropriate in Retry Delay requests, so clients MUST be prepared
 to accept Retry Delay requests with any RCODE value.
 
-A Retry Delay request is an unacknowledged request message;
-the MESSAGE ID MUST be set to zero in the request
+A Retry Delay message from server to client is an unacknowledged message;
+the MESSAGE ID MUST be set to zero in the outgoing message
 and the client MUST NOT send a response.
 
-A client MUST NOT send a Retry Delay request message to a server.
-If a server receives a Retry Delay request message, this is a fatal error
-and the server MUST forcibly abort the connection immediately.
+A client MUST NOT send a Retry Delay DSO request message or DSO unacknowledged message to a server.
+If a server receives a DNS request message (i.e., QR=0) where the Primary TLV is the Retry Delay TLV,
+this is a fatal error and the server MUST forcibly abort the connection immediately.
 
 ### Retry Delay TLV used as a Response Additional TLV
 
@@ -1726,15 +1729,11 @@ document, whether they are valid in each of ten different contexts.
 The first five contexts are requests from client to server,
 and the corresponding responses from server back to client:
 
-* C-P - Primary TLV,
-sent in DSO Request message,
-from client to server,
+* C-P - Primary TLV, sent in DSO Request message, from client to server,
 with nonzero MESSAGE ID indicating that this request MUST generate response message.
-* C-U - Primary TLV (unacknowledged),
-sent in DSO Request message,
-from client to server,
+* C-U - Primary TLV, sent in DSO Unacknowledged message, from client to server,
 with zero MESSAGE ID indicating that this request MUST NOT generate response message.
-* C-A - Additional TLV, optionally added to request message from client to server.
+* C-A - Additional TLV, optionally added to request message or unacknowledged message from client to server.
 * CRP - Response Primary TLV, included in response message sent to back the client
 (in response to a client "C-P" request with nonzero MESSAGE ID indicating that a response is required)
 where the DSO-TYPE of the Response TLV matches the DSO-TYPE of the Primary TLV in the request.
@@ -1755,6 +1754,8 @@ requests from server to client, and the corresponding responses from client back
      | Padding    |            X         X  |            X         X  |
      +------------+-------------------------+-------------------------+
 
+Note that some of the columns in this table are currently empty.
+The table is provided as a template for future TLV definitions to follow.
 It is recommended that definitions of future TLVs include a
 similar table summarizing the contexts where the new TLV is valid.
 
