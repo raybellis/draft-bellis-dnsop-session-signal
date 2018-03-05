@@ -103,7 +103,7 @@ a framework is defined for extensions to enable new stateful operations.
 # Introduction
 
 The use of transports for DNS other than UDP is being increasingly specified,
-for example, DNS over TCP {{!RFC1035}}{{!RFC7766}} and DNS over TLS {{?RFC7858}}.
+for example, DNS over TCP {{!RFC1035}} {{!RFC7766}} and DNS over TLS {{?RFC7858}}.
 Such transports can offer persistent, long-lived sessions and therefore when
 using them for transporting DNS messages it is of benefit to have a mechanism
 that can establish parameters associated with those sessions, such as timeouts.
@@ -177,14 +177,14 @@ success or failure of that operation.
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
 "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
 "OPTIONAL" in this document are to be interpreted as described in
-"Key words for use in RFCs to Indicate Requirement Levels" {{!RFC2119}}.
+"Key words for use in RFCs to Indicate Requirement Levels" {{!RFC2119}} {{!RFC8174}}.
 
 "DSO" is used to mean DNS Stateful Operation.
 
 The term "connection" means a bidirectional byte (or message) stream,
 where the bytes (or messages) are delivered reliably and in-order,
 such as provided by using
-DNS over TCP {{!RFC1035}}{{!RFC7766}} or DNS over TLS {{?RFC7858}}.
+DNS over TCP {{!RFC1035}} {{!RFC7766}} or DNS over TLS {{?RFC7858}}.
 
 At present, DSO is specified only for DNS over TCP, and for DNS over TLS over TCP.
 Any use of DSO over some other connection technology needs to be
@@ -376,7 +376,7 @@ including an in-depth discussion of keepalive traffic and session termination.
 DSO messages MUST be carried in only protocols and in
 environments where a session may be established according to the definition
 given above in the Terminology section ({{terminology}}).
-Standard DNS over TCP {{!RFC1035}}{{!RFC7766}}, and DNS over TLS {{?RFC7858}}
+Standard DNS over TCP {{!RFC1035}} {{!RFC7766}}, and DNS over TLS {{?RFC7858}}
 are suitable protocols.
 
 DNS over plain UDP {{?RFC0768}} is not appropriate since it fails on the requirement for
