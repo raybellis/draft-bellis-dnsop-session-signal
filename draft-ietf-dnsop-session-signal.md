@@ -1632,8 +1632,7 @@ RETRY DELAY:
 : A time value, specified as
 a 32-bit unsigned integer, in network (big endian) byte order, in units of milliseconds,
 within which the initiator MUST NOT retry this operation, or retry connecting to this server.
-
-The RECOMMENDED value is 10 seconds.
+Recommendations for the RETRY DELAY value are given in {{retry}}.
 
 ### Retry Delay TLV used as a Primary TLV
 

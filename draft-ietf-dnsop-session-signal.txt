@@ -338,16 +338,16 @@ Bellis, et al.            Expires July 30, 2018                 [Page 6]
 Internet-Draft           DNS Stateful Operations            January 2018
 
 
-      records) are referring to the same server instance if they contain
-      the same hostname (subject to the usual case insensitive DNS name
-      matching rules [RFC1034] [RFC1035]) and TCP port number.  In these
-      cases, configurations with different hostnames are considered to
-      be referring to different server instances, even if those
-      different hostnames happen to be aliases, or happen to resolve to
-      the same IP address(es).  Implementations are not expected to
-      resolve hostnames and then perform matching of IP address(es) in
-      order to evaluate whether two entities should be determinated the
-      "same server instance".
+      records) are considered to be referring to the same server
+      instance if they contain the same hostname (subject to the usual
+      case insensitive DNS name matching rules [RFC1034] [RFC1035]) and
+      TCP port number.  In these cases, configurations with different
+      hostnames are considered to be referring to different server
+      instances, even if those different hostnames happen to be aliases,
+      or happen to resolve to the same IP address(es).  Implementations
+      are not expected to resolve hostnames and then perform matching of
+      IP address(es) in order to evaluate whether two entities should be
+      determinated to be the "same server instance".
 
    The term "long-lived operations" refers to operations such as Push
    Notification subscriptions [I-D.ietf-dnssd-push], Discovery Relay
@@ -2262,9 +2262,8 @@ Internet-Draft           DNS Stateful Operations            January 2018
    RETRY DELAY:  A time value, specified as a 32-bit unsigned integer,
       in network (big endian) byte order, in units of milliseconds,
       within which the initiator MUST NOT retry this operation, or retry
-      connecting to this server.
-
-   The RECOMMENDED value is 10 seconds.
+      connecting to this server.  Recommendations for the RETRY DELAY
+      value are given in Section 5.6.1.
 
 6.2.1.  Retry Delay TLV used as a Primary TLV
 
@@ -2289,6 +2288,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
    o  REFUSED indicates that the server has been reconfigured and due to
       a policy change is no longer able to perform one or more of the
       functions currently being performed on this DSO Session
+
 
 
 
