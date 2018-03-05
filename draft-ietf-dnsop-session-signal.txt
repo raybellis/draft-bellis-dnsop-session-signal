@@ -83,7 +83,7 @@ Table of Contents
        4.2.2.  DSO Data  . . . . . . . . . . . . . . . . . . . . . .  17
        4.2.3.  EDNS(0) and TSIG  . . . . . . . . . . . . . . . . . .  22
      4.3.  Message Handling  . . . . . . . . . . . . . . . . . . . .  23
-       4.3.1.  Error Responses . . . . . . . . . . . . . . . . . . .  23
+       4.3.1.  Error Responses . . . . . . . . . . . . . . . . . . .  24
      4.4.  DSO Response Generation . . . . . . . . . . . . . . . . .  24
      4.5.  Responder-Initiated Operation Cancellation  . . . . . . .  25
    5.  DSO Session Lifecycle and Timers  . . . . . . . . . . . . . .  27
@@ -1245,18 +1245,29 @@ Internet-Draft           DNS Stateful Operations            January 2018
    response from the server, and DSO request messages sent by the server
    with a nonzero MESSAGE ID field elicit a response from the client.
 
-   A DNS request message (QR=0) with a zero MESSAGE ID field MUST NOT
-   elicit a response.
+   A DSO unacknowledged message has both the QR bit and the MESSAGE ID
+   field set to zero, and MUST NOT elicit a response.
 
    The namespaces of 16-bit MESSAGE IDs are disjoint in each direction.
-   For example, it is *not* an error for both client and server to send
-   a request message with the same ID.  In effect, the 16-bit MESSAGE ID
-   combined with the identity of the initiator (client or server) serves
-   as a 17-bit unique identifier for a particular operation on a DSO
-   Session.
+   This means it is *not* an error for both client and server to send a
+   request message at the same time using the same MESSAGE ID.  This
+   simplification is necessary in order for the protocol to be
+   implementable.  It would be infeasible to require the client and
+   server to coordinate with each other regarding allocation of new
+   unique MESSAGE IDs.  It is also not necessary to require the client
+   and server to coordinate with each other regarding allocation of new
+   unique MESSAGE IDs.  The value of the 16-bit MESSAGE ID combined with
+   the identity of the initiator (client or server) is sufficient to
+   unambiguously identify the operation in question.  This can be
+   thought of as a 17-bit message identifier space, using message
+   identifiers 0x00001-0x0FFFF for client-to-server DSO request
+   messages, and message identifiers 0x10001-0x1FFFF for server-to-
+   client DSO request messages.  The least-significant 16 bits are
+   stored explicitly in the MESSAGE ID field of the DSO message, and the
+   most-significant bit is implicit from the direction of the message.
 
    As described in Section 4.2.1, an initiator MUST NOT reuse a MESSAGE
-   ID that is already in use for an outstanding request (unless
+   ID that it already has in use for an outstanding request (unless
    specified otherwise by the relevant specification for the DSO-TYPE in
    question).  At the very least, this means that a MESSAGE ID MUST NOT
    be reused in a particular direction on a particular DSO Session while
@@ -1271,6 +1282,14 @@ Internet-Draft           DNS Stateful Operations            January 2018
    any of its outstanding operations, this is a fatal error and the
    recipient MUST forcibly abort the connection immediately.
 
+
+
+
+Bellis, et al.            Expires July 30, 2018                [Page 23]
+
+Internet-Draft           DNS Stateful Operations            January 2018
+
+
 4.3.1.  Error Responses
 
    When a DSO unacknowledged message is unsuccessful for some reason,
@@ -1282,14 +1301,6 @@ Internet-Draft           DNS Stateful Operations            January 2018
    In the case of a server returning an error code to a client in
    response to an unsuccessful DSO request message, the server MAY
    choose to end the DSO Session, or MAY choose to allow the DSO Session
-
-
-
-Bellis, et al.            Expires July 30, 2018                [Page 23]
-
-Internet-Draft           DNS Stateful Operations            January 2018
-
-
    to remain open.  For error conditions that only affect the single
    operation in question, the server SHOULD return an error response to
    the client and leave the DSO Session open for further operations.
@@ -1327,6 +1338,14 @@ Internet-Draft           DNS Stateful Operations            January 2018
    implementation generally doesn't have any way to know that no
    response will be forthcoming, so it waits fruitlessly for the
    application-layer software to generate a response, until the Delayed
+
+
+
+Bellis, et al.            Expires July 30, 2018                [Page 24]
+
+Internet-Draft           DNS Stateful Operations            January 2018
+
+
    ACK timer fires [RFC1122] (typically 200 milliseconds) and only then
    does it send the TCP ACK and window update.  In conjunction with
    Nagle's Algorithm at the sender, this can delay the sender's
@@ -1338,14 +1357,6 @@ Internet-Draft           DNS Stateful Operations            January 2018
    of the network by applications that would otherwise transmit a stream
    of small TCP segments, but in this case Nagle's Algorithm (created to
    improve network efficiency) can interact badly with TCP's Delayed ACK
-
-
-
-Bellis, et al.            Expires July 30, 2018                [Page 24]
-
-Internet-Draft           DNS Stateful Operations            January 2018
-
-
    feature (also created to improve network efficiency) [NagleDA] with
    the result of delaying some messages by up to 200 milliseconds.
 
@@ -1383,6 +1394,14 @@ Internet-Draft           DNS Stateful Operations            January 2018
    initiator, and, if successful, remains active until the initiator
    terminates the operation.
 
+
+
+
+Bellis, et al.            Expires July 30, 2018                [Page 25]
+
+Internet-Draft           DNS Stateful Operations            January 2018
+
+
    However, it is possible that a long-lived operation may be valid at
    the time it was initiated, but then a later change of circumstances
    may render that previously valid operation invalid.
@@ -1394,13 +1413,6 @@ Internet-Draft           DNS Stateful Operations            January 2018
    In such cases, instead of terminating the entire session it may be
    desirable for the responder to be able to cancel selectively only
    those operations that have become invalid.
-
-
-
-Bellis, et al.            Expires July 30, 2018                [Page 25]
-
-Internet-Draft           DNS Stateful Operations            January 2018
-
 
    The responder performs this selective cancellation by sending a new
    response message, with the MESSAGE ID field containing the MESSAGE ID
@@ -1416,18 +1428,6 @@ Internet-Draft           DNS Stateful Operations            January 2018
    initiator, that operation has been terminated from the initiator's
    point of view, and the cancelled operation's MESSAGE ID is now free
    for reuse.
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -882,16 +882,29 @@ elicit a response from the server, and
 DSO request messages sent by the server with a nonzero MESSAGE ID field
 elicit a response from the client.
 
-A DNS request message (QR=0) with a zero MESSAGE ID field MUST NOT elicit a response.
+A DSO unacknowledged message has both the QR bit and the MESSAGE ID field set to zero,
+and MUST NOT elicit a response.
 
 The namespaces of 16-bit MESSAGE IDs are disjoint in each direction.
-For example, it is **not** an error for both client and server to send a request
-message with the same ID. In effect, the 16-bit MESSAGE ID combined with the 
-identity of the initiator (client or server) serves as a 17-bit unique 
-identifier for a particular operation on a DSO Session.
+This means it is **not** an error for both client and server to send a request
+message at the same time using the same MESSAGE ID.
+This simplification is necessary in order for the protocol to be implementable.
+It would be infeasible to require the client and server
+to coordinate with each other regarding allocation of new unique MESSAGE IDs.
+It is also not necessary to require the client and server
+to coordinate with each other regarding allocation of new unique MESSAGE IDs.
+The value of the 16-bit MESSAGE ID combined with the
+identity of the initiator (client or server) is sufficient
+to unambiguously identify the operation in question.
+This can be thought of as a 17-bit message identifier space, using
+message identifiers 0x00001-0x0FFFF for client-to-server DSO request messages, and
+message identifiers 0x10001-0x1FFFF for server-to-client DSO request messages.
+The least-significant 16 bits are stored explicitly in the
+MESSAGE ID field of the DSO message, and the most-significant
+bit is implicit from the direction of the message.
 
 As described in {{header}}, an initiator MUST NOT reuse a
-MESSAGE ID that is already in use for an outstanding request
+MESSAGE ID that it already has in use for an outstanding request
 (unless specified otherwise by the relevant specification for the DSO-TYPE in question).
 At the very least, this means that a MESSAGE ID MUST NOT
 be reused in a particular direction on a particular DSO
