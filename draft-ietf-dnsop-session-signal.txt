@@ -157,11 +157,11 @@ Internet-Draft           DNS Stateful Operations            January 2018
    TLVs, used to manage session timeouts, termination, and encryption
    padding.
 
-   All three of the TLVs defined here are mandatory for all
-   implementations of DSO.  Further TLVs may be defined in additional
-   specifications.
+   The three TLVs defined here are all mandatory for all implementations
+   of DSO.  Further TLVs may be defined in additional specifications.
 
-
+   The format for DSO messages (Section 4.2) differs somewhat from the
+   traditional DNS message format used for standard queries and
 
 
 
@@ -170,8 +170,6 @@ Bellis, et al.            Expires July 30, 2018                 [Page 3]
 Internet-Draft           DNS Stateful Operations            January 2018
 
 
-   The format for DSO messages (Section 4.2) differs somewhat from the
-   traditional DNS message format used for standard queries and
    responses.  The standard twelve-byte header is used, but the four
    count fields (QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT) are set to zero and
    accordingly their corresponding sections are not present.  The actual
@@ -210,6 +208,8 @@ Internet-Draft           DNS Stateful Operations            January 2018
    DSO request message communicates just one primary operation, and the
    RCODE in the corresponding response message indicates the success or
    failure of that operation.
+
+
 
 
 
@@ -2269,7 +2269,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
 6.2.1.  Retry Delay TLV used as a Primary TLV
 
    When sent in a DSO request message, from server to client, the Retry
-   Delay TLV (0) is used as a Primary TLV.  It is used by a server to
+   Delay TLV is used as a Primary TLV.  It is used by a server to
    instruct a client to close the DSO Session and underlying connection,
    and not to reconnect for the indicated time interval.
 
@@ -2324,11 +2324,11 @@ Internet-Draft           DNS Stateful Operations            January 2018
 6.2.2.  Retry Delay TLV used as a Response Additional TLV
 
    In the case of a request that returns a nonzero RCODE value, the
-   responder MAY append a Retry Delay TLV (0) to the response,
-   indicating the time interval during which the initator SHOULD NOT
-   attempt this operation again.
+   responder MAY append a Retry Delay TLV to the response, indicating
+   the time interval during which the initiator SHOULD NOT attempt this
+   operation again.
 
-   The indicated time interval during which the initator SHOULD NOT
+   The indicated time interval during which the initiator SHOULD NOT
    retry applies only to the failed operation, not to the DSO Session as
    a whole.
 

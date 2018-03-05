@@ -124,7 +124,7 @@ stateful sessions, expressed using type-length-value (TLV) syntax.
 This document defines an initial set of three TLVs,
 used to manage session timeouts, termination, and encryption padding.
 
-All three of the TLVs defined here are mandatory for all implementations of DSO.
+The three TLVs defined here are all mandatory for all implementations of DSO.
 Further TLVs may be defined in additional specifications.
 
 The format for DSO messages
@@ -1606,7 +1606,7 @@ The RECOMMENDED value is 10 seconds.
 ### Retry Delay TLV used as a Primary TLV
 
 When sent in a DSO request message, from server to client, the 
-Retry Delay TLV (0) is used as a Primary TLV. It is used by a server
+Retry Delay TLV is used as a Primary TLV. It is used by a server
 to instruct a client to close the DSO Session and underlying connection,
 and not to reconnect for the indicated time interval.
 
@@ -1645,11 +1645,11 @@ and the server MUST forcibly abort the connection immediately.
 ### Retry Delay TLV used as a Response Additional TLV
 
 In the case of a request that returns a nonzero RCODE value,
-the responder MAY append a Retry Delay TLV (0) to the response,
-indicating the time interval during which the initator
+the responder MAY append a Retry Delay TLV to the response,
+indicating the time interval during which the initiator
 SHOULD NOT attempt this operation again.
 
-The indicated time interval during which the initator SHOULD NOT retry
+The indicated time interval during which the initiator SHOULD NOT retry
 applies only to the failed operation, not to the DSO Session as a whole.
 
 ***
