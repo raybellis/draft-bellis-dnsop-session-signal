@@ -703,7 +703,20 @@
 <h1 id="rfc.section.4.1.1">
 <a href="#rfc.section.4.1.1">4.1.1.</a> <a href="#sharing" id="sharing">Connection Sharing</a>
 </h1>
-<p id="rfc.section.4.1.1.p.1">As previously specified for DNS over TCP <a href="#RFC7766" class="xref">[RFC7766]</a>, to mitigate the risk of unintentional server overload, DNS clients MUST take care to minimize the number of concurrent TCP connections made to any individual server.  It is RECOMMENDED that for any given client/server interaction there SHOULD be no more than one connection for regular queries, one for zone transfers, and one for each protocol that is being used on top of TCP (for example, if the resolver was using TLS).  However, it is noted that certain primary/secondary configurations with many busy zones might need to use more than one TCP connection for zone transfers for operational reasons (for example, to support concurrent transfers of multiple zones).</p>
+<p id="rfc.section.4.1.1.p.1">As previously specified for DNS over TCP <a href="#RFC7766" class="xref">[RFC7766]</a>:</p>
+<pre>
+   To mitigate the risk of unintentional server overload, DNS
+   clients MUST take care to minimize the number of concurrent
+   TCP connections made to any individual server.  It is RECOMMENDED
+   that for any given client/server interaction there SHOULD be
+   no more than one connection for regular queries, one for zone
+   transfers, and one for each protocol that is being used on top
+   of TCP (for example, if the resolver was using TLS). However,
+   it is noted that certain primary/secondary configurations
+   with many busy zones might need to use more than one TCP
+   connection for zone transfers for operational reasons (for
+   example, to support concurrent transfers of multiple zones).
+</pre>
 <p id="rfc.section.4.1.1.p.2">A single server may support multiple services, including DNS Updates <a href="#RFC2136" class="xref">[RFC2136]</a>, DNS Push Notifications <a href="#I-D.ietf-dnssd-push" class="xref">[I-D.ietf-dnssd-push]</a>, and other services, for one or more DNS zones.  When a client discovers that the target server for several different operations is the same target hostname and port, the client SHOULD use a single shared DSO Session for all those operations.  A client SHOULD NOT open multiple connections to the same target host and port just because the names being operated on are different or happen to fall within different zones.  This requirement is to reduce unnecessary connection load on the DNS server.</p>
 <p id="rfc.section.4.1.1.p.3">However, server implementers and operators should be aware that connection sharing may not be possible in all cases.  A single host device may be home to multiple independent client software instances that don&#8217;t coordinate with each other.  Similarly, multiple independent client devices behind the same NAT gateway will also typically appear to the DNS server as different source ports on the same client IP address.  Because of these constraints, a DNS server MUST be prepared to accept multiple connections from different source ports on the same client IP address.</p>
 <p></p>

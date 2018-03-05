@@ -409,18 +409,19 @@ request message as their way of initiating a DSO Session.
 
 ### Connection Sharing {#sharing}
 
-As previously specified for DNS over TCP {{!RFC7766}},
-to mitigate the risk of unintentional server overload, DNS clients
-MUST take care to minimize the number of concurrent TCP connections
-made to any individual server.  It is RECOMMENDED that for any given
-client/server interaction there SHOULD be no more than one connection
-for regular queries, one for zone transfers, and one for each
-protocol that is being used on top of TCP (for example, if the
-resolver was using TLS).
-However, it is noted that certain primary/secondary configurations
-with many busy zones might need to use more than one TCP
-connection for zone transfers for operational reasons
-(for example, to support concurrent transfers of multiple zones).
+As previously specified for DNS over TCP {{!RFC7766}}:
+
+       To mitigate the risk of unintentional server overload, DNS
+       clients MUST take care to minimize the number of concurrent
+       TCP connections made to any individual server.  It is RECOMMENDED
+       that for any given client/server interaction there SHOULD be
+       no more than one connection for regular queries, one for zone
+       transfers, and one for each protocol that is being used on top
+       of TCP (for example, if the resolver was using TLS). However,
+       it is noted that certain primary/secondary configurations
+       with many busy zones might need to use more than one TCP
+       connection for zone transfers for operational reasons (for
+       example, to support concurrent transfers of multiple zones).
 
 A single server may support multiple services, including DNS Updates 
 {{!RFC2136}}, DNS Push Notifications {{?I-D.ietf-dnssd-push}},
