@@ -873,9 +873,8 @@
 <dt>DSO DATA LENGTH:</dt>
 <dd style="margin-left: 8">A 16-bit unsigned integer, in network (big endian) byte order, giving the size in bytes of the TYPE-DEPENDENT DATA.</dd>
 <dt>TYPE-DEPENDENT DATA:</dt>
-<dd style="margin-left: 8">Type-code specific format.</dd>
+<dd style="margin-left: 8">Type-code specific format. The generic DSO machinery treats the TYPE-DEPENDENT DATA as an opaque &#8220;blob&#8221; without attempting to interpret it.  Interpretation of the meaning of the TYPE-DEPENDENT DATA for a particular DSO-TYPE is the responsibility of the software that implements that DSO-TYPE.</dd>
 </dl>
-<p id="rfc.section.4.2.2.1.p.4">Where domain names appear within TYPE-DEPENDENT DATA, they MAY<br> be compressed using standard DNS name compression <a href="#RFC1035" class="xref">[RFC1035]</a>.<br> However, the compression offsets MUST be relative to the start of the TYPE-DEPENDENT DATA and MUST NOT extend beyond the end of the TYPE-DEPENDENT DATA.</p>
 <p></p>
 <h1 id="rfc.section.4.2.2.2">
 <a href="#rfc.section.4.2.2.2">4.2.2.2.</a> <a href="#request-tlvs" id="request-tlvs">Request TLVs</a>

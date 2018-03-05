@@ -772,13 +772,10 @@ DSO DATA LENGTH:
 giving the size in bytes of the TYPE-DEPENDENT DATA.
 
 TYPE-DEPENDENT DATA:
-: Type-code specific format.
-
-Where domain names appear within TYPE-DEPENDENT DATA, they MAY  
-be compressed using standard DNS name compression {{!RFC1035}}.  
-However, the compression offsets MUST be relative to
-the start of the TYPE-DEPENDENT DATA and MUST NOT
-extend beyond the end of the TYPE-DEPENDENT DATA.
+: Type-code specific format. The generic DSO machinery treats the
+TYPE-DEPENDENT DATA as an opaque "blob" without attempting to interpret it.
+Interpretation of the meaning of the TYPE-DEPENDENT DATA for a particular
+DSO-TYPE is the responsibility of the software that implements that DSO-TYPE.
 
 ***
 
