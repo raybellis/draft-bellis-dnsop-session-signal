@@ -186,23 +186,6 @@ where the bytes (or messages) are delivered reliably and in-order,
 such as provided by using
 DNS over TCP {{!RFC1035}} {{!RFC7766}} or DNS over TLS {{?RFC7858}}.
 
-At present, DSO is specified only for DNS over TCP, and for DNS over TLS over TCP.
-Any use of DSO over some other connection technology needs to be
-specified in an appropriate document.
-
-Determining whether a given connection is using DNS over TCP, or DNS over TLS over TCP,
-is outside the scope of this specification, and must be determined using some out-of-band
-configuration information. There is no provision within the DSO specification to turn
-TLS on or off during the lifetime of a connection.
-For service types where the service instance is discovered using a DNS SRV record {{?RFC2782}},
-the specification for that service type SRV name {{?RFC6335}}
-will state whether the connection uses plain TCP, or TLS over TCP.
-For example, the specification for the
-"_dns‑push‑tls._tcp" service {{?I-D.ietf-dnssd-push}},
-states that it uses TLS.
-It is a common convention that protocols specified to run over TLS
-are given IANA service type names ending in "‑tls".
-
 The unqualified term "session" in the context of this document means the exchange of
 DNS messages over a connection where:
 
@@ -224,7 +207,7 @@ A "DSO Session" is terminated when the underlying connection is closed.
 The underlying connection can be closed in two ways:
 
 Where this specification says, "close gracefully,"
-that means sending a TLS close_notify followed by a TCP FIN,
+that means sending a TLS close_notify (if TLS is in use) followed by a TCP FIN,
 or the equivalents for other protocols.
 Where this specification requires a connection to be closed gracefully,
 the requirement to initiate that graceful close is placed on the client,
@@ -376,13 +359,32 @@ including an in-depth discussion of keepalive traffic and session termination.
 DSO messages MUST be carried in only protocols and in
 environments where a session may be established according to the definition
 given above in the Terminology section ({{terminology}}).
-Standard DNS over TCP {{!RFC1035}} {{!RFC7766}}, and DNS over TLS {{?RFC7858}}
-are suitable protocols.
 
 DNS over plain UDP {{?RFC0768}} is not appropriate since it fails on the requirement for
 in-order message delivery, and, in the presence of NAT gateways and firewalls
 with short UDP timeouts, it fails to provide a persistent bi-directional
 communication channel unless an excessive amount of keepalive traffic is used.
+
+At the time of publication, DSO is specified only
+for DNS over TCP {{!RFC1035}} {{!RFC7766}}, and
+for DNS over TLS over TCP {{?RFC7858}}.
+Any use of DSO over some other connection technology needs to be
+specified in an appropriate future document.
+
+Determining whether a given connection is using DNS over TCP, or DNS
+over TLS over TCP, is outside the scope of this specification, and
+must be determined using some out-of-band configuration information.
+There is no provision within the DSO specification to
+turn TLS on or off during the lifetime of a connection.
+For service types where the service instance is discovered
+using a DNS SRV record {{?RFC2782}},
+the specification for that service type SRV name {{?RFC6335}}
+will state whether the connection uses plain TCP, or TLS over TCP.
+For example, the specification for the
+"_dns‑push‑tls._tcp" service {{?I-D.ietf-dnssd-push}},
+states that it uses TLS.
+It is a common convention that protocols specified to run over TLS
+are given IANA service type names ending in "‑tls".
 
 In some environments it may be known in advance by external means
 that both client and server support DSO, and in these cases either
@@ -391,44 +393,41 @@ client or server may initiate DSO messages at any time.
 However, in the typical case a server will not know in advance whether a
 client supports DSO, so in general, unless it is known in advance by other means
 that a client does support DSO, a server MUST NOT initiate DSO request messages
-until a DSO Session has been mutually established, as described below.
+or DSO unacknowledged messages
+until a DSO Session has been mutually established
+by at least one successful DSO request/response exchange
+initiated by the client, as described below.
 Similarly, unless it is known in advance by other means that a server
-does support DSO, a client MUST NOT initiate non-response-requiring
-DSO request messages until after a DSO Session has been mutually established.
-
-Whether or not a given DSO request message elicits a response is
-determined by whether or not the first DSO TLV ({{tlvsyntax}})
-in the message (the Primary TLV) is one that is specified to generate a response.
-Whether a Primary TLV will be specified to elicit a response will depend
-on the intended use pattern for that particular TLV.
+does support DSO, a client MUST NOT initiate
+DSO unacknowledged messages until after a DSO Session has been mutually established.
 
 A DSO Session is established over a connection by the client
-sending a DSO request message of a kind that requires a response,
-such as the DSO Keepalive TLV ({{keepalive}}),
+sending a DSO request message, such as a DSO Keepalive request message ({{keepalive}}),
 and receiving a response, with matching MESSAGE ID, and RCODE
 set to NOERROR (0), indicating that the DSO request was successful.
 
-If the RCODE is set to DSONOTIMP (tentatively 11) this indicates
+If the RCODE in the response is set to DSONOTIMP (tentatively 11) this indicates
 that the server does support DSO, but does not support the particular
 operation the client requested.
-A server MUST NOT return DSONOTIMP for the DSO Keepalive TLV,
+A server implementing DSO MUST NOT return DSONOTIMP
+for a DSO Keepalive request message because the Keepalive TLV is mandatory to implement,
 but in the future if a client attempts to establish a DSO Session
 using a newly-defined response-requiring DSO TLV that the server
 does not understand, that would result in a DSONOTIMP response.
 If the server returns DSONOTIMP then a DSO Session is not
 considered established, but the client is permitted to continue
 sending DNS messages on the connection,
-including other response-requiring DSO messages such as the DSO Keepalive,
+including other DSO messages such as the DSO Keepalive,
 which may result in a successful NOERROR response,
 yielding the establishment of a DSO Session.
 
 If the RCODE is set to any value other than NOERROR (0) or DSONOTIMP
-(tentatively 11), then the client should assume that the server does
+(tentatively 11), then the client MUST assume that the server does
 not support DSO. In this case the client is permitted to continue
 sending DNS messages on that connection, but the client SHOULD NOT
 issue further DSO messages on that connection.
 
-When the server receives a response-requiring DSO request message
+When the server receives a DSO request message
 from a client, and transmits a successful NOERROR response to that
 request, the server considers the DSO Session established.
 
@@ -436,7 +435,7 @@ When the client receives the server's NOERROR response to its
 DSO request message, the client considers the DSO Session established.
 
 Once a DSO Session has been established,
-either end may unilaterally send DSO messages at any time,
+either end may unilaterally send appropriate DSO messages at any time,
 and therefore either client or server may be the initiator of a message.
 
 Once a DSO Session has been established,
@@ -445,7 +444,7 @@ regard to inactivity timeouts and session termination, not as previously
 prescribed in the earlier specification for DNS over TCP {{!RFC7766}}.
 
 Note that for clients that implement only the TLVs defined in this base specification,
-sending a DSO Keepalive TLV is the only response-requiring
+sending a DSO Keepalive TLV is the only
 DSO request message they have available to initiate a DSO Session.
 Even for clients that do implement other DSO TLVs, for simplicity
 they MAY elect to always send an initial DSO Keepalive
