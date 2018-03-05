@@ -2661,16 +2661,16 @@ Internet-Draft           DNS Stateful Operations            January 2018
    The data field of the "Encryption Padding" TLV could be used as a
    covert channel.
 
+   When designing new DSO TLVs, the potential for data in the TLV to be
+   used as a tracking identifier should be taken into consideration, and
+   should be avoided when not required.
+
 10.  Acknowledgements
 
    Thanks to Stephane Bortzmeyer, Tim Chown, Ralph Droms, Paul Hoffman,
    Jan Komissar, Edward Lewis, Allison Mankin, Rui Paulo, David
    Schinazi, Manju Shankar Rao, and Bernie Volz for their helpful
    contributions to this document.
-
-
-
-
 
 
 

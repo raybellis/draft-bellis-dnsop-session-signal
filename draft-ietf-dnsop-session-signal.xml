@@ -2013,6 +2013,10 @@ and MUST NOT be sent in the clear before the TLS session is established.</t>
 
 <t>The data field of the “Encryption Padding” TLV could be used as a covert channel.</t>
 
+<t>When designing new DSO TLVs, the potential for data in the
+TLV to be used as a tracking identifier should be taken
+into consideration, and should be avoided when not required.</t>
+
 </section>
 <section anchor="acknowledgements" title="Acknowledgements">
 
@@ -2089,7 +2093,7 @@ for their helpful contributions to this document.</t>
   </back>
 
 <!-- ##markdown-source:
-H4sIAM3MnFoAA+W963obR5Yg+D+eIpf6YVINwKQky7Lqm2+LliibXboVSdlV
+H4sIAODNnFoAA+W963obR5Yg+D+eIpf6YVINwKQky7Lqm2+LliibXboVSdlV
 vbPTXwJIkGkDmejMBClY1vfNK8wbzLPMo+yT7LlGnMgLSMkub02vqtUWiUTk
 iRMnzv0yHo9dkzfL7Gny/PV5ct6kTbbYLJM366xKm7wsajcvZ0W6ggfmVbpo
 xnnWLMbzoi7X4zqra3hkXOeXRbocHz52c/j60+TB4dGT8dH4wWOXr6unSVNt
@@ -2657,11 +2661,12 @@ XE1Dj5lWIyrFVtzv1X4DyTO0hEJbVSqGqGCzwrkM5FGkuKjONWKFwzjPpTOB
 b0hGGFilPyPP5RF9rpcCTANYuASVKFRFSeNkgHDRvpgBd9ID4biusKh6BkDh
 KzeUToBDQeBRBKOthJwK5fuRVFIbplRCtw5zAijb5uLleUj+N5XYhCsTc/HH
 ijcYK/dokm9NsRWmJ1hyjEuOYUmzjO3aHTrwiNmZpVVi8uTxm352ex3nUJOe
-QO5+jqcK9ve6MYs9Utl84ChkEcwQvIays4qM/O/AJr0txyQCr0mLn6nHxXmT
-reGHLPm2rJpfVtkWvSoX+Sp5hprEyJ2lyzVgEkgfrtbbFMjo+3KxAK4/cv8K
-DPkvJVYzpfCdkzlV5L/MbnJ48hhTQTFVGt6T4zKbPMFvlyP3PAW9ODmfwemn
-v+QjB4/8tEnOESJA1FlasgPs26wq8iz5oVz+ovwLjNmrbLlGWkY1tsqnG685
-R3xQNVhQXcjedP8vAyaQu6pmAQA=
+QO5+jqcK9ve6MYs9Utl84ChkEcwQvIays4psqS0x5sQTdNQc3WgQcMwv1mXD
+AVi+VCHY4CQpIFof0DIjKuDhugBnZVpq40x2LJrhxLZwZO3W2zRvBM8JgWuN
++b0HfN0bn0zTgJe0+Jmacpw32Rp+yJJvy6r5ZZVt0Q10ka+SZ6j6jNxZulzD
+0cNdBV7wNgW6/75cLEBMjdy/ggT5S4nlVyl852ROLQReZjc5PHmMuauY2w3v
+yXGZTZ7gt8uRe56CIp+cz4Bc01/ykYNHftok5wgRnOxZWrLH7tusKvIs+aFc
+/qIMF6zvq2y5xsuHeneVTzde1Y8Yt6rcoGuRgez+X/ROba1bZwEA
 
 -->
 

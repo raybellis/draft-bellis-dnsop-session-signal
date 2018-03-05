@@ -1855,6 +1855,10 @@ and MUST NOT be sent in the clear before the TLS session is established.
 
 The data field of the "Encryption Padding" TLV could be used as a covert channel.
 
+When designing new DSO TLVs, the potential for data in the
+TLV to be used as a tracking identifier should be taken
+into consideration, and should be avoided when not required.
+
 # Acknowledgements
 
 Thanks to
