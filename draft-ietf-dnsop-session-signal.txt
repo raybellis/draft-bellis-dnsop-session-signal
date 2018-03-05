@@ -480,14 +480,14 @@ Internet-Draft           DNS Stateful Operations            January 2018
    to assure client and server that they still have connectivity to each
    other.
 
-   There are a myriad of other potential use cases for DSO given the
-   versatility and extensibility of this specification.
 
-   Section 4 of this document describes the protocol details of DNS
-   Stateful Operations including definitions of three TLVs for session
-   management and encryption padding.  Section 5 presents a detailed
-   discussion of the DSO Session lifecycle including an in-depth
-   discussion of keepalive traffic and session termination.
+
+
+
+
+
+
+
 
 
 

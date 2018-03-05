@@ -363,14 +363,6 @@ This traffic carries no DNS data and is not considered 'activity'
 in the classic DNS sense, but serves to maintain state in middleboxes,
 and to assure client and server that they still have connectivity to each other.
 
-There are a myriad of other potential use cases for DSO given the versatility 
-and extensibility of this specification.
-
-{{details}} of this document describes the protocol details of DNS Stateful Operations
-including definitions of three TLVs for session management and encryption padding.
-{{lifecycle}} presents a detailed discussion of the DSO Session lifecycle
-including an in-depth discussion of keepalive traffic and session termination.
-
 ***
 
 # Protocol Details {#details}
