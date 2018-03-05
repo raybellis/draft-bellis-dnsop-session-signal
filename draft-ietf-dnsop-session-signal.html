@@ -639,36 +639,39 @@
 <p id="rfc.section.2.p.1">The key words &#8220;MUST&#8221;, &#8220;MUST NOT&#8221;, &#8220;REQUIRED&#8221;, &#8220;SHALL&#8221;, &#8220;SHALL NOT&#8221;, &#8220;SHOULD&#8221;, &#8220;SHOULD NOT&#8221;, &#8220;RECOMMENDED&#8221;, &#8220;NOT RECOMMENDED&#8221;, &#8220;MAY&#8221;, and &#8220;OPTIONAL&#8221; in this document are to be interpreted as described in &#8220;Key words for use in RFCs to Indicate Requirement Levels&#8221; <a href="#RFC2119" class="xref">[RFC2119]</a>.</p>
 <p id="rfc.section.2.p.2">&#8220;DSO&#8221; is used to mean DNS Stateful Operation.</p>
 <p id="rfc.section.2.p.3">The term &#8220;connection&#8221; means a bidirectional byte (or message) stream, where the bytes (or messages) are delivered reliably and in-order, such as provided by using DNS over TCP <a href="#RFC1035" class="xref">[RFC1035]</a><a href="#RFC7766" class="xref">[RFC7766]</a> or DNS over TLS <a href="#RFC7858" class="xref">[RFC7858]</a>.</p>
-<p id="rfc.section.2.p.4">The unqualified term &#8220;session&#8221; in the context of this document means the exchange of DNS messages over a connection where:</p>
+<p id="rfc.section.2.p.4">At present, DSO is specified only for DNS over TCP, and for DNS over TLS over TCP.  Any use of DSO over some other connection technology needs to be specified in an appropriate document.</p>
+<p id="rfc.section.2.p.5">Determining whether a given connection is using DNS over TCP, or DNS over TLS over TCP, is outside the scope of this specification, and must be determined using some out-of-band configuration information. There is no provision within the DSO specification to turn TLS on or off during the lifetime of a connection.  For service types where the service instance is discovered using a DNS SRV record <a href="#RFC2782" class="xref">[RFC2782]</a>, the specification for that service type SRV name <a href="#RFC6335" class="xref">[RFC6335]</a> will state whether the connection uses plain TCP, or TLS over TCP.  For example, the specification for the &#8220;_dns&#8209;push&#8209;tls._tcp&#8221; service <a href="#I-D.ietf-dnssd-push" class="xref">[I-D.ietf-dnssd-push]</a>, states that it uses TLS.  It is a common convention that protocols specified to run over TLS are given IANA service type names ending in &#8220;&#8209;tls&#8221;.</p>
+<p id="rfc.section.2.p.6">The unqualified term &#8220;session&#8221; in the context of this document means the exchange of DNS messages over a connection where:</p>
 <p></p>
 
 <ul>
 <li>The connection between client and server is persistent and relatively long-lived (i.e., minutes or hours, rather than seconds).</li>
 <li>Either end of the connection may initiate messages to the other.</li>
 </ul>
-<p id="rfc.section.2.p.6">A &#8220;DSO Session&#8221; is established between two endpoints that acknowledge persistent DNS state via the exchange of DSO messages over the connection.  This is distinct from a DNS-over-TCP session as described in the previous specification for DNS over TCP <a href="#RFC7766" class="xref">[RFC7766]</a>.</p>
-<p id="rfc.section.2.p.7">A &#8220;DSO Session&#8221; is terminated when the underlying connection is closed.  The underlying connection can be closed in two ways:</p>
-<p id="rfc.section.2.p.8">Where this specification says, &#8220;close gracefully,&#8221; that means sending a TLS close_notify followed by a TCP FIN, or the equivalents for other protocols.  Where this specification requires a connection to be closed gracefully, the requirement to initiate that graceful close is placed on the client, to place the burden of TCP&#8217;s TIME-WAIT state on the client rather than the server.</p>
-<p id="rfc.section.2.p.9">Where this specification says, &#8220;forcibly abort,&#8221; that means sending a TCP RST, or the equivalent for other protocols.  In the BSD Sockets API this is achieved by setting the SO_LINGER option to zero before closing the socket.</p>
-<p id="rfc.section.2.p.10">The term &#8220;server&#8221; means the software with a listening socket, awaiting incoming connection requests.</p>
-<p id="rfc.section.2.p.11">The term &#8220;client&#8221; means the software which initiates a connection to the server&#8217;s listening socket.</p>
-<p id="rfc.section.2.p.12">The terms &#8220;initiator&#8221; and &#8220;responder&#8221; correspond respectively to the initial sender and subsequent receiver of a DSO request message, regardless of which was the &#8220;client&#8221; and &#8220;server&#8221; in the usual DNS sense.</p>
-<p id="rfc.section.2.p.13">The term &#8220;sender&#8221; may apply to either an initiator (when sending a DSO request message) or a responder (when sending a DSO response message).</p>
-<p id="rfc.section.2.p.14">Likewise, the term &#8220;receiver&#8221; may apply to either a responder (when receiving a DSO request message) or an initiator (when receiving a DSO response message).</p>
-<p id="rfc.section.2.p.15">The term &#8220;long-lived operations&#8221; refers to operations such as Push Notification subscriptions <a href="#I-D.ietf-dnssd-push" class="xref">[I-D.ietf-dnssd-push]</a>, Discovery Relay interface subscriptions <a href="#I-D.sctl-dnssd-mdns-relay" class="xref">[I-D.sctl-dnssd-mdns-relay]</a>, and other future long-lived DNS operations that choose to use DSO as their basis, that establish state that persists beyond the lifetime of a traditional brief request/response transaction.  This document, the base specification for DNS Stateful Operations, defines a framework for supporting long-lived operations, but does not itself define any long-lived operations.  Nonetheless, to appreciate the design rationale behind DNS Stateful Operations, it is helpful to understand the kind of long-lived operations that it is intended to support.</p>
-<p id="rfc.section.2.p.16">DNS Stateful Operations uses &#8220;DSO request messages&#8221; and &#8220;DSO response messages&#8221;.  DSO request messages are further subdivided into two variants, &#8220;acknowledged request messages&#8221; (which generate a corresponding response message) and &#8220;unacknowledged request messages&#8221; (which do not generate any corresponding response message).</p>
-<p id="rfc.section.2.p.17">The content of DSO messages is expressed using type-length-value (TLV) syntax.</p>
-<p id="rfc.section.2.p.18">In a DSO request message the first TLV is referred to as the &#8220;Primary TLV&#8221; and determines the nature of the operation being performed, including whether it is an acknowledged or unacknowledged operation; any other TLVs in a DSO request message are referred to as &#8220;Additional TLVs&#8221; and serve additional non-primary purposes, which may be related to the primary purpose, or not, as in the case of the encryption padding TLV.</p>
-<p id="rfc.section.2.p.19">A DSO response message may contain no TLVs, or it may contain one or more TLVs as appropriate to the information being communicated.  In the context of DSO response messages, one or more TLVs with the same DSO-TYPE as the Primary TLV in the corresponding DSO request message are referred to as &#8220;Response Primary TLVs&#8221;.  Any other TLVs with different DSO-TYPEs are referred to as &#8220;Response Additional TLVs&#8221;.  The Response Primary TLV(s), if present, MUST occur first in the response message, before any Response Additional TLVs.</p>
-<p id="rfc.section.2.p.20">Two timers (elapsed time since an event) are defined in this document:</p>
+<p id="rfc.section.2.p.8">In this document the term &#8220;session&#8221; is used exclusively as described above, and is in no way related to the anachronistic term &#8220;session&#8221; as used in the obsolete &#8220;seven-layer model&#8221; that shaped the design of the failed OSI protocols of the 1980s.</p>
+<p id="rfc.section.2.p.9">A &#8220;DSO Session&#8221; is established between two endpoints that acknowledge persistent DNS state via the exchange of DSO messages over the connection.  This is distinct from a DNS-over-TCP session as described in the previous specification for DNS over TCP <a href="#RFC7766" class="xref">[RFC7766]</a>.</p>
+<p id="rfc.section.2.p.10">A &#8220;DSO Session&#8221; is terminated when the underlying connection is closed.  The underlying connection can be closed in two ways:</p>
+<p id="rfc.section.2.p.11">Where this specification says, &#8220;close gracefully,&#8221; that means sending a TLS close_notify followed by a TCP FIN, or the equivalents for other protocols.  Where this specification requires a connection to be closed gracefully, the requirement to initiate that graceful close is placed on the client, to place the burden of TCP&#8217;s TIME-WAIT state on the client rather than the server.</p>
+<p id="rfc.section.2.p.12">Where this specification says, &#8220;forcibly abort,&#8221; that means sending a TCP RST, or the equivalent for other protocols.  In the BSD Sockets API this is achieved by setting the SO_LINGER option to zero before closing the socket.</p>
+<p id="rfc.section.2.p.13">The term &#8220;server&#8221; means the software with a listening socket, awaiting incoming connection requests.</p>
+<p id="rfc.section.2.p.14">The term &#8220;client&#8221; means the software which initiates a connection to the server&#8217;s listening socket.</p>
+<p id="rfc.section.2.p.15">The terms &#8220;initiator&#8221; and &#8220;responder&#8221; correspond respectively to the initial sender and subsequent receiver of a DSO request message, regardless of which was the &#8220;client&#8221; and &#8220;server&#8221; in the usual DNS sense.</p>
+<p id="rfc.section.2.p.16">The term &#8220;sender&#8221; may apply to either an initiator (when sending a DSO request message) or a responder (when sending a DSO response message).</p>
+<p id="rfc.section.2.p.17">Likewise, the term &#8220;receiver&#8221; may apply to either a responder (when receiving a DSO request message) or an initiator (when receiving a DSO response message).</p>
+<p id="rfc.section.2.p.18">The term &#8220;long-lived operations&#8221; refers to operations such as Push Notification subscriptions <a href="#I-D.ietf-dnssd-push" class="xref">[I-D.ietf-dnssd-push]</a>, Discovery Relay interface subscriptions <a href="#I-D.sctl-dnssd-mdns-relay" class="xref">[I-D.sctl-dnssd-mdns-relay]</a>, and other future long-lived DNS operations that choose to use DSO as their basis, that establish state that persists beyond the lifetime of a traditional brief request/response transaction.  This document, the base specification for DNS Stateful Operations, defines a framework for supporting long-lived operations, but does not itself define any long-lived operations.  Nonetheless, to appreciate the design rationale behind DNS Stateful Operations, it is helpful to understand the kind of long-lived operations that it is intended to support.</p>
+<p id="rfc.section.2.p.19">DNS Stateful Operations uses &#8220;DSO request messages&#8221; and &#8220;DSO response messages&#8221;.  DSO request messages are further subdivided into two variants, &#8220;acknowledged request messages&#8221; (which generate a corresponding response message) and &#8220;unacknowledged request messages&#8221; (which do not generate any corresponding response message).</p>
+<p id="rfc.section.2.p.20">The content of DSO messages is expressed using type-length-value (TLV) syntax.</p>
+<p id="rfc.section.2.p.21">In a DSO request message the first TLV is referred to as the &#8220;Primary TLV&#8221; and determines the nature of the operation being performed, including whether it is an acknowledged or unacknowledged operation; any other TLVs in a DSO request message are referred to as &#8220;Additional TLVs&#8221; and serve additional non-primary purposes, which may be related to the primary purpose, or not, as in the case of the encryption padding TLV.</p>
+<p id="rfc.section.2.p.22">A DSO response message may contain no TLVs, or it may contain one or more TLVs as appropriate to the information being communicated.  In the context of DSO response messages, one or more TLVs with the same DSO-TYPE as the Primary TLV in the corresponding DSO request message are referred to as &#8220;Response Primary TLVs&#8221;.  Any other TLVs with different DSO-TYPEs are referred to as &#8220;Response Additional TLVs&#8221;.  The Response Primary TLV(s), if present, MUST occur first in the response message, before any Response Additional TLVs.</p>
+<p id="rfc.section.2.p.23">Two timers (elapsed time since an event) are defined in this document:</p>
 <p></p>
 
 <ul>
 <li>an inactivity timer (see <a href="#inactivetimer" class="xref">Section 5.4</a> and <a href="#keepalive" class="xref">Section 6.1</a>)</li>
 <li>a keepalive timer (see <a href="#keepalivetimer" class="xref">Section 5.5</a> and <a href="#keepalive" class="xref">Section 6.1</a>)</li>
 </ul>
-<p id="rfc.section.2.p.22">The timeouts associated with these timers are called the inactivity timeout and the keepalive interval, respectively.  The term &#8220;Session Timeouts&#8221; is used to refer to this pair of timeout values.</p>
-<p id="rfc.section.2.p.23">Resetting a timer means resetting the timer value to zero and starting the timer again.  Clearing a timer means resetting the timer value to zero but NOT starting the timer again.</p>
+<p id="rfc.section.2.p.25">The timeouts associated with these timers are called the inactivity timeout and the keepalive interval, respectively.  The term &#8220;Session Timeouts&#8221; is used to refer to this pair of timeout values.</p>
+<p id="rfc.section.2.p.26">Resetting a timer means resetting the timer value to zero and starting the timer again.  Clearing a timer means resetting the timer value to zero but NOT starting the timer again.</p>
 <p></p>
 <h1 id="rfc.section.3">
 <a href="#rfc.section.3">3.</a> <a href="#discussion" id="discussion">Discussion</a>
@@ -1413,6 +1416,16 @@
 <td class="reference"><b id="RFC1122">[RFC1122]</b></td>
 <td class="top">
 <a>Braden, R.</a>, "<a href="https://tools.ietf.org/html/rfc1122">Requirements for Internet Hosts - Communication Layers</a>", STD 3, RFC 1122, DOI 10.17487/RFC1122, October 1989.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC2782">[RFC2782]</b></td>
+<td class="top">
+<a>Gulbrandsen, A.</a>, <a>Vixie, P.</a> and <a>L. Esibov</a>, "<a href="https://tools.ietf.org/html/rfc2782">A DNS RR for specifying the location of services (DNS SRV)</a>", RFC 2782, DOI 10.17487/RFC2782, February 2000.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC6335">[RFC6335]</b></td>
+<td class="top">
+<a>Cotton, M.</a>, <a>Eggert, L.</a>, <a>Touch, J.</a>, <a>Westerlund, M.</a> and <a>S. Cheshire</a>, "<a href="https://tools.ietf.org/html/rfc6335">Internet Assigned Numbers Authority (IANA) Procedures for the Management of the Service Name and Transport Protocol Port Number Registry</a>", BCP 165, RFC 6335, DOI 10.17487/RFC6335, August 2011.</td>
 </tr>
 <tr>
 <td class="reference"><b id="RFC6763">[RFC6763]</b></td>

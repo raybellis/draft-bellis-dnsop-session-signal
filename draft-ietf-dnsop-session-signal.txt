@@ -240,6 +240,23 @@ Internet-Draft           DNS Stateful Operations            January 2018
    such as provided by using DNS over TCP [RFC1035][RFC7766] or DNS over
    TLS [RFC7858].
 
+   At present, DSO is specified only for DNS over TCP, and for DNS over
+   TLS over TCP.  Any use of DSO over some other connection technology
+   needs to be specified in an appropriate document.
+
+   Determining whether a given connection is using DNS over TCP, or DNS
+   over TLS over TCP, is outside the scope of this specification, and
+   must be determined using some out-of-band configuration information.
+   There is no provision within the DSO specification to turn TLS on or
+   off during the lifetime of a connection.  For service types where the
+   service instance is discovered using a DNS SRV record [RFC2782], the
+   specification for that service type SRV name [RFC6335] will state
+   whether the connection uses plain TCP, or TLS over TCP.  For example,
+   the specification for the "_dns-push-tls._tcp" service
+   [I-D.ietf-dnssd-push], states that it uses TLS.  It is a common
+   convention that protocols specified to run over TLS are given IANA
+   service type names ending in "-tls".
+
    The unqualified term "session" in the context of this document means
    the exchange of DNS messages over a connection where:
 
@@ -249,8 +266,22 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
    o  Either end of the connection may initiate messages to the other.
 
+   In this document the term "session" is used exclusively as described
+   above, and is in no way related to the anachronistic term "session"
+   as used in the obsolete "seven-layer model" that shaped the design of
+   the failed OSI protocols of the 1980s.
+
    A "DSO Session" is established between two endpoints that acknowledge
    persistent DNS state via the exchange of DSO messages over the
+
+
+
+
+Bellis, et al.            Expires July 30, 2018                 [Page 5]
+
+Internet-Draft           DNS Stateful Operations            January 2018
+
+
    connection.  This is distinct from a DNS-over-TCP session as
    described in the previous specification for DNS over TCP [RFC7766].
 
@@ -274,13 +305,6 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
    The term "client" means the software which initiates a connection to
    the server's listening socket.
-
-
-
-Bellis, et al.            Expires July 30, 2018                 [Page 5]
-
-Internet-Draft           DNS Stateful Operations            January 2018
-
 
    The terms "initiator" and "responder" correspond respectively to the
    initial sender and subsequent receiver of a DSO request message,
@@ -307,6 +331,13 @@ Internet-Draft           DNS Stateful Operations            January 2018
    rationale behind DNS Stateful Operations, it is helpful to understand
    the kind of long-lived operations that it is intended to support.
 
+
+
+Bellis, et al.            Expires July 30, 2018                 [Page 6]
+
+Internet-Draft           DNS Stateful Operations            January 2018
+
+
    DNS Stateful Operations uses "DSO request messages" and "DSO response
    messages".  DSO request messages are further subdivided into two
    variants, "acknowledged request messages" (which generate a
@@ -330,14 +361,6 @@ Internet-Draft           DNS Stateful Operations            January 2018
    DSO-TYPE as the Primary TLV in the corresponding DSO request message
    are referred to as "Response Primary TLVs".  Any other TLVs with
    different DSO-TYPEs are referred to as "Response Additional TLVs".
-
-
-
-Bellis, et al.            Expires July 30, 2018                 [Page 6]
-
-Internet-Draft           DNS Stateful Operations            January 2018
-
-
    The Response Primary TLV(s), if present, MUST occur first in the
    response message, before any Response Additional TLVs.
 
@@ -355,29 +378,6 @@ Internet-Draft           DNS Stateful Operations            January 2018
    Resetting a timer means resetting the timer value to zero and
    starting the timer again.  Clearing a timer means resetting the timer
    value to zero but NOT starting the timer again.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -2746,6 +2746,18 @@ Bellis, et al.            Expires July 30, 2018                [Page 49]
 Internet-Draft           DNS Stateful Operations            January 2018
 
 
+   [RFC2782]  Gulbrandsen, A., Vixie, P., and L. Esibov, "A DNS RR for
+              specifying the location of services (DNS SRV)", RFC 2782,
+              DOI 10.17487/RFC2782, February 2000,
+              <https://www.rfc-editor.org/info/rfc2782>.
+
+   [RFC6335]  Cotton, M., Eggert, L., Touch, J., Westerlund, M., and S.
+              Cheshire, "Internet Assigned Numbers Authority (IANA)
+              Procedures for the Management of the Service Name and
+              Transport Protocol Port Number Registry", BCP 165,
+              RFC 6335, DOI 10.17487/RFC6335, August 2011,
+              <https://www.rfc-editor.org/info/rfc6335>.
+
    [RFC6763]  Cheshire, S. and M. Krochmal, "DNS-Based Service
               Discovery", RFC 6763, DOI 10.17487/RFC6763, February 2013,
               <https://www.rfc-editor.org/info/rfc6763>.
@@ -2781,6 +2793,15 @@ Authors' Addresses
    Email: cheshire@apple.com
 
 
+
+
+
+
+Bellis, et al.            Expires July 30, 2018                [Page 50]
+
+Internet-Draft           DNS Stateful Operations            January 2018
+
+
    John Dickinson
    Sinodun Internet Technologies
    Magadalen Centre
@@ -2789,17 +2810,6 @@ Authors' Addresses
    United Kingdom
 
    Email: jad@sinodun.com
-
-
-
-
-
-
-
-
-Bellis, et al.            Expires July 30, 2018                [Page 50]
-
-Internet-Draft           DNS Stateful Operations            January 2018
 
 
    Sara Dickinson
@@ -2828,16 +2838,6 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
    Phone: +1 919 867 1330
    Email: pusateri@bangj.com
-
-
-
-
-
-
-
-
-
-
 
 
 

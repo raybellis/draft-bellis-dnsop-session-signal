@@ -186,12 +186,34 @@ where the bytes (or messages) are delivered reliably and in-order,
 such as provided by using
 DNS over TCP {{!RFC1035}}{{!RFC7766}} or DNS over TLS {{?RFC7858}}.
 
+At present, DSO is specified only for DNS over TCP, and for DNS over TLS over TCP.
+Any use of DSO over some other connection technology needs to be
+specified in an appropriate document.
+
+Determining whether a given connection is using DNS over TCP, or DNS over TLS over TCP,
+is outside the scope of this specification, and must be determined using some out-of-band
+configuration information. There is no provision within the DSO specification to turn
+TLS on or off during the lifetime of a connection.
+For service types where the service instance is discovered using a DNS SRV record {{?RFC2782}},
+the specification for that service type SRV name {{?RFC6335}}
+will state whether the connection uses plain TCP, or TLS over TCP.
+For example, the specification for the
+"_dns‑push‑tls._tcp" service {{?I-D.ietf-dnssd-push}},
+states that it uses TLS.
+It is a common convention that protocols specified to run over TLS
+are given IANA service type names ending in "‑tls".
+
 The unqualified term "session" in the context of this document means the exchange of
 DNS messages over a connection where:
 
 - The connection between client and server is persistent and relatively
   long-lived (i.e., minutes or hours, rather than seconds).
 - Either end of the connection may initiate messages to the other.
+
+In this document the term "session" is used exclusively as described
+above, and is in no way related to the anachronistic term "session"
+as used in the obsolete "seven-layer model" that shaped the design
+of the failed OSI protocols of the 1980s.
 
 A "DSO Session" is established between two endpoints that acknowledge
 persistent DNS state via the exchange of DSO messages over the connection.
