@@ -2623,7 +2623,7 @@ Internet-Draft           DNS Stateful Operations            January 2018
    Registrations of new DSO Type Codes in the "Reserved for DSO session-
    management" range 0004-003F and the "Reserved for future expansion"
    range FC00-FFFF require publication of an IETF Standards Action
-   document [RFC5226].
+   document [RFC8126].
 
 
 
@@ -2635,13 +2635,13 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
 
    Requests to register additional new DSO Type Codes in the
-   "Unassigned" range 0040-F7FF are to be recorded by IANA after
-   consultation with the registry's Designated Expert [RFC5226] at that
-   time.  At the time of publication of this document, the Designated
-   Expert for the newly created DSO Type Code registry is [*TBD*].
+   "Unassigned" range 0040-F7FF are to be recorded by IANA after Expert
+   Review [RFC8126].  At the time of publication of this document, the
+   Designated Expert for the newly created DSO Type Code registry is
+   [*TBD*].
 
    DSO Type Codes in the "experimental/local" range F800-FBFF may be
-   used as Experimental Use or Private Use values [RFC5226] and may be
+   used as Experimental Use or Private Use values [RFC8126] and may be
    used freely for development purposes, or for other purposes within a
    single site.  No attempt is made to prevent multiple sites from using
    the same value in different (and incompatible) ways.  There is no
@@ -2721,11 +2721,6 @@ Internet-Draft           DNS Stateful Operations            January 2018
               RFC 2136, DOI 10.17487/RFC2136, April 1997,
               <https://www.rfc-editor.org/info/rfc2136>.
 
-   [RFC5226]  Narten, T. and H. Alvestrand, "Guidelines for Writing an
-              IANA Considerations Section in RFCs", RFC 5226,
-              DOI 10.17487/RFC5226, May 2008,
-              <https://www.rfc-editor.org/info/rfc5226>.
-
    [RFC5382]  Guha, S., Ed., Biswas, K., Ford, B., Sivakumar, S., and P.
               Srisuresh, "NAT Behavioral Requirements for TCP", BCP 142,
               RFC 5382, DOI 10.17487/RFC5382, October 2008,
@@ -2735,6 +2730,11 @@ Internet-Draft           DNS Stateful Operations            January 2018
               for DNS (EDNS(0))", STD 75, RFC 6891,
               DOI 10.17487/RFC6891, April 2013,
               <https://www.rfc-editor.org/info/rfc6891>.
+
+   [RFC7766]  Dickinson, J., Dickinson, S., Bellis, R., Mankin, A., and
+              D. Wessels, "DNS Transport over TCP - Implementation
+              Requirements", RFC 7766, DOI 10.17487/RFC7766, March 2016,
+              <https://www.rfc-editor.org/info/rfc7766>.
 
 
 
@@ -2746,11 +2746,6 @@ Bellis, et al.            Expires July 30, 2018                [Page 49]
 Internet-Draft           DNS Stateful Operations            January 2018
 
 
-   [RFC7766]  Dickinson, J., Dickinson, S., Bellis, R., Mankin, A., and
-              D. Wessels, "DNS Transport over TCP - Implementation
-              Requirements", RFC 7766, DOI 10.17487/RFC7766, March 2016,
-              <https://www.rfc-editor.org/info/rfc7766>.
-
    [RFC7828]  Wouters, P., Abley, J., Dickinson, S., and R. Bellis, "The
               edns-tcp-keepalive EDNS0 Option", RFC 7828,
               DOI 10.17487/RFC7828, April 2016,
@@ -2759,6 +2754,11 @@ Internet-Draft           DNS Stateful Operations            January 2018
    [RFC7830]  Mayrhofer, A., "The EDNS(0) Padding Option", RFC 7830,
               DOI 10.17487/RFC7830, May 2016,
               <https://www.rfc-editor.org/info/rfc7830>.
+
+   [RFC8126]  Cotton, M., Leiba, B., and T. Narten, "Guidelines for
+              Writing an IANA Considerations Section in RFCs", BCP 26,
+              RFC 8126, DOI 10.17487/RFC8126, June 2017,
+              <https://www.rfc-editor.org/info/rfc8126>.
 
    [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,

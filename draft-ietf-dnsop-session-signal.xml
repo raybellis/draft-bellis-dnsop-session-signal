@@ -15,7 +15,7 @@
 <!ENTITY RFC1918 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.1918.xml">
 <!ENTITY RFC5382 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.5382.xml">
 <!ENTITY RFC2132 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.2132.xml">
-<!ENTITY RFC5226 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.5226.xml">
+<!ENTITY RFC8126 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8126.xml">
 <!ENTITY RFC7858 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7858.xml">
 <!ENTITY RFC2782 SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.2782.xml">
 <!ENTITY I-D.ietf-dnssd-push SYSTEM "https://xml2rfc.tools.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-dnssd-push.xml">
@@ -1976,17 +1976,16 @@ with initial (hexadecimal) values as shown below:</t>
 <t>Registrations of new DSO Type Codes in
 the “Reserved for DSO session-management” range 0004-003F
 and the “Reserved for future expansion” range FC00-FFFF
-require publication of an IETF Standards Action document <xref target="RFC5226"/>.</t>
+require publication of an IETF Standards Action document <xref target="RFC8126"/>.</t>
 
 <t>Requests to register additional new DSO Type Codes
 in the “Unassigned” range 0040-F7FF
-are to be recorded by IANA after consultation with the
-registry’s Designated Expert <xref target="RFC5226"/> at that time.
+are to be recorded by IANA after Expert Review <xref target="RFC8126"/>.
 At the time of publication of this document, the Designated Expert
 for the newly created DSO Type Code registry is [<spanx style="strong">TBD</spanx>].</t>
 
 <t>DSO Type Codes in the “experimental/local” range F800-FBFF
-may be used as Experimental Use or Private Use values <xref target="RFC5226"/>
+may be used as Experimental Use or Private Use values <xref target="RFC8126"/>
 and may be used freely for development purposes,
 or for other purposes within a single site.
 No attempt is made to prevent multiple sites from using
@@ -2052,7 +2051,7 @@ for their helpful contributions to this document.</t>
 &RFC1918;
 &RFC5382;
 &RFC2132;
-&RFC5226;
+&RFC8126;
 
 
     </references>
@@ -2088,7 +2087,7 @@ for their helpful contributions to this document.</t>
   </back>
 
 <!-- ##markdown-source:
-H4sIAH/QnFoAA+W963YbV5Ym+P88RQz1w6QKgElJlmXl6jVJS5TNSt2SpOzM
+H4sIAJ/UnFoAA+W963YbV5Ym+P88RQz1w6QKgElJlmXl6jVJS5TNSt2SpOzM
 mp6uFQACRNhABCoiIAqWtVa/Qr9BP0s/yjzJ7Os5+8QFomSnJ7tGWSqLRODE
 ueyzr9/eezweuyZvVtnj5OnLy+SySZtssV0lrzZZlTZ5WdRuXs6KdA0PzKt0
 0YzzrFmM50VdbsZ1VtfwyLjOr4t0NT5+6Obw9cfJveOTR+OT8b2HLt9Uj5Om
@@ -2643,23 +2642,23 @@ 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
-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
+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
+casCDZoTmbvu/wUVU8I5MmYBAA==
 
 -->
 
