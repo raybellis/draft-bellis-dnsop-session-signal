@@ -531,6 +531,10 @@ Similarly, a server MUST NOT send DSO request messages until it
 has received a response-requiring DSO request message from a
 client and transmitted a successful NOERROR response for that request.
 
+Caution must be taken to ensure that DSO messages sent before the first
+round-trip is completed are idempotent, or are otherwise immune to any problems
+that could be result from the inadvertent replay that can occur with zero round-trip operation.
+
 ### Middlebox Considerations
 
 Where an application-layer middlebox (e.g., a DNS proxy, forwarder, or
@@ -1891,6 +1895,11 @@ The data field of the "Encryption Padding" TLV could be used as a covert channel
 When designing new DSO TLVs, the potential for data in the
 TLV to be used as a tracking identifier should be taken
 into consideration, and should be avoided when not required.
+
+When used without TLS or similar cryptographic protection, a malicious
+entity maybe able to inject a malicious Retry Delay Unacknowledged Message
+into the data stream, specifying an unreasonably large RETRY DELAY, causing
+a denial-of-service attack against the client.
 
 # Acknowledgements
 
