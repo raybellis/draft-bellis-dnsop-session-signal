@@ -1781,18 +1781,13 @@ In DSO Unacknowledged Messages the QR bit is 0 and the MESSAGE ID is zero.
 
 The table below illustrates which combinations are legal and how they are interpreted:
 
-
-         +--------------+--------------+--------------------------+
-         |      QR      |  MESSAGE ID  |  Interpretation          |
-         +--------------+--------------+--------------------------+
-         |      0       |   Nonzero    |  Request Message         |
-         +--------------+--------------+--------------------------+
-         |      1       |   Nonzero    |  Response Message        |
-         +--------------+--------------+--------------------------+
-         |      0       |     Zero     |  Unacknowledged Message  |
-         +--------------+--------------+--------------------------+
-         |      1       |     Zero     |  Invalid                 |
-         +--------------+--------------+--------------------------+
+                +--------------------------+------------------------+
+                |     MESSAGE ID zero      |   MESSAGE ID nonzero   |
+       +--------+--------------------------+------------------------+
+       |  QR=0  |  Unacknowledged Message  |    Request Message     |
+       +--------+--------------------------+------------------------+
+       |  QR=1  |  Invalid - Fatal Error   |    Response Message    |
+       +--------+--------------------------+------------------------+
 
 ***
 

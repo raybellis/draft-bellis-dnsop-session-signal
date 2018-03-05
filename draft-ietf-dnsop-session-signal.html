@@ -1186,17 +1186,13 @@
 <p id="rfc.section.7.1.p.3">In DSO Unacknowledged Messages the QR bit is 0 and the MESSAGE ID is zero.</p>
 <p id="rfc.section.7.1.p.4">The table below illustrates which combinations are legal and how they are interpreted:</p>
 <pre>
-     +--------------+--------------+--------------------------+
-     |      QR      |  MESSAGE ID  |  Interpretation          |
-     +--------------+--------------+--------------------------+
-     |      0       |   Nonzero    |  Request Message         |
-     +--------------+--------------+--------------------------+
-     |      1       |   Nonzero    |  Response Message        |
-     +--------------+--------------+--------------------------+
-     |      0       |     Zero     |  Unacknowledged Message  |
-     +--------------+--------------+--------------------------+
-     |      1       |     Zero     |  Invalid                 |
-     +--------------+--------------+--------------------------+
+            +--------------------------+------------------------+
+            |     MESSAGE ID zero      |   MESSAGE ID nonzero   |
+   +--------+--------------------------+------------------------+
+   |  QR=0  |  Unacknowledged Message  |    Request Message     |
+   +--------+--------------------------+------------------------+
+   |  QR=1  |  Invalid - Fatal Error   |    Response Message    |
+   +--------+--------------------------+------------------------+
 </pre>
 <p></p>
 <h1 id="rfc.section.7.2">
