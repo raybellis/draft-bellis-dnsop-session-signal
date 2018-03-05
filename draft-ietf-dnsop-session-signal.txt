@@ -9,8 +9,8 @@ Updates: RFC 7766, RFC 1035 (if                              S. Cheshire
 Intended status: Standards Track                            J. Dickinson
 Expires: July 30, 2018                                      S. Dickinson
                                                                  Sinodun
-                                                               A. Mankin
-                                                              Salesforce
+                                                                T. Lemon
+                                                     Barefoot Consulting
                                                              T. Pusateri
                                                             Unaffiliated
                                                         January 26, 2018
@@ -2608,9 +2608,9 @@ Internet-Draft           DNS Stateful Operations            January 2018
 10.  Acknowledgements
 
    Thanks to Stephane Bortzmeyer, Tim Chown, Ralph Droms, Paul Hoffman,
-   Jan Komissar, Ted Lemon, Edward Lewis, Rui Paulo, David Schinazi,
-   Manju Shankar Rao, and Bernie Volz for their helpful contributions to
-   this document.
+   Jan Komissar, Edward Lewis, Allison Mankin, Rui Paulo, David
+   Schinazi, Manju Shankar Rao, and Bernie Volz for their helpful
+   contributions to this document.
 
 
 
@@ -2812,10 +2812,13 @@ Internet-Draft           DNS Stateful Operations            January 2018
    Email: sara@sinodun.com
 
 
-   Allison Mankin
-   Salesforce
+   Ted Lemon
+   Barefoot Consulting
+   Brattleboro
+   VT 05301
+   USA
 
-   Email: allison.mankin@gmail.com
+   Email: mellon@fugue.com
 
 
    Tom Pusateri
@@ -2825,9 +2828,6 @@ Internet-Draft           DNS Stateful Operations            January 2018
 
    Phone: +1 919 867 1330
    Email: pusateri@bangj.com
-
-
-
 
 
 

@@ -62,10 +62,13 @@ author:
     country: United Kingdom
     email: sara@sinodun.com
   -
-    ins: A. Mankin
-    name: Allison Mankin
-    org: Salesforce
-    email: allison.mankin@gmail.com
+    ins: T. Lemon
+    name: Ted Lemon
+    org: Barefoot Consulting
+    street: Brattleboro
+    code: VT 05301
+    country: USA
+    email: mellon@fugue.com
   -
     ins: T. Pusateri
     name: Tom Pusateri
@@ -1814,8 +1817,8 @@ Tim Chown,
 Ralph Droms,
 Paul Hoffman,
 Jan Komissar,
-Ted Lemon,
 Edward Lewis,
+Allison Mankin,
 Rui Paulo,
 David Schinazi,
 Manju Shankar Rao,
