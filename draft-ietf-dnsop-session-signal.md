@@ -421,24 +421,26 @@ sending a DSO request message, such as a DSO Keepalive request message ({{keepal
 and receiving a response, with matching MESSAGE ID, and RCODE
 set to NOERROR (0), indicating that the DSO request was successful.
 
-If the RCODE in the response is set to DSONOTIMP (tentatively 11) this indicates
-that the server does support DSO, but does not support the particular
-operation the client requested.
-A server implementing DSO MUST NOT return DSONOTIMP
+If the RCODE in the response is set to DSOTYPENI
+("DSO-TYPE Not Implemented", tentatively RCODE 11)
+this indicates that the server does support DSO, but does not implement
+the DSO-TYPE of the primary TLV in this DSO request message.
+A server implementing DSO MUST NOT return DSOTYPENI
 for a DSO Keepalive request message, because the Keepalive TLV is mandatory to implement,
-but in the future if a client attempts to establish a DSO Session
-using a response-requiring DSO request message using a newly-defined DSO-TYPE that the server
-does not understand, that would result in a DSONOTIMP response.
-If the server returns DSONOTIMP then a DSO Session is not
+so all implementations of DSO are required to implement the Keepalive TLV.
+But in the future, if a client attempts to establish a DSO Session
+using a response-requiring DSO request message using some newly-defined DSO-TYPE that the server
+does not understand, that would result in a DSOTYPENI response.
+If the server returns DSOTYPENI then a DSO Session is not
 considered established, but the client is permitted to continue
 sending DNS messages on the connection,
 including other DSO messages such as the DSO Keepalive,
 which may result in a successful NOERROR response,
 yielding the establishment of a DSO Session.
 
-If the RCODE is set to any value other than NOERROR (0) or DSONOTIMP
+If the RCODE is set to any value other than NOERROR (0) or DSOTYPENI
 (tentatively 11), then the client MUST assume that the server does
-not support DSO. In this case the client is permitted to continue
+not implement DSO at all. In this case the client is permitted to continue
 sending DNS messages on that connection, but the client SHOULD NOT
 issue further DSO messages on that connection.
 
@@ -657,7 +659,7 @@ The RCODE value in a response message (QR=1) may be one of the following values:
 | 4 | NOTIMP | DSO not supported |
 | 5 | REFUSED | Operation declined for policy reasons |
 | 9 | NOTAUTH | Not Authoritative (TLV-dependent) |
-| 11 | DSONOTIMP | DSO type code not supported |
+| 11 | DSOTYPENI | Primary TLV's DSO-Type is not implemented |
 
 Use of the above RCODEs is likely to be common in DSO but 
 does not preclude the definition and use of other codes in future documents that 
@@ -724,7 +726,7 @@ unacknowledged messages, applies even in the case of errors.
 When a DSO message is received where both the QR bit and the MESSAGE ID field
 are zero, the receiver MUST NOT generate any response.
 For example, if the DSO-TYPE in the Primary TLV is unrecognized,
-then a DSONOTIMP error MUST NOT be returned; instead the receiver
+then a DSOTYPENI error MUST NOT be returned; instead the receiver
 MUST forcibly abort the connection immediately.
 
 Unacknowledged messages MUST NOT be used "speculatively"
@@ -833,7 +835,7 @@ forcibly abort the connection immediately.
 If DSO request message is received containing an unrecognized Primary TLV,
 with a nonzero MESSAGE ID (indicating that a response is expected),
 then the receiver MUST send an error response with matching MESSAGE ID,
-and RCODE DSONOTIMP (tentatively 11).
+and RCODE DSOTYPENI (tentatively 11).
 The error response MUST NOT contain a copy of the unrecognized Primary TLV.
 
 If DSO unacknowledged message is received containing an unrecognized Primary TLV,
@@ -1835,12 +1837,14 @@ similar table summarizing the contexts where the new TLV is valid.
 ## DSO OPCODE Registration
 
 The IANA is requested to record the value (tentatively) 6 for the DSO OPCODE
-in the DNS OPCODE Registry.
+in the DNS OPCODE Registry. DSO stands for DNS Stateful Operations.
 
 ## DSO RCODE Registration
 
-The IANA is requested to record the value (tentatively) 11 for the DSONOTIMP error code
-in the DNS RCODE Registry.
+The IANA is requested to record the value (tentatively) 11 for the
+DSOTYPENI error code in the DNS RCODE Registry.
+The DSOTYPENI error code ("DSO-TYPE Not Implemented") signifies that the DSO-TYPE
+of the primary TLV in the DSO request message is not implemented by the receiver.
 
 ## DSO Type Code Registry
 
