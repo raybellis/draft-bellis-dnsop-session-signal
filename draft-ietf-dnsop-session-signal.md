@@ -1214,11 +1214,15 @@ In the case of a zero inactivity timeout value, this means that
 if a client fails to close an idle client session then the server
 will forcibly abort the idle session after five seconds.
 
-An inactivity timeout of 0xFFFFFFFF (2^32-1 milliseconds, approximately 49.7 days)
+An inactivity timeout of 0xFFFFFFFF represents "infinity" and
 informs the client that it may keep an idle connection open as long as it wishes.
 Note that after granting an unlimited inactivity timeout in this way,
 at any point the server may revise that inactivity timeout by sending
 a new Keepalive message dictating new Session Timeout values to the client.
+
+The largest **finite** inactivity timeout
+supported by the current DSO Keepalive TLV is
+0xFFFFFFFE (2^32-2 milliseconds, approximately 49.7 days).
 
 ***
 
@@ -1300,11 +1304,15 @@ If a client receives a Keepalive message specifying a keepalive interval value
 less than ten seconds this is a fatal error and the client MUST
 forcibly abort the connection immediately.
 
-A keepalive interval value of 0xFFFFFFFF (2^32-1 milliseconds, approximately 49.7 days)
+A keepalive interval value of 0xFFFFFFFF represents "infinity" and
 informs the client that it should generate no keepalive traffic.
 Note that after signaling that the client should generate no keepalive traffic in this way,
 at any point the server may revise that keepalive traffic requirement by sending
 a new Keepalive message dictating new Session Timeout values to the client.
+
+The largest **finite** keepalive interval
+supported by the current DSO Keepalive TLV is
+0xFFFFFFFE (2^32-2 milliseconds, approximately 49.7 days).
 
 ***
 
@@ -1428,16 +1436,27 @@ After a DSO Session is ended by the server
 (either by sending the client a Retry Delay message,
 or by forcibly aborting the underlying transport connection)
 the client SHOULD try to reconnect,
-to that server, or to another suitable server, if more than one is available.
+to that server instance, or to another suitable server instance, if more than one is available.
 If reconnecting to the same server instance, the client MUST respect the indicated delay,
 if available, before attempting to reconnect.
 
-If a particular server does not want a client to reconnect (the server is being
-de-commissioned), it SHOULD set the retry delay to the maximum value (which is
-approximately 49.7 days). If the server will only be out of service for a maintenance
-period, it should use a value closer to the expected maintenance window and
-not default to a very large delay value or clients may not attempt to reconnect
-after it resumes service.
+If the server instance will only be out of service for a short maintenance period,
+it should use a value a little longer that the expected maintenance window.
+It should not default to a very large delay value, or clients may
+not attempt to reconnect after it resumes service.
+
+If a particular server instance does not want a client to reconnect ever
+(perhaps the server instance is being de-commissioned),
+it SHOULD set the retry delay to the maximum value
+0xFFFFFFFF (2^32-1 milliseconds, approximately 49.7 days).
+It is not possible to instruct a client to stay away for longer than 49.7 days.
+If, after 49.7 days, the DNS or other configuration information
+still indicates that this is the valid server instance for a
+particular service, then clients MAY attempt to reconnect.
+In reality, if a client is rebooted or otherwise lose state, it
+may well attempt to reconnect before 49.7 days elapses, for as
+long as the DNS or other configuration information continues to
+indicate that this is the server instance the client should use.
 
 ***
 
