@@ -776,7 +776,7 @@
 <p id="rfc.section.4.2.1.p.6">The DNS Header OPCODE field holds the DSO OPCODE value (tentatively 6).</p>
 <p id="rfc.section.4.2.1.p.7">The Z bits are currently unused in DSO messages, and in both DSO requests and DSO responses the Z bits MUST be set to zero (0) on transmission and MUST be silently ignored on reception, unless a future IETF Standard specifies otherwise.</p>
 <p></p>
-<p id="rfc.section.4.2.1.p.9">In a request message (QR=0) the RCODE is generally set to zero on transmission, and silently ignored on reception, except where specified otherwise (for example, the Retry Delay request message (<a href="#retry" class="xref">Section 5.6.1</a>), where the RCODE indicates the reason for termination).</p>
+<p id="rfc.section.4.2.1.p.9">In a request message (QR=0) the RCODE is set according to the definition of the request.  For example, in a Retry Delay request message (<a href="#retry" class="xref">Section 5.6.1</a>) the RCODE indicates the reason for termination.  However, in most cases, except where clearly specified otherwise, in a request message the RCODE is set to zero on transmission, and silently ignored on reception.</p>
 <p id="rfc.section.4.2.1.p.10">The RCODE value in a response message (QR=1) may be one of the following values:</p>
 <table cellpadding="3" cellspacing="0" class="tt full center">
 <thead><tr>

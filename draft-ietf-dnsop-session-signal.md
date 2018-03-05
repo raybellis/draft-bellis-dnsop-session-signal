@@ -617,10 +617,11 @@ on reception, unless a future IETF Standard specifies otherwise.
 
 ***
 
-In a request message (QR=0) the RCODE is generally set to zero on transmission,
-and silently ignored on reception, except where specified otherwise
-(for example, the Retry Delay request message ({{retry}}),
-where the RCODE indicates the reason for termination).
+In a request message (QR=0) the RCODE is set according to the definition of the request.
+For example, in a Retry Delay request message ({{retry}}) the RCODE indicates the reason for termination.
+However, in most cases, except where clearly specified otherwise,
+in a request message the RCODE is set to zero on transmission,
+and silently ignored on reception.
 
 The RCODE value in a response message (QR=1) may be one of the following values:
 
