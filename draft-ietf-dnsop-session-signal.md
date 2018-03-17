@@ -275,7 +275,7 @@ DNS name matching rules {{!RFC1034}} {{!RFC1035}}) and TCP port number.
 In these cases, configurations with different hostnames are considered
 to be referring to different server instances, even if those different hostnames
 happen to be aliases, or happen to resolve to the same IP address(es).
-Implementations are not expected to resolve hostnames and then
+Implementations SHOULD NOT resolve hostnames and then
 perform matching of IP address(es) in order to evaluate whether
 two entities should be determined to be the "same server instance".
 
@@ -1842,8 +1842,9 @@ in the DNS OPCODE Registry. DSO stands for DNS Stateful Operations.
 
 The IANA is requested to record the value (tentatively) 11 for the
 DSOTYPENI error code in the DNS RCODE Registry.
-The DSOTYPENI error code ("DSO-TYPE Not Implemented") signifies that the DSO-TYPE
-of the primary TLV in the DSO request message is not implemented by the receiver.
+The DSOTYPENI error code ("DSO-TYPE Not Implemented") indicates that
+the receiver does implement DNS Stateful Operations, but does not implement
+the specific DSO-TYPE of the primary TLV in the DSO request message.
 
 ## DSO Type Code Registry
 

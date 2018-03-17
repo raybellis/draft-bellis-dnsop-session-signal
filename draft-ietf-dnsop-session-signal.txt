@@ -348,8 +348,8 @@ Internet-Draft           DNS Stateful Operations              March 2018
       hostnames are considered to be referring to different server
       instances, even if those different hostnames happen to be aliases,
       or happen to resolve to the same IP address(es).  Implementations
-      are not expected to resolve hostnames and then perform matching of
-      IP address(es) in order to evaluate whether two entities should be
+      SHOULD NOT resolve hostnames and then perform matching of IP
+      address(es) in order to evaluate whether two entities should be
       determined to be the "same server instance".
 
    The term "long-lived operations" refers to operations such as Push
@@ -2646,9 +2646,9 @@ Internet-Draft           DNS Stateful Operations              March 2018
 
    The IANA is requested to record the value (tentatively) 11 for the
    DSOTYPENI error code in the DNS RCODE Registry.  The DSOTYPENI error
-   code ("DSO-TYPE Not Implemented") signifies that the DSO-TYPE of the
-   primary TLV in the DSO request message is not implemented by the
-   receiver.
+   code ("DSO-TYPE Not Implemented") indicates that the receiver does
+   implement DNS Stateful Operations, but does not implement the
+   specific DSO-TYPE of the primary TLV in the DSO request message.
 
 8.3.  DSO Type Code Registry
 
@@ -2833,13 +2833,13 @@ Internet-Draft           DNS Stateful Operations              March 2018
 
    [I-D.ietf-tls-tls13]
               Rescorla, E., "The Transport Layer Security (TLS) Protocol
-              Version 1.3", draft-ietf-tls-tls13-24 (work in progress),
-              February 2018.
+              Version 1.3", draft-ietf-tls-tls13-26 (work in progress),
+              March 2018.
 
    [I-D.sctl-dnssd-mdns-relay]
               Cheshire, S. and T. Lemon, "Multicast DNS Discovery
-              Relay", draft-sctl-dnssd-mdns-relay-02 (work in progress),
-              November 2017.
+              Relay", draft-sctl-dnssd-mdns-relay-03 (work in progress),
+              March 2018.
 
    [NagleDA]  Cheshire, S., "TCP Performance problems caused by
               interaction between Nagle's Algorithm and Delayed ACK",
