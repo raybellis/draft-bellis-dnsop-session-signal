@@ -853,12 +853,12 @@
                                              1   1   1   1   1   1
      0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-   |                            DSO-TYPE                           |
+   |                           DSO-TYPE                            |
    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-   |                        DSO DATA LENGTH                        |
+   |                          DSO-LENGTH                           |
    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
    |                                                               |
-   /                      TYPE-DEPENDENT DATA                      /
+   /                           DSO-DATA                            /
    /                                                               /
    +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 </pre>
@@ -867,10 +867,10 @@
 <dl>
 <dt>DSO-TYPE:</dt>
 <dd style="margin-left: 8">A 16-bit unsigned integer, in network (big endian) byte order, giving the DSO-TYPE of the current DSO TLV per the IANA DSO Type Code Registry.</dd>
-<dt>DSO DATA LENGTH:</dt>
-<dd style="margin-left: 8">A 16-bit unsigned integer, in network (big endian) byte order, giving the size in bytes of the TYPE-DEPENDENT DATA.</dd>
-<dt>TYPE-DEPENDENT DATA:</dt>
-<dd style="margin-left: 8">Type-code specific format. The generic DSO machinery treats the TYPE-DEPENDENT DATA as an opaque &#8220;blob&#8221; without attempting to interpret it.  Interpretation of the meaning of the TYPE-DEPENDENT DATA for a particular DSO-TYPE is the responsibility of the software that implements that DSO-TYPE.</dd>
+<dt>DSO-LENGTH:</dt>
+<dd style="margin-left: 8">A 16-bit unsigned integer, in network (big endian) byte order, giving the size in bytes of the DSO-DATA.</dd>
+<dt>DSO-DATA:</dt>
+<dd style="margin-left: 8">Type-code specific format. The generic DSO machinery treats the DSO-DATA as an opaque &#8220;blob&#8221; without attempting to interpret it.  Interpretation of the meaning of the DSO-DATA for a particular DSO-TYPE is the responsibility of the software that implements that DSO-TYPE.</dd>
 </dl>
 <p></p>
 <h1 id="rfc.section.4.2.2.2">
@@ -1067,7 +1067,7 @@
 <a href="#rfc.section.6.1">6.1.</a> <a href="#keepalive" id="keepalive">Keepalive TLV</a>
 </h1>
 <p id="rfc.section.6.1.p.1">The Keepalive TLV (DSO-TYPE=1) performs two functions: to reset the keepalive timer for the DSO Session, and to establish the values for the Session Timeouts.</p>
-<p id="rfc.section.6.1.p.2">The TYPE-DEPENDENT DATA for the the Keepalive TLV is as follows:</p>
+<p id="rfc.section.6.1.p.2">The DSO-DATA for the the Keepalive TLV is as follows:</p>
 <pre>
                         1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -1117,7 +1117,7 @@
 <a href="#rfc.section.6.2">6.2.</a> <a href="#delay" id="delay">Retry Delay TLV</a>
 </h1>
 <p id="rfc.section.6.2.p.1">The Retry Delay TLV (DSO-TYPE=2) can be used as a Primary TLV (unacknowledged) in a server-to-client message, or as a Response Additional TLV in either direction.</p>
-<p id="rfc.section.6.2.p.2">The TYPE-DEPENDENT DATA for the the Retry Delay TLV is as follows:</p>
+<p id="rfc.section.6.2.p.2">The DSO-DATA for the the Retry Delay TLV is as follows:</p>
 <pre>
                         1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -1160,7 +1160,7 @@
 <a href="#rfc.section.6.3">6.3.</a> <a href="#padding" id="padding">Encryption Padding TLV</a>
 </h1>
 <p id="rfc.section.6.3.p.1">The Encryption Padding TLV (DSO-TYPE=3) can only be used as an Additional or Response Additional TLV.  It is only applicable when the DSO Transport layer uses encryption such as TLS.</p>
-<p id="rfc.section.6.3.p.2">The TYPE-DEPENDENT DATA for the the Padding TLV is optional and is a variable length field containing non-specified values. A DATA LENGTH of 0 essentially provides for 4 bytes of padding (the minimum amount).</p>
+<p id="rfc.section.6.3.p.2">The DSO-DATA for the the Padding TLV is optional and is a variable length field containing non-specified values. A DSO-LENGTH of 0 essentially provides for 4 bytes of padding (the minimum amount).</p>
 <pre>
                                              1   1   1   1   1   1
      0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5

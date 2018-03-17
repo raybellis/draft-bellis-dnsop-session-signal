@@ -770,12 +770,12 @@ depending on what is stated in the specification for that TLV.
                                                  1   1   1   1   1   1
          0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-       |                            DSO-TYPE                           |
+       |                           DSO-TYPE                            |
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-       |                        DSO DATA LENGTH                        |
+       |                          DSO-LENGTH                           |
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
        |                                                               |
-       /                      TYPE-DEPENDENT DATA                      /
+       /                           DSO-DATA                            /
        /                                                               /
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
@@ -783,14 +783,14 @@ DSO-TYPE:
 : A 16-bit unsigned integer, in network (big endian) byte order,
 giving the DSO-TYPE of the current DSO TLV per the IANA DSO Type Code Registry.
 
-DSO DATA LENGTH:
+DSO-LENGTH:
 : A 16-bit unsigned integer, in network (big endian) byte order,
-giving the size in bytes of the TYPE-DEPENDENT DATA.
+giving the size in bytes of the DSO-DATA.
 
-TYPE-DEPENDENT DATA:
+DSO-DATA:
 : Type-code specific format. The generic DSO machinery treats the
-TYPE-DEPENDENT DATA as an opaque "blob" without attempting to interpret it.
-Interpretation of the meaning of the TYPE-DEPENDENT DATA for a particular
+DSO-DATA as an opaque "blob" without attempting to interpret it.
+Interpretation of the meaning of the DSO-DATA for a particular
 DSO-TYPE is the responsibility of the software that implements that DSO-TYPE.
 
 ***
@@ -1477,7 +1477,7 @@ The Keepalive TLV (DSO-TYPE=1) performs two functions:
 to reset the keepalive timer for the DSO Session,
 and to establish the values for the Session Timeouts. 
 
-The TYPE-DEPENDENT DATA for the the Keepalive TLV is as follows:
+The DSO-DATA for the the Keepalive TLV is as follows:
 
                             1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
         0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -1653,7 +1653,7 @@ The Retry Delay TLV (DSO-TYPE=2) can be used as
 a Primary TLV (unacknowledged) in a server-to-client message,
 or as a Response Additional TLV in either direction.
 
-The TYPE-DEPENDENT DATA for the the Retry Delay TLV is as follows:
+The DSO-DATA for the the Retry Delay TLV is as follows:
 
                             1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
         0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -1737,8 +1737,8 @@ an Additional or Response Additional TLV.
 It is only applicable when the DSO Transport layer uses encryption
 such as TLS.
 
-The TYPE-DEPENDENT DATA for the the Padding TLV is optional and is a
-variable length field containing non-specified values. A DATA LENGTH
+The DSO-DATA for the the Padding TLV is optional and is a
+variable length field containing non-specified values. A DSO-LENGTH
 of 0 essentially provides for 4 bytes of padding (the minimum amount).
 
                                                  1   1   1   1   1   1
