@@ -429,8 +429,8 @@
   <link rel="schema.dct" href="http://purl.org/dc/terms/" />
 
   <meta name="dct.creator" content="Bellis, R., Cheshire, S., Dickinson, J., Dickinson, S., Lemon, T., and T. Pusateri" />
-  <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-dnsop-session-signal-06" />
-  <meta name="dct.issued" scheme="ISO8601" content="2018-3-05" />
+  <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-dnsop-session-signal-07" />
+  <meta name="dct.issued" scheme="ISO8601" content="2018-3-19" />
   <meta name="dct.abstract" content="This document defines a new DNS OPCODE for DNS Stateful Operations (DSO).  DSO messages communicate operations within persistent stateful sessions, using type-length-value (TLV) syntax.  Three TLVs are defined that manage session timeouts, termination, and encryption padding, and a framework is defined for extensions to enable new stateful operations." />
   <meta name="description" content="This document defines a new DNS OPCODE for DNS Stateful Operations (DSO).  DSO messages communicate operations within persistent stateful sessions, using type-length-value (TLV) syntax.  Three TLVs are defined that manage session timeouts, termination, and encryption padding, and a framework is defined for extensions to enable new stateful operations." />
 
@@ -462,7 +462,7 @@
 <td class="right">J. Dickinson</td>
 </tr>
 <tr>
-<td class="left">Expires: September 6, 2018</td>
+<td class="left">Expires: September 20, 2018</td>
 <td class="right">S. Dickinson</td>
 </tr>
 <tr>
@@ -487,7 +487,7 @@
 </tr>
 <tr>
 <td class="left"></td>
-<td class="right">March 05, 2018</td>
+<td class="right">March 19, 2018</td>
 </tr>
 
     	
@@ -495,7 +495,7 @@
   </table>
 
   <p class="title">DNS Stateful Operations<br />
-  <span class="filename">draft-ietf-dnsop-session-signal-06</span></p>
+  <span class="filename">draft-ietf-dnsop-session-signal-07</span></p>
   
   <h1 id="rfc.abstract"><a href="#rfc.abstract">Abstract</a></h1>
 <p>This document defines a new DNS OPCODE for DNS Stateful Operations (DSO).  DSO messages communicate operations within persistent stateful sessions, using type-length-value (TLV) syntax.  Three TLVs are defined that manage session timeouts, termination, and encryption padding, and a framework is defined for extensions to enable new stateful operations.</p>
@@ -503,7 +503,7 @@
 <p>This Internet-Draft is submitted in full conformance with the provisions of BCP 78 and BCP 79.</p>
 <p>Internet-Drafts are working documents of the Internet Engineering Task Force (IETF).  Note that other groups may also distribute working documents as Internet-Drafts.  The list of current Internet-Drafts is at https://datatracker.ietf.org/drafts/current/.</p>
 <p>Internet-Drafts are draft documents valid for a maximum of six months and may be updated, replaced, or obsoleted by other documents at any time.  It is inappropriate to use Internet-Drafts as reference material or to cite them other than as "work in progress."</p>
-<p>This Internet-Draft will expire on September 6, 2018.</p>
+<p>This Internet-Draft will expire on September 20, 2018.</p>
 <h1 id="rfc.copyrightnotice"><a href="#rfc.copyrightnotice">Copyright Notice</a></h1>
 <p>Copyright (c) 2018 IETF Trust and the persons identified as the document authors.  All rights reserved.</p>
 <p>This document is subject to BCP 78 and the IETF Trust's Legal Provisions Relating to IETF Documents (https://trustee.ietf.org/license-info) in effect on the date of publication of this document.  Please review these documents carefully, as they describe your rights and restrictions with respect to this document.  Code Components extracted from this document must include Simplified BSD License text as described in Section 4.e of the Trust Legal Provisions and are provided without warranty as described in the Simplified BSD License.</p>
@@ -640,7 +640,7 @@
 <li>The connection between client and server is persistent and relatively long-lived (i.e., minutes or hours, rather than seconds).</li>
 <li>Either end of the connection may initiate messages to the other.</li>
 </ul>
-<p id="rfc.section.2.p.6">In this document the term &#8220;session&#8221; is used exclusively as described above, and is in no way related to the anachronistic term &#8220;session&#8221; as used in the obsolete &#8220;seven-layer model&#8221; that shaped the design of the failed OSI protocols of the 1980s.</p>
+<p id="rfc.section.2.p.6">In this document the term &#8220;session&#8221; is used exclusively as described above.  The term has no relationship to the &#8220;session layer&#8221; of the OSI &#8220;seven-layer model&#8221; popularized in the 1980s.</p>
 <p id="rfc.section.2.p.7">A &#8220;DSO Session&#8221; is established between two endpoints that acknowledge persistent DNS state via the exchange of DSO messages over the connection.  This is distinct from a DNS-over-TCP session as described in the previous specification for DNS over TCP <a href="#RFC7766" class="xref">[RFC7766]</a>.</p>
 <p id="rfc.section.2.p.8">A &#8220;DSO Session&#8221; is terminated when the underlying connection is closed.  The underlying connection can be closed in two ways:</p>
 <p id="rfc.section.2.p.9">Where this specification says, &#8220;close gracefully,&#8221; that means sending a TLS close_notify (if TLS is in use) followed by a TCP FIN, or the equivalents for other protocols.  Where this specification requires a connection to be closed gracefully, the requirement to initiate that graceful close is placed on the client, to place the burden of TCP&#8217;s TIME-WAIT state on the client rather than the server.</p>
@@ -695,13 +695,13 @@
 <p id="rfc.section.4.1.p.5">In some environments it may be known in advance by external means that both client and server support DSO, and in these cases either client or server may initiate DSO messages at any time.</p>
 <p id="rfc.section.4.1.p.6">However, in the typical case a server will not know in advance whether a client supports DSO, so in general, unless it is known in advance by other means that a client does support DSO, a server MUST NOT initiate DSO request messages or DSO unacknowledged messages until a DSO Session has been mutually established by at least one successful DSO request/response exchange initiated by the client, as described below.  Similarly, unless it is known in advance by other means that a server does support DSO, a client MUST NOT initiate DSO unacknowledged messages until after a DSO Session has been mutually established.</p>
 <p id="rfc.section.4.1.p.7">A DSO Session is established over a connection by the client sending a DSO request message, such as a DSO Keepalive request message (<a href="#keepalive" class="xref">Section 6.1</a>), and receiving a response, with matching MESSAGE ID, and RCODE set to NOERROR (0), indicating that the DSO request was successful.</p>
-<p id="rfc.section.4.1.p.8">If the RCODE in the response is set to DSOTYPENI (&#8220;DSO-TYPE Not Implemented&#8221;, tentatively RCODE 11) this indicates that the server does support DSO, but does not implement the DSO-TYPE of the primary TLV in this DSO request message.  A server implementing DSO MUST NOT return DSOTYPENI for a DSO Keepalive request message, because the Keepalive TLV is mandatory to implement, so all implementations of DSO are required to implement the Keepalive TLV.  But in the future, if a client attempts to establish a DSO Session using a response-requiring DSO request message using some newly-defined DSO-TYPE that the server does not understand, that would result in a DSOTYPENI response.  If the server returns DSOTYPENI then a DSO Session is not considered established, but the client is permitted to continue sending DNS messages on the connection, including other DSO messages such as the DSO Keepalive, which may result in a successful NOERROR response, yielding the establishment of a DSO Session.</p>
+<p id="rfc.section.4.1.p.8">If the RCODE in the response is set to DSOTYPENI (&#8220;DSO-TYPE Not Implemented&#8221;, tentatively RCODE 11) this indicates that the server does support DSO, but does not implement the DSO-TYPE of the primary TLV in this DSO request message.  A server implementing DSO MUST NOT return DSOTYPENI for a DSO Keepalive request message, because the Keepalive TLV is mandatory to implement.  But in the future, if a client attempts to establish a DSO Session using a response-requiring DSO request message using some newly-defined DSO-TYPE that the server does not understand, that would result in a DSOTYPENI response.  If the server returns DSOTYPENI then a DSO Session is not considered established, but the client is permitted to continue sending DNS messages on the connection, including other DSO messages such as the DSO Keepalive, which may result in a successful NOERROR response, yielding the establishment of a DSO Session.</p>
 <p id="rfc.section.4.1.p.9">If the RCODE is set to any value other than NOERROR (0) or DSOTYPENI (tentatively 11), then the client MUST assume that the server does not implement DSO at all. In this case the client is permitted to continue sending DNS messages on that connection, but the client SHOULD NOT issue further DSO messages on that connection.</p>
 <p id="rfc.section.4.1.p.10">When the server receives a DSO request message from a client, and transmits a successful NOERROR response to that request, the server considers the DSO Session established.</p>
 <p id="rfc.section.4.1.p.11">When the client receives the server&#8217;s NOERROR response to its DSO request message, the client considers the DSO Session established.</p>
 <p id="rfc.section.4.1.p.12">Once a DSO Session has been established, either end may unilaterally send appropriate DSO messages at any time, and therefore either client or server may be the initiator of a message.</p>
 <p id="rfc.section.4.1.p.13">Once a DSO Session has been established, clients and servers should behave as described in this specification with regard to inactivity timeouts and session termination, not as previously prescribed in the earlier specification for DNS over TCP <a href="#RFC7766" class="xref">[RFC7766]</a>.</p>
-<p id="rfc.section.4.1.p.14">Note that for clients that implement only the DSO-TYPEs defined in this base specification, sending a DSO Keepalive TLV is the only DSO request message they have available to initiate a DSO Session.  Even for clients that do implement other future DSO-TYPEs, for simplicity they MAY elect to always send an initial DSO Keepalive request message as their way of initiating a DSO Session.</p>
+<p id="rfc.section.4.1.p.14">Note that for clients that implement only the DSO-TYPEs defined in this base specification, sending a DSO Keepalive TLV is the only DSO request message they have available to initiate a DSO Session.  Even for clients that do implement other future DSO-TYPEs, for simplicity they MAY elect to always send an initial DSO Keepalive request message as their way of initiating a DSO Session.  A future definition of a new response-requiring DSO-TYPE gives implementers the option of using that new DSO-TYPE if they wish, but does not change the fact that sending a DSO Keepalive TLV remains a valid way of initiating a DSO Session.</p>
 <h1 id="rfc.section.4.1.1">
 <a href="#rfc.section.4.1.1">4.1.1.</a> <a href="#sharing" id="sharing">Connection Sharing</a>
 </h1>
@@ -1039,7 +1039,7 @@
 <a href="#rfc.section.5.6.1">5.6.1.</a> <a href="#retry" id="retry">Server-Initiated Retry Delay Message</a>
 </h1>
 <p id="rfc.section.5.6.1.p.1">In the cases described above where a server elects to terminate a DSO Session, it could do so simply by forcibly aborting the connection.  However, if it did this the likely behavior of the client might be simply to to treat this as a network failure and reconnect immediately, putting more burden on the server.</p>
-<p id="rfc.section.5.6.1.p.2">Therefore, to avoid this reconnection implosion, a server SHOULD instead choose to shed client load by sending a Retry Delay message, with an appropriate RCODE value informing the client of the reason the DSO Session needs to be terminated.  For example, an RCODE value of SERVFAIL indicates that the server is overloaded due to resource exhaustion, or is restarting.  An RCODE value of NOTAUTH indicates that the server has been reconfigured and is no longer able to perform one or more of the functions currently being performed on this DSO Session because it no longer has authority over the names in question.  An RCODE value of REFUSED indicates a policy change regarding this session.  An RCODE value of FORMERR indicates that the client requests are too badly malformed for the session to continue.  The format of the Retry Delay TLV is described in <a href="#delay" class="xref">Section 6.2</a>.  After sending a Retry Delay message, the server MUST NOT send any further messages on that DSO Session.</p>
+<p id="rfc.section.5.6.1.p.2">Therefore, to avoid this reconnection implosion, a server SHOULD instead choose to shed client load by sending a Retry Delay message, with an appropriate RCODE value informing the client of the reason the DSO Session needs to be terminated.  The format of the Retry Delay TLV, and the interpretations of the various RCODE values, are described in <a href="#delay" class="xref">Section 6.2</a>.  After sending a Retry Delay message, the server MUST NOT send any further messages on that DSO Session.</p>
 <p id="rfc.section.5.6.1.p.3">Upon receipt of a Retry Delay message from the server, the client MUST make note of the reconnect delay for this server, and then immediately close the connection gracefully.</p>
 <p id="rfc.section.5.6.1.p.4">After sending a Retry Delay message the server SHOULD allow the client five seconds to close the connection, and if the client has not closed the connection after five seconds then the server SHOULD forcibly abort the connection.</p>
 <p id="rfc.section.5.6.1.p.5">A Retry Delay message MUST NOT be initiated by a client.  If a server receives a Retry Delay message this is a fatal error and the server MUST forcibly abort the connection immediately.</p>
@@ -1135,27 +1135,27 @@
 <a href="#rfc.section.6.2.1">6.2.1.</a> <a href="#retry-delay-tlv-used-as-a-primary-tlv" id="retry-delay-tlv-used-as-a-primary-tlv">Retry Delay TLV used as a Primary TLV</a>
 </h1>
 <p id="rfc.section.6.2.1.p.1">When sent from server to client, the Retry Delay TLV is used as the Primary TLV in an unacknowledged message.  It is used by a server to instruct a client to close the DSO Session and underlying connection, and not to reconnect for the indicated time interval.</p>
-<p id="rfc.section.6.2.1.p.2">In this case it applies to the DSO Session as a whole, and the client MUST begin closing the DSO Session, as described in <a href="#retry" class="xref">Section 5.6.1</a>. The RCODE in the message header MUST indicate the reason for the termination:</p>
+<p id="rfc.section.6.2.1.p.2">In this case it applies to the DSO Session as a whole, and the client MUST begin closing the DSO Session, as described in <a href="#retry" class="xref">Section 5.6.1</a>. The RCODE in the message header SHOULD indicate the principal reason for the termination:</p>
 <p></p>
 
 <ul>
-<li>NOERROR indicates a routine shutdown.</li>
+<li>NOERROR indicates a routine shutdown or restart.</li>
 <li>FORMERR indicates that the client requests are too badly malformed for the session to continue.</li>
-<li>SERVFAIL indicates that the server is overloaded due to resource exhaustion, or is restarting.</li>
-<li>REFUSED indicates that the server has been reconfigured and due to a policy change is no longer able to perform one or more of the functions currently being performed on this DSO Session</li>
-<li>NOTAUTH indicates that the server has been reconfigured and is no longer able to perform one or more of the functions currently being performed on this DSO Session because it no longer has authority over the names in question (for example, a DNS Push Notification server could be reconfigured such that is is no longer accepting DNS Push Notification requests for one or more of the currently subscribed names).</li>
+<li>SERVFAIL indicates that the server is overloaded due to resource exhaustion and needs to shed load.</li>
+<li>REFUSED indicates that the server has been reconfigured, and at this time it is now unable to perform one or more of the long-lived client operations that were previously being performed on this DSO Session.</li>
+<li>NOTAUTH indicates that the server has been reconfigured and at this time it is now unable to perform one or more of the long-lived client operations that were previously being performed on this DSO Session because it does not have authority over the names in question (for example, a DNS Push Notification server could be reconfigured such that is is no longer accepting DNS Push Notification requests for one or more of the currently subscribed names).</li>
 </ul>
-<p id="rfc.section.6.2.1.p.4">This document specifies only these RCODE values for Retry Delay request.  Servers sending Retry Delay requests SHOULD use one of these values.  However, future circumstances may create situations where other RCODE values are appropriate in Retry Delay requests, so clients MUST be prepared to accept Retry Delay requests with any RCODE value.</p>
-<p id="rfc.section.6.2.1.p.5">The RCODE value received in the message header of a Retry Delay unacknowledged message is generally usually useful only for information purposes, such as writing to a log file for future human analysis regarding the nature of the disconnection.  Generally clients do not modify their behavior depending on the RCODE value.  The RETRY DELAY in the message tells the client how long it should wait before attempting a new connection to this server instance.</p>
-<p id="rfc.section.6.2.1.p.6">For clients that do in some way modify their behavior depending on the RCODE value, they should treat unknown RCODE values the same as RCODE=NOERROR (routine shutdown).</p>
-<p id="rfc.section.6.2.1.p.7">A Retry Delay message from server to client is an unacknowledged message; the MESSAGE ID MUST be set to zero in the outgoing message and the client MUST NOT send a response.</p>
-<p id="rfc.section.6.2.1.p.8">A client MUST NOT send a Retry Delay DSO request message or DSO unacknowledged message to a server.  If a server receives a DNS request message (i.e., QR=0) where the Primary TLV is the Retry Delay TLV, this is a fatal error and the server MUST forcibly abort the connection immediately.</p>
+<p id="rfc.section.6.2.1.p.4">This document specifies only these RCODE values for Retry Delay message.  Servers sending Retry Delay messages SHOULD use one of these values.  However, future circumstances may create situations where other RCODE values are appropriate in Retry Delay messages, so clients MUST be prepared to accept Retry Delay messages with any RCODE value.</p>
+<p id="rfc.section.6.2.1.p.5">In some cases, when a server sends a Retry Delay message to a client, there may be more than one reason for the server wanting to end the session.  Possibly the configuration could have been changed such that some long-lived client operations can no longer be continued due to policy (REFUSED), and other long-lived client operations can no longer be performed due to the server no longer being authoritative for those names (NOTAUTH).  In such cases the server MAY use any of the applicable RCODE values, or RCODE=NOERROR (routine shutdown or restart).</p>
+<p id="rfc.section.6.2.1.p.6">Note that the selection of RCODE value in a Retry Delay message is not critical, since the RCODE value is generally used only for information purposes, such as writing to a log file for future human analysis regarding the nature of the disconnection.  Generally clients do not modify their behavior depending on the RCODE value.  The RETRY DELAY in the message tells the client how long it should wait before attempting a new connection to this server instance.</p>
+<p id="rfc.section.6.2.1.p.7">For clients that do in some way modify their behavior depending on the RCODE value, they should treat unknown RCODE values the same as RCODE=NOERROR (routine shutdown or restart).</p>
+<p id="rfc.section.6.2.1.p.8">A Retry Delay message from server to client is an unacknowledged message; the MESSAGE ID MUST be set to zero in the outgoing message and the client MUST NOT send a response.</p>
+<p id="rfc.section.6.2.1.p.9">A client MUST NOT send a Retry Delay DSO request message or DSO unacknowledged message to a server.  If a server receives a DNS request message (i.e., QR=0) where the Primary TLV is the Retry Delay TLV, this is a fatal error and the server MUST forcibly abort the connection immediately.</p>
 <h1 id="rfc.section.6.2.2">
 <a href="#rfc.section.6.2.2">6.2.2.</a> <a href="#retry-delay-tlv-used-as-a-response-additional-tlv" id="retry-delay-tlv-used-as-a-response-additional-tlv">Retry Delay TLV used as a Response Additional TLV</a>
 </h1>
 <p id="rfc.section.6.2.2.p.1">In the case of a request that returns a nonzero RCODE value, the responder MAY append a Retry Delay TLV to the response, indicating the time interval during which the initiator SHOULD NOT attempt this operation again.</p>
 <p id="rfc.section.6.2.2.p.2">The indicated time interval during which the initiator SHOULD NOT retry applies only to the failed operation, not to the DSO Session as a whole.</p>
-<p></p>
 <h1 id="rfc.section.6.3">
 <a href="#rfc.section.6.3">6.3.</a> <a href="#padding" id="padding">Encryption Padding TLV</a>
 </h1>
