@@ -25,17 +25,17 @@ author:
     city: Redwood City
     code: CA 94063
     country: USA
-    phone: +1 650 423 1200
+    phone: +1 (650) 423-1200
     email: ray@isc.org
   -
     ins: S. Cheshire
     name: Stuart Cheshire
     org: Apple Inc.
-    street: 1 Infinite Loop
+    street: One Apple Park Way
     city: Cupertino
     code: CA 95014
     country: USA
-    phone: +1 408 974 3207
+    phone: +1 (408) 996-1010
     email: cheshire@apple.com
   -
     ins: J. Dickinson
@@ -77,7 +77,7 @@ author:
     city: Raleigh
     code: NC 27608
     country: USA
-    phone: +1 919 867 1330
+    phone: +1 (919) 867-1330
     email: pusateri@bangj.com
 
 informative:
