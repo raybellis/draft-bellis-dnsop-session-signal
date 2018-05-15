@@ -1,13 +1,14 @@
 ---
 title: DNS Stateful Operations
-docname: draft-ietf-dnsop-session-signal-07
-date: 2018-3-19
+docname: draft-ietf-dnsop-session-signal-08
+date: 2018-5-15
 ipr: trust200902
 area: Internet
 wg: DNSOP Working Group
 kw: Internet-Draft
 cat: std
-updates: RFC 1035, RFC 7766
+updates: 1035
+updates: 7766
 
 coding: utf-8
 pi:
@@ -97,6 +98,7 @@ stateful sessions, using type-length-value (TLV) syntax.
 Three TLVs are defined that manage session timeouts,
 termination, and encryption padding, and 
 a framework is defined for extensions to enable new stateful operations.
+This document updates RFC 1035 by adding a new DNS header opcode and result code which has different message semantics.  This document updates RFC 7766 by redefining a session, providing new guidance on connection re-use, and providing a new mechanism for handling session idle timeouts.
 
 --- middle
 
@@ -172,14 +174,15 @@ success or failure of that operation.
 
 ***
 
-# Terminology {#terminology}
+# Requirements Language
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
-"SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
-"OPTIONAL" in this document are to be interpreted as described in
-"Key words for use in RFCs to Indicate Requirement Levels", when,
-and only when, they appear in all capitals, as shown here
-{{!RFC2119}} {{!RFC8174}}.
+"SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY",
+and "OPTIONAL" in this document are to be interpreted as
+described in BCP 14 {{!RFC2119}} {{!RFC8174}} when, and only when, they
+appear in all capitals, as shown here.
+
+# Terminology {#terminology}
 
 "DSO" is used to mean DNS Stateful Operation.
 
@@ -280,7 +283,7 @@ two entities should be determined to be the "same server instance".
 
 The term "long-lived operations" refers to operations
 such as Push Notification subscriptions {{?I-D.ietf-dnssd-push}},
-Discovery Relay interface subscriptions {{?I-D.sctl-dnssd-mdns-relay}},
+Discovery Relay interface subscriptions {{?I-D.ietf-dnssd-mdns-relay}},
 and other future long-lived DNS operations that choose to use
 DSO as their basis, that establish state that persists beyond
 the lifetime of a traditional brief request/response transaction.
@@ -608,7 +611,7 @@ initiator has used it in a request for which it is still awaiting a response,
 or if the client has used it to set up a long-lived operation that has not yet been cancelled.
 For example, a long-lived operation could be
 a Push Notification subscription {{?I-D.ietf-dnssd-push}} or
-a Discovery Relay interface subscription {{?I-D.sctl-dnssd-mdns-relay}}.
+a Discovery Relay interface subscription {{?I-D.ietf-dnssd-mdns-relay}}.
 
 Whether a message is acknowledged or unacknowledged is
 determined only by the specification for the Primary TLV.
@@ -750,7 +753,7 @@ packets is then sent using unacknowledged messages, and this
 is appropriate because the client initiated the message stream
 by virtue of its mDNS Relay link subscription, thereby indicating
 its support of mDNS Relay, and its desire to receive inbound mDNS
-packets over that DSO session {{?I-D.sctl-dnssd-mdns-relay}}.
+packets over that DSO session {{?I-D.ietf-dnssd-mdns-relay}}.
 
 ***
 
@@ -1032,7 +1035,7 @@ This document, the base specification for DNS Stateful Operations,
 does not itself define any long-lived operations,
 but it defines a framework for supporting long-lived operations,
 such as Push Notification subscriptions {{?I-D.ietf-dnssd-push}} and
-Discovery Relay interface subscriptions {{?I-D.sctl-dnssd-mdns-relay}}.
+Discovery Relay interface subscriptions {{?I-D.ietf-dnssd-mdns-relay}}.
 
 Generally speaking, a long-lived operation is initiated by the initiator,
 and, if successful, remains active until the initiator terminates the operation.
@@ -1139,7 +1142,7 @@ and remains cleared until transmission of the corresponding response.
 
 For long-lived DNS Stateful operations (such as
 a Push Notification subscription {{?I-D.ietf-dnssd-push}} or
-a Discovery Relay interface subscription {{?I-D.sctl-dnssd-mdns-relay}}),
+a Discovery Relay interface subscription {{?I-D.ietf-dnssd-mdns-relay}}),
 an operation is considered in progress
 for as long as the operation is active, until it is cancelled.
 This means that a DSO Session can exist, with active operations,
@@ -1167,7 +1170,7 @@ operations with that server, and then create a new DSO Session later when needed
 ### Closing Inactive DSO Sessions
 
 When a connection's inactivity timeout is reached the client MUST
-begin closing the idle connection, but a client is NOT REQUIRED to
+begin closing the idle connection, but a client is not required to
 keep an idle connection open until the inactivity timeout is reached.
 A client MAY close a DSO Session at any time, at the client's discretion.
 If a client determines that it has no current or reasonably
