@@ -4,7 +4,7 @@
 
 DNSOP Working Group                                            R. Bellis
 Internet-Draft                                                       ISC
-Updates: 7766 (if approved)                                  S. Cheshire
+Updates: 1035, 7766 (if approved)                            S. Cheshire
 Intended status: Standards Track                              Apple Inc.
 Expires: November 16, 2018                                  J. Dickinson
                                                             S. Dickinson

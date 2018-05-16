@@ -7,8 +7,7 @@ area: Internet
 wg: DNSOP Working Group
 kw: Internet-Draft
 cat: std
-updates: 1035
-updates: 7766
+updates: 1035, 7766
 
 coding: utf-8
 pi:
