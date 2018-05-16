@@ -33,7 +33,7 @@
 <?rfc symrefs="yes"?>
 <?rfc sortrefs="yes"?>
 
-<rfc ipr="trust200902" docName="draft-ietf-dnsop-session-signal-08" category="std" updates="1035, 7766">
+<rfc ipr="trust200902" docName="draft-ietf-dnsop-session-signal-09" category="std" updates="1035, 7766">
 
   <front>
     <title>DNS Stateful Operations</title>
@@ -113,7 +113,7 @@
       </address>
     </author>
 
-    <date year="2018" month="May" day="15"/>
+    <date year="2018" month="May" day="16"/>
 
     <area>Internet</area>
     <workgroup>DNSOP Working Group</workgroup>
@@ -2145,10 +2145,10 @@ for their helpful contributions to this document.</t>
   </back>
 
 <!-- ##markdown-source:
-H4sIACiZ/FoAA+2963YbR5Yu+D+eIof6YVINwKRky7Jq9TpFS5TNLt2KpOyq
+H4sIAEea/FoAA+2963YbR5Yu+D+eIof6YVINwKRky7Jq9TpFS5TNLt2KpOyq
 PmemVwJIEGkBmejMhChY1lrzCvMG51nOo8yTzL5G7MgLRMkuT02vUbXaFJGI
 jMuOfd/fHo/HrsmbVfYoefLiMrls0iZbbFfJy01WpU1eFrWbl7MiXcMD8ypd
-NOM8axbjeVGXm3Gd1TU8Mq7z6yJdjY8fujl8/VFy7/jk4fjr8cnXLt9Uj5Km
+NOM8axbjeVGXm3Gd1TU8Mq7z6yJdjY+/dXP4+qPk3vHJw/HX45MHLt9Uj5Km
 2tbNvePjb4/vubTK0kfJedFkVZE17uaa3vvyVfJTWb3Ji+vk+6rcbtybm/DQ
 +Am+183S5lFSN3O33eBb6kfJyfH9r0fJN988eODcrJzDtx8lW5jcQ7fJH7kk
 GSdNOaP/1rt1lS1q/rmsGvqHS7fNsqzoSfibJHkBg15Mku+y1Sqv6Ve88It0
@@ -2162,7 +2162,7 @@ z9PrdJ6usiJ5nMGCMvn1y3eLsponl7M8K2a8Q2Z3+FOzNS//9lXy1fenrZ0p
 8iabJ38BSp/TSv0+/JzO/1zzlLqbcNm/CZdplf6X2oQaFjS8C1eT5Fm2jnbg
 CsYJv6PFfwcMalGWDV3n7QoI9jqi8e+AKwK3nJaVJeQfr5Ljr+8fn/QTskxv
 DRykLP682F5veygVpvdqWwNjq3I7w3Id/5om+bpIF4t8lcOv59HsDg4sG4H9
-z6+XZpovHif3vnkAbPpj9+3bk2+PkocPvhmf3L8f3beNzOXP07S4/plW4fIC
+z6+XZpovHif3vnlw/PCj9+3bk2+PkocPvhmf3L8f3beNzOXP07S4/plW4fIC
 jm0NwuJthsf/Ir1eZU9OmRKatLrGiS2bZvPoyy9vbm4mNXEVvbjIi77cpMAb
 6i8L/OY8W6W7bJ7O3nzJI7Bwunr8KnmVVfQmJJ1NVU5XyHZn6baGY5zuYBth
 ZukMhVYyzZqbDKiPJvNFnZyurssqb5brJC3myRN+R3L6+C9Mz14Q7Gd+A9xS
@@ -2738,7 +2738,7 @@ lMM8K9NooknfUKkfZ96GI2s3pKBGSnhOOLlWu3SasD9FrAXCLcOqFtHSaS/K
 TsOU+IYDlaTFG8JWumyyDfwjS74rq+aXdbZD195Vvk4eo1o3chfpagMXATgX
 cMZXKXCBH8rFAkTwyP0bTPovJZbQpvCdszkhwTzLbnJ48hQLELA0B96T4zDb
 PMFvlyP3JAX7LLmcweVNf8lHDh75eZtc4ozgaC7Skr2w32VVkWfJj+XqFxU/
-eZUss9UGWRFaVFUOqrUacZEYU2MK9Ehyerj/B0vEx9G6cgEA
+eZUss9UGWRFaVFUOqrUacZEYU2MK9Ehyerj/B1EhMtK6cgEA
 
 -->
 
