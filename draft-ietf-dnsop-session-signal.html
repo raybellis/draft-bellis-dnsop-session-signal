@@ -1212,8 +1212,8 @@
 <li>C-P - Primary TLV, sent in DSO Request message, from client to server, with nonzero MESSAGE ID indicating that this request MUST generate response message.</li>
 <li>C-U - Primary TLV, sent in DSO Unacknowledged message, from client to server, with zero MESSAGE ID indicating that this request MUST NOT generate response message.</li>
 <li>C-A - Additional TLV, optionally added to request message or unacknowledged message from client to server.</li>
-<li>CRP - Response Primary TLV, included in response message sent to back the client (in response to a client &#8220;C-P&#8221; request with nonzero MESSAGE ID indicating that a response is required) where the DSO-TYPE of the Response TLV matches the DSO-TYPE of the Primary TLV in the request.</li>
-<li>CRA - Response Additional TLV, included in response message sent to back the client (in response to a client &#8220;C-P&#8221; request with nonzero MESSAGE ID indicating that a response is required) where the DSO-TYPE of the Response TLV does not match the DSO-TYPE of the Primary TLV in the request.</li>
+<li>CRP - Response Primary TLV, included in response message sent back to the client (in response to a client &#8220;C-P&#8221; request with nonzero MESSAGE ID indicating that a response is required) where the DSO-TYPE of the Response TLV matches the DSO-TYPE of the Primary TLV in the request.</li>
+<li>CRA - Response Additional TLV, included in response message sent back to the client (in response to a client &#8220;C-P&#8221; request with nonzero MESSAGE ID indicating that a response is required) where the DSO-TYPE of the Response TLV does not match the DSO-TYPE of the Primary TLV in the request.</li>
 </ul>
 <p id="rfc.section.8.2.p.4">The second five contexts are their counterparts in the opposite direction: requests or unacknowledged messages from server to client, and the corresponding responses from client back to server.</p>
 <pre>

@@ -1808,10 +1808,10 @@ with nonzero MESSAGE ID indicating that this request MUST generate response mess
 * C-U - Primary TLV, sent in DSO Unacknowledged message, from client to server,
 with zero MESSAGE ID indicating that this request MUST NOT generate response message.
 * C-A - Additional TLV, optionally added to request message or unacknowledged message from client to server.
-* CRP - Response Primary TLV, included in response message sent to back the client
+* CRP - Response Primary TLV, included in response message sent back to the client
 (in response to a client "C-P" request with nonzero MESSAGE ID indicating that a response is required)
 where the DSO-TYPE of the Response TLV matches the DSO-TYPE of the Primary TLV in the request.
-* CRA - Response Additional TLV, included in response message sent to back the client
+* CRA - Response Additional TLV, included in response message sent back to the client
 (in response to a client "C-P" request with nonzero MESSAGE ID indicating that a response is required)
 where the DSO-TYPE of the Response TLV does not match the DSO-TYPE of the Primary TLV in the request.
 
