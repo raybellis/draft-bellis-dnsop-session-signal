@@ -257,28 +257,41 @@ Given that these fatal error conditions signify defective software,
 and given that defective software is likely to remain defective for
 some time until it is fixed, after forcibly aborting a connection,
 a client SHOULD refrain from automatically reconnecting to that
-same server instance for at least one hour.
+same service instance for at least one hour.
 
-This document uses the term "same server instance" as follows:
+This document uses the term "same service instance" as follows:
 
 * In cases where a server is specified or configured using
 an IP address and TCP port number,
-two different configurations are referring to the same server instance if they
+two different configurations are referring to the same service instance if they
 contain the same IP address and TCP port number.
 
 * In cases where a server is specified or configured using
 a hostname and TCP port number,
 such as in the content of a DNS SRV record {{?RFC2782}},
 two different configurations (or DNS SRV records) are considered
-to be referring to the same server instance if they
+to be referring to the same service instance if they
 contain the same hostname (subject to the usual case insensitive
 DNS name matching rules {{!RFC1034}} {{!RFC1035}}) and TCP port number.
 In these cases, configurations with different hostnames are considered
-to be referring to different server instances, even if those different hostnames
+to be referring to different service instances, even if those different hostnames
 happen to be aliases, or happen to resolve to the same IP address(es).
 Implementations SHOULD NOT resolve hostnames and then
 perform matching of IP address(es) in order to evaluate whether
-two entities should be determined to be the "same server instance".
+two entities should be determined to be the "same service instance".
+
+When an anycast service is configured on a particular IP address and port, it
+must be the case that although there is more than one physical server
+responding on that IP address, each such server can be treated as equivalent.
+If a change in network topology causes packets in a particular TCP connection
+to be sent to an anycast server instance that does not know about the
+connection, the normal keepalive and TCP connection timeout process will allow
+for recovery. If after the connection is, the client's assumption that it is
+connected to the same service is violated in some way, that would be considered
+to be incorrect behavior in this context. It is however out of the possible
+scope for this specification to make specific recommendations in this regard;
+that would be up to follow-on documents that describe specific uses of DNS
+stateful operations.
 
 The term "long-lived operations" refers to operations
 such as Push Notification subscriptions {{?I-D.ietf-dnssd-push}},
@@ -752,7 +765,7 @@ Relay, the subsequent stream of received
 packets is then sent using unacknowledged messages, and this
 is appropriate because the client initiated the message stream
 by virtue of its Discovery Relay link subscription, thereby indicating
-its support of Discoery Relay, and its desire to receive inbound mDNS
+its support of Discovery Relay, and its desire to receive inbound mDNS
 packets over that DSO session {{?I-D.ietf-dnssd-mdns-relay}}.
 
 ***
@@ -1443,27 +1456,27 @@ After a DSO Session is ended by the server
 (either by sending the client a Retry Delay message,
 or by forcibly aborting the underlying transport connection)
 the client SHOULD try to reconnect,
-to that server instance, or to another suitable server instance, if more than one is available.
-If reconnecting to the same server instance, the client MUST respect the indicated delay,
+to that service instance, or to another suitable service instance, if more than one is available.
+If reconnecting to the same service instance, the client MUST respect the indicated delay,
 if available, before attempting to reconnect.
 
-If the server instance will only be out of service for a short maintenance period,
+If the service instance will only be out of service for a short maintenance period,
 it should use a value a little longer that the expected maintenance window.
 It should not default to a very large delay value, or clients may
 not attempt to reconnect after it resumes service.
 
-If a particular server instance does not want a client to reconnect ever
-(perhaps the server instance is being de-commissioned),
+If a particular service instance does not want a client to reconnect ever
+(perhaps the service instance is being de-commissioned),
 it SHOULD set the retry delay to the maximum value
 0xFFFFFFFF (2^32-1 milliseconds, approximately 49.7 days).
 It is not possible to instruct a client to stay away for longer than 49.7 days.
 If, after 49.7 days, the DNS or other configuration information
-still indicates that this is the valid server instance for a
+still indicates that this is the valid service instance for a
 particular service, then clients MAY attempt to reconnect.
 In reality, if a client is rebooted or otherwise lose state, it
 may well attempt to reconnect before 49.7 days elapses, for as
 long as the DNS or other configuration information continues to
-indicate that this is the server instance the client should use.
+indicate that this is the service instance the client should use.
 
 ***
 
@@ -1715,7 +1728,7 @@ information purposes, such as writing to a log file for future
 human analysis regarding the nature of the disconnection.
 Generally clients do not modify their behavior depending on the RCODE value.
 The RETRY DELAY in the message tells the client how long it should
-wait before attempting a new connection to this server instance.
+wait before attempting a new connection to this service instance.
 
 For clients that do in some way modify their behavior depending on the RCODE value,
 they should treat unknown RCODE values the same as RCODE=NOERROR (routine shutdown or restart).
