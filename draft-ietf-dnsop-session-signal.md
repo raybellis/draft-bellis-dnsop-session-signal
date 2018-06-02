@@ -1,7 +1,7 @@
 ---
 title: DNS Stateful Operations
-docname: draft-ietf-dnsop-session-signal-09
-date: 2018-5-16
+docname: draft-ietf-dnsop-session-signal-10
+date: 2018-6-2
 ipr: trust200902
 area: Internet
 wg: DNSOP Working Group
@@ -119,7 +119,7 @@ For example, a server cannot arbitrarily
 instruct a client to close a connection because the server can only send EDNS(0) options 
 in responses to queries that contained EDNS(0) options.
 
-This document defines a new DNS OPCODE, DSO (tentatively 6), for DNS Stateful Operations.
+This document defines a new DNS OPCODE, DSO ([TBA1], tentatively 6), for DNS Stateful Operations.
 DSO messages are used to communicate operations within persistent
 stateful sessions, expressed using type-length-value (TLV) syntax.
 This document defines an initial set of three TLVs,
@@ -199,7 +199,7 @@ DNS messages over a connection where:
 
 In this document the term "session" is used exclusively as described above.
 The term has no relationship to the "session layer" of the
-OSI "seven-layer model" popularized in the 1980s.
+OSI "seven-layer model".
 
 A "DSO Session" is established between two endpoints that acknowledge
 persistent DNS state via the exchange of DSO messages over the connection.
@@ -284,7 +284,7 @@ The term "long-lived operations" refers to operations
 such as Push Notification subscriptions {{?I-D.ietf-dnssd-push}},
 Discovery Relay interface subscriptions {{?I-D.ietf-dnssd-mdns-relay}},
 and other future long-lived DNS operations that choose to use
-DSO as their basis, that establish state that persists beyond
+DSO as their basis. These operations establish state that persists beyond
 the lifetime of a traditional brief request/response transaction.
 This document, the base specification for DNS Stateful Operations,
 defines a framework for supporting long-lived operations,
@@ -423,7 +423,7 @@ and receiving a response, with matching MESSAGE ID, and RCODE
 set to NOERROR (0), indicating that the DSO request was successful.
 
 If the RCODE in the response is set to DSOTYPENI
-("DSO-TYPE Not Implemented", tentatively RCODE 11)
+("DSO-TYPE Not Implemented", [TBA2] tentatively RCODE 11)
 this indicates that the server does support DSO, but does not implement
 the DSO-TYPE of the primary TLV in this DSO request message.
 A server implementing DSO MUST NOT return DSOTYPENI
@@ -439,7 +439,7 @@ which may result in a successful NOERROR response,
 yielding the establishment of a DSO Session.
 
 If the RCODE is set to any value other than NOERROR (0) or DSOTYPENI
-(tentatively 11), then the client MUST assume that the server does
+([TBA2] tentatively 11), then the client MUST assume that the server does
 not implement DSO at all. In this case the client is permitted to continue
 sending DNS messages on that connection, but the client SHOULD NOT
 issue further DSO messages on that connection.
@@ -567,7 +567,7 @@ particular notification.
 
 A DSO message begins with
 the standard twelve-byte DNS message header {{!RFC1035}}
-with the OPCODE field set to the DSO OPCODE (tentatively 6).
+with the OPCODE field set to the DSO OPCODE ([TBA1] tentatively 6).
 However, unlike standard DNS messages, the question section, answer section,
 authority records section and additional records sections are not present.
 The corresponding count fields (QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT) MUST be
@@ -633,7 +633,7 @@ In a response message (QR=1) the MESSAGE ID field MUST NOT be zero.
 If a response message (QR=1) is received where the MESSAGE ID is zero
 this is a fatal error and the recipient MUST forcibly abort the connection immediately.
 
-The DNS Header OPCODE field holds the DSO OPCODE value (tentatively 6).
+The DNS Header OPCODE field holds the DSO OPCODE value ([TBA1] tentatively 6).
 
 The Z bits are currently unused in DSO messages,
 and in both DSO requests and DSO responses the
@@ -659,7 +659,7 @@ The RCODE value in a response message (QR=1) may be one of the following values:
 | 4 | NOTIMP | DSO not supported |
 | 5 | REFUSED | Operation declined for policy reasons |
 | 9 | NOTAUTH | Not Authoritative (TLV-dependent) |
-| 11 | DSOTYPENI | Primary TLV's DSO-Type is not implemented |
+| [TBA2] 11 | DSOTYPENI | Primary TLV's DSO-Type is not implemented |
 
 Use of the above RCODEs is likely to be common in DSO but 
 does not preclude the definition and use of other codes in future documents that 
@@ -746,12 +746,13 @@ because the client initiated the message stream by virtue of its
 Push Notification subscription, thereby indicating its support of
 Push Notifications, and its desire to receive those notifications.
 
-Similarly, after an mDNS Relay client has subscribed to receive inbound
-mDNS traffic from an mDNS Relay, the subsequent stream of received
+Similarly, after an Discovery Relay client has subscribed to receive
+inbound mDNS (multicast DNS, {{?RFC6762}}) traffic from an Discovery
+Relay, the subsequent stream of received
 packets is then sent using unacknowledged messages, and this
 is appropriate because the client initiated the message stream
-by virtue of its mDNS Relay link subscription, thereby indicating
-its support of mDNS Relay, and its desire to receive inbound mDNS
+by virtue of its Discovery Relay link subscription, thereby indicating
+its support of Discoery Relay, and its desire to receive inbound mDNS
 packets over that DSO session {{?I-D.ietf-dnssd-mdns-relay}}.
 
 ***
@@ -835,7 +836,7 @@ forcibly abort the connection immediately.
 If DSO request message is received containing an unrecognized Primary TLV,
 with a nonzero MESSAGE ID (indicating that a response is expected),
 then the receiver MUST send an error response with matching MESSAGE ID,
-and RCODE DSOTYPENI (tentatively 11).
+and RCODE DSOTYPENI ([TBA2] tentatively 11).
 The error response MUST NOT contain a copy of the unrecognized Primary TLV.
 
 If DSO unacknowledged message is received containing an unrecognized Primary TLV,
@@ -1014,6 +1015,9 @@ because it results in less efficient use of the network.
 
 * Disable Delayed ACK at the receiver. This is not great,  
 because it results in less efficient use of the network.
+
+* Adding padding data to fill the segment. This is not great,
+because it uses additional bandwidth.
 
 * Use a networking API that lets the receiver signal to the TCP
 implementation that the receiver has received and processed a client
@@ -1839,12 +1843,12 @@ similar table summarizing the contexts where the new TLV is valid.
 
 ## DSO OPCODE Registration
 
-The IANA is requested to record the value (tentatively) 6 for the DSO OPCODE
+The IANA is requested to record the value ([TBA1] tentatively) 6 for the DSO OPCODE
 in the DNS OPCODE Registry. DSO stands for DNS Stateful Operations.
 
 ## DSO RCODE Registration
 
-The IANA is requested to record the value (tentatively) 11 for the
+The IANA is requested to record the value ([TBA2] tentatively) 11 for the
 DSOTYPENI error code in the DNS RCODE Registry.
 The DSOTYPENI error code ("DSO-TYPE Not Implemented") indicates that
 the receiver does implement DNS Stateful Operations, but does not implement
