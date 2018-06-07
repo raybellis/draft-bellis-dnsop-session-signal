@@ -359,12 +359,13 @@ Internet-Draft           DNS Stateful Operations               June 2018
    packets in a particular TCP connection to be sent to an anycast
    server instance that does not know about the connection, the normal
    keepalive and TCP connection timeout process will allow for recovery.
-   If after the connection is, the client's assumption that it is
-   connected to the same service is violated in some way, that would be
-   considered to be incorrect behavior in this context.  It is however
-   out of the possible scope for this specification to make specific
-   recommendations in this regard; that would be up to follow-on
-   documents that describe specific uses of DNS stateful operations.
+   If after the connection is re-established, the client's assumption
+   that it is connected to the same service is violated in some way,
+   that would be considered to be incorrect behavior in this context.
+   It is however out of the possible scope for this specification to
+   make specific recommendations in this regard; that would be up to
+   follow-on documents that describe specific uses of DNS stateful
+   operations.
 
    The term "long-lived operations" refers to operations such as Push
    Notification subscriptions [I-D.ietf-dnssd-push], Discovery Relay
@@ -384,8 +385,7 @@ Internet-Draft           DNS Stateful Operations               June 2018
    DSO unacknowledged messages are unidirectional messages and do not
    generate any response.
 
-   Both DSO request messages and DSO unacknowledged messages are
-   formatted as DNS request messages (the header QR bit is set to zero,
+
 
 
 
@@ -394,6 +394,8 @@ Bellis, et al.          Expires December 9, 2018                [Page 7]
 Internet-Draft           DNS Stateful Operations               June 2018
 
 
+   Both DSO request messages and DSO unacknowledged messages are
+   formatted as DNS request messages (the header QR bit is set to zero,
    as described in Section 5.2).  One difference is that in DSO request
    messages the MESSAGE ID field is nonzero; in DSO unacknowledged
    messages it is zero.
@@ -432,8 +434,6 @@ Internet-Draft           DNS Stateful Operations               June 2018
    Resetting a timer means resetting the timer value to zero and
    starting the timer again.  Clearing a timer means resetting the timer
    value to zero but NOT starting the timer again.
-
-
 
 
 

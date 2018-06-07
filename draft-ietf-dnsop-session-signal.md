@@ -286,7 +286,7 @@ responding on that IP address, each such server can be treated as equivalent.
 If a change in network topology causes packets in a particular TCP connection
 to be sent to an anycast server instance that does not know about the
 connection, the normal keepalive and TCP connection timeout process will allow
-for recovery. If after the connection is, the client's assumption that it is
+for recovery. If after the connection is re-established, the client's assumption that it is
 connected to the same service is violated in some way, that would be considered
 to be incorrect behavior in this context. It is however out of the possible
 scope for this specification to make specific recommendations in this regard;
