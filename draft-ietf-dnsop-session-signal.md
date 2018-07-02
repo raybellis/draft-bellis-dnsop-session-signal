@@ -1,7 +1,7 @@
 ---
 title: DNS Stateful Operations
-docname: draft-ietf-dnsop-session-signal-10
-date: 2018-6-7
+docname: draft-ietf-dnsop-session-signal-11
+date: 2018-7-2
 ipr: trust200902
 area: Internet
 wg: DNSOP Working Group
@@ -698,11 +698,11 @@ and determines the nature of the operation being performed,
 including whether it is an acknowledged or unacknowledged operation.
 In some cases it may be appropriate to include other TLVs in a request message or unacknowledged message,
 such as the Encryption Padding TLV ({{padding}}),
-and these extra TLVs are referred to as the "Additional TLVs".
+and these extra TLVs are referred to as the "Additional TLVs" and are not limited to what is defined in this document. New "Additional TLVs" may be defined in the future and those definitions will describe when their use is appropriate.
 
 A DSO response message may contain no TLVs,
 or it may be specified to contain one or more TLVs
-appropriate to the information being communicated.
+appropriate to the information being communicated. This includes "Primary TLVs" and "Additional TLVs" defined in this document as well as in future TLV definitions. 
 
 A DSO response message may contain one or more TLVs with
 DSO-TYPE the same as the Primary TLV from the corresponding DSO request message,
@@ -1574,8 +1574,9 @@ No client DSO response message to this unilateral declaration is required or all
 
 The Keepalive TLV is not used as an Additional TLV.
 
-In response messages the Keepalive TLV is used only as a Response Primary TLV,
-replying to a Keepalive request message from the client.
+In Keepalive response messages, the Keepalive TLV is REQUIRED and is used only 
+as a Response Primary TLV sent as a reply to a Keepalive request message from 
+the client.
 A Keepalive TLV MUST NOT be added as to other responses a Response Additional TLV.
 If the server wishes to update a client's Session Timeout values
 other than in response to a Keepalive request message from the client,
