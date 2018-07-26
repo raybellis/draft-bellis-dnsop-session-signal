@@ -740,8 +740,11 @@
 <h1 id="rfc.section.5.1.3">
 <a href="#rfc.section.5.1.3">5.1.3.</a> <a href="#middlebox-considerations" id="middlebox-considerations">Middlebox Considerations</a>
 </h1>
-<p id="rfc.section.5.1.3.p.1">Where an application-layer middlebox (e.g., a DNS proxy, forwarder, or session multiplexer) is in the path, the middlebox MUST NOT blindly forward DSO messages in either direction, and MUST treat the inbound and outbound connections as separate sessions.  This does not preclude the use of DSO messages in the presence of an IP-layer middlebox, such as a NAT that rewrites IP-layer and/or transport-layer headers but otherwise preserves the effect of a single session between the client and the server.</p>
-<p id="rfc.section.5.1.3.p.2">To illustrate the above, consider a network where a middlebox terminates one or more TCP connections from clients and multiplexes the queries therein over a single TCP connection to an upstream server.  The DSO messages and any associated state are specific to the individual TCP connections.  A DSO-aware middlebox MAY in some circumstances be able to retain associated state and pass it between the client and server (or vice versa) but this would be highly TLV-specific.  For example, the middlebox may be able to maintain a list of which clients have made Push Notification subscriptions <a href="#I-D.ietf-dnssd-push" class="xref">[I-D.ietf-dnssd-push]</a> and make its own subscription(s) on their behalf, relaying any subsequent notifications to the client (or clients) that have subscribed to that particular notification.</p>
+<p id="rfc.section.5.1.3.p.1">Where an application-layer middlebox (e.g., a DNS proxy, forwarder, or session multiplexer) is in the path, care must be taken to avoid inappropriately passing session signaling through the middlebox.</p>
+<p id="rfc.section.5.1.3.p.2">In cases where a DSO session is terminated on one side of a middlebox, and then some session is opened on the other side of the middlebox in order to satisfy requests sent over the first DSO session, any such session MUST be treated as a separate session.</p>
+<p id="rfc.section.5.1.3.p.3">This does not preclude the use of DSO messages in the presence of an IP-layer middlebox, such as a NAT that rewrites IP-layer and/or transport- layer headers but otherwise preserves the effect of a single session between the client and the server.  And of course it does not apply to middleboxes that do not implement DNS Stateless Operations.</p>
+<p id="rfc.section.5.1.3.p.4">These restrictions do not apply to such middleboxes: since they have no way to understand a DSO message, a pass-through middlebox like the one described in the previous paragraph will pass DSO messages unchanged or drop them (or possibly drop the connection).  A middlebox that is not doing a strict pass-through will have no way to know on which connection to forward a DSO message, and therefore will not be able to behave incorrectly.</p>
+<p id="rfc.section.5.1.3.p.5">To illustrate the above, consider a network where a middlebox terminates one or more TCP connections from clients and multiplexes the queries therein over a single TCP connection to an upstream server.  The DSO messages and any associated state are specific to the individual TCP connections.  A DSO-aware middlebox MAY in some circumstances be able to retain associated state and pass it between the client and server (or vice versa) but this would be highly TLV-specific.  For example, the middlebox may be able to maintain a list of which clients have made Push Notification subscriptions <a href="#I-D.ietf-dnssd-push" class="xref">[I-D.ietf-dnssd-push]</a> and make its own subscription(s) on their behalf, relaying any subsequent notifications to the client (or clients) that have subscribed to that particular notification.</p>
 <p></p>
 <h1 id="rfc.section.5.2">
 <a href="#rfc.section.5.2">5.2.</a> <a href="#format" id="format">Message Format</a>
@@ -841,7 +844,7 @@
 <p id="rfc.section.5.2.2.p.1">The standard twelve-byte DNS message header with its zero-valued count fields is followed by the DSO Data, expressed using TLV syntax, as described below <a href="#tlvsyntax" class="xref">Section 5.2.2.1</a>.</p>
 <p id="rfc.section.5.2.2.p.2">A DSO message may be a request message, a response message, or an unacknowledged message.</p>
 <p id="rfc.section.5.2.2.p.3">A DSO request message or DSO unacknowledged message MUST contain at least one TLV.  The first TLV in a DSO request message or DSO unacknowledged message is referred to as the &#8220;Primary TLV&#8221; and determines the nature of the operation being performed, including whether it is an acknowledged or unacknowledged operation.  In some cases it may be appropriate to include other TLVs in a request message or unacknowledged message, such as the Encryption Padding TLV (<a href="#padding" class="xref">Section 7.3</a>), and these extra TLVs are referred to as the &#8220;Additional TLVs&#8221; and are not limited to what is defined in this document. New &#8220;Additional TLVs&#8221; may be defined in the future and those definitions will describe when their use is appropriate.</p>
-<p id="rfc.section.5.2.2.p.4">A DSO response message may contain no TLVs, or it may be specified to contain one or more TLVs appropriate to the information being communicated. This includes &#8220;Primary TLVs&#8221; and &#8220;Additional TLVs&#8221; defined in this document as well as in future TLV definitions.</p>
+<p id="rfc.section.5.2.2.p.4">A DSO response message may contain no TLVs, or it may be specified to contain one or more TLVs appropriate to the information being communicated.  This includes &#8220;Primary TLVs&#8221; and &#8220;Additional TLVs&#8221; defined in this document as well as in future TLV definitions.  It may be permissible for an additional TLV to appear in a response to a primary TLV even though the specification of that primary TLV does not specify it explicitly.  See <a href="#TLV" class="xref">Section 8.2</a> for more information.</p>
 <p id="rfc.section.5.2.2.p.5">A DSO response message may contain one or more TLVs with DSO-TYPE the same as the Primary TLV from the corresponding DSO request message, in which case those TLV(s) are referred to as &#8220;Response Primary TLVs&#8221;.  A DSO response message is not required to carry Response Primary TLVs.  The MESSAGE ID field in the DNS message header is sufficient to identify the DSO request message to which this response message relates.</p>
 <p id="rfc.section.5.2.2.p.6">A DSO response message may contain one or more TLVs with DSO-TYPEs different from the Primary TLV from the corresponding DSO request message, in which case those TLV(s) are referred to as &#8220;Response Additional TLVs&#8221;.</p>
 <p id="rfc.section.5.2.2.p.7">Response Primary TLV(s), if present, MUST occur first in the response message, before any Response Additional TLVs.</p>
@@ -930,7 +933,7 @@
 <h1 id="rfc.section.5.4">
 <a href="#rfc.section.5.4">5.4.</a> <a href="#dso-response-generation" id="dso-response-generation">DSO Response Generation</a>
 </h1>
-<p id="rfc.section.5.4.p.1">With most TCP implementations, for DSO requests that generate a response, the TCP data acknowledgement (generated because data has been received by TCP), the TCP window update (generated because TCP has delivered that data to the receiving software), and the DSO response (generated by the receiving application-layer software itself) are all combined into a single IP packet.  Combining these three elements into a single IP packet can give a significant improvement in network efficiency.</p>
+<p id="rfc.section.5.4.p.1">With most TCP implementations, for DSO requests that generate a response, the TCP data acknowledgement (generated because data has been received by TCP), the TCP window update (generated because TCP has delivered that data to the receiving software), and the DSO response (generated by the receiving application-layer software itself) are all combined into a single IP packet.  Combining these three elements into a single IP packet can give a significant improvement in network efficiency, assuming that the DSO response is sent before the TCP Delayed Acknowledgement timer goes off.</p>
 <p id="rfc.section.5.4.p.2">For DSO requests that do not generate a response, the TCP implementation generally doesn&#8217;t have any way to know that no response will be forthcoming, so it waits fruitlessly for the application-layer software to generate a response, until the Delayed ACK timer fires <a href="#RFC1122" class="xref">[RFC1122]</a> (typically 200 milliseconds) and only then does it send the TCP ACK and window update.  In conjunction with Nagle&#8217;s Algorithm at the sender, this can delay the sender&#8217;s transmission of its next (non-full-sized) TCP segment, while the sender is waiting for its previous (non-full-sized) TCP segment to be acknowledged, which won&#8217;t happen until the Delayed ACK timer fires.  Nagle&#8217;s Algorithm exists to combine multiple small application writes into more-efficient large TCP segments, to guard against wasteful use of the network by applications that would otherwise transmit a stream of small TCP segments, but in this case Nagle&#8217;s Algorithm (created to improve network efficiency) can interact badly with TCP&#8217;s Delayed ACK feature (also created to improve network efficiency) <a href="#NagleDA" class="xref">[NagleDA]</a> with the result of delaying some messages by up to 200 milliseconds.</p>
 <p id="rfc.section.5.4.p.3">Possible mitigations for this problem include:</p>
 <p></p>
@@ -1204,7 +1207,7 @@
 </pre>
 <p></p>
 <h1 id="rfc.section.8.2">
-<a href="#rfc.section.8.2">8.2.</a> <a href="#tlv-usage" id="tlv-usage">TLV Usage</a>
+<a href="#rfc.section.8.2">8.2.</a> <a href="#TLV" id="TLV">TLV Usage</a>
 </h1>
 <p id="rfc.section.8.2.p.1">The table below indicates, for each of the three TLVs defined in this document, whether they are valid in each of ten different contexts.</p>
 <p id="rfc.section.8.2.p.2">The first five contexts are requests or unacknowledged messages from client to server, and the corresponding responses from server back to client:</p>
@@ -1397,7 +1400,7 @@
 <tr>
 <td class="reference"><b id="I-D.ietf-dnssd-mdns-relay">[I-D.ietf-dnssd-mdns-relay]</b></td>
 <td class="top">
-<a>Lemon, T.</a> and <a>S. Cheshire</a>, "<a href="https://tools.ietf.org/html/draft-ietf-dnssd-mdns-relay-00">Multicast DNS Discovery Relay</a>", Internet-Draft draft-ietf-dnssd-mdns-relay-00, May 2018.</td>
+<a>Lemon, T.</a> and <a>S. Cheshire</a>, "<a href="https://tools.ietf.org/html/draft-ietf-dnssd-mdns-relay-01">Multicast DNS Discovery Relay</a>", Internet-Draft draft-ietf-dnssd-mdns-relay-01, July 2018.</td>
 </tr>
 <tr>
 <td class="reference"><b id="I-D.ietf-dnssd-push">[I-D.ietf-dnssd-push]</b></td>
@@ -1407,7 +1410,7 @@
 <tr>
 <td class="reference"><b id="I-D.ietf-dprive-padding-policy">[I-D.ietf-dprive-padding-policy]</b></td>
 <td class="top">
-<a>Mayrhofer, A.</a>, "<a href="https://tools.ietf.org/html/draft-ietf-dprive-padding-policy-05">Padding Policy for EDNS(0)</a>", Internet-Draft draft-ietf-dprive-padding-policy-05, April 2018.</td>
+<a>Mayrhofer, A.</a>, "<a href="https://tools.ietf.org/html/draft-ietf-dprive-padding-policy-06">Padding Policy for EDNS(0)</a>", Internet-Draft draft-ietf-dprive-padding-policy-06, July 2018.</td>
 </tr>
 <tr>
 <td class="reference"><b id="I-D.ietf-tls-tls13">[I-D.ietf-tls-tls13]</b></td>
