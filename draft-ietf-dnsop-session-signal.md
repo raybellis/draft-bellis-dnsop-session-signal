@@ -1134,7 +1134,9 @@ the inactivity timeout, and the keepalive interval.
 Both values are communicated in the same TLV, the Keepalive TLV ({{keepalive}}).
 
 The first timeout value, the inactivity timeout, is the maximum time for which
-a client may speculatively keep a DSO Session open in the expectation that
+a client may speculatively keep a DSO Session open with no operations pending
+(e.g., an outstanding DNS Push request)
+in the expectation that
 it may have future requests to send to that server.
 
 The second timeout value, the keepalive interval, is the maximum permitted
