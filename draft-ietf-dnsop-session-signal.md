@@ -1342,7 +1342,7 @@ a client abruptly disconnects without cleanly closing the session,
 and is sufficient to maintain state in firewalls and NAT gateways
 that follow the IETF recommended Best Current Practice that the
 "established connection idle-timeout" used by middleboxes
-be at least 2 hours 4 minutes {{!RFC5382}}.
+be at least 2 hours 4 minutes {{!BCP142}}.
 
 Note that the lower the keepalive interval value, the higher the load on client
 and server. For example, a hypothetical keepalive interval value of 100ms would result
