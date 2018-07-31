@@ -1235,8 +1235,8 @@ If, at any time during the life of the DSO Session,
 twice the inactivity timeout value (i.e., 30 seconds by default),
 or five seconds, if twice the inactivity timeout value is less than five seconds,
 elapses without there being any operation active on the DSO Session,
-the server SHOULD consider the client delinquent,
-and SHOULD forcibly abort the DSO Session.
+the server MUST consider the client delinquent,
+and MUST forcibly abort the DSO Session.
 
 In this context, an operation being active on a DSO Session includes
 a query waiting for a response, an update waiting for a response,
@@ -1385,12 +1385,12 @@ which operations need to be cancelled.
 This section discusses various reasons a session may be terminated,
 and the mechanisms for doing so.
 
-Normally a server MUST NOT close a DSO Session with a client.
-A server only causes a DSO Session to be ended in the exceptional circumstances outlined below.
 In normal operation, closing a DSO Session is the client's responsibility.
 The client makes the determination of when to close a DSO
 Session based on an evaluation of both its own needs,
 and the inactivity timeout value dictated by the server.
+In the anse, a server MUST NOT close a DSO Session with a client.
+A server only causes a DSO Session to be ended in the exceptional circumstances outlined below.
 
 Some of the exceptional situations in which a server may terminate a DSO Session include:
 
