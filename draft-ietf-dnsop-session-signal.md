@@ -513,7 +513,10 @@ shared DSO Session for all those operations.
 A client SHOULD NOT open multiple connections to the same target host and port
 just because the names being operated on are different or
 happen to fall within different zones.
-This requirement is to reduce unnecessary connection load on the DNS server.
+This requirement has two benefits.
+First, it reduces unnecessary connection load on the DNS server.
+Second, it avoids paying the TCP slow start penalty when making subsequent
+connections to the same server.
 
 However, server implementers and operators should be aware that connection
 sharing may not be possible in all cases.
