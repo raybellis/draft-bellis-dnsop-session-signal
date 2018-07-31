@@ -396,7 +396,7 @@ given above in the Terminology section ({{terminology}}).
 DNS over plain UDP {{?RFC0768}} is not appropriate since it fails on the requirement for
 in-order message delivery, and, in the presence of NAT gateways and firewalls
 with short UDP timeouts, it fails to provide a persistent bi-directional
-communication channel unless an excessive amount of keepalive traffic is used.
+communication channel unless an excessive amount of DSO keepalive traffic is used.
 
 At the time of publication, DSO is specified only
 for DNS over TCP {{!RFC1035}} {{!RFC7766}}, and
@@ -478,14 +478,14 @@ regard to inactivity timeouts and session termination, not as previously
 prescribed in the earlier specification for DNS over TCP {{!RFC7766}}.
 
 Note that for clients that implement only the DSO-TYPEs defined in
-this base specification, sending a DSO Keepalive TLV is the only
+this base specification, sending a Keepalive TLV is the only
 DSO request message they have available to initiate a DSO Session.
 Even for clients that do implement other future DSO-TYPEs, for simplicity
 they MAY elect to always send an initial DSO Keepalive
 request message as their way of initiating a DSO Session.
 A future definition of a new response-requiring DSO-TYPE
 gives implementers the option of using that new DSO-TYPE if they wish,
-but does not change the fact that sending a DSO Keepalive TLV
+but does not change the fact that sending a Keepalive TLV
 remains a valid way of initiating a DSO Session.
 
 ### Connection Sharing {#sharing}
@@ -1125,7 +1125,7 @@ responses to those messages SHOULD be sent out of order when appropriate.
 
 Two timeout values are associated with a DSO Session:
 the inactivity timeout, and the keepalive interval. 
-Both values are communicated in the same TLV, the DSO Keepalive TLV ({{keepalive}}).
+Both values are communicated in the same TLV, the Keepalive TLV ({{keepalive}}).
 
 The first timeout value, the inactivity timeout, is the maximum time for which
 a client may speculatively keep a DSO Session open in the expectation that
@@ -1142,12 +1142,12 @@ A shorter inactivity timeout with a longer keepalive interval signals
 to the client that it should not speculatively keep an inactive DSO
 Session open for very long without reason, but when it does have an
 active reason to keep a DSO Session open, it doesn't need to be sending
-an aggressive level of keepalive traffic to maintain that session.
+an aggressive level of DSO keepalive traffic to maintain that session.
 
 A longer inactivity timeout with a shorter keepalive interval
 signals to the client that it may speculatively keep an inactive
 DSO Session open for a long time, but to maintain that inactive
-DSO Session it should be sending a lot of keepalive traffic.
+DSO Session it should be sending a lot of DSO keepalive traffic.
 This configuration is expected to be less common.
 
 In the usual case where the inactivity timeout is shorter than the keepalive
@@ -1266,10 +1266,10 @@ An inactivity timeout of 0xFFFFFFFF represents "infinity" and
 informs the client that it may keep an idle connection open as long as it wishes.
 Note that after granting an unlimited inactivity timeout in this way,
 at any point the server may revise that inactivity timeout by sending
-a new Keepalive message dictating new Session Timeout values to the client.
+a new DSO Keepalive message dictating new Session Timeout values to the client.
 
 The largest **finite** inactivity timeout
-supported by the current DSO Keepalive TLV is
+supported by the current Keepalive TLV is
 0xFFFFFFFE (2^32-2 milliseconds, approximately 49.7 days).
 
 ***
@@ -1296,7 +1296,7 @@ If a client disconnects from the network abruptly,
 without cleanly closing its DSO Session,
 perhaps leaving a long-lived operation uncancelled,
 the server learns of this after failing to
-receive the required keepalive traffic from that client.
+receive the required DSO keepalive traffic from that client.
 If, at any time during the life of the DSO Session,
 twice the keepalive interval value (i.e., 30 seconds by default) elapses
 without any DNS messages being sent or received on a DSO Session,
@@ -1305,11 +1305,11 @@ and SHOULD forcibly abort the DSO Session.
 
 ### Values for the Keepalive Interval
 
-For the keepalive interval value, lower values result in a higher volume of keepalive 
+For the keepalive interval value, lower values result in a higher volume of DSO keepalive 
 traffic. Higher values of the keepalive interval reduce traffic and CPU load, 
 but have minimal effect on the memory burden
 at the server, because clients keep a DSO Session open for the same length of time
-(determined by the inactivity timeout) regardless of the level of keepalive traffic 
+(determined by the inactivity timeout) regardless of the level of DSO keepalive traffic 
 required.
 
 It may be appropriate for clients and servers to select different keepalive 
@@ -1317,11 +1317,11 @@ interval values depending on the nature of the network they are on.
 
 A corporate DNS server that knows it is serving only clients on the internal 
 network, with no intervening NAT gateways or firewalls, can impose a higher 
-keepalive interval, because frequent keepalive traffic is not required.
+keepalive interval, because frequent DSO keepalive traffic is not required.
 
 A public DNS server that is serving primarily residential consumer clients, 
 where it is likely there will be a NAT gateway on the path, may impose a lower 
-keepalive interval, to generate more frequent keepalive traffic.
+keepalive interval, to generate more frequent DSO keepalive traffic.
 
 A smart client may be adaptive to its environment. A client using
 a private IPv4 address {{!RFC1918}} to communicate with a DNS server
@@ -1345,21 +1345,21 @@ to keep the DSO Session alive. And, in this extreme example, a single packet los
 retransmission over a long path could introduce a momentary pause in the stream of messages,
 long enough to cause the server to overzealously abort the connection.
 
-Because of this concern, the server MUST NOT send a Keepalive message
+Because of this concern, the server MUST NOT send a DSO Keepalive message
 (either a response to a client-initiated request, or a server-initiated message)
 with a keepalive interval value less than ten seconds.
-If a client receives a Keepalive message specifying a keepalive interval value
+If a client receives a DSO Keepalive message specifying a keepalive interval value
 less than ten seconds this is a fatal error and the client MUST
 forcibly abort the connection immediately.
 
 A keepalive interval value of 0xFFFFFFFF represents "infinity" and
-informs the client that it should generate no keepalive traffic.
-Note that after signaling that the client should generate no keepalive traffic in this way,
-at any point the server may revise that keepalive traffic requirement by sending
-a new Keepalive message dictating new Session Timeout values to the client.
+informs the client that it should generate no DSO keepalive traffic.
+Note that after signaling that the client should generate no DSO keepalive traffic in this way,
+at any point the server may revise that DSO keepalive traffic requirement by sending
+a new DSO Keepalive message dictating new Session Timeout values to the client.
 
 The largest **finite** keepalive interval
-supported by the current DSO Keepalive TLV is
+supported by the current Keepalive TLV is
 0xFFFFFFFE (2^32-2 milliseconds, approximately 49.7 days).
 
 ***
@@ -1402,7 +1402,7 @@ and then killing and restarting the server software,
 which generally entails a loss of network connections.
 
 * The client fails to meets its obligation to generate the required
-keepalive traffic, or to close an inactive session by the prescribed time
+DSO keepalive traffic, or to close an inactive session by the prescribed time
 (twice the time interval dictated by the server, or five seconds,
 whichever is greater, as described in {{sessiontimeouts}}).
 
@@ -1538,74 +1538,74 @@ whichever is greater, the server will forcibly abort the connection.
 KEEPALIVE INTERVAL:
 : The keepalive interval for the current DSO Session, specified as
 a 32-bit unsigned integer, in network (big endian) byte order, in units of milliseconds.
-This is the interval at which a client MUST generate keepalive
+This is the interval at which a client MUST generate DSO keepalive
 traffic to maintain connection state.
 The keepalive interval MUST NOT be less than ten seconds.
-If the client does not generate the mandated keepalive traffic,
+If the client does not generate the mandated DSO keepalive traffic,
 then after twice this interval the server will forcibly abort the connection.
 Since the minimum allowed keepalive interval is ten seconds, the
 minimum time at which a server will forcibly disconnect a client for
-failing to generate the mandated keepalive traffic is twenty seconds.
+failing to generate the mandated DSO keepalive traffic is twenty seconds.
 
 The transmission or reception of DSO Keepalive messages
 (i.e., messages where the Keepalive TLV is the first TLV)
 reset only the keepalive timer, not the inactivity timer.
-The reason for this is that periodic Keepalive messages are sent for the sole
+The reason for this is that periodic DSO Keepalive messages are sent for the sole
 purpose of keeping a DSO Session alive, when that DSO Session has current
 or recent non-maintenance activity that warrants keeping that DSO Session alive.
-Sending keepalive traffic itself is not considered a client activity;
+Sending DSO keepalive traffic itself is not considered a client activity;
 it is considered a maintenance activity that is performed
 in service of other client activities.
-If keepalive traffic itself were to reset the inactivity timer,
+If DSO keepalive traffic itself were to reset the inactivity timer,
 then that would create a circular livelock where keepalive traffic
 would be sent indefinitely to keep a DSO Session alive, where the only
 activity on that DSO Session would be the keepalive traffic keeping
 the DSO Session alive so that further keepalive traffic can be sent.
 For a DSO Session to be considered active, it must be carrying
 something more than just keepalive traffic.
-This is why merely sending or receiving a Keepalive message
+This is why merely sending or receiving a DSO Keepalive message
 does not reset the inactivity timer.
 
-When sent by a client, the Keepalive request message MUST
+When sent by a client, the DSO Keepalive request message MUST
 be sent as an acknowledged request, with a nonzero MESSAGE ID.
-If a server receives a Keepalive DSO message with a zero MESSAGE ID then
+If a server receives a DSO Keepalive message with a zero MESSAGE ID then
 this is a fatal error and the server MUST forcibly abort the connection immediately.
-The Keepalive request message resets a DSO Session's keepalive timer,
+The DSO Keepalive request message resets a DSO Session's keepalive timer,
 and at the same time communicates to the server the the client's
 requested Session Timeout values.
-In a server response to a client-initiated Keepalive request message,
+In a server response to a client-initiated DSO Keepalive request message,
 the Session Timeouts contain the server's chosen values from
 this point forward in the DSO Session, which the client MUST respect.
 This is modeled after the DHCP protocol, where the client requests a certain
 lease lifetime using DHCP option 51 {{!RFC2132}}, but the server is the
 ultimate authority for deciding what lease lifetime is actually granted.
 
-When a client is sending its second and subsequent Keepalive DSO requests to
+When a client is sending its second and subsequent DSO Keepalive requests to
 the server, the client SHOULD continue to request its preferred values each time.
 This allows flexibility, so that if conditions change during the lifetime of a
 DSO Session, the server can adapt its responses to better fit the client's needs.
 
 Once a DSO Session is in progress ({{establishment}})
-a Keepalive message MAY be initiated by a server.
-When sent by a server, the Keepalive message MUST be
+a DSO Keepalive message MAY be initiated by a server.
+When sent by a server, the DSO Keepalive message MUST be
 sent as an unacknowledged message, with the MESSAGE ID set to zero.
 The client MUST NOT generate a response to a server-initiated DSO Keepalive message.
-If a client receives a Keepalive request message with a nonzero MESSAGE ID then
+If a client receives a DSO Keepalive request message with a nonzero MESSAGE ID then
 this is a fatal error and the client MUST forcibly abort the connection immediately.
-The Keepalive unacknowledged message from the server resets a DSO Session's keepalive timer,
+The unacknowledged DSO Keepalive message from the server resets a DSO Session's keepalive timer,
 and at the same time unilaterally informs the client of the new
 Session Timeout values to use from this point forward in this DSO Session.
 No client DSO response message to this unilateral declaration is required or allowed.
 
 The Keepalive TLV is not used as an Additional TLV.
 
-In Keepalive response messages, the Keepalive TLV is REQUIRED and is used only 
-as a Response Primary TLV sent as a reply to a Keepalive request message from 
+In DSO Keepalive response messages, the Keepalive TLV is REQUIRED and is used only 
+as a Response Primary TLV sent as a reply to a DSO Keepalive request message from 
 the client.
-A Keepalive TLV MUST NOT be added as to other responses a Response Additional TLV.
+A Keepalive TLV MUST NOT be added to other responses as a Response Additional TLV.
 If the server wishes to update a client's Session Timeout values
-other than in response to a Keepalive request message from the client,
-then it does so by sending an unacknowledged Keepalive message
+other than in response to a DSO Keepalive request message from the client,
+then it does so by sending an unacknowledged DSO Keepalive message
 of its own, as described above.
 
 It is not required that the Keepalive TLV be used in every DSO Session.
@@ -1622,12 +1622,12 @@ a Keepalive request message is the only way for a client to initiate a DSO Sessi
 When a client receives a response to its client-initiated DSO Keepalive message,
 or receives a server-initiated DSO Keepalive message, the client has then 
 received Session Timeout values dictated by the server. The two timeout values 
-contained in the DSO Keepalive TLV from the server may each be higher, lower, or 
+contained in the Keepalive TLV from the server may each be higher, lower, or 
 the same as the respective Session Timeout values the client previously had for 
 this DSO Session.
 
 In the case of the keepalive timer, the handling of the received value is 
-straightforward. The act of receiving the message containing the DSO Keepalive 
+straightforward. The act of receiving the message containing the Keepalive 
 TLV itself resets the keepalive timer and updates the keepalive interval for the 
 DSO Session. The new keepalive interval indicates the 
 maximum time that may elapse before another message must be sent
@@ -1639,10 +1639,10 @@ In the case of the inactivity timeout, the handling of the received
 value is a little more subtle, though the meaning of the inactivity
 timeout remains as specified --- it still indicates the maximum
 permissible time allowed without useful activity on a DSO Session.
-The act of receiving the message containing the DSO Keepalive TLV does not
+The act of receiving the message containing the Keepalive TLV does not
 itself reset the inactivity timer. The time elapsed since the last useful
 activity on this DSO Session is unaffected by exchange of DSO Keepalive messages.
-The new inactivity timeout value in the DSO Keepalive TLV in the received message
+The new inactivity timeout value in the Keepalive TLV in the received message
 does update the timeout associated with the running inactivity timer;
 that becomes the new maximum permissible time without activity on a DSO Session.
 
