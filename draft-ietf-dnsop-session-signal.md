@@ -1119,10 +1119,13 @@ and the cancelled operation's MESSAGE ID is now free for reuse.
 A DSO Session begins as described in {{establishment}}.
 
 The client may perform as many DNS operations as it wishes using the
-newly created DSO Session. Operations SHOULD be pipelined (i.e., the
-client doesn't need wait for a response before sending the next message).
+newly created DSO Session. When the
+client has multiple messages to send, it SHOULD NOT wait for each response before sending the next message.
+This prevents TCP's delayed acknowledgement algorithm from forcing the
+client into a slow lock-step.
 The server MUST act on messages in the order they are transmitted, but
-responses to those messages SHOULD be sent out of order when appropriate.
+when responses to those messages become available out of order, the server
+SHOULD NOT delay sending available responses in order to respond in order.
 
 ## DSO Session Timeouts {#sessiontimeouts}
 
