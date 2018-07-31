@@ -2751,9 +2751,7 @@ Internet-Draft           DNS Stateful Operations               July 2018
 
    Requests to register additional new DSO Type Codes in the
    "Unassigned" range 0040-F7FF are to be recorded by IANA after Expert
-   Review [RFC8126].  At the time of publication of this document, the
-   Designated Expert for the newly created DSO Type Code registry is
-   [*TBD*].
+   Review [RFC8126].
 
    DSO Type Codes in the "experimental/local" range F800-FBFF may be
    used as Experimental Use or Private Use values [RFC8126] and may be
@@ -2792,6 +2790,8 @@ Internet-Draft           DNS Stateful Operations               July 2018
    Jan Komissar, Edward Lewis, Allison Mankin, Rui Paulo, David
    Schinazi, Manju Shankar Rao, and Bernie Volz for their helpful
    contributions to this document.
+
+
 
 
 

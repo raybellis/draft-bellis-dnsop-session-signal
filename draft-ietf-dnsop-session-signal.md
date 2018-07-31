@@ -1915,8 +1915,6 @@ require publication of an IETF Standards Action document {{!RFC8126}}.
 Requests to register additional new DSO Type Codes
 in the "Unassigned" range 0040-F7FF
 are to be recorded by IANA after Expert Review {{!RFC8126}}.
-At the time of publication of this document, the Designated Expert
-for the newly created DSO Type Code registry is \[**TBD**\].
 
 DSO Type Codes in the "experimental/local" range F800-FBFF
 may be used as Experimental Use or Private Use values {{!RFC8126}}
