@@ -112,7 +112,7 @@ In such situations it is also advantageous to support server-initiated messages.
 
 The existing EDNS(0) Extension Mechanism for DNS {{!RFC6891}} is explicitly
 defined to only have "per-message" semantics. While EDNS(0) has been used to
-signal at least one session-related parameter (the EDNS(0) TCP Keepalive option
+signal at least one session-related parameter (edns-tcp-keepalive EDNS0 Option
 {{?RFC7828}}) the result is less than optimal due to the restrictions
 imposed by the EDNS(0) semantics and the lack of server-initiated signalling. 
 For example, a server cannot arbitrarily 
@@ -364,8 +364,8 @@ Firstly, establishing session parameters such as server-defined timeouts is of
 great use in the 
 general management of persistent connections. For example, using DSO sessions 
 for stub-to-recursive DNS-over-TLS {{?RFC7858}} is more flexible for both the 
-client and the server than attempting to manage sessions using just the EDNS(0)
-TCP Keepalive option {{?RFC7828}}.
+client and the server than attempting to manage sessions using just the
+edns-tcp-keepalive EDNS0 Option {{?RFC7828}}.
 The simple set of TLVs defined in this document is
 sufficient to greatly enhance connection management for this use case.
 
@@ -924,10 +924,10 @@ and Update {{!RFC2136}}, and those messages can carry EDNS(0) and TSIG records.
 
 Although messages may contain other EDNS(0) options as appropriate,
 this specification explicitly prohibits use of the
-EDNS(0) TCP Keepalive Option {{!RFC7828}}
+edns-tcp-keepalive EDNS0 Option {{?RFC7828}}
 in **any** messages sent on a DSO Session (because it is obsoleted by
 the functionality provided by the DSO Keepalive operation).
-If any message sent on a DSO Session contains an EDNS(0) TCP Keepalive Option
+If any message sent on a DSO Session contains an edns-tcp-keepalive EDNS0 Option
 this is a fatal error and the recipient of the defective message MUST
 forcibly abort the connection immediately.
 
@@ -1125,8 +1125,8 @@ This prevents TCP's delayed acknowledgement algorithm from forcing the
 client into a slow lock-step.
 The server MUST act on messages in the order they are transmitted, but
 when responses to those messages become available out of order, the server
-SHOULD NOT delay sending available responses in order to respond in order.
-<xref target="RFC7788"> section 3.3 specifies this in more detail.
+SHOULD NOT delay sending available responses to respond in order.
+{{?RFC7788}} section 3.3 specifies this in more detail.
 
 ## DSO Session Timeouts {#sessiontimeouts}
 
@@ -1345,7 +1345,7 @@ a client abruptly disconnects without cleanly closing the session,
 and is sufficient to maintain state in firewalls and NAT gateways
 that follow the IETF recommended Best Current Practice that the
 "established connection idle-timeout" used by middleboxes
-be at least 2 hours 4 minutes BCP 142 {{!RFC5382}}.
+be at least 2 hours 4 minutes {{?RFC5382}} {{?RFC7857}}.
 
 Note that the lower the keepalive interval value, the higher the load on client
 and server. For example, a hypothetical keepalive interval value of 100ms would result
@@ -1681,17 +1681,19 @@ of the new inactivity timeout, or five seconds, whichever is greater.
 
 ***
 
-### Relation to EDNS(0) TCP Keepalive Option
+### Relation to edns-tcp-keepalive EDNS0 Option
 
-The inactivity timeout value in the Keepalive TLV (DSO-TYPE=1) has similar
-intent to the EDNS(0) TCP Keepalive Option {{!RFC7828}}.
-A client/server pair that supports DSO MUST NOT use the
-EDNS(0) TCP KeepAlive option within any message after a DSO 
-Session has been established.
-Once a DSO Session has been established, if either
-client or server receives a DNS message over the DSO Session that contains an
-EDNS(0) TCP Keepalive option, this is a fatal error and the receiver of the
-EDNS(0) TCP Keepalive option MUST forcibly abort the connection immediately.
+The inactivity timeout value in the Keepalive TLV (DSO-TYPE=1) has
+similar intent to the edns-tcp-keepalive EDNS0 Option {{?RFC7828}}. A
+client/server pair that supports DSO MUST NOT use the edns-tcp-keepalive
+EDNS0 Option within any message after a DSO Session has been
+established. A client that has sent a DSO message to establish a
+session MUST NOT send an edns-tcp-keepalive EDNS0 Option from this
+point on. Once a DSO Session has been established, if either client
+or server receives a DNS message over the DSO Session that contains
+an edns-tcp-keepalive EDNS0 Option, this is a fatal error and the
+receiver of the edns-tcp-keepalive EDNS0 Option MUST forcibly abort
+the connection immediately.
 
 ***
 

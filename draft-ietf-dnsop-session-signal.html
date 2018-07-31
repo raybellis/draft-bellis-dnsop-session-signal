@@ -406,7 +406,7 @@
 <link href="#rfc.section.7" rel="Chapter" title="7 Base TLVs for DNS Stateful Operations">
 <link href="#rfc.section.7.1" rel="Chapter" title="7.1 Keepalive TLV">
 <link href="#rfc.section.7.1.1" rel="Chapter" title="7.1.1 Client handling of received Session Timeout values">
-<link href="#rfc.section.7.1.2" rel="Chapter" title="7.1.2 Relation to EDNS(0) TCP Keepalive Option">
+<link href="#rfc.section.7.1.2" rel="Chapter" title="7.1.2 Relation to edns-tcp-keepalive EDNS0 Option">
 <link href="#rfc.section.7.2" rel="Chapter" title="7.2 Retry Delay TLV">
 <link href="#rfc.section.7.2.1" rel="Chapter" title="7.2.1 Retry Delay TLV used as a Primary TLV">
 <link href="#rfc.section.7.2.2" rel="Chapter" title="7.2.2 Retry Delay TLV used as a Response Additional TLV">
@@ -578,7 +578,7 @@
 </li>
 <ul><li>7.1.1.   <a href="#rfc.section.7.1.1">Client handling of received Session Timeout values</a>
 </li>
-<li>7.1.2.   <a href="#rfc.section.7.1.2">Relation to EDNS(0) TCP Keepalive Option</a>
+<li>7.1.2.   <a href="#rfc.section.7.1.2">Relation to edns-tcp-keepalive EDNS0 Option</a>
 </li>
 </ul><li>7.2.   <a href="#rfc.section.7.2">Retry Delay TLV</a>
 </li>
@@ -622,7 +622,7 @@
 <a href="#rfc.section.1">1.</a> <a href="#introduction" id="introduction">Introduction</a>
 </h1>
 <p id="rfc.section.1.p.1">The use of transports for DNS other than UDP is being increasingly specified, for example, DNS over TCP <a href="#RFC1035" class="xref">[RFC1035]</a> <a href="#RFC7766" class="xref">[RFC7766]</a> and DNS over TLS <a href="#RFC7858" class="xref">[RFC7858]</a>.  Such transports can offer persistent, long-lived sessions and therefore when using them for transporting DNS messages it is of benefit to have a mechanism that can establish parameters associated with those sessions, such as timeouts.  In such situations it is also advantageous to support server-initiated messages.</p>
-<p id="rfc.section.1.p.2">The existing EDNS(0) Extension Mechanism for DNS <a href="#RFC6891" class="xref">[RFC6891]</a> is explicitly defined to only have &#8220;per-message&#8221; semantics. While EDNS(0) has been used to signal at least one session-related parameter (the EDNS(0) TCP Keepalive option <a href="#RFC7828" class="xref">[RFC7828]</a>) the result is less than optimal due to the restrictions imposed by the EDNS(0) semantics and the lack of server-initiated signalling.  For example, a server cannot arbitrarily instruct a client to close a connection because the server can only send EDNS(0) options in responses to queries that contained EDNS(0) options.</p>
+<p id="rfc.section.1.p.2">The existing EDNS(0) Extension Mechanism for DNS <a href="#RFC6891" class="xref">[RFC6891]</a> is explicitly defined to only have &#8220;per-message&#8221; semantics. While EDNS(0) has been used to signal at least one session-related parameter (edns-tcp-keepalive EDNS0 Option <a href="#RFC7828" class="xref">[RFC7828]</a>) the result is less than optimal due to the restrictions imposed by the EDNS(0) semantics and the lack of server-initiated signalling.  For example, a server cannot arbitrarily instruct a client to close a connection because the server can only send EDNS(0) options in responses to queries that contained EDNS(0) options.</p>
 <p id="rfc.section.1.p.3">This document defines a new DNS OPCODE, DSO ([TBA1], tentatively 6), for DNS Stateful Operations.  DSO messages are used to communicate operations within persistent stateful sessions, expressed using type-length-value (TLV) syntax.  This document defines an initial set of three TLVs, used to manage session timeouts, termination, and encryption padding.</p>
 <p id="rfc.section.1.p.4">The three TLVs defined here are all mandatory for all implementations of DSO.  Further TLVs may be defined in additional specifications.</p>
 <p id="rfc.section.1.p.5">The format for DSO messages (<a href="#format" class="xref">Section 5.2</a>) differs somewhat from the traditional DNS message format used for standard queries and responses.  The standard twelve-byte header is used, but the four count fields (QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT) are set to zero and accordingly their corresponding sections are not present.  The actual data pertaining to DNS Stateful Operations (expressed in TLV syntax) is appended to the end of the DNS message header.  When displayed using packet analyzer tools that have not been updated to recognize the DSO format, this will result in the DSO data being displayed as unknown additional data after the end of the DNS message.  It is likely that future updates to these tools will add the ability to recognize, decode, and display the DSO data.</p>
@@ -686,7 +686,7 @@
 <a href="#rfc.section.4">4.</a> <a href="#discussion" id="discussion">Discussion</a>
 </h1>
 <p id="rfc.section.4.p.1">There are several use cases for DNS Stateful operations that can be described here.</p>
-<p id="rfc.section.4.p.2">Firstly, establishing session parameters such as server-defined timeouts is of great use in the general management of persistent connections. For example, using DSO sessions for stub-to-recursive DNS-over-TLS <a href="#RFC7858" class="xref">[RFC7858]</a> is more flexible for both the client and the server than attempting to manage sessions using just the EDNS(0) TCP Keepalive option <a href="#RFC7828" class="xref">[RFC7828]</a>.  The simple set of TLVs defined in this document is sufficient to greatly enhance connection management for this use case.</p>
+<p id="rfc.section.4.p.2">Firstly, establishing session parameters such as server-defined timeouts is of great use in the general management of persistent connections. For example, using DSO sessions for stub-to-recursive DNS-over-TLS <a href="#RFC7858" class="xref">[RFC7858]</a> is more flexible for both the client and the server than attempting to manage sessions using just the edns-tcp-keepalive EDNS0 Option <a href="#RFC7828" class="xref">[RFC7828]</a>.  The simple set of TLVs defined in this document is sufficient to greatly enhance connection management for this use case.</p>
 <p id="rfc.section.4.p.3">Secondly, DNS-SD <a href="#RFC6763" class="xref">[RFC6763]</a> has evolved into a naturally session-based mechanism where, for example, long-lived subscriptions lend themselves to &#8216;push&#8217; mechanisms as opposed to polling. Long-lived stateful connections and server-initiated messages align with this use case <a href="#I-D.ietf-dnssd-push" class="xref">[I-D.ietf-dnssd-push]</a>.</p>
 <p id="rfc.section.4.p.4">A general use case is that DNS traffic is often bursty but session establishment can be expensive. One challenge with long-lived connections is to maintain sufficient traffic to maintain NAT and firewall state.  To mitigate this issue this document introduces a new concept for the DNS, that is DSO &#8220;Keepalive traffic&#8221;.  This traffic carries no DNS data and is not considered &#8216;activity&#8217; in the classic DNS sense, but serves to maintain state in middleboxes, and to assure client and server that they still have connectivity to each other.</p>
 <p></p>
@@ -910,7 +910,7 @@
 <p id="rfc.section.5.2.3.p.2">For example, the EDNS(0) Padding Option <a href="#RFC7830" class="xref">[RFC7830]</a> used for security purposes is not permitted in a DSO message, so if message padding is desired for DSO messages then the Encryption Padding TLV described in <a href="#padding" class="xref">Section 7.3</a> MUST be used.</p>
 <p id="rfc.section.5.2.3.p.3">Similarly, a DSO message MUST NOT contain a TSIG record.  A TSIG record in a conventional DNS message is added as the last record in the additional records section, and carries a signature computed over the preceding message content. Since DSO data appears <strong>after</strong> the additional records section, it would not be included in the signature calculation.  If use of signatures with DSO messages becomes necessary in the future, a new DSO TLV needs to be defined to perform this function.</p>
 <p id="rfc.section.5.2.3.p.4">Note however that, while DSO <strong>messages</strong> cannot include EDNS(0) or TSIG records, a DSO <strong>session</strong> is typically used to carry a whole series of DNS messages of different kinds, including DSO messages, and other DNS message types like Query <a href="#RFC1034" class="xref">[RFC1034]</a> <a href="#RFC1035" class="xref">[RFC1035]</a> and Update <a href="#RFC2136" class="xref">[RFC2136]</a>, and those messages can carry EDNS(0) and TSIG records.</p>
-<p id="rfc.section.5.2.3.p.5">Although messages may contain other EDNS(0) options as appropriate, this specification explicitly prohibits use of the EDNS(0) TCP Keepalive Option <a href="#RFC7828" class="xref">[RFC7828]</a> in <strong>any</strong> messages sent on a DSO Session (because it is obsoleted by the functionality provided by the DSO Keepalive operation).  If any message sent on a DSO Session contains an EDNS(0) TCP Keepalive Option this is a fatal error and the recipient of the defective message MUST forcibly abort the connection immediately.</p>
+<p id="rfc.section.5.2.3.p.5">Although messages may contain other EDNS(0) options as appropriate, this specification explicitly prohibits use of the edns-tcp-keepalive EDNS0 Option <a href="#RFC7828" class="xref">[RFC7828]</a> in <strong>any</strong> messages sent on a DSO Session (because it is obsoleted by the functionality provided by the DSO Keepalive operation).  If any message sent on a DSO Session contains an edns-tcp-keepalive EDNS0 Option this is a fatal error and the recipient of the defective message MUST forcibly abort the connection immediately.</p>
 <p></p>
 <h1 id="rfc.section.5.3">
 <a href="#rfc.section.5.3">5.3.</a> <a href="#message-handling" id="message-handling">Message Handling</a>
@@ -964,7 +964,7 @@
 <a href="#rfc.section.6.1">6.1.</a> <a href="#dso-session-initiation" id="dso-session-initiation">DSO Session Initiation</a>
 </h1>
 <p id="rfc.section.6.1.p.1">A DSO Session begins as described in <a href="#establishment" class="xref">Section 5.1</a>.</p>
-<p id="rfc.section.6.1.p.2">The client may perform as many DNS operations as it wishes using the newly created DSO Session. When the client has multiple messages to send, it SHOULD NOT wait for each response before sending the next message.  This prevents TCP&#8217;s delayed acknowledgement algorithm from forcing the client into a slow lock-step.  The server MUST act on messages in the order they are transmitted, but when responses to those messages become available out of order, the server SHOULD NOT delay sending available responses in order to respond in order.</p>
+<p id="rfc.section.6.1.p.2">The client may perform as many DNS operations as it wishes using the newly created DSO Session. When the client has multiple messages to send, it SHOULD NOT wait for each response before sending the next message.  This prevents TCP&#8217;s delayed acknowledgement algorithm from forcing the client into a slow lock-step.  The server MUST act on messages in the order they are transmitted, but when responses to those messages become available out of order, the server SHOULD NOT delay sending available responses to respond in order.  <a href="#RFC7788" class="xref">[RFC7788]</a> section 3.3 specifies this in more detail.</p>
 <h1 id="rfc.section.6.2">
 <a href="#rfc.section.6.2">6.2.</a> <a href="#sessiontimeouts" id="sessiontimeouts">DSO Session Timeouts</a>
 </h1>
@@ -1024,7 +1024,7 @@
 <p id="rfc.section.6.5.2.p.3">A corporate DNS server that knows it is serving only clients on the internal network, with no intervening NAT gateways or firewalls, can impose a higher keepalive interval, because frequent DSO keepalive traffic is not required.</p>
 <p id="rfc.section.6.5.2.p.4">A public DNS server that is serving primarily residential consumer clients, where it is likely there will be a NAT gateway on the path, may impose a lower keepalive interval, to generate more frequent DSO keepalive traffic.</p>
 <p id="rfc.section.6.5.2.p.5">A smart client may be adaptive to its environment. A client using a private IPv4 address <a href="#RFC1918" class="xref">[RFC1918]</a> to communicate with a DNS server at an address outside that IPv4 private address block, may conclude that there is likely to be a NAT gateway on the path, and accordingly request a lower keepalive interval.</p>
-<p id="rfc.section.6.5.2.p.6">By default it is RECOMMENDED that clients request, and servers grant, a keepalive interval of 60 minutes.  This keepalive interval provides for reasonably timely detection if a client abruptly disconnects without cleanly closing the session, and is sufficient to maintain state in firewalls and NAT gateways that follow the IETF recommended Best Current Practice that the &#8220;established connection idle-timeout&#8221; used by middleboxes be at least 2 hours 4 minutes BCP 142 <a href="#RFC5382" class="xref">[RFC5382]</a>.</p>
+<p id="rfc.section.6.5.2.p.6">By default it is RECOMMENDED that clients request, and servers grant, a keepalive interval of 60 minutes.  This keepalive interval provides for reasonably timely detection if a client abruptly disconnects without cleanly closing the session, and is sufficient to maintain state in firewalls and NAT gateways that follow the IETF recommended Best Current Practice that the &#8220;established connection idle-timeout&#8221; used by middleboxes be at least 2 hours 4 minutes <a href="#RFC5382" class="xref">[RFC5382]</a> <a href="#RFC7857" class="xref">[RFC7857]</a>.</p>
 <p id="rfc.section.6.5.2.p.7">Note that the lower the keepalive interval value, the higher the load on client and server. For example, a hypothetical keepalive interval value of 100ms would result in a continuous stream of at least ten messages per second, in both directions, to keep the DSO Session alive. And, in this extreme example, a single packet loss and retransmission over a long path could introduce a momentary pause in the stream of messages, long enough to cause the server to overzealously abort the connection.</p>
 <p id="rfc.section.6.5.2.p.8">Because of this concern, the server MUST NOT send a DSO Keepalive message (either a response to a client-initiated request, or a server-initiated message) with a keepalive interval value less than ten seconds.  If a client receives a DSO Keepalive message specifying a keepalive interval value less than ten seconds this is a fatal error and the client MUST forcibly abort the connection immediately.</p>
 <p id="rfc.section.6.5.2.p.9">A keepalive interval value of 0xFFFFFFFF represents &#8220;infinity&#8221; and informs the client that it should generate no DSO keepalive traffic.  Note that after signaling that the client should generate no DSO keepalive traffic in this way, at any point the server may revise that DSO keepalive traffic requirement by sending a new DSO Keepalive message dictating new Session Timeout values to the client.</p>
@@ -1121,9 +1121,9 @@
 </ul>
 <p></p>
 <h1 id="rfc.section.7.1.2">
-<a href="#rfc.section.7.1.2">7.1.2.</a> <a href="#relation-to-edns0-tcp-keepalive-option" id="relation-to-edns0-tcp-keepalive-option">Relation to EDNS(0) TCP Keepalive Option</a>
+<a href="#rfc.section.7.1.2">7.1.2.</a> <a href="#relation-to-edns-tcp-keepalive-edns0-option" id="relation-to-edns-tcp-keepalive-edns0-option">Relation to edns-tcp-keepalive EDNS0 Option</a>
 </h1>
-<p id="rfc.section.7.1.2.p.1">The inactivity timeout value in the Keepalive TLV (DSO-TYPE=1) has similar intent to the EDNS(0) TCP Keepalive Option <a href="#RFC7828" class="xref">[RFC7828]</a>.  A client/server pair that supports DSO MUST NOT use the EDNS(0) TCP KeepAlive option within any message after a DSO Session has been established.  Once a DSO Session has been established, if either client or server receives a DNS message over the DSO Session that contains an EDNS(0) TCP Keepalive option, this is a fatal error and the receiver of the EDNS(0) TCP Keepalive option MUST forcibly abort the connection immediately.</p>
+<p id="rfc.section.7.1.2.p.1">The inactivity timeout value in the Keepalive TLV (DSO-TYPE=1) has similar intent to the edns-tcp-keepalive EDNS0 Option <a href="#RFC7828" class="xref">[RFC7828]</a>. A client/server pair that supports DSO MUST NOT use the edns-tcp-keepalive EDNS0 Option within any message after a DSO Session has been established. A client that has sent a DSO message to establish a session MUST NOT send an edns-tcp-keepalive EDNS0 Option from this point on. Once a DSO Session has been established, if either client or server receives a DNS message over the DSO Session that contains an edns-tcp-keepalive EDNS0 Option, this is a fatal error and the receiver of the edns-tcp-keepalive EDNS0 Option MUST forcibly abort the connection immediately.</p>
 <p></p>
 <h1 id="rfc.section.7.2">
 <a href="#rfc.section.7.2">7.2.</a> <a href="#delay" id="delay">Retry Delay TLV</a>
@@ -1360,11 +1360,6 @@
 <a>Vixie, P.</a>, <a>Thomson, S.</a>, <a>Rekhter, Y.</a> and <a>J. Bound</a>, "<a href="https://tools.ietf.org/html/rfc2136">Dynamic Updates in the Domain Name System (DNS UPDATE)</a>", RFC 2136, DOI 10.17487/RFC2136, April 1997.</td>
 </tr>
 <tr>
-<td class="reference"><b id="RFC5382">[RFC5382]</b></td>
-<td class="top">
-<a>Guha, S.</a>, <a>Biswas, K.</a>, <a>Ford, B.</a>, <a>Sivakumar, S.</a> and <a>P. Srisuresh</a>, "<a href="https://tools.ietf.org/html/rfc5382">NAT Behavioral Requirements for TCP</a>", BCP 142, RFC 5382, DOI 10.17487/RFC5382, October 2008.</td>
-</tr>
-<tr>
 <td class="reference"><b id="RFC6891">[RFC6891]</b></td>
 <td class="top">
 <a>Damas, J.</a>, <a>Graff, M.</a> and <a>P. Vixie</a>, "<a href="https://tools.ietf.org/html/rfc6891">Extension Mechanisms for DNS (EDNS(0))</a>", STD 75, RFC 6891, DOI 10.17487/RFC6891, April 2013.</td>
@@ -1373,11 +1368,6 @@
 <td class="reference"><b id="RFC7766">[RFC7766]</b></td>
 <td class="top">
 <a>Dickinson, J.</a>, <a>Dickinson, S.</a>, <a>Bellis, R.</a>, <a>Mankin, A.</a> and <a>D. Wessels</a>, "<a href="https://tools.ietf.org/html/rfc7766">DNS Transport over TCP - Implementation Requirements</a>", RFC 7766, DOI 10.17487/RFC7766, March 2016.</td>
-</tr>
-<tr>
-<td class="reference"><b id="RFC7828">[RFC7828]</b></td>
-<td class="top">
-<a>Wouters, P.</a>, <a>Abley, J.</a>, <a>Dickinson, S.</a> and <a>R. Bellis</a>, "<a href="https://tools.ietf.org/html/rfc7828">The edns-tcp-keepalive EDNS0 Option</a>", RFC 7828, DOI 10.17487/RFC7828, April 2016.</td>
 </tr>
 <tr>
 <td class="reference"><b id="RFC7830">[RFC7830]</b></td>
@@ -1439,6 +1429,11 @@
 <a>Gulbrandsen, A.</a>, <a>Vixie, P.</a> and <a>L. Esibov</a>, "<a href="https://tools.ietf.org/html/rfc2782">A DNS RR for specifying the location of services (DNS SRV)</a>", RFC 2782, DOI 10.17487/RFC2782, February 2000.</td>
 </tr>
 <tr>
+<td class="reference"><b id="RFC5382">[RFC5382]</b></td>
+<td class="top">
+<a>Guha, S.</a>, <a>Biswas, K.</a>, <a>Ford, B.</a>, <a>Sivakumar, S.</a> and <a>P. Srisuresh</a>, "<a href="https://tools.ietf.org/html/rfc5382">NAT Behavioral Requirements for TCP</a>", BCP 142, RFC 5382, DOI 10.17487/RFC5382, October 2008.</td>
+</tr>
+<tr>
 <td class="reference"><b id="RFC6335">[RFC6335]</b></td>
 <td class="top">
 <a>Cotton, M.</a>, <a>Eggert, L.</a>, <a>Touch, J.</a>, <a>Westerlund, M.</a> and <a>S. Cheshire</a>, "<a href="https://tools.ietf.org/html/rfc6335">Internet Assigned Numbers Authority (IANA) Procedures for the Management of the Service Name and Transport Protocol Port Number Registry</a>", BCP 165, RFC 6335, DOI 10.17487/RFC6335, August 2011.</td>
@@ -1457,6 +1452,21 @@
 <td class="reference"><b id="RFC7413">[RFC7413]</b></td>
 <td class="top">
 <a>Cheng, Y.</a>, <a>Chu, J.</a>, <a>Radhakrishnan, S.</a> and <a>A. Jain</a>, "<a href="https://tools.ietf.org/html/rfc7413">TCP Fast Open</a>", RFC 7413, DOI 10.17487/RFC7413, December 2014.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC7788">[RFC7788]</b></td>
+<td class="top">
+<a>Stenberg, M.</a>, <a>Barth, S.</a> and <a>P. Pfister</a>, "<a href="https://tools.ietf.org/html/rfc7788">Home Networking Control Protocol</a>", RFC 7788, DOI 10.17487/RFC7788, April 2016.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC7828">[RFC7828]</b></td>
+<td class="top">
+<a>Wouters, P.</a>, <a>Abley, J.</a>, <a>Dickinson, S.</a> and <a>R. Bellis</a>, "<a href="https://tools.ietf.org/html/rfc7828">The edns-tcp-keepalive EDNS0 Option</a>", RFC 7828, DOI 10.17487/RFC7828, April 2016.</td>
+</tr>
+<tr>
+<td class="reference"><b id="RFC7857">[RFC7857]</b></td>
+<td class="top">
+<a>Penno, R.</a>, <a>Perreault, S.</a>, <a>Boucadair, M.</a>, <a>Sivakumar, S.</a> and <a>K. Naito</a>, "<a href="https://tools.ietf.org/html/rfc7857">Updates to Network Address Translation (NAT) Behavioral Requirements</a>", BCP 127, RFC 7857, DOI 10.17487/RFC7857, April 2016.</td>
 </tr>
 <tr>
 <td class="reference"><b id="RFC7858">[RFC7858]</b></td>

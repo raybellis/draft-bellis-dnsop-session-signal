@@ -115,7 +115,7 @@ Internet-Draft           DNS Stateful Operations               July 2018
 
 
        7.1.1.  Client handling of received Session Timeout values  .  40
-       7.1.2.  Relation to EDNS(0) TCP Keepalive Option  . . . . . .  42
+       7.1.2.  Relation to edns-tcp-keepalive EDNS0 Option . . . . .  42
      7.2.  Retry Delay TLV . . . . . . . . . . . . . . . . . . . . .  43
        7.2.1.  Retry Delay TLV used as a Primary TLV . . . . . . . .  43
        7.2.2.  Retry Delay TLV used as a Response Additional TLV . .  45
@@ -132,7 +132,7 @@ Internet-Draft           DNS Stateful Operations               July 2018
    12. References  . . . . . . . . . . . . . . . . . . . . . . . . .  51
      12.1.  Normative References . . . . . . . . . . . . . . . . . .  51
      12.2.  Informative References . . . . . . . . . . . . . . . . .  52
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  53
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  54
 
 1.  Introduction
 
@@ -147,7 +147,7 @@ Internet-Draft           DNS Stateful Operations               July 2018
    The existing EDNS(0) Extension Mechanism for DNS [RFC6891] is
    explicitly defined to only have "per-message" semantics.  While
    EDNS(0) has been used to signal at least one session-related
-   parameter (the EDNS(0) TCP Keepalive option [RFC7828]) the result is
+   parameter (edns-tcp-keepalive EDNS0 Option [RFC7828]) the result is
    less than optimal due to the restrictions imposed by the EDNS(0)
    semantics and the lack of server-initiated signalling.  For example,
    a server cannot arbitrarily instruct a client to close a connection
@@ -459,10 +459,10 @@ Internet-Draft           DNS Stateful Operations               July 2018
    timeouts is of great use in the general management of persistent
    connections.  For example, using DSO sessions for stub-to-recursive
    DNS-over-TLS [RFC7858] is more flexible for both the client and the
-   server than attempting to manage sessions using just the EDNS(0) TCP
-   Keepalive option [RFC7828].  The simple set of TLVs defined in this
-   document is sufficient to greatly enhance connection management for
-   this use case.
+   server than attempting to manage sessions using just the edns-tcp-
+   keepalive EDNS0 Option [RFC7828].  The simple set of TLVs defined in
+   this document is sufficient to greatly enhance connection management
+   for this use case.
 
    Secondly, DNS-SD [RFC6763] has evolved into a naturally session-based
    mechanism where, for example, long-lived subscriptions lend
@@ -1263,11 +1263,11 @@ Internet-Draft           DNS Stateful Operations               July 2018
    [RFC2136], and those messages can carry EDNS(0) and TSIG records.
 
    Although messages may contain other EDNS(0) options as appropriate,
-   this specification explicitly prohibits use of the EDNS(0) TCP
-   Keepalive Option [RFC7828] in *any* messages sent on a DSO Session
+   this specification explicitly prohibits use of the edns-tcp-keepalive
+   EDNS0 Option [RFC7828] in *any* messages sent on a DSO Session
    (because it is obsoleted by the functionality provided by the DSO
    Keepalive operation).  If any message sent on a DSO Session contains
-   an EDNS(0) TCP Keepalive Option this is a fatal error and the
+   an edns-tcp-keepalive EDNS0 Option this is a fatal error and the
    recipient of the defective message MUST forcibly abort the connection
    immediately.
 
@@ -1527,7 +1527,8 @@ Internet-Draft           DNS Stateful Operations               July 2018
    forcing the client into a slow lock-step.  The server MUST act on
    messages in the order they are transmitted, but when responses to
    those messages become available out of order, the server SHOULD NOT
-   delay sending available responses in order to respond in order.
+   delay sending available responses to respond in order.  [RFC7788]
+   section 3.3 specifies this in more detail.
 
 6.2.  DSO Session Timeouts
 
@@ -1561,7 +1562,6 @@ Internet-Draft           DNS Stateful Operations               July 2018
    open for a long time, but to maintain that inactive DSO Session it
    should be sending a lot of DSO keepalive traffic.  This configuration
    is expected to be less common.
-
 
 
 
@@ -1809,7 +1809,8 @@ Internet-Draft           DNS Stateful Operations               July 2018
    without cleanly closing the session, and is sufficient to maintain
    state in firewalls and NAT gateways that follow the IETF recommended
    Best Current Practice that the "established connection idle-timeout"
-   used by middleboxes be at least 2 hours 4 minutes BCP 142 [RFC5382].
+   used by middleboxes be at least 2 hours 4 minutes [RFC5382]
+   [RFC7857].
 
    Note that the lower the keepalive interval value, the higher the load
    on client and server.  For example, a hypothetical keepalive interval
@@ -1837,7 +1838,6 @@ Internet-Draft           DNS Stateful Operations               July 2018
    The largest *finite* keepalive interval supported by the current
    Keepalive TLV is 0xFFFFFFFE (2^32-2 milliseconds, approximately 49.7
    days).
-
 
 
 
@@ -2298,19 +2298,19 @@ Bellis, et al.          Expires January 27, 2019               [Page 41]
 Internet-Draft           DNS Stateful Operations               July 2018
 
 
-7.1.2.  Relation to EDNS(0) TCP Keepalive Option
+7.1.2.  Relation to edns-tcp-keepalive EDNS0 Option
 
    The inactivity timeout value in the Keepalive TLV (DSO-TYPE=1) has
-   similar intent to the EDNS(0) TCP Keepalive Option [RFC7828].  A
-   client/server pair that supports DSO MUST NOT use the EDNS(0) TCP
-   KeepAlive option within any message after a DSO Session has been
-   established.  Once a DSO Session has been established, if either
-   client or server receives a DNS message over the DSO Session that
-   contains an EDNS(0) TCP Keepalive option, this is a fatal error and
-   the receiver of the EDNS(0) TCP Keepalive option MUST forcibly abort
+   similar intent to the edns-tcp-keepalive EDNS0 Option [RFC7828].  A
+   client/server pair that supports DSO MUST NOT use the edns-tcp-
+   keepalive EDNS0 Option within any message after a DSO Session has
+   been established.  A client that has sent a DSO message to establish
+   a session MUST NOT send an edns-tcp-keepalive EDNS0 Option from this
+   point on.  Once a DSO Session has been established, if either client
+   or server receives a DNS message over the DSO Session that contains
+   an edns-tcp-keepalive EDNS0 Option, this is a fatal error and the
+   receiver of the edns-tcp-keepalive EDNS0 Option MUST forcibly abort
    the connection immediately.
-
-
 
 
 
@@ -2833,11 +2833,6 @@ Internet-Draft           DNS Stateful Operations               July 2018
               RFC 2136, DOI 10.17487/RFC2136, April 1997,
               <https://www.rfc-editor.org/info/rfc2136>.
 
-   [RFC5382]  Guha, S., Ed., Biswas, K., Ford, B., Sivakumar, S., and P.
-              Srisuresh, "NAT Behavioral Requirements for TCP", BCP 142,
-              RFC 5382, DOI 10.17487/RFC5382, October 2008,
-              <https://www.rfc-editor.org/info/rfc5382>.
-
    [RFC6891]  Damas, J., Graff, M., and P. Vixie, "Extension Mechanisms
               for DNS (EDNS(0))", STD 75, RFC 6891,
               DOI 10.17487/RFC6891, April 2013,
@@ -2848,6 +2843,11 @@ Internet-Draft           DNS Stateful Operations               July 2018
               Requirements", RFC 7766, DOI 10.17487/RFC7766, March 2016,
               <https://www.rfc-editor.org/info/rfc7766>.
 
+   [RFC7830]  Mayrhofer, A., "The EDNS(0) Padding Option", RFC 7830,
+              DOI 10.17487/RFC7830, May 2016,
+              <https://www.rfc-editor.org/info/rfc7830>.
+
+
 
 
 
@@ -2857,15 +2857,6 @@ Bellis, et al.          Expires January 27, 2019               [Page 51]
 
 Internet-Draft           DNS Stateful Operations               July 2018
 
-
-   [RFC7828]  Wouters, P., Abley, J., Dickinson, S., and R. Bellis, "The
-              edns-tcp-keepalive EDNS0 Option", RFC 7828,
-              DOI 10.17487/RFC7828, April 2016,
-              <https://www.rfc-editor.org/info/rfc7828>.
-
-   [RFC7830]  Mayrhofer, A., "The EDNS(0) Padding Option", RFC 7830,
-              DOI 10.17487/RFC7830, May 2016,
-              <https://www.rfc-editor.org/info/rfc7830>.
 
    [RFC8126]  Cotton, M., Leiba, B., and T. Narten, "Guidelines for
               Writing an IANA Considerations Section in RFCs", BCP 26,
@@ -2905,15 +2896,6 @@ Internet-Draft           DNS Stateful Operations               July 2018
               DOI 10.17487/RFC0768, August 1980,
               <https://www.rfc-editor.org/info/rfc768>.
 
-
-
-
-
-Bellis, et al.          Expires January 27, 2019               [Page 52]
-
-Internet-Draft           DNS Stateful Operations               July 2018
-
-
    [RFC1122]  Braden, R., Ed., "Requirements for Internet Hosts -
               Communication Layers", STD 3, RFC 1122,
               DOI 10.17487/RFC1122, October 1989,
@@ -2923,6 +2905,19 @@ Internet-Draft           DNS Stateful Operations               July 2018
               specifying the location of services (DNS SRV)", RFC 2782,
               DOI 10.17487/RFC2782, February 2000,
               <https://www.rfc-editor.org/info/rfc2782>.
+
+
+
+
+Bellis, et al.          Expires January 27, 2019               [Page 52]
+
+Internet-Draft           DNS Stateful Operations               July 2018
+
+
+   [RFC5382]  Guha, S., Ed., Biswas, K., Ford, B., Sivakumar, S., and P.
+              Srisuresh, "NAT Behavioral Requirements for TCP", BCP 142,
+              RFC 5382, DOI 10.17487/RFC5382, October 2008,
+              <https://www.rfc-editor.org/info/rfc5382>.
 
    [RFC6335]  Cotton, M., Eggert, L., Touch, J., Westerlund, M., and S.
               Cheshire, "Internet Assigned Numbers Authority (IANA)
@@ -2943,10 +2938,37 @@ Internet-Draft           DNS Stateful Operations               July 2018
               Fast Open", RFC 7413, DOI 10.17487/RFC7413, December 2014,
               <https://www.rfc-editor.org/info/rfc7413>.
 
+   [RFC7788]  Stenberg, M., Barth, S., and P. Pfister, "Home Networking
+              Control Protocol", RFC 7788, DOI 10.17487/RFC7788, April
+              2016, <https://www.rfc-editor.org/info/rfc7788>.
+
+   [RFC7828]  Wouters, P., Abley, J., Dickinson, S., and R. Bellis, "The
+              edns-tcp-keepalive EDNS0 Option", RFC 7828,
+              DOI 10.17487/RFC7828, April 2016,
+              <https://www.rfc-editor.org/info/rfc7828>.
+
+   [RFC7857]  Penno, R., Perreault, S., Boucadair, M., Ed., Sivakumar,
+              S., and K. Naito, "Updates to Network Address Translation
+              (NAT) Behavioral Requirements", BCP 127, RFC 7857,
+              DOI 10.17487/RFC7857, April 2016,
+              <https://www.rfc-editor.org/info/rfc7857>.
+
    [RFC7858]  Hu, Z., Zhu, L., Heidemann, J., Mankin, A., Wessels, D.,
               and P. Hoffman, "Specification for DNS over Transport
               Layer Security (TLS)", RFC 7858, DOI 10.17487/RFC7858, May
               2016, <https://www.rfc-editor.org/info/rfc7858>.
+
+
+
+
+
+
+
+
+Bellis, et al.          Expires January 27, 2019               [Page 53]
+
+Internet-Draft           DNS Stateful Operations               July 2018
+
 
 Authors' Addresses
 
@@ -2958,16 +2980,6 @@ Authors' Addresses
 
    Phone: +1 (650) 423-1200
    Email: ray@isc.org
-
-
-
-
-
-
-
-Bellis, et al.          Expires January 27, 2019               [Page 53]
-
-Internet-Draft           DNS Stateful Operations               July 2018
 
 
    Stuart Cheshire
@@ -3000,6 +3012,20 @@ Internet-Draft           DNS Stateful Operations               July 2018
    Email: sara@sinodun.com
 
 
+
+
+
+
+
+
+
+
+
+Bellis, et al.          Expires January 27, 2019               [Page 54]
+
+Internet-Draft           DNS Stateful Operations               July 2018
+
+
    Ted Lemon
    Barefoot Consulting
    Brattleboro
@@ -3021,4 +3047,34 @@ Internet-Draft           DNS Stateful Operations               July 2018
 
 
 
-Bellis, et al.          Expires January 27, 2019               [Page 54]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Bellis, et al.          Expires January 27, 2019               [Page 55]
