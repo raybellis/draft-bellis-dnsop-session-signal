@@ -283,10 +283,14 @@ two entities should be determined to be the "same service instance".
 When an anycast service is configured on a particular IP address and port, it
 must be the case that although there is more than one physical server
 responding on that IP address, each such server can be treated as equivalent.
-If a change in network topology causes packets in a particular TCP connection
-to be sent to an anycast server instance that does not know about the
-connection, the normal keepalive and TCP connection timeout process will allow
-for recovery. If after the connection is re-established, the client's assumption that it is
+If a change in network topology causes
+packets in a particular TCP connection to be sent to an anycast
+server instance that does not know about the connection, the new
+server will automatically terminate the connection with a TCP reset,
+since it will have no record of the connection, and then the client can
+reconnect or stop using the connection, as appropriate.
+
+If after the connection is re-established, the client's assumption that it is
 connected to the same service is violated in some way, that would be considered
 to be incorrect behavior in this context. It is however out of the possible
 scope for this specification to make specific recommendations in this regard;
