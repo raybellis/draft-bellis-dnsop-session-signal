@@ -1389,7 +1389,6 @@ In normal operation, closing a DSO Session is the client's responsibility.
 The client makes the determination of when to close a DSO
 Session based on an evaluation of both its own needs,
 and the inactivity timeout value dictated by the server.
-In the anse, a server MUST NOT close a DSO Session with a client.
 A server only causes a DSO Session to be ended in the exceptional circumstances outlined below.
 
 Some of the exceptional situations in which a server may terminate a DSO Session include:
