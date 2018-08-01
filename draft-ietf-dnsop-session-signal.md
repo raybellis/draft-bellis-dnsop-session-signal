@@ -1463,6 +1463,12 @@ are described in {{delay}}.
 After sending a Retry Delay message,
 the server MUST NOT send any further messages on that DSO Session.
 
+The server MAY randomize retry delays in situations where many retry delays are sent
+in quick succession, so as to avoid all the clients attempting to reconnect at once.
+In general, implementations should avoid using the Retry Delay message in a way that
+would result in many clients reconnecting at the same time, if every client attempts
+to reconnect at the exact time specified.
+
 Upon receipt of a Retry Delay message from the server,
 the client MUST make note of the reconnect delay for this server,
 and then immediately close the connection gracefully.
@@ -1520,7 +1526,9 @@ or by forcibly aborting the underlying transport connection)
 the client SHOULD try to reconnect,
 to that service instance, or to another suitable service instance, if more than one is available.
 If reconnecting to the same service instance, the client MUST respect the indicated delay,
-if available, before attempting to reconnect.
+if available, before attempting to reconnect.   Clients should not attempt to randomize the delay;
+the server will randomly jitter the retry delay values it sends to client if this behavior is
+desired.
 
 If the service instance will only be out of service for a short maintenance period,
 it should use a value a little longer that the expected maintenance window.
