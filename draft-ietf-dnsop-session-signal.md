@@ -523,7 +523,7 @@ As previously specified for DNS over TCP {{!RFC7766}}:
        example, to support concurrent transfers of multiple zones).
 
 A single server may support multiple services, including DNS Updates 
-{{!RFC2136}}, DNS Push Notifications {{?I-D.ietf-dnssd-push}},
+{{?RFC2136}}, DNS Push Notifications {{?I-D.ietf-dnssd-push}},
 and other services, for one or more DNS zones.
 When a client discovers that the target server for several different operations
 is the same target hostname and port, the client SHOULD use a single
@@ -1527,7 +1527,7 @@ the client SHOULD try to reconnect,
 to that service instance, or to another suitable service instance, if more than one is available.
 If reconnecting to the same service instance, the client MUST respect the indicated delay,
 if available, before attempting to reconnect.   Clients should not attempt to randomize the delay;
-the server will randomly jitter the retry delay values it sends to client if this behavior is
+the server will randomly jitter the retry delay values it sends to each client if this behavior is
 desired.
 
 If the service instance will only be out of service for a short maintenance period,
@@ -1624,7 +1624,7 @@ In a server response to a client-initiated DSO Keepalive request message,
 the Session Timeouts contain the server's chosen values from
 this point forward in the DSO Session, which the client MUST respect.
 This is modeled after the DHCP protocol, where the client requests a certain
-lease lifetime using DHCP option 51 {{!RFC2132}}, but the server is the
+lease lifetime using DHCP option 51 {{?RFC2132}}, but the server is the
 ultimate authority for deciding what lease lifetime is actually granted.
 
 When a client is sending its second and subsequent DSO Keepalive requests to
@@ -1922,17 +1922,17 @@ where the DSO-TYPE of the Response TLV matches the DSO-TYPE of the Primary TLV i
 (in response to a server "S-P" request with nonzero MESSAGE ID indicating that a response is required)
 where the DSO-TYPE of the Response TLV does not match the DSO-TYPE of the Primary TLV in the request.
 
-
-
-                  +-------------------------+-------------------------+
-                  | C-P  C-U  C-A  CRP  CRA | S-P  S-U  S-A  SRP  SRA |
-     +------------+-------------------------+-------------------------+
-     | KeepAlive  |  X              X       |       X                 |
-     +------------+-------------------------+-------------------------+
-     | RetryDelay |                      X  |       X                 |
-     +------------+-------------------------+-------------------------+
-     | Padding    |            X         X  |            X         X  |
-     +------------+-------------------------+-------------------------+
+~~~~~~~~~~~
+             +-------------------------+-------------------------+
+             | C-P  C-U  C-A  CRP  CRA | S-P  S-U  S-A  SRP  SRA |
++------------+-------------------------+-------------------------+
+| KeepAlive  |  X              X       |       X                 |
++------------+-------------------------+-------------------------+
+| RetryDelay |                      X  |       X                 |
++------------+-------------------------+-------------------------+
+| Padding    |            X         X  |            X         X  |
++------------+-------------------------+-------------------------+
+~~~~~~~~~~~
 
 Note that some of the columns in this table are currently empty.
 The table provides a template for future TLV definitions to follow.

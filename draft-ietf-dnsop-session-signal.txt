@@ -1373,11 +1373,11 @@ Internet-Draft           DNS Stateful Operations               July 2018
    is zero), the receiver SHOULD already be expecting this DSO message
    type.  Section 5.2.2.4 describes the handling of unknown DSO message
    types.  Parsing errors MUST also result in the receiver aborting the
-   connection.  If an unacknowledged DSO message type is not expected,
-   the receiver should abort the connection.  Other internal errors
-   processing the unacknowledged DSO message are implementation
-   dependent as to whether the connection should be aborted according to
-   the severity of the error.
+   connection.  When an unacknowledged DSO message of an unexpected type
+   is received, the receiver should abort the connection.  Other
+   internal errors processing the unacknowledged DSO message are
+   implementation dependent as to whether the connection should be
+   aborted according to the severity of the error.
 
    When an acknowledged DSO request message is unsuccessful for some
    reason, the responder returns an error code to the initiator.
@@ -1980,6 +1980,13 @@ Internet-Draft           DNS Stateful Operations               July 2018
    described in Section 7.2.  After sending a Retry Delay message, the
    server MUST NOT send any further messages on that DSO Session.
 
+   The server MAY randomize retry delays in situations where many retry
+   delays are sent in quick succession, so as to avoid all the clients
+   attempting to reconnect at once.  In general, implementations should
+   avoid using the Retry Delay message in a way that would result in
+   many clients reconnecting at the same time, if every client attempts
+   to reconnect at the exact time specified.
+
    Upon receipt of a Retry Delay message from the server, the client
    MUST make note of the reconnect delay for this server, and then
    immediately close the connection gracefully.
@@ -1992,13 +1999,6 @@ Internet-Draft           DNS Stateful Operations               July 2018
    A Retry Delay message MUST NOT be initiated by a client.  If a server
    receives a Retry Delay message this is a fatal error and the server
    MUST forcibly abort the connection immediately.
-
-
-
-
-
-
-
 
 
 
@@ -2082,7 +2082,9 @@ Internet-Draft           DNS Stateful Operations               July 2018
    service instance, or to another suitable service instance, if more
    than one is available.  If reconnecting to the same service instance,
    the client MUST respect the indicated delay, if available, before
-   attempting to reconnect.
+   attempting to reconnect.  Clients should not attempt to randomize the
+   delay; the server will randomly jitter the retry delay values it
+   sends to each client if this behavior is desired.
 
    If the service instance will only be out of service for a short
    maintenance period, it should use a value a little longer that the
@@ -2102,8 +2104,6 @@ Internet-Draft           DNS Stateful Operations               July 2018
    before 49.7 days elapses, for as long as the DNS or other
    configuration information continues to indicate that this is the
    service instance the client should use.
-
-
 
 
 
@@ -2670,18 +2670,18 @@ Internet-Draft           DNS Stateful Operations               July 2018
    direction: requests or unacknowledged messages from server to client,
    and the corresponding responses from client back to server.
 
-                 +-------------------------+-------------------------+
-                 | C-P  C-U  C-A  CRP  CRA | S-P  S-U  S-A  SRP  SRA |
-    +------------+-------------------------+-------------------------+
-    | KeepAlive  |  X              X       |       X                 |
-    +------------+-------------------------+-------------------------+
-    | RetryDelay |                      X  |       X                 |
-    +------------+-------------------------+-------------------------+
-    | Padding    |            X         X  |            X         X  |
-    +------------+-------------------------+-------------------------+
+   o  S-P - Primary TLV, sent in DSO Request message, from server to
+      client, with nonzero MESSAGE ID indicating that this request MUST
+      generate response message.
 
-   Note that some of the columns in this table are currently empty.  The
-   table provides a template for future TLV definitions to follow.  It
+   o  S-U - Primary TLV, sent in DSO Unacknowledged message, from server
+      to client, with zero MESSAGE ID indicating that this request MUST
+      NOT generate response message.
+
+   o  S-A - Additional TLV, optionally added to request message or
+      unacknowledged message from server to client.
+
+
 
 
 
@@ -2690,32 +2690,32 @@ Bellis, et al.          Expires January 27, 2019               [Page 48]
 Internet-Draft           DNS Stateful Operations               July 2018
 
 
+   o  SRP - Response Primary TLV, included in response message sent back
+      to the server (in response to a server "S-P" request with nonzero
+      MESSAGE ID indicating that a response is required) where the DSO-
+      TYPE of the Response TLV matches the DSO-TYPE of the Primary TLV
+      in the request.
+
+   o  SRA - Response Additional TLV, included in response message sent
+      back to the server (in response to a server "S-P" request with
+      nonzero MESSAGE ID indicating that a response is required) where
+      the DSO-TYPE of the Response TLV does not match the DSO-TYPE of
+      the Primary TLV in the request.
+
+                +-------------------------+-------------------------+
+                | C-P  C-U  C-A  CRP  CRA | S-P  S-U  S-A  SRP  SRA |
+   +------------+-------------------------+-------------------------+
+   | KeepAlive  |  X              X       |       X                 |
+   +------------+-------------------------+-------------------------+
+   | RetryDelay |                      X  |       X                 |
+   +------------+-------------------------+-------------------------+
+   | Padding    |            X         X  |            X         X  |
+   +------------+-------------------------+-------------------------+
+
+   Note that some of the columns in this table are currently empty.  The
+   table provides a template for future TLV definitions to follow.  It
    is recommended that definitions of future TLVs include a similar
    table summarizing the contexts where the new TLV is valid.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -2936,10 +2936,6 @@ Internet-Draft           DNS Stateful Operations               July 2018
               DOI 10.17487/RFC2119, March 1997,
               <https://www.rfc-editor.org/info/rfc2119>.
 
-   [RFC2132]  Alexander, S. and R. Droms, "DHCP Options and BOOTP Vendor
-              Extensions", RFC 2132, DOI 10.17487/RFC2132, March 1997,
-              <https://www.rfc-editor.org/info/rfc2132>.
-
    [RFC2136]  Vixie, P., Ed., Thomson, S., Rekhter, Y., and J. Bound,
               "Dynamic Updates in the Domain Name System (DNS UPDATE)",
               RFC 2136, DOI 10.17487/RFC2136, April 1997,
@@ -2959,6 +2955,10 @@ Internet-Draft           DNS Stateful Operations               July 2018
               DOI 10.17487/RFC7830, May 2016,
               <https://www.rfc-editor.org/info/rfc7830>.
 
+   [RFC8126]  Cotton, M., Leiba, B., and T. Narten, "Guidelines for
+              Writing an IANA Considerations Section in RFCs", BCP 26,
+              RFC 8126, DOI 10.17487/RFC8126, June 2017,
+              <https://www.rfc-editor.org/info/rfc8126>.
 
 
 
@@ -2969,11 +2969,6 @@ Bellis, et al.          Expires January 27, 2019               [Page 53]
 
 Internet-Draft           DNS Stateful Operations               July 2018
 
-
-   [RFC8126]  Cotton, M., Leiba, B., and T. Narten, "Guidelines for
-              Writing an IANA Considerations Section in RFCs", BCP 26,
-              RFC 8126, DOI 10.17487/RFC8126, June 2017,
-              <https://www.rfc-editor.org/info/rfc8126>.
 
    [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
@@ -3013,10 +3008,15 @@ Internet-Draft           DNS Stateful Operations               July 2018
               DOI 10.17487/RFC1122, October 1989,
               <https://www.rfc-editor.org/info/rfc1122>.
 
+   [RFC2132]  Alexander, S. and R. Droms, "DHCP Options and BOOTP Vendor
+              Extensions", RFC 2132, DOI 10.17487/RFC2132, March 1997,
+              <https://www.rfc-editor.org/info/rfc2132>.
+
    [RFC2782]  Gulbrandsen, A., Vixie, P., and L. Esibov, "A DNS RR for
               specifying the location of services (DNS SRV)", RFC 2782,
               DOI 10.17487/RFC2782, February 2000,
               <https://www.rfc-editor.org/info/rfc2782>.
+
 
 
 
