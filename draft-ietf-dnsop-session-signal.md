@@ -458,7 +458,7 @@ yielding the establishment of a DSO Session.
 If the RCODE is set to any value other than NOERROR (0) or DSOTYPENI
 ([TBA2] tentatively 11), then the client MUST assume that the server does
 not implement DSO at all. In this case the client is permitted to continue
-sending DNS messages on that connection, but the client SHOULD NOT
+sending DNS messages on that connection, but the client MUST NOT
 issue further DSO messages on that connection.
 
 Two other possibilities exist: the server might drop the connection, or
