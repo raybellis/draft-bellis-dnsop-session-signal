@@ -108,7 +108,8 @@ for example, DNS over TCP {{!RFC1035}} {{!RFC7766}} and DNS over TLS {{?RFC7858}
 Such transports can offer persistent, long-lived sessions and therefore when
 using them for transporting DNS messages it is of benefit to have a mechanism
 that can establish parameters associated with those sessions, such as timeouts.
-In such situations it is also advantageous to support server-initiated messages.
+In such situations it is also advantageous to support server-initiated messages
+(such as DNS Push Notifications {{?I-D.ietf-dnssd-push}}).
 
 The existing EDNS(0) Extension Mechanism for DNS {{!RFC6891}} is explicitly
 defined to only have "per-message" semantics. While EDNS(0) has been used to
@@ -223,10 +224,10 @@ In the BSD Sockets API this is achieved by setting the
 SO_LINGER option to zero before closing the socket.
 
 The term "server" means the software with a listening socket, awaiting
-incoming connection requests.
+incoming connection requests in the usual DNS sense.
 
 The term "client" means the software which initiates a connection
-to the server's listening socket.
+to the server's listening socket in the usual DNS sense.
 
 The terms "initiator" and "responder" correspond respectively to the
 initial sender and subsequent receiver of a DSO request message or unacknowledged message,
@@ -314,7 +315,7 @@ DNS Stateful Operations uses three kinds of message:
 "DSO request messages", "DSO response messages", and
 "DSO unacknowledged messages".
 A DSO request message elicits a DSO response message.
-DSO unacknowledged messages are unidirectional messages and do not generate any response.
+DSO unacknowledged messages are unidirectional messages and do not induce a DNS response.
 
 Both DSO request messages and DSO unacknowledged messages are formatted as DNS
 request messages (the header QR bit is set to zero, as described in {{format}}).
@@ -389,7 +390,7 @@ and to assure client and server that they still have connectivity to each other.
 
 ## DSO Session Establishment {#establishment}
 
-DSO messages MUST be carried in only protocols and in
+DSO messages MUST be carried only in protocols and
 environments where a session may be established according to the definition
 given above in the Terminology section ({{terminology}}).
 
@@ -583,7 +584,8 @@ inappropriately passing session signaling through the middlebox.
 In cases where a DSO session is terminated on one side of a middlebox,
 and then some session is opened on the other side of the middlebox in
 order to satisfy requests sent over the first DSO session, any such session
-MUST be treated as a separate session.
+MUST be treated as a separate session. If the middlebox does implement DSO
+sessions, it MUST handle unrecognized TLVs in the same way as any other DSO implementation as described below in {{unrecognized}}.
 
 This does not
 preclude the use of DSO messages in the presence of an IP-layer
@@ -626,8 +628,7 @@ The corresponding count fields (QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT) MUST be
 set to zero on transmission.
 
 If a DSO message is received where any of the count fields are
-not zero, then a FORMERR MUST be returned,
-unless a future IETF Standard specifies otherwise.
+not zero, then a FORMERR MUST be returned.
 
                                                  1   1   1   1   1   1
          0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
@@ -690,7 +691,7 @@ The DNS Header OPCODE field holds the DSO OPCODE value ([TBA1] tentatively 6).
 The Z bits are currently unused in DSO messages,
 and in both DSO requests and DSO responses the
 Z bits MUST be set to zero (0) on transmission and MUST be silently ignored
-on reception, unless a future IETF Standard specifies otherwise.
+on reception.
 
 ***
 
@@ -728,8 +729,6 @@ interpretation of these RCODE values in the context of that new DSO TLV.
 The standard twelve-byte DNS message header with its
 zero-valued count fields is followed by the DSO Data,
 expressed using TLV syntax, as described below {{tlvsyntax}}.
-
-A DSO message may be a request message, a response message, or an unacknowledged message.
 
 A DSO request message or DSO unacknowledged message MUST contain at least one TLV.
 The first TLV in a DSO request message or DSO unacknowledged message is referred to as the "Primary TLV"
@@ -788,9 +787,7 @@ MUST forcibly abort the connection immediately.
 Unacknowledged messages MUST NOT be used "speculatively"
 in cases where the sender doesn't know if the receiver supports
 the Primary TLV in the message, because there is no way to receive
-any response to indicate success or failure of the request message
-(the request message does not contain a unique MESSAGE ID with
-which to associate a response with its corresponding request).
+any response to indicate success or failure.
 Unacknowledged messages are only appropriate in cases
 where the sender already knows that the receiver supports,
 and wishes to receive, these messages.
@@ -818,8 +815,9 @@ packets over that DSO session {{?I-D.ietf-dnssd-mdns-relay}}.
 All TLVs, whether used as "Primary", "Additional", "Response Primary",
 or "Response Additional", use the same encoding syntax.
 
-The specification for a TLV states whether that DSO-TYPE may be used in
-"Primary", "Additional", "Response Primary", or "Response Additional" TLVs.
+When a new TLV is defined, the specification MUST include whether the DSO-TYPE
+can be used as the Primary TLV, used as an Additional TLV, or used in either
+context for both requests and responses.
 The specification for a TLV also states whether,
 when used as the Primary (i.e., first) TLV in a DNS request message (i.e., QR=0),
 that DSO message is to be acknowledged.
@@ -887,7 +885,7 @@ forcibly abort the connection immediately.
 
 ***
 
-#### Unrecognized TLVs
+#### Unrecognized TLVs {#unrecognized}
 
 If DSO request message is received containing an unrecognized Primary TLV,
 with a nonzero MESSAGE ID (indicating that a response is expected),
@@ -1015,10 +1013,15 @@ MESSAGE IDs just to implement this sanity check is not required.
 
 ### Error Responses
 
-When a DSO unacknowledged message is unsuccessful for some reason,
-the responder immediately aborts the connection.
+When an unacknowledged DSO message type is received (MESSAGE ID field is zero), the receiver SHOULD already be expecting this DSO message type.
+{{unrecognized}} describes the handling of unknown DSO message types. Parsing
+errors MUST also result in the receiver aborting the connection. If the DSO
+message type is not expected, the receiver should abort the connection.
+Other internal errors processing the unacknowledged DSO message are
+implementation dependent as to whether the connection should be aborted
+according to the severity of the error.
 
-When a DSO request message is unsuccessful for some reason,
+When an acknowledged DSO request message is unsuccessful for some reason,
 the responder returns an error code to the initiator.
 
 In the case of a server returning an error code to a client
@@ -1492,7 +1495,7 @@ have become invalid (perhaps because the server has been reconfigured and is no
 longer authoritative for some of the names),
 but the server is terminating all affected DSO Sessions en masse
 by sending them all a Retry Delay message,
-the RECONNECT DELAY MAY be zero, indicating that the clients SHOULD immediately
+the reconnect delay MAY be zero, indicating that the clients SHOULD immediately
 attempt to re-establish operations.
 
 It is likely that some of the attempts will be successful and some will not,
@@ -1500,7 +1503,7 @@ depending on the nature of the reconfiguration.
 
 In the case where a server is terminating a large number of DSO Sessions at once
 (e.g., if the system is restarting) and the server doesn't want to be inundated 
-with a flood of simultaneous retries, it SHOULD send different RECONNECT delay 
+with a flood of simultaneous retries, it SHOULD send different reconnect delay 
 values to each client.
 These adjustments MAY be selected randomly, pseudorandomly, or deterministically
 (e.g., incrementing the time value by one tenth of a second for each successive
@@ -1547,7 +1550,9 @@ Keepalive, Retry Delay, and Encryption Padding.
 
 The Keepalive TLV (DSO-TYPE=1) performs two functions:
 to reset the keepalive timer for the DSO Session,
-and to establish the values for the Session Timeouts. 
+and to establish the values for the Session Timeouts.
+The client will request the desired session timeout values and the server will
+acknowledge with the response values the client MUST use.
 
 The DSO-DATA for the the Keepalive TLV is as follows:
 
@@ -1798,8 +1803,8 @@ A Retry Delay message from server to client is an unacknowledged message;
 the MESSAGE ID MUST be set to zero in the outgoing message
 and the client MUST NOT send a response.
 
-A client MUST NOT send a Retry Delay DSO request message or DSO unacknowledged message to a server.
-If a server receives a DNS request message (i.e., QR=0) where the Primary TLV is the Retry Delay TLV,
+A client MUST NOT send a Retry Delay DSO message to a server.
+If a server receives a DSO message where the Primary TLV is the Retry Delay TLV,
 this is a fatal error and the server MUST forcibly abort the connection immediately.
 
 ### Retry Delay TLV used as a Response Additional TLV
@@ -1988,6 +1993,12 @@ When used without TLS or similar cryptographic protection, a malicious
 entity maybe able to inject a malicious Retry Delay Unacknowledged Message
 into the data stream, specifying an unreasonably large RETRY DELAY, causing
 a denial-of-service attack against the client.
+
+The establishment of DSO sessions has an increasing impact on the number of
+open TCP connections on a DNS server. Additional resources may be used on the
+server as a result. However, because the server can limit the number of DSO
+sessions established and can also close existing DSO sessions as needed, denial
+of service or resource exhaustion should not be a concern.
 
 # Acknowledgements
 
