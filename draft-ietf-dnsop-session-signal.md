@@ -461,6 +461,19 @@ not implement DSO at all. In this case the client is permitted to continue
 sending DNS messages on that connection, but the client SHOULD NOT
 issue further DSO messages on that connection.
 
+Two other possibilities exist: the server might drop the connection, or
+the server might send no response to the DSO message.   In the first
+case, the client SHOULD mark the server as not supporting DSO, and not
+attempt a DSO connection for some period of time (at least an hour)
+after the failed attempt.   The client MAY reconnect but not use
+DSO, if appropriate.
+
+In the second case, the client SHOULD set a reasonable timeout, after
+which time the server will be assumed not to support DSO.   At this
+point the client MUST drop the connection to the server, since the
+server's behavior is out of spec, and hence its state is undefined.
+The client MAY reconnect, but not use DSO, if appropriate.
+
 When the server receives a DSO request message
 from a client, and transmits a successful NOERROR response to that
 request, the server considers the DSO Session established.
@@ -477,7 +490,11 @@ clients and servers should behave as described in this specification with
 regard to inactivity timeouts and session termination, not as previously
 prescribed in the earlier specification for DNS over TCP {{!RFC7766}}.
 
-Note that for clients that implement only the DSO-TYPEs defined in
+Because the Keepalive TLV can't fail (that is, can't return an RCODE
+other than NOERROR), it is an ideal candidate for use in establishing
+a DSO session.   Any other option that can only succeed MAY also be
+used to establish a DSO session.
+For clients that implement only the DSO-TYPEs defined in
 this base specification, sending a Keepalive TLV is the only
 DSO request message they have available to initiate a DSO Session.
 Even for clients that do implement other future DSO-TYPEs, for simplicity
@@ -1937,6 +1954,10 @@ require publication of an IETF Standards Action document {{!RFC8126}}.
 Requests to register additional new DSO Type Codes
 in the "Unassigned" range 0040-F7FF
 are to be recorded by IANA after Expert Review {{!RFC8126}}.
+The expert review should validate that the requested type code
+is specified in a way that conforms to this specification, and
+that the intended use for the code would not be addressed with
+an experimental/local assignment.
 
 DSO Type Codes in the "experimental/local" range F800-FBFF
 may be used as Experimental Use or Private Use values {{!RFC8126}}
