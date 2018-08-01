@@ -1016,8 +1016,8 @@ MESSAGE IDs just to implement this sanity check is not required.
 When an unacknowledged DSO message type is received (MESSAGE ID field is zero), the receiver SHOULD already be expecting this DSO message type.
 {{unrecognized}} describes the handling of unknown DSO message types. Parsing
 errors MUST also result in the receiver aborting the connection.
-If an unacknowledged DSO
-message type is not expected, the receiver should abort the connection.
+When an unacknowledged DSO
+message of an unexpected type is received, the receiver should abort the connection.
 Other internal errors processing the unacknowledged DSO message are
 implementation dependent as to whether the connection should be aborted
 according to the severity of the error.
