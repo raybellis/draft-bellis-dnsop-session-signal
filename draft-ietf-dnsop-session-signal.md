@@ -988,6 +988,14 @@ If a client or server receives a response (QR=1) where the MESSAGE ID is zero, o
 any other value that does not match the MESSAGE ID of any of its outstanding operations,
 this is a fatal error and the recipient MUST forcibly abort the connection immediately.
 
+If a responder receives a request (QR=0) where the MESSAGE ID is not zero, and
+the responder tracks query MESSAGE IDs, and the MESSAGE ID
+matches the MESSAGE ID of a query it received for which a response has not yet been sent,
+it MUST forcibly abort the connection immediately.   This behavior is required to prevent
+a hypothetical attack that takes advantage of undefined behavior in this case.   However,
+if the server does not track MESSAGE IDs in this way, no such risk exists, so tracking
+MESSAGE IDs just to implement this sanity check is not required.
+
 ### Error Responses
 
 When a DSO unacknowledged message is unsuccessful for some reason,
