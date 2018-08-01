@@ -1901,6 +1901,20 @@ where the DSO-TYPE of the Response TLV does not match the DSO-TYPE of the Primar
 The second five contexts are their counterparts in the opposite direction:
 requests or unacknowledged messages from server to client, and the corresponding responses from client back to server.
 
+* S-P - Primary TLV, sent in DSO Request message, from server to client,
+with nonzero MESSAGE ID indicating that this request MUST generate response message.
+* S-U - Primary TLV, sent in DSO Unacknowledged message, from server to client,
+with zero MESSAGE ID indicating that this request MUST NOT generate response message.
+* S-A - Additional TLV, optionally added to request message or unacknowledged message from server to client.
+* SRP - Response Primary TLV, included in response message sent back to the server
+(in response to a server "S-P" request with nonzero MESSAGE ID indicating that a response is required)
+where the DSO-TYPE of the Response TLV matches the DSO-TYPE of the Primary TLV in the request.
+* SRA - Response Additional TLV, included in response message sent back to the server
+(in response to a server "S-P" request with nonzero MESSAGE ID indicating that a response is required)
+where the DSO-TYPE of the Response TLV does not match the DSO-TYPE of the Primary TLV in the request.
+
+
+
                   +-------------------------+-------------------------+
                   | C-P  C-U  C-A  CRP  CRA | S-P  S-U  S-A  SRP  SRA |
      +------------+-------------------------+-------------------------+
