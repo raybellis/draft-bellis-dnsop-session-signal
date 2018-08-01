@@ -194,7 +194,7 @@ The unqualified term "session" in the context of this document means the exchang
 DNS messages over a connection where:
 
 - The connection between client and server is persistent and relatively
-  long-lived (i.e., minutes or hours, rather than seconds).
+  long-lived.
 - Either end of the connection may initiate messages to the other.
 
 In this document the term "session" is used exclusively as described above.
