@@ -1015,7 +1015,8 @@ MESSAGE IDs just to implement this sanity check is not required.
 
 When an unacknowledged DSO message type is received (MESSAGE ID field is zero), the receiver SHOULD already be expecting this DSO message type.
 {{unrecognized}} describes the handling of unknown DSO message types. Parsing
-errors MUST also result in the receiver aborting the connection. If the DSO
+errors MUST also result in the receiver aborting the connection.
+If an unacknowledged DSO
 message type is not expected, the receiver should abort the connection.
 Other internal errors processing the unacknowledged DSO message are
 implementation dependent as to whether the connection should be aborted
@@ -1552,7 +1553,7 @@ The Keepalive TLV (DSO-TYPE=1) performs two functions:
 to reset the keepalive timer for the DSO Session,
 and to establish the values for the Session Timeouts.
 The client will request the desired session timeout values and the server will
-acknowledge with the response values the client MUST use.
+acknowledge with the response values that it requires the client to use.
 
 The DSO-DATA for the the Keepalive TLV is as follows:
 
