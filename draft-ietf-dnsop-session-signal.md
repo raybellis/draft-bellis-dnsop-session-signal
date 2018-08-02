@@ -129,14 +129,25 @@ used to manage session timeouts, termination, and encryption padding.
 The three TLVs defined here are all mandatory for all implementations of DSO.
 Further TLVs may be defined in additional specifications.
 
+DSO messages may or may not be acknowledged; this is signaled by providing a
+non-zero message ID for messages that must be acknowledged and a zero message
+ID for messages that are not to be acknowledged, and is also part of the definition
+of a particular message type.   Messages are pipelined; answers may appear out
+of order when more than one answer is pending.
+
 The format for DSO messages
 ({{format}}) differs somewhat from the traditional DNS message
 format used for standard queries and responses.
 The standard twelve-byte header is used, but the four count fields
 (QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT) are set to zero and accordingly their
 corresponding sections are not present.
+
 The actual data pertaining to DNS Stateful Operations
 (expressed in TLV syntax) is appended to the end of the DNS message header.
+The stream protocol carrying the DSO message frames it with 16-bit message length, so
+the length of the DSO data is determined from that length, rather than from any of
+the DNS header counts.
+
 When displayed using packet analyzer tools that have not been
 updated to recognize the DSO format, this
 will result in the DSO data being displayed
@@ -1155,7 +1166,7 @@ client into a slow lock-step.
 The server MUST act on messages in the order they are transmitted, but
 when responses to those messages become available out of order, the server
 SHOULD NOT delay sending available responses to respond in order.
-{{?RFC7788}} section 3.3 specifies this in more detail.
+{{?RFC7766}} section 3.3 specifies this in more detail.
 
 ## DSO Session Timeouts {#sessiontimeouts}
 
