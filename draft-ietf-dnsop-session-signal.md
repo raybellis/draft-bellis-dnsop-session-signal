@@ -823,16 +823,16 @@ packets over that DSO session {{?I-D.ietf-dnssd-mdns-relay}}.
 All TLVs, whether used as "Primary", "Additional", "Response Primary",
 or "Response Additional", use the same encoding syntax.
 
-When a new TLV is defined, the specification MUST include whether the DSO-TYPE
+Specifications that define new TLVs must specify whether the DSO-TYPE
 can be used as the Primary TLV, used as an Additional TLV, or used in either
-context for both requests and responses.
-The specification for a TLV also states whether,
+context, both in the case of requests and of responses.
+The specification for a TLV must also state whether,
 when used as the Primary (i.e., first) TLV in a DNS request message (i.e., QR=0),
 that DSO message is to be acknowledged.
 If the DSO message is to be acknowledged, the specification
-also states which TLVs, if any, are to be included in the response.
+must also state which TLVs, if any, are to be included in the response.
 The Primary TLV may or may not be contained in the response,
-depending on what is stated in the specification for that TLV.
+depending on what is specified for that TLV.
 
                                                  1   1   1   1   1   1
          0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
