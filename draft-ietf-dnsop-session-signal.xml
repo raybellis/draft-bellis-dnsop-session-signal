@@ -25,7 +25,6 @@
 <!ENTITY RFC7413 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.7413.xml">
 <!ENTITY I-D.ietf-tls-tls13 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-tls-tls13.xml">
 <!ENTITY RFC6762 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.6762.xml">
-<!ENTITY RFC7788 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.7788.xml">
 <!ENTITY RFC5382 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.5382.xml">
 <!ENTITY RFC7857 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.7857.xml">
 <!ENTITY RFC2132 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.2132.xml">
@@ -171,15 +170,26 @@ used to manage session timeouts, termination, and encryption padding.</t>
 <t>The three TLVs defined here are all mandatory for all implementations of DSO.
 Further TLVs may be defined in additional specifications.</t>
 
+<t>DSO messages may or may not be acknowledged; this is signaled by providing a
+non-zero message ID for messages that must be acknowledged and a zero message
+ID for messages that are not to be acknowledged, and is also part of the definition
+of a particular message type.   Messages are pipelined; answers may appear out
+of order when more than one answer is pending.</t>
+
 <t>The format for DSO messages
 (<xref target="format"/>) differs somewhat from the traditional DNS message
 format used for standard queries and responses.
 The standard twelve-byte header is used, but the four count fields
 (QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT) are set to zero and accordingly their
-corresponding sections are not present.
-The actual data pertaining to DNS Stateful Operations
+corresponding sections are not present.</t>
+
+<t>The actual data pertaining to DNS Stateful Operations
 (expressed in TLV syntax) is appended to the end of the DNS message header.
-When displayed using packet analyzer tools that have not been
+The stream protocol carrying the DSO message frames it with 16-bit message length, so
+the length of the DSO data is determined from that length, rather than from any of
+the DNS header counts.</t>
+
+<t>When displayed using packet analyzer tools that have not been
 updated to recognize the DSO format, this
 will result in the DSO data being displayed
 as unknown additional data after the end of the DNS message.</t>
@@ -1197,7 +1207,7 @@ client into a slow lock-step.
 The server MUST act on messages in the order they are transmitted, but
 when responses to those messages become available out of order, the server
 SHOULD NOT delay sending available responses to respond in order.
-<xref target="RFC7788"/> section 3.3 specifies this in more detail.</t>
+<xref target="RFC7766"/> section 3.3 specifies this in more detail.</t>
 
 </section>
 <section anchor="sessiontimeouts" title="DSO Session Timeouts">
@@ -2236,7 +2246,6 @@ for their helpful contributions to this document.</t>
 &RFC7413;
 &I-D.ietf-tls-tls13;
 &RFC6762;
-&RFC7788;
 &RFC5382;
 &RFC7857;
 &RFC2132;
