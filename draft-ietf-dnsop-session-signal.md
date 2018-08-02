@@ -299,6 +299,15 @@ two entities should be determined to be the "same service instance".
 When an anycast service is configured on a particular IP address and port, it
 must be the case that although there is more than one physical server
 responding on that IP address, each such server can be treated as equivalent.
+What we mean by "equivalent" here is that both servers can provide the
+same service and, where appropriate, the same authentication information,
+such as PKI certificates, when establishing connections.
+
+In principle, anycast servers could maintain sufficient state that they can both handle packets
+in the same TCP connection.  In order for this to work with DSO, they would need to also share
+DSO state.  It is unlikely that this can be done successfully, however, so we recommend that
+each anycast server instance maintain its own session state.
+
 If a change in network topology causes
 packets in a particular TCP connection to be sent to an anycast
 server instance that does not know about the connection, the new
