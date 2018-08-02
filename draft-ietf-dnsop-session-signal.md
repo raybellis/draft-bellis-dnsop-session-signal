@@ -141,8 +141,6 @@ When displayed using packet analyzer tools that have not been
 updated to recognize the DSO format, this
 will result in the DSO data being displayed
 as unknown additional data after the end of the DNS message.
-It is likely that future updates to these tools will add the ability
-to recognize, decode, and display the DSO data.
 
 This new format has distinct advantages over an RR-based format because it
 is more explicit and more compact. Each TLV definition is specific
@@ -150,7 +148,8 @@ to its use case, and as a result contains no redundant or overloaded fields.
 Importantly, it completely avoids conflating DNS Stateful Operations in any way 
 with normal DNS operations or with existing EDNS(0)-based functionality.
 A goal of this approach is to avoid the operational issues that have
-befallen EDNS(0), particularly relating to middlebox behaviour.
+befallen EDNS(0), particularly relating to middlebox behaviour (see for example
+{{I-D.-ietf-dnsop-no-response-issue}} sections 3.2 and 4).
 
 With EDNS(0), multiple options may be packed into a single OPT pseudo-RR,
 and there is no generalized mechanism for a client to be able to tell
@@ -390,8 +389,8 @@ and to assure client and server that they still have connectivity to each other.
 
 ## DSO Session Establishment {#establishment}
 
-DSO messages MUST be carried only in protocols and
-environments where a session may be established according to the definition
+DSO messages MUST NOT be carried in protocols and
+environments where a session can't be established according to the definition
 given above in the Terminology section ({{terminology}}).
 
 DNS over plain UDP {{?RFC0768}} is not appropriate since it fails on the requirement for
@@ -913,7 +912,7 @@ handled as if the unrecognized parts were not present.
 ### EDNS(0) and TSIG
 
 Since the ARCOUNT field MUST be zero, a DSO message
-MUST NOT contain an EDNS(0) option in the additional records section.
+can't contain a valid EDNS(0) option in the additional records section.
 If functionality provided by current or future EDNS(0) options
 is desired for DSO messages, one or more new DSO TLVs
 need to be defined to carry the necessary information.
@@ -991,13 +990,13 @@ bit is implicit from the direction of the message.
 As described above in {{header}}, an initiator MUST NOT reuse a
 MESSAGE ID that it already has in use for an outstanding request
 (unless specified otherwise by the relevant specification for the DSO-TYPE in question).
-At the very least, this means that a MESSAGE ID MUST NOT
+At the very least, this means that a MESSAGE ID can't
 be reused in a particular direction on a particular DSO
 Session while the initiator is waiting for a response to a
 previous request using that MESSAGE ID on that DSO Session
 (unless specified otherwise by the relevant specification for the DSO-TYPE in question),
 and for a long-lived operation the MESSAGE ID for the operation
-MUST NOT be reused while that operation remains active.
+can't be reused while that operation remains active.
 
 If a client or server receives a response (QR=1) where the MESSAGE ID is zero, or is
 any other value that does not match the MESSAGE ID of any of its outstanding operations,
@@ -2022,6 +2021,25 @@ open TCP connections on a DNS server. Additional resources may be used on the
 server as a result. However, because the server can limit the number of DSO
 sessions established and can also close existing DSO sessions as needed, denial
 of service or resource exhaustion should not be a concern.
+
+## TCP Fast Open Considerations
+
+It would be possible to add a TLV that requires the server to do some significant
+work, and send that to the server as initial data in a TCP SYN packet.   A flood
+of such packets could be used as a DoS attack on the server.   None of the TLVs
+defined here have this property.   If a new TLV is specified that does have this
+property, the specification should require that some kind of exchange be done with
+the server before work is done.   That is, the TLV that requires work could not
+be processed without a round-trip from the server to the client to verify that
+the source address of the packet is reachable.
+
+One way to accomplish this would be to have the client send a TLV indicating that
+it wishes to have the server do work of this sort; this TLV would not actually result
+in work being done, but would request a nonce from the server.   The client could
+then use that nonce to request that work be done.
+
+Alternatively, the server could simply disable TCP fast open.   This same problem
+would exist for DNS-over-TLS with TLS early data; the same remedies would apply.
 
 # Acknowledgements
 
