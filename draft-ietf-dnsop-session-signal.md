@@ -1107,7 +1107,7 @@ client into a slow lock-step.
 The server MUST act on messages in the order they are transmitted, but
 when responses to those messages become available out of order, the server
 SHOULD NOT delay sending available responses to respond in order.
-{{?RFC7788}} section 3.3 specifies this in more detail.
+{{?RFC7766}} section 3.3 specifies this in more detail.
 
 ## DSO Session Timeouts {#sessiontimeouts}
 
