@@ -128,6 +128,7 @@ Internet-Draft           DNS Stateful Operations               July 2018
      9.2.  DSO RCODE Registration  . . . . . . . . . . . . . . . . .  50
      9.3.  DSO Type Code Registry  . . . . . . . . . . . . . . . . .  50
    10. Security Considerations . . . . . . . . . . . . . . . . . . .  51
+     10.1.  TCP Fast Open Considerations . . . . . . . . . . . . . .  52
    11. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  52
    12. References  . . . . . . . . . . . . . . . . . . . . . . . . .  53
      12.1.  Normative References . . . . . . . . . . . . . . . . . .  53
@@ -164,7 +165,6 @@ Internet-Draft           DNS Stateful Operations               July 2018
 
 
 
-
 Bellis, et al.          Expires January 27, 2019                [Page 3]
 
 Internet-Draft           DNS Stateful Operations               July 2018
@@ -182,9 +182,7 @@ Internet-Draft           DNS Stateful Operations               July 2018
    is appended to the end of the DNS message header.  When displayed
    using packet analyzer tools that have not been updated to recognize
    the DSO format, this will result in the DSO data being displayed as
-   unknown additional data after the end of the DNS message.  It is
-   likely that future updates to these tools will add the ability to
-   recognize, decode, and display the DSO data.
+   unknown additional data after the end of the DNS message.
 
    This new format has distinct advantages over an RR-based format
    because it is more explicit and more compact.  Each TLV definition is
@@ -193,7 +191,8 @@ Internet-Draft           DNS Stateful Operations               July 2018
    Stateful Operations in any way with normal DNS operations or with
    existing EDNS(0)-based functionality.  A goal of this approach is to
    avoid the operational issues that have befallen EDNS(0), particularly
-   relating to middlebox behaviour.
+   relating to middlebox behaviour (see for example
+   [I-D.ietf-dnsop-no-response-issue] sections 3.2 and 4).
 
    With EDNS(0), multiple options may be packed into a single OPT
    pseudo-RR, and there is no generalized mechanism for a client to be
@@ -213,6 +212,7 @@ Internet-Draft           DNS Stateful Operations               July 2018
    DSO request message communicates just one primary operation, and the
    RCODE in the corresponding response message indicates the success or
    failure of that operation.
+
 
 
 
@@ -510,9 +510,9 @@ Internet-Draft           DNS Stateful Operations               July 2018
 
 5.1.  DSO Session Establishment
 
-   DSO messages MUST be carried only in protocols and environments where
-   a session may be established according to the definition given above
-   in the Terminology section (Section 3).
+   DSO messages MUST NOT be carried in protocols and environments where
+   a session can't be established according to the definition given
+   above in the Terminology section (Section 3).
 
    DNS over plain UDP [RFC0768] is not appropriate since it fails on the
    requirement for in-order message delivery, and, in the presence of
@@ -1041,8 +1041,8 @@ Internet-Draft           DNS Stateful Operations               July 2018
    Notification subscription, thereby indicating its support of Push
    Notifications, and its desire to receive those notifications.
 
-   Similarly, after an Discovery Relay client has subscribed to receive
-   inbound mDNS (multicast DNS, [RFC6762]) traffic from an Discovery
+   Similarly, after a Discovery Relay client has subscribed to receive
+   inbound mDNS (multicast DNS, [RFC6762]) traffic from a Discovery
    Relay, the subsequent stream of received packets is then sent using
    unacknowledged messages, and this is appropriate because the client
    initiated the message stream by virtue of its Discovery Relay link
@@ -1236,8 +1236,8 @@ Internet-Draft           DNS Stateful Operations               July 2018
 
 5.2.3.  EDNS(0) and TSIG
 
-   Since the ARCOUNT field MUST be zero, a DSO message MUST NOT contain
-   an EDNS(0) option in the additional records section.  If
+   Since the ARCOUNT field MUST be zero, a DSO message can't contain a
+   valid EDNS(0) option in the additional records section.  If
    functionality provided by current or future EDNS(0) options is
    desired for DSO messages, one or more new DSO TLVs need to be defined
    to carry the necessary information.
@@ -1337,7 +1337,7 @@ Internet-Draft           DNS Stateful Operations               July 2018
    MESSAGE ID that it already has in use for an outstanding request
    (unless specified otherwise by the relevant specification for the
    DSO-TYPE in question).  At the very least, this means that a MESSAGE
-   ID MUST NOT be reused in a particular direction on a particular DSO
+   ID can't be reused in a particular direction on a particular DSO
 
 
 
@@ -1350,7 +1350,7 @@ Internet-Draft           DNS Stateful Operations               July 2018
    request using that MESSAGE ID on that DSO Session (unless specified
    otherwise by the relevant specification for the DSO-TYPE in
    question), and for a long-lived operation the MESSAGE ID for the
-   operation MUST NOT be reused while that operation remains active.
+   operation can't be reused while that operation remains active.
 
    If a client or server receives a response (QR=1) where the MESSAGE ID
    is zero, or is any other value that does not match the MESSAGE ID of
@@ -2858,35 +2858,35 @@ Bellis, et al.          Expires January 27, 2019               [Page 51]
 Internet-Draft           DNS Stateful Operations               July 2018
 
 
+10.1.  TCP Fast Open Considerations
+
+   It would be possible to add a TLV that requires the server to do some
+   significant work, and send that to the server as initial data in a
+   TCP SYN packet.  A flood of such packets could be used as a DoS
+   attack on the server.  None of the TLVs defined here have this
+   property.  If a new TLV is specified that does have this property,
+   the specification should require that some kind of exchange be done
+   with the server before work is done.  That is, the TLV that requires
+   work could not be processed without a round-trip from the server to
+   the client to verify that the source address of the packet is
+   reachable.
+
+   One way to accomplish this would be to have the client send a TLV
+   indicating that it wishes to have the server do work of this sort;
+   this TLV would not actually result in work being done, but would
+   request a nonce from the server.  The client could then use that
+   nonce to request that work be done.
+
+   Alternatively, the server could simply disable TCP fast open.  This
+   same problem would exist for DNS-over-TLS with TLS early data; the
+   same remedies would apply.
+
 11.  Acknowledgements
 
    Thanks to Stephane Bortzmeyer, Tim Chown, Ralph Droms, Paul Hoffman,
    Jan Komissar, Edward Lewis, Allison Mankin, Rui Paulo, David
    Schinazi, Manju Shankar Rao, and Bernie Volz for their helpful
    contributions to this document.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -2976,6 +2976,11 @@ Internet-Draft           DNS Stateful Operations               July 2018
 
 12.2.  Informative References
 
+   [I-D.ietf-dnsop-no-response-issue]
+              Andrews, M. and R. Bellis, "A Common Operational Problem
+              in DNS Servers - Failure To Respond.", draft-ietf-dnsop-
+              no-response-issue-11 (work in progress), July 2018.
+
    [I-D.ietf-dnssd-mdns-relay]
               Lemon, T. and S. Cheshire, "Multicast DNS Discovery
               Relay", draft-ietf-dnssd-mdns-relay-01 (work in progress),
@@ -3012,11 +3017,6 @@ Internet-Draft           DNS Stateful Operations               July 2018
               Extensions", RFC 2132, DOI 10.17487/RFC2132, March 1997,
               <https://www.rfc-editor.org/info/rfc2132>.
 
-   [RFC2782]  Gulbrandsen, A., Vixie, P., and L. Esibov, "A DNS RR for
-              specifying the location of services (DNS SRV)", RFC 2782,
-              DOI 10.17487/RFC2782, February 2000,
-              <https://www.rfc-editor.org/info/rfc2782>.
-
 
 
 
@@ -3025,6 +3025,11 @@ Bellis, et al.          Expires January 27, 2019               [Page 54]
 
 Internet-Draft           DNS Stateful Operations               July 2018
 
+
+   [RFC2782]  Gulbrandsen, A., Vixie, P., and L. Esibov, "A DNS RR for
+              specifying the location of services (DNS SRV)", RFC 2782,
+              DOI 10.17487/RFC2782, February 2000,
+              <https://www.rfc-editor.org/info/rfc2782>.
 
    [RFC5382]  Guha, S., Ed., Biswas, K., Ford, B., Sivakumar, S., and P.
               Srisuresh, "NAT Behavioral Requirements for TCP", BCP 142,
@@ -3069,11 +3074,6 @@ Internet-Draft           DNS Stateful Operations               July 2018
               and P. Hoffman, "Specification for DNS over Transport
               Layer Security (TLS)", RFC 7858, DOI 10.17487/RFC7858, May
               2016, <https://www.rfc-editor.org/info/rfc7858>.
-
-
-
-
-
 
 
 

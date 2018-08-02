@@ -149,7 +149,7 @@ Importantly, it completely avoids conflating DNS Stateful Operations in any way
 with normal DNS operations or with existing EDNS(0)-based functionality.
 A goal of this approach is to avoid the operational issues that have
 befallen EDNS(0), particularly relating to middlebox behaviour (see for example
-{{I-D.-ietf-dnsop-no-response-issue}} sections 3.2 and 4).
+{{?I-D.ietf-dnsop-no-response-issue}} sections 3.2 and 4).
 
 With EDNS(0), multiple options may be packed into a single OPT pseudo-RR,
 and there is no generalized mechanism for a client to be able to tell
@@ -798,8 +798,8 @@ because the client initiated the message stream by virtue of its
 Push Notification subscription, thereby indicating its support of
 Push Notifications, and its desire to receive those notifications.
 
-Similarly, after an Discovery Relay client has subscribed to receive
-inbound mDNS (multicast DNS, {{?RFC6762}}) traffic from an Discovery
+Similarly, after a Discovery Relay client has subscribed to receive
+inbound mDNS (multicast DNS, {{?RFC6762}}) traffic from a Discovery
 Relay, the subsequent stream of received
 packets is then sent using unacknowledged messages, and this
 is appropriate because the client initiated the message stream
