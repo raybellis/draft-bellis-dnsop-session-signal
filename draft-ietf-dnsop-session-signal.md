@@ -106,9 +106,11 @@ This document updates RFC 1035 by adding a new DNS header opcode and result code
 
 # Introduction
 
-The use of transports for DNS other than UDP is being increasingly specified,
-for example, DNS over TCP {{!RFC1035}} {{!RFC7766}} and DNS over TLS {{?RFC7858}}.
-Such transports can offer persistent, long-lived sessions and therefore when
+This document specifies a mechanism for managing stateful DNS connections.
+DNS most commonly operates over a UDP transport, but can also operate over
+streaming transports; the original DNS RFC specifies DNS over TCP {{!RFC1035}}
+and a profile for DNS over TLS {{?RFC7858}} has been specified.
+These transports can offer persistent, long-lived sessions and therefore when
 using them for transporting DNS messages it is of benefit to have a mechanism
 that can establish parameters associated with those sessions, such as timeouts.
 In such situations it is also advantageous to support server-initiated messages
@@ -399,43 +401,40 @@ and to assure client and server that they still have connectivity to each other.
 
 ***
 
+# Applicability {#applicability}
+
+DNS Stateful Operations are applicable in cases where it is useful to maintain an open session
+between a DNS client and server, where the transport allows such a session to be maintained, and
+where the transport guarantees in-order delivery of messages, on which DSO depends.  Examples of
+transports that can support session signaling are DNS-over-TCP {{?RFC1035}} {{?RFC7766}} and
+DNS-over-TLS {{?RFC7858}}.
+
+Note that in the case of DNS over TLS, there is no mechanism for upgrading from DNS-over-TCP
+to DNS-over-TLS (see {{?RFC7858}} section 7).
+
+DNS Stateful Operations are not applicable for transports that cannot support clean session
+semantics, or that do not guarantee in-order delivery.   While in principle such a transport
+could be constructed over UDP, the current DNS specification over UDP transport {{RFC1035}}
+does not provide in-order delivery or session semantics, and hence cannot be used.  Similarly,
+DNS-over-HTTP {{?I-D.ietf-doh-dns-over-https}} cannot be used because HTTP has its own
+mechanism for managing sessions, and this is incompatible with the mechanism specified here.
+
+No other transports are currently defined for use with DNS Stateful Operations.  Such transports
+can be added in the future, if they meet the requirements set out in the first paragraph of this
+section.
+
 # Protocol Details {#details}
 
 ## DSO Session Establishment {#establishment}
 
-DSO messages MUST NOT be carried in protocols and
-environments where a session can't be established.   For example,
-DNS over plain UDP {{?RFC0768}} is not appropriate since it does not provide
-in-order message delivery, and, in the presence of NAT gateways and firewalls
-with short UDP timeouts, it cannot provide a persistent bi-directional
-communication channel unless an excessive amount of DSO keepalive traffic is used.
-UDP also doesn't provide a way to mark the start of a session and the end
-of a session.
-
-At the time of publication, DSO is specified only
-for DNS over TCP {{!RFC1035}} {{!RFC7766}}, and
-for DNS over TLS over TCP {{?RFC7858}}.
-Any use of DSO over some other connection technology needs to be
-specified in an appropriate future document.
-
-Determining whether a given connection is using DNS over TCP, or DNS
-over TLS over TCP, is outside the scope of this specification, and
-must be determined using some out-of-band configuration information.
-There is no provision within the DSO specification to
-turn TLS on or off during the lifetime of a connection.
-For service types where the service instance is discovered
-using a DNS SRV record {{?RFC2782}},
-the specification for that service type SRV name {{?RFC6335}}
-will state whether the connection uses plain TCP, or TLS over TCP.
-For example, the specification for the
-"_dns‑push‑tls._tcp" service {{?I-D.ietf-dnssd-push}},
-states that it uses TLS.
-It is a common convention that protocols specified to run over TLS
-are given IANA service type names ending in "‑tls" {{IANA-SRVNAMES}}.
+In order for a session to be established between a client and a server, the client must first
+establish a connection to the server, using an applicable transport (see {{applicability}}).
 
 In some environments it may be known in advance by external means
 that both client and server support DSO, and in these cases either
-client or server may initiate DSO messages at any time.
+client or server may initiate DSO messages at any time.  In this
+case, the session is established as soon as the connection is established;
+this is referred to as implicit session establishment.
 
 However, in the typical case a server will not know in advance whether a
 client supports DSO, so in general, unless it is known in advance by other means
@@ -443,10 +442,11 @@ that a client does support DSO, a server MUST NOT initiate DSO request messages
 or DSO unacknowledged messages
 until a DSO Session has been mutually established
 by at least one successful DSO request/response exchange
-initiated by the client, as described below.
-Similarly, unless it is known in advance by other means that a server
-does support DSO, a client MUST NOT initiate
-DSO unacknowledged messages until after a DSO Session has been mutually established.
+initiated by the client, as described below.   This is referred to as explicit
+session establishment.
+
+Until a DSO session has been implicitly or explicitly established, a client MUST NOT initiate
+DSO unacknowledged messages.
 
 A DSO Session is established over a connection by the client
 sending a DSO request message, such as a DSO Keepalive request message ({{keepalive}}),
