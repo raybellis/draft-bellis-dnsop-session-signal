@@ -88,6 +88,9 @@ informative:
       name: Stuart Cheshire
       ins: S. Cheshire
     date: 2005-05-20
+  IANA-SRVNAMES:
+    target: https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xml
+    title: Service Name and Transport Protocol Port Number Registry
 
 --- abstract
 
@@ -390,13 +393,13 @@ and to assure client and server that they still have connectivity to each other.
 ## DSO Session Establishment {#establishment}
 
 DSO messages MUST NOT be carried in protocols and
-environments where a session can't be established according to the definition
-given above in the Terminology section ({{terminology}}).
-
-DNS over plain UDP {{?RFC0768}} is not appropriate since it fails on the requirement for
+environments where a session can't be established.   For example,
+DNS over plain UDP {{?RFC0768}} is not appropriate since it does not provide
 in-order message delivery, and, in the presence of NAT gateways and firewalls
-with short UDP timeouts, it fails to provide a persistent bi-directional
+with short UDP timeouts, it cannot provide a persistent bi-directional
 communication channel unless an excessive amount of DSO keepalive traffic is used.
+UDP also doesn't provide a way to mark the start of a session and the end
+of a session.
 
 At the time of publication, DSO is specified only
 for DNS over TCP {{!RFC1035}} {{!RFC7766}}, and
@@ -417,7 +420,7 @@ For example, the specification for the
 "_dns‑push‑tls._tcp" service {{?I-D.ietf-dnssd-push}},
 states that it uses TLS.
 It is a common convention that protocols specified to run over TLS
-are given IANA service type names ending in "‑tls".
+are given IANA service type names ending in "‑tls" {{IANA-SRVNAMES}}.
 
 In some environments it may be known in advance by external means
 that both client and server support DSO, and in these cases either
@@ -547,19 +550,14 @@ multiple connections from different source ports on the same client IP address.
 
 ### Zero Round-Trip Operation
 
-There is increased awareness today of the performance benefits
-of eliminating round trips in session establishment.
-Technologies like TCP Fast Open {{?RFC7413}}
+DSO permits zero round-trip operation
+using TCP Fast Open {{?RFC7413}}
 and TLS 1.3 {{?I-D.ietf-tls-tls13}}
-provide mechanisms to reduce or eliminate
+to reduce or eliminate
 round trips in session establishment.
 
-Similarly, DSO supports zero round-trip operation.
-
-Having initiated a connection to a server, possibly using
-zero round-trip TCP Fast Open and/or
-zero round-trip TLS 1.3, a client MAY send multiple
-response-requiring DSO request messages to the server in succession
+A client MAY send multiple response-requiring DSO messages using TCP fast
+open or TLS 1.3 early data,
 without having to wait for a response to the first request message
 to confirm successful establishment of a DSO session.
 
@@ -1601,8 +1599,6 @@ The unacknowledged DSO Keepalive message from the server resets a DSO Session's 
 and at the same time unilaterally informs the client of the new
 Session Timeout values to use from this point forward in this DSO Session.
 No client DSO response message to this unilateral declaration is required or allowed.
-
-The Keepalive TLV is not used as an Additional TLV.
 
 In DSO Keepalive response messages, the Keepalive TLV is REQUIRED and is used only 
 as a Response Primary TLV sent as a reply to a DSO Keepalive request message from 
