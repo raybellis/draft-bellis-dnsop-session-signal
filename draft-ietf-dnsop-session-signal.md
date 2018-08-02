@@ -1,7 +1,7 @@
 ---
 title: DNS Stateful Operations
-docname: draft-ietf-dnsop-session-signal-12
-date: 2018-7-26
+docname: draft-ietf-dnsop-session-signal-13
+date: 2018-8-2
 ipr: trust200902
 area: Internet
 wg: DNSOP Working Group
@@ -88,6 +88,9 @@ informative:
       name: Stuart Cheshire
       ins: S. Cheshire
     date: 2005-05-20
+  IANA-SRVNAMES:
+    target: https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xml
+    title: Service Name and Transport Protocol Port Number Registry
 
 --- abstract
 
@@ -152,8 +155,6 @@ When displayed using packet analyzer tools that have not been
 updated to recognize the DSO format, this
 will result in the DSO data being displayed
 as unknown additional data after the end of the DNS message.
-It is likely that future updates to these tools will add the ability
-to recognize, decode, and display the DSO data.
 
 This new format has distinct advantages over an RR-based format because it
 is more explicit and more compact. Each TLV definition is specific
@@ -161,7 +162,8 @@ to its use case, and as a result contains no redundant or overloaded fields.
 Importantly, it completely avoids conflating DNS Stateful Operations in any way 
 with normal DNS operations or with existing EDNS(0)-based functionality.
 A goal of this approach is to avoid the operational issues that have
-befallen EDNS(0), particularly relating to middlebox behaviour.
+befallen EDNS(0), particularly relating to middlebox behaviour (see for example
+{{?I-D.ietf-dnsop-no-response-issue}} sections 3.2 and 4).
 
 With EDNS(0), multiple options may be packed into a single OPT pseudo-RR,
 and there is no generalized mechanism for a client to be able to tell
@@ -401,14 +403,14 @@ and to assure client and server that they still have connectivity to each other.
 
 ## DSO Session Establishment {#establishment}
 
-DSO messages MUST be carried only in protocols and
-environments where a session may be established according to the definition
-given above in the Terminology section ({{terminology}}).
-
-DNS over plain UDP {{?RFC0768}} is not appropriate since it fails on the requirement for
+DSO messages MUST NOT be carried in protocols and
+environments where a session can't be established.   For example,
+DNS over plain UDP {{?RFC0768}} is not appropriate since it does not provide
 in-order message delivery, and, in the presence of NAT gateways and firewalls
-with short UDP timeouts, it fails to provide a persistent bi-directional
+with short UDP timeouts, it cannot provide a persistent bi-directional
 communication channel unless an excessive amount of DSO keepalive traffic is used.
+UDP also doesn't provide a way to mark the start of a session and the end
+of a session.
 
 At the time of publication, DSO is specified only
 for DNS over TCP {{!RFC1035}} {{!RFC7766}}, and
@@ -429,7 +431,7 @@ For example, the specification for the
 "_dns‑push‑tls._tcp" service {{?I-D.ietf-dnssd-push}},
 states that it uses TLS.
 It is a common convention that protocols specified to run over TLS
-are given IANA service type names ending in "‑tls".
+are given IANA service type names ending in "‑tls" {{IANA-SRVNAMES}}.
 
 In some environments it may be known in advance by external means
 that both client and server support DSO, and in these cases either
@@ -559,19 +561,14 @@ multiple connections from different source ports on the same client IP address.
 
 ### Zero Round-Trip Operation
 
-There is increased awareness today of the performance benefits
-of eliminating round trips in session establishment.
-Technologies like TCP Fast Open {{?RFC7413}}
+DSO permits zero round-trip operation
+using TCP Fast Open {{?RFC7413}}
 and TLS 1.3 {{?I-D.ietf-tls-tls13}}
-provide mechanisms to reduce or eliminate
+to reduce or eliminate
 round trips in session establishment.
 
-Similarly, DSO supports zero round-trip operation.
-
-Having initiated a connection to a server, possibly using
-zero round-trip TCP Fast Open and/or
-zero round-trip TLS 1.3, a client MAY send multiple
-response-requiring DSO request messages to the server in succession
+A client MAY send multiple response-requiring DSO messages using TCP fast
+open or TLS 1.3 early data,
 without having to wait for a response to the first request message
 to confirm successful establishment of a DSO session.
 
@@ -810,8 +807,8 @@ because the client initiated the message stream by virtue of its
 Push Notification subscription, thereby indicating its support of
 Push Notifications, and its desire to receive those notifications.
 
-Similarly, after an Discovery Relay client has subscribed to receive
-inbound mDNS (multicast DNS, {{?RFC6762}}) traffic from an Discovery
+Similarly, after a Discovery Relay client has subscribed to receive
+inbound mDNS (multicast DNS, {{?RFC6762}}) traffic from a Discovery
 Relay, the subsequent stream of received
 packets is then sent using unacknowledged messages, and this
 is appropriate because the client initiated the message stream
@@ -924,7 +921,7 @@ handled as if the unrecognized parts were not present.
 ### EDNS(0) and TSIG
 
 Since the ARCOUNT field MUST be zero, a DSO message
-MUST NOT contain an EDNS(0) option in the additional records section.
+can't contain a valid EDNS(0) option in the additional records section.
 If functionality provided by current or future EDNS(0) options
 is desired for DSO messages, one or more new DSO TLVs
 need to be defined to carry the necessary information.
@@ -1002,13 +999,13 @@ bit is implicit from the direction of the message.
 As described above in {{header}}, an initiator MUST NOT reuse a
 MESSAGE ID that it already has in use for an outstanding request
 (unless specified otherwise by the relevant specification for the DSO-TYPE in question).
-At the very least, this means that a MESSAGE ID MUST NOT
+At the very least, this means that a MESSAGE ID can't
 be reused in a particular direction on a particular DSO
 Session while the initiator is waiting for a response to a
 previous request using that MESSAGE ID on that DSO Session
 (unless specified otherwise by the relevant specification for the DSO-TYPE in question),
 and for a long-lived operation the MESSAGE ID for the operation
-MUST NOT be reused while that operation remains active.
+can't be reused while that operation remains active.
 
 If a client or server receives a response (QR=1) where the MESSAGE ID is zero, or is
 any other value that does not match the MESSAGE ID of any of its outstanding operations,
@@ -1057,61 +1054,16 @@ subsequent operations. If the server does not end the DSO Session by
 sending the client a Retry Delay message ({{retry}}) then the client
 SHOULD continue to use that DSO Session for subsequent operations.
 
-## DSO Response Generation
+## Flow Control Considerations
 
-With most TCP implementations, for DSO requests that generate a
-response, the TCP data acknowledgement (generated because data has
-been received by TCP), the TCP window update (generated because TCP
-has delivered that data to the receiving software), and the DSO
-response (generated by the receiving application-layer software
-itself) are all combined into a single IP packet.  Combining these
-three elements into a single IP packet can give a significant
-improvement in network efficiency, assuming that the DSO response
-is sent before the TCP Delayed Acknowledgement timer goes off.
-
-For DSO requests that do not generate a response,
-the TCP implementation generally doesn't have any way to know
-that no response will be forthcoming, so it waits fruitlessly
-for the application-layer software to generate a response,
-until the Delayed ACK timer fires {{?RFC1122}} (typically 200 milliseconds)
-and only then does it send the TCP ACK and window update.
-In conjunction with Nagle's Algorithm at the sender,
-this can delay the sender's transmission of its next
-(non-full-sized) TCP segment, while the sender is waiting for
-its previous (non-full-sized) TCP segment to be acknowledged,
-which won't happen until the Delayed ACK timer fires.
-Nagle's Algorithm exists to combine multiple small
-application writes into more-efficient large TCP segments,
-to guard against wasteful use of the network by applications
-that would otherwise transmit a stream of small TCP segments,
-but in this case Nagle's Algorithm (created to improve network efficiency)
-can interact badly with TCP's Delayed ACK feature
-(also created to improve network efficiency) {{NagleDA}}
-with the result of delaying some messages by up to 200 milliseconds.
-
-Possible mitigations for this problem include:
-
-* Disable Nagle's Algorithm at the sender. This is not great,  
-because it results in less efficient use of the network.
-
-* Disable Delayed ACK at the receiver. This is not great,  
-because it results in less efficient use of the network.
-
-* Adding padding data to fill the segment. This is not great,
-because it uses additional bandwidth.
-
-* Use a networking API that lets the receiver signal to the TCP
-implementation that the receiver has received and processed a client
-request for which it will not be generating any immediate response.
-This allows the TCP implementation to operate efficiently in both cases;
-for requests that generate a response, the TCP ACK, window update, and
-DSO response are transmitted together in a single TCP segment,
-and for requests that do not generate a response,
-the application-layer software informs the TCP implementation
-that it should go ahead and send the TCP ACK and window update
-immediately, without waiting for the Delayed ACK timer.
-Unfortunately it is not known at this time which (if any) of the
-widely-available networking APIs currently include this capability.
+Because unacknowledged DSO messages do not generate an immediate response from the responder, if
+there is no other traffic flowing from the responder to the initiator, this can result in a
+200ms delay before the TCP acknowledgment is sent to the initiator {{NagleDA}}.  If the
+initiator has another message pending, but has not yet filled its output buffer, this can delay
+the delivery of that message by more than 200ms.  In many cases, this will make no difference.
+However, implementors should be aware of this issue.  Some operating systems offer ways to
+disable the 200ms TCP acknowledgment delay; this may be useful for relatively low-traffic
+sessions, or sessions with bursty traffic flows.
 
 ## Responder-Initiated Operation Cancellation {#cancellation}
 
@@ -1192,6 +1144,10 @@ to the client that it should not speculatively keep an inactive DSO
 Session open for very long without reason, but when it does have an
 active reason to keep a DSO Session open, it doesn't need to be sending
 an aggressive level of DSO keepalive traffic to maintain that session.
+An example of this would be a client that has subscribed to DNS Push
+notifications: in this case, the client is not sending any traffic to the
+server, but the session is not inactive, because there is a pending request
+to the server to receive push notifications.
 
 A longer inactivity timeout with a shorter keepalive interval
 signals to the client that it may speculatively keep an inactive
@@ -1655,8 +1611,6 @@ and at the same time unilaterally informs the client of the new
 Session Timeout values to use from this point forward in this DSO Session.
 No client DSO response message to this unilateral declaration is required or allowed.
 
-The Keepalive TLV is not used as an Additional TLV.
-
 In DSO Keepalive response messages, the Keepalive TLV is REQUIRED and is used only 
 as a Response Primary TLV sent as a reply to a DSO Keepalive request message from 
 the client.
@@ -1684,12 +1638,17 @@ contained in the Keepalive TLV from the server may each be higher, lower, or
 the same as the respective Session Timeout values the client previously had for 
 this DSO Session.
 
-In the case of the keepalive timer, the handling of the received value is 
-straightforward. The act of receiving the message containing the Keepalive 
-TLV itself resets the keepalive timer and updates the keepalive interval for the 
-DSO Session. The new keepalive interval indicates the 
-maximum time that may elapse before another message must be sent
-or received on this DSO Session, if the DSO Session is to remain alive.
+In the case of the keepalive timer, the handling of the received value is straightforward. When
+a client receives a server-initiated message with the Keepalive TLV as its primary TLV, it resets the
+keepalive timer.  Whenever it receives a Keepalive TLV from the server, either in a server-initiated
+message or a reply to its own client-initiated Keepalive message, it updates the keepalive interval
+for the DSO Session. The new keepalive
+interval indicates the maximum time that may elapse before another message must be sent or
+received on this DSO Session, if the DSO Session is to remain alive.
+If the client receives a response to a keepalive message that specifies a keepalive interval
+shorter than the current keepalive timer, the client MUST immediately send a Keepalive message.
+However, this should not normally happen in practice: it would require that Keepalive interval
+the server be shorter than the round-trip time of the connection.
 
 ***
 
@@ -2033,6 +1992,25 @@ open TCP connections on a DNS server. Additional resources may be used on the
 server as a result. However, because the server can limit the number of DSO
 sessions established and can also close existing DSO sessions as needed, denial
 of service or resource exhaustion should not be a concern.
+
+## TCP Fast Open Considerations
+
+It would be possible to add a TLV that requires the server to do some significant
+work, and send that to the server as initial data in a TCP SYN packet.   A flood
+of such packets could be used as a DoS attack on the server.   None of the TLVs
+defined here have this property.   If a new TLV is specified that does have this
+property, the specification should require that some kind of exchange be done with
+the server before work is done.   That is, the TLV that requires work could not
+be processed without a round-trip from the server to the client to verify that
+the source address of the packet is reachable.
+
+One way to accomplish this would be to have the client send a TLV indicating that
+it wishes to have the server do work of this sort; this TLV would not actually result
+in work being done, but would request a nonce from the server.   The client could
+then use that nonce to request that work be done.
+
+Alternatively, the server could simply disable TCP fast open.   This same problem
+would exist for DNS-over-TLS with TLS early data; the same remedies would apply.
 
 # Acknowledgements
 
