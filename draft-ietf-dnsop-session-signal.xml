@@ -4,10 +4,10 @@
 
 <!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
 <!ENTITY RFC1035 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.1035.xml">
-<!ENTITY RFC7766 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.7766.xml">
 <!ENTITY RFC6891 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.6891.xml">
 <!ENTITY RFC2119 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml">
 <!ENTITY RFC8174 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.8174.xml">
+<!ENTITY RFC7766 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.7766.xml">
 <!ENTITY RFC1034 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.1034.xml">
 <!ENTITY RFC2136 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.2136.xml">
 <!ENTITY RFC7830 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.7830.xml">
@@ -20,8 +20,7 @@
 <!ENTITY RFC2782 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.2782.xml">
 <!ENTITY I-D.ietf-dnssd-mdns-relay SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-dnssd-mdns-relay.xml">
 <!ENTITY RFC6763 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.6763.xml">
-<!ENTITY RFC0768 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.0768.xml">
-<!ENTITY RFC6335 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.6335.xml">
+<!ENTITY I-D.ietf-doh-dns-over-https SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-doh-dns-over-https.xml">
 <!ENTITY RFC7413 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.7413.xml">
 <!ENTITY I-D.ietf-tls-tls13 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-tls-tls13.xml">
 <!ENTITY RFC6762 SYSTEM "http://xml2rfc.ietf.org/public/rfc/bibxml/reference.RFC.6762.xml">
@@ -35,7 +34,7 @@
 <?rfc symrefs="yes"?>
 <?rfc sortrefs="yes"?>
 
-<rfc ipr="trust200902" docName="draft-ietf-dnsop-session-signal-13" category="std" updates="1035, 7766">
+<rfc ipr="trust200902" docName="draft-ietf-dnsop-session-signal-14" category="std" updates="1035, 7766">
 
   <front>
     <title>DNS Stateful Operations</title>
@@ -91,11 +90,12 @@
       </address>
     </author>
     <author initials="T." surname="Lemon" fullname="Ted Lemon">
-      <organization>Barefoot Consulting</organization>
+      <organization>Nibbhaya Consulting</organization>
       <address>
         <postal>
-          <street>Brattleboro</street>
-          <code>VT 05301</code>
+          <street>P.O. Box 958</street>
+          <city>Brattleboro</city>
+          <code>VT 05302-0958</code>
           <country>USA</country>
         </postal>
         <email>mellon@fugue.com</email>
@@ -144,9 +144,11 @@ This document updates RFC 1035 by adding a new DNS header opcode and result code
 
 <section anchor="introduction" title="Introduction">
 
-<t>The use of transports for DNS other than UDP is being increasingly specified,
-for example, DNS over TCP <xref target="RFC1035"/> <xref target="RFC7766"/> and DNS over TLS <xref target="RFC7858"/>.
-Such transports can offer persistent, long-lived sessions and therefore when
+<t>This document specifies a mechanism for managing stateful DNS connections.
+DNS most commonly operates over a UDP transport, but can also operate over
+streaming transports; the original DNS RFC specifies DNS over TCP <xref target="RFC1035"/>
+and a profile for DNS over TLS <xref target="RFC7858"/> has been specified.
+These transports can offer persistent, long-lived sessions and therefore when
 using them for transporting DNS messages it is of benefit to have a mechanism
 that can establish parameters associated with those sessions, such as timeouts.
 In such situations it is also advantageous to support server-initiated messages
@@ -340,7 +342,16 @@ two entities should be determined to be the “same service instance”.</t>
 <t>When an anycast service is configured on a particular IP address and port, it
 must be the case that although there is more than one physical server
 responding on that IP address, each such server can be treated as equivalent.
-If a change in network topology causes
+What we mean by “equivalent” here is that both servers can provide the
+same service and, where appropriate, the same authentication information,
+such as PKI certificates, when establishing connections.</t>
+
+<t>In principle, anycast servers could maintain sufficient state that they can both handle packets
+in the same TCP connection.  In order for this to work with DSO, they would need to also share
+DSO state.  It is unlikely that this can be done successfully, however, so we recommend that
+each anycast server instance maintain its own session state.</t>
+
+<t>If a change in network topology causes
 packets in a particular TCP connection to be sent to an anycast
 server instance that does not know about the connection, the new
 server will automatically terminate the connection with a TCP reset,
@@ -446,43 +457,41 @@ and to assure client and server that they still have connectivity to each other.
 <t><vspace blankLines='999' /></t>
 
 </section>
+<section anchor="applicability" title="Applicability">
+
+<t>DNS Stateful Operations are applicable in cases where it is useful to maintain an open session
+between a DNS client and server, where the transport allows such a session to be maintained, and
+where the transport guarantees in-order delivery of messages, on which DSO depends.  Examples of
+transports that can support session signaling are DNS-over-TCP <xref target="RFC1035"/> <xref target="RFC7766"/> and
+DNS-over-TLS <xref target="RFC7858"/>.</t>
+
+<t>Note that in the case of DNS over TLS, there is no mechanism for upgrading from DNS-over-TCP
+to DNS-over-TLS (see <xref target="RFC7858"/> section 7).</t>
+
+<t>DNS Stateful Operations are not applicable for transports that cannot support clean session
+semantics, or that do not guarantee in-order delivery.   While in principle such a transport
+could be constructed over UDP, the current DNS specification over UDP transport <xref target="RFC1035"/>
+does not provide in-order delivery or session semantics, and hence cannot be used.  Similarly,
+DNS-over-HTTP <xref target="I-D.ietf-doh-dns-over-https"/> cannot be used because HTTP has its own
+mechanism for managing sessions, and this is incompatible with the mechanism specified here.</t>
+
+<t>No other transports are currently defined for use with DNS Stateful Operations.  Such transports
+can be added in the future, if they meet the requirements set out in the first paragraph of this
+section.</t>
+
+</section>
 <section anchor="details" title="Protocol Details">
 
 <section anchor="establishment" title="DSO Session Establishment">
 
-<t>DSO messages MUST NOT be carried in protocols and
-environments where a session can’t be established.   For example,
-DNS over plain UDP <xref target="RFC0768"/> is not appropriate since it does not provide
-in-order message delivery, and, in the presence of NAT gateways and firewalls
-with short UDP timeouts, it cannot provide a persistent bi-directional
-communication channel unless an excessive amount of DSO keepalive traffic is used.
-UDP also doesn’t provide a way to mark the start of a session and the end
-of a session.</t>
-
-<t>At the time of publication, DSO is specified only
-for DNS over TCP <xref target="RFC1035"/> <xref target="RFC7766"/>, and
-for DNS over TLS over TCP <xref target="RFC7858"/>.
-Any use of DSO over some other connection technology needs to be
-specified in an appropriate future document.</t>
-
-<t>Determining whether a given connection is using DNS over TCP, or DNS
-over TLS over TCP, is outside the scope of this specification, and
-must be determined using some out-of-band configuration information.
-There is no provision within the DSO specification to
-turn TLS on or off during the lifetime of a connection.
-For service types where the service instance is discovered
-using a DNS SRV record <xref target="RFC2782"/>,
-the specification for that service type SRV name <xref target="RFC6335"/>
-will state whether the connection uses plain TCP, or TLS over TCP.
-For example, the specification for the
-“_dns‑push‑tls._tcp” service <xref target="I-D.ietf-dnssd-push"/>,
-states that it uses TLS.
-It is a common convention that protocols specified to run over TLS
-are given IANA service type names ending in “‑tls” <xref target="IANA-SRVNAMES"/>.</t>
+<t>In order for a session to be established between a client and a server, the client must first
+establish a connection to the server, using an applicable transport (see <xref target="applicability"/>).</t>
 
 <t>In some environments it may be known in advance by external means
 that both client and server support DSO, and in these cases either
-client or server may initiate DSO messages at any time.</t>
+client or server may initiate DSO messages at any time.  In this
+case, the session is established as soon as the connection is established;
+this is referred to as implicit session establishment.</t>
 
 <t>However, in the typical case a server will not know in advance whether a
 client supports DSO, so in general, unless it is known in advance by other means
@@ -490,10 +499,11 @@ that a client does support DSO, a server MUST NOT initiate DSO request messages
 or DSO unacknowledged messages
 until a DSO Session has been mutually established
 by at least one successful DSO request/response exchange
-initiated by the client, as described below.
-Similarly, unless it is known in advance by other means that a server
-does support DSO, a client MUST NOT initiate
-DSO unacknowledged messages until after a DSO Session has been mutually established.</t>
+initiated by the client, as described below.   This is referred to as explicit
+session establishment.</t>
+
+<t>Until a DSO session has been implicitly or explicitly established, a client MUST NOT initiate
+DSO unacknowledged messages.</t>
 
 <t>A DSO Session is established over a connection by the client
 sending a DSO request message, such as a DSO Keepalive request message (<xref target="keepalive"/>),
@@ -898,16 +908,16 @@ packets over that DSO session <xref target="I-D.ietf-dnssd-mdns-relay"/>.</t>
 <t>All TLVs, whether used as “Primary”, “Additional”, “Response Primary”,
 or “Response Additional”, use the same encoding syntax.</t>
 
-<t>When a new TLV is defined, the specification MUST include whether the DSO-TYPE
+<t>Specifications that define new TLVs must specify whether the DSO-TYPE
 can be used as the Primary TLV, used as an Additional TLV, or used in either
-context for both requests and responses.
-The specification for a TLV also states whether,
+context, both in the case of requests and of responses.
+The specification for a TLV must also state whether,
 when used as the Primary (i.e., first) TLV in a DNS request message (i.e., QR=0),
 that DSO message is to be acknowledged.
 If the DSO message is to be acknowledged, the specification
-also states which TLVs, if any, are to be included in the response.
+must also state which TLVs, if any, are to be included in the response.
 The Primary TLV may or may not be contained in the response,
-depending on what is stated in the specification for that TLV.</t>
+depending on what is specified for that TLV.</t>
 
 <figure><artwork><![CDATA[
                                              1   1   1   1   1   1
@@ -1205,8 +1215,8 @@ client has multiple messages to send, it SHOULD NOT wait for each response befor
 This prevents TCP’s delayed acknowledgement algorithm from forcing the
 client into a slow lock-step.
 The server MUST act on messages in the order they are transmitted, but
-when responses to those messages become available out of order, the server
-SHOULD NOT delay sending available responses to respond in order.
+SHOULD NOT delay sending responses to those messages as they become available in
+order to return them in the order the requests were received.
 <xref target="RFC7766"/> section 3.3 specifies this in more detail.</t>
 
 </section>
@@ -2201,10 +2211,10 @@ for their helpful contributions to this document.</t>
     <references title='Normative References'>
 
 &RFC1035;
-&RFC7766;
 &RFC6891;
 &RFC2119;
 &RFC8174;
+&RFC7766;
 &RFC1034;
 &RFC2136;
 &RFC7830;
@@ -2225,15 +2235,6 @@ for their helpful contributions to this document.</t>
     <date year="2005" month="May" day="20"/>
   </front>
 </reference>
-<reference anchor="IANA-SRVNAMES" target="https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xml">
-  <front>
-    <title>Service Name and Transport Protocol Port Number Registry</title>
-    <author >
-      <organization></organization>
-    </author>
-    <date year="n.d."/>
-  </front>
-</reference>
 &RFC7858;
 &I-D.ietf-dnssd-push;
 &RFC7828;
@@ -2241,8 +2242,7 @@ for their helpful contributions to this document.</t>
 &RFC2782;
 &I-D.ietf-dnssd-mdns-relay;
 &RFC6763;
-&RFC0768;
-&RFC6335;
+&I-D.ietf-doh-dns-over-https;
 &RFC7413;
 &I-D.ietf-tls-tls13;
 &RFC6762;

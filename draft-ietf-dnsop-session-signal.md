@@ -1,6 +1,6 @@
 ---
 title: DNS Stateful Operations
-docname: draft-ietf-dnsop-session-signal-13
+docname: draft-ietf-dnsop-session-signal-14
 date: 2018-8-2
 ipr: trust200902
 area: Internet
@@ -64,9 +64,10 @@ author:
   -
     ins: T. Lemon
     name: Ted Lemon
-    org: Barefoot Consulting
-    street: Brattleboro
-    code: VT 05301
+    org: Nibbhaya Consulting
+    street: P.O. Box 958
+    city: Brattleboro
+    code: VT 05302-0958
     country: USA
     email: mellon@fugue.com
   -
@@ -88,9 +89,6 @@ informative:
       name: Stuart Cheshire
       ins: S. Cheshire
     date: 2005-05-20
-  IANA-SRVNAMES:
-    target: https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xml
-    title: Service Name and Transport Protocol Port Number Registry
 
 --- abstract
 
