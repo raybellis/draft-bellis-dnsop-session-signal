@@ -818,8 +818,8 @@ Internet-Draft           DNS Stateful Operations             August 2018
    response to the first request message to confirm successful
    establishment of a DSO session.
 
-   However, a client MUST NOT send non-response-requiring DSO request
-   messages until after a DSO Session has been mutually established.
+   However, a client MUST NOT send unacknowledged DSO request messages
+   until after a DSO Session has been mutually established.
 
    Similarly, a server MUST NOT send DSO request messages until it has
    received a response-requiring DSO request message from a client and
@@ -1475,7 +1475,7 @@ Internet-Draft           DNS Stateful Operations             August 2018
    has not yet been sent, it MUST forcibly abort the connection
    immediately.  This behavior is required to prevent a hypothetical
    attack that takes advantage of undefined behavior in this case.
-   However, if the server does not track MESSAGE IDs in this way, no
+   However, if the responder does not track MESSAGE IDs in this way, no
    such risk exists, so tracking MESSAGE IDs just to implement this
    sanity check is not required.
 
@@ -2395,9 +2395,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
    for the DSO Session.  The new keepalive interval indicates the
    maximum time that may elapse before another message must be sent or
    received on this DSO Session, if the DSO Session is to remain alive.
-   If the client receives a response to a keepalive message that
+   If the client receives a response to a DSO Keepalive message that
    specifies a keepalive interval shorter than the current keepalive
-   timer, the client MUST immediately send a Keepalive message.
+   timer, the client MUST immediately send a DOS Keepalive message.
    However, this should not normally happen in practice: it would
    require that Keepalive interval the server be shorter than the round-
    trip time of the connection.
