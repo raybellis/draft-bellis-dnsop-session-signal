@@ -304,7 +304,7 @@ inactivity timeout:
 
 keepalive interval:
 : the maximum value that the keepalive timer can have before the client is required to send a keepalive.
-({{see keepalive}})
+(see {{keepalive}})
 
 resetting a timer:
 : setting the timer value to zero and restarting the timer.
@@ -320,7 +320,7 @@ applicable on transports that are capable of supporting a DSO Session.
 There are several use cases for DNS Stateful operations that can 
 be described here. 
 
-### Session Management {#sessionmanagement}
+## Session Management {#sessionmanagement}
 Firstly, establishing session parameters such as server-defined timeouts is of 
 great use in the 
 general management of persistent connections. For example, using DSO sessions 
@@ -330,7 +330,7 @@ edns-tcp-keepalive EDNS0 Option {{?RFC7828}}.
 The simple set of TLVs defined in this document is
 sufficient to greatly enhance connection management for this use case.
 
-### Long-lived Subscriptions {#subscriptions}
+## Long-lived Subscriptions {#subscriptions}
 
 Secondly, DNS-SD {{?RFC6763}} has evolved into a naturally session-based mechanism where,
 for example, long-lived subscriptions lend themselves to 'push' mechanisms as 
@@ -346,7 +346,7 @@ This traffic carries no DNS data and is not considered 'activity'
 in the classic DNS sense, but serves to maintain state in middleboxes,
 and to assure client and server that they still have connectivity to each other.
 
-## Applicable Transports {{transports}}
+## Applicable Transports {#transports}
 DNS Stateful Operations are applicable in cases where it is useful to maintain an open session
 between a DNS client and server, where the transport allows such a session to be maintained, and
 where the transport guarantees in-order delivery of messages, on which DSO depends.  Examples of
@@ -574,7 +574,7 @@ each such tuple as if it references a separate service instance.
 
 In the case where a server is specified using a hostname and the
 port number is implicit, for example port 53 for DNS-over-TCP or
-port 853 for DNS-over-TLS, the [hostname, port] tuple uniquely
+port 853 for DNS-over-TLS, the (hostname, port) tuple uniquely
 identifies the service instance (hostname comparisons are case-insensitive
 {{RFC1034}}.
 
@@ -597,7 +597,7 @@ Implementations SHOULD NOT resolve hostnames and then
 perform matching of IP address(es) in order to evaluate whether
 two entities should be determined to be the "same service instance".
 
-### Anycast Considerations
+### Anycast Considerations {#anycast}
 
 When an anycast service is configured on a particular IP address and port, it
 must be the case that although there is more than one physical server
