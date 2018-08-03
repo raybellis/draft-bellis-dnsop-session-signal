@@ -317,10 +317,12 @@ clearing a timer:
 DNS Stateless Operations are applicable to several known use cases and are only
 applicable on transports that are capable of supporting a DSO Session.
 
+## Use Cases
+
 There are several use cases for DNS Stateful operations that can 
 be described here. 
 
-## Session Management {#sessionmanagement}
+### Session Management {#sessionmanagement}
 Firstly, establishing session parameters such as server-defined timeouts is of 
 great use in the 
 general management of persistent connections. For example, using DSO sessions 
@@ -330,7 +332,7 @@ edns-tcp-keepalive EDNS0 Option {{?RFC7828}}.
 The simple set of TLVs defined in this document is
 sufficient to greatly enhance connection management for this use case.
 
-## Long-lived Subscriptions {#subscriptions}
+### Long-lived Subscriptions {#subscriptions}
 
 Secondly, DNS-SD {{?RFC6763}} has evolved into a naturally session-based mechanism where,
 for example, long-lived subscriptions lend themselves to 'push' mechanisms as 
@@ -372,58 +374,55 @@ section.
 The overall flow of DNS Stateless Operations goes through a series of phases:
 
 Connection Establishment:
-: A client establishes a connection to a server.
+: A client establishes a connection to a server. ({{transports}})
 
 Connected but sessionless:
 : A connection exists, but a DSO session has not been established.   DNS messages
 can be sent from the client to server, and DNS responses can be sent from servers
 to clients.   In this state a client that wishes to use DSO can attempt to establish
-a DSO session.   {{RFC7766}} inactivity timeout handling is in effect.
+a DSO session ({{establishment}}).
+{{RFC7766}} inactivity timeout handling is in effect ({{edns0keepalive}}).
 
 DSO Session Establishment in Progress:
 : A client has sent a DSO request, but has not yet received a DSO response.   In this
 phase, the client may send more DSO requests and more DNS requests, but MUST NOT send
-DSO unacknowledged messages.
+DSO unacknowledged messages ({{establishment}}).
 
 DSO Session Establishment Failed:
 : The attempt to establish the DSO session did not succeed.   At this point, the client
 is permitted to continue operating without a DSO session (Connected but Sessionless) but
-does not send further DSO messages.
+does not send further DSO messages ({{establishment}}).
 
 DSO Session Established:
 : Both client and server may send DSO messages and DNS messages; both may send replies
-in response to messages they receive.   The inactivity timer {{inactivetimer}} is
-active; the keepalive timer {{keepalivetimer}} is active.  {{RFC7766}} inactivity
-timeout handling is no longer in effect.
+in response to messages they receive ({{stabops}}).   The inactivity timer ({{inactivetimer}}) is
+active; the keepalive timer ({{keepalivetimer}}) is active.  {{RFC7766}} inactivity
+timeout handling is no longer in effect ({{edns0keepalive}}).
 
 Server Shutdown:
 : The server has decided to gracefully terminate the session, and has sent the client
-a Retry Delay message {{retry}}.   There may still be unprocessed messages from the client;
-the server will ignore these.   The server will not send any further messages to the client.
+a Retry Delay message ({{retry}}).   There may still be unprocessed messages from the client;
+the server will ignore these.   The server will not send any further messages to the
+client ({{outstanding}}).
 
 Client Shutdown:
-: The client has decided to disconnect, either because it no longer needs service, or because
-the server sent it a Retry Delay message.  The client sends a TLS close_notify (if TLS is in
-use) followed by a TCP FIN, or the equivalents for other protocols.
+: The client has decided to disconnect, either because it no longer needs service,
+the connection is inactive ({{inactive}}), or because
+the server sent it a Retry Delay message ({{retry}}).  The client closes the connection gracefully {{sessiontermination}}.
 
 Reconnect:
 : The client disconnected as a result of a server shutdown.   The client either waits
-for the server-specified Retry Delay to expire, or else contacts a different server
+for the server-specified Retry Delay to expire ({{reconnect}}), or else contacts a different server
 instance.  If the client no longer needs service, it does not reconnect.
 
 Forcibly Abort:
 : The client or server detected a protocol error, and further communication would have undefined
-behavior.  The client or server closes the connection, sending a TCP RST, or the equivalent for
-other protocols.  In the BSD Sockets API this is achieved by setting the SO_LINGER option to
-zero before closing the socket.
+behavior.  The client or server forcibly aborts the connection {{sessiontermination}}.
 
 Abort Reconnect Wait:
 : The client has forcibly aborted the connection, but still needs service.   Or, the server
-forcibly aborted the connection, but the client still needs service.   The client can't
-immediately reconnect to the server, because the same problem will happen.   Either the client
-marks the server as not supporting DSO and reconnects without DSO, or it connects to a
-different service instance, or it waits for an extended period (e.g., an hour) before
-reconnecting.
+forcibly aborted the connection, but the client still needs service.   The client either
+connects to a different service instance ({{serviceinstances}}) or waits to reconnect ({{forcereconnect}}).
 
 ## DSO Session Establishment {#establishment}
 
@@ -453,6 +452,8 @@ sending a DSO request message, such as a DSO Keepalive request message ({{keepal
 and receiving a response, with matching MESSAGE ID, and RCODE
 set to NOERROR (0), indicating that the DSO request was successful.
 
+### Session Establishment Failure {#stabfail}
+
 If the RCODE in the response is set to DSOTYPENI
 ("DSO-TYPE Not Implemented", [TBA2] tentatively RCODE 11)
 this indicates that the server does support DSO, but does not implement
@@ -480,13 +481,15 @@ the server might send no response to the DSO message.   In the first
 case, the client SHOULD mark that service instance as not supporting DSO, and not
 attempt a DSO connection for some period of time (at least an hour)
 after the failed attempt.   The client MAY reconnect but not use
-DSO, if appropriate.
+DSO, if appropriate ({{forcereconnect}}).
 
-In the second case, the client SHOULD set a reasonable timeout, after
-which time the server will be assumed not to support DSO.   At this
-point the client MUST forcibly abort the connection to the server, since the
-server's behavior is out of spec, and hence its state is undefined.
-The client MAY reconnect, but not use DSO, if appropriate.
+In the second case, the client SHOULD set a reasonable timeout, after which time the server will
+be assumed not to support DSO.  If the server doesn't respond within that time, the client MUST
+forcibly abort the connection to the server, since the server's behavior is out of spec, and
+hence its state is undefined.  The client MAY reconnect, but not use DSO, if
+appropriate ({{dropreconnect}}).
+
+### Session Establishment Success {#stabsuccess}
 
 When the server receives a DSO request message
 from a client, and transmits a successful NOERROR response to that
@@ -498,6 +501,8 @@ DSO request message, the client considers the DSO Session established.
 Once a DSO Session has been established,
 either end may unilaterally send appropriate DSO messages at any time,
 and therefore either client or server may be the initiator of a message.
+
+## Operations After Session Establishment {#stabops}
 
 Once a DSO Session has been established,
 clients and servers should behave as described in this specification with
@@ -519,7 +524,7 @@ gives implementers the option of using that new DSO-TYPE if they wish,
 but does not change the fact that sending a Keepalive TLV
 remains a valid way of initiating a DSO Session.
 
-### Session Termination {#sessiontermination}
+## Session Termination {#sessiontermination}
 
 A "DSO Session" is terminated when the underlying connection is closed.
 Sessions are closed gracefully as a result of the server closing a session because it
@@ -540,7 +545,7 @@ or the equivalent for other protocols.
 In the BSD Sockets API this is achieved by setting the
 SO_LINGER option to zero before closing the socket.
 
-#### Handling Protocol Errors
+### Handling Protocol Errors
 
 In protocol implementation there are generally two kinds of errors
 that software writers have to deal with.
@@ -556,176 +561,6 @@ beyond what it is reasonable to expect software to recover from.
 This document describes this latter form of error condition as a
 "fatal error" and specifies that an implementation encountering
 a fatal error condition "MUST forcibly abort the connection immediately".
-
-### Service Instances {#serviceinstances}
-
-We use the term service instance to refer to software running on a host
-which can receive connections on some set of IP address and port tuples.
-What makes the software an instance is that regardless of which of these
-tuples the client uses to connect to it, the client is connected to the
-same software, running on the same node (but see {{anycast}}), and will
-receive the same answers and the same keying information.
-
-Service instances are identified from the perspective of the client.  If
-the client is configured with IP addresses and port number tuples, it has no way
-to tell if the service offered at one tuple is the same server that
-is listening on a different tuple.   So in this case, the client treats
-each such tuple as if it references a separate service instance.
-
-In the case where a server is specified using a hostname and the
-port number is implicit, for example port 53 for DNS-over-TCP or
-port 853 for DNS-over-TLS, the (hostname, port) tuple uniquely
-identifies the service instance (hostname comparisons are case-insensitive
-{{RFC1034}}.
-
-In cases where a server is specified or configured using
-a hostname and TCP port number,
-such as in the content of a DNS SRV record {{?RFC2782}},
-two different configurations (or DNS SRV records) are considered
-to be referring to the same service instance if they
-contain the same hostname (subject to the usual case insensitive
-DNS name matching rules {{!RFC1034}} {{!RFC1035}}) and TCP port number.
-
-It is possible that two hostnames
-might point to some common IP addresses; this is a configuration error
-which the client is not obliged to detect.   The effect of this could
-be that after being told to disconnect, the client might reconnect
-to the same server because it is represented as a different service
-instance.
-
-Implementations SHOULD NOT resolve hostnames and then
-perform matching of IP address(es) in order to evaluate whether
-two entities should be determined to be the "same service instance".
-
-### Anycast Considerations {#anycast}
-
-When an anycast service is configured on a particular IP address and port, it
-must be the case that although there is more than one physical server
-responding on that IP address, each such server can be treated as equivalent.
-What we mean by "equivalent" here is that both servers can provide the
-same service and, where appropriate, the same authentication information,
-such as PKI certificates, when establishing connections.
-
-In principle, anycast servers could maintain sufficient state that they can both handle packets
-in the same TCP connection.  In order for this to work with DSO, they would need to also share
-DSO state.  It is unlikely that this can be done successfully, however, so we recommend that
-each anycast server instance maintain its own session state.
-
-If a change in network topology causes
-packets in a particular TCP connection to be sent to an anycast
-server instance that does not know about the connection, the new
-server will automatically terminate the connection with a TCP reset,
-since it will have no record of the connection, and then the client can
-reconnect or stop using the connection, as appropriate.
-
-If after the connection is re-established, the client's assumption that it is
-connected to the same service is violated in some way, that would be considered
-to be incorrect behavior in this context. It is however out of the possible
-scope for this specification to make specific recommendations in this regard;
-that would be up to follow-on documents that describe specific uses of DNS
-stateful operations.
-
-### Connection Sharing {#sharing}
-
-As previously specified for DNS over TCP {{!RFC7766}}:
-
-       To mitigate the risk of unintentional server overload, DNS
-       clients MUST take care to minimize the number of concurrent
-       TCP connections made to any individual server.  It is RECOMMENDED
-       that for any given client/server interaction there SHOULD be
-       no more than one connection for regular queries, one for zone
-       transfers, and one for each protocol that is being used on top
-       of TCP (for example, if the resolver was using TLS). However,
-       it is noted that certain primary/secondary configurations
-       with many busy zones might need to use more than one TCP
-       connection for zone transfers for operational reasons (for
-       example, to support concurrent transfers of multiple zones).
-
-A single server may support multiple services, including DNS Updates 
-{{?RFC2136}}, DNS Push Notifications {{?I-D.ietf-dnssd-push}},
-and other services, for one or more DNS zones.
-When a client discovers that the target server for several different operations
-is the same service instance (see {{serviceinstances}}), the client SHOULD use a single
-shared DSO Session for all those operations.
-
-This requirement has two benefits.
-First, it reduces unnecessary connection load on the DNS server.
-Second, it avoids paying the TCP slow start penalty when making subsequent
-connections to the same server.
-
-However, server implementers and operators should be aware that connection
-sharing may not be possible in all cases.
-A single host device may be home to multiple independent client software
-instances that don't coordinate with each other.
-Similarly, multiple independent client devices behind the same NAT gateway
-will also typically appear to the DNS server as different source ports on
-the same client IP address.
-Because of these constraints, a DNS server MUST be prepared to accept
-multiple connections from different source ports on the same client IP address.
-
-### Zero Round-Trip Operation
-
-DSO permits zero round-trip operation
-using TCP Fast Open {{?RFC7413}}
-and TLS 1.3 {{?I-D.ietf-tls-tls13}}
-to reduce or eliminate
-round trips in session establishment.
-
-A client MAY send multiple response-requiring DSO messages using TCP fast
-open or TLS 1.3 early data,
-without having to wait for a response to the first request message
-to confirm successful establishment of a DSO session.
-
-However, a client MUST NOT send unacknowledged DSO request
-messages until after a DSO Session has been mutually established.
-
-Similarly, a server MUST NOT send DSO request messages until it
-has received a response-requiring DSO request message from a
-client and transmitted a successful NOERROR response for that request.
-
-Caution must be taken to ensure that DSO messages sent before the first
-round-trip is completed are idempotent, or are otherwise immune to any problems
-that could be result from the inadvertent replay that can occur with zero round-trip operation.
-
-### Middlebox Considerations
-
-Where an application-layer middlebox (e.g., a DNS proxy, forwarder,
-or session multiplexer) is in the path, care must be taken to avoid
-inappropriately passing session signaling through the middlebox.
-
-In cases where a DSO session is terminated on one side of a middlebox,
-and then some session is opened on the other side of the middlebox in
-order to satisfy requests sent over the first DSO session, any such session
-MUST be treated as a separate session. If the middlebox does implement DSO
-sessions, it MUST handle unrecognized TLVs in the same way as any other DSO implementation as described below in {{unrecognized}}.
-
-This does not
-preclude the use of DSO messages in the presence of an IP-layer
-middlebox, such as a NAT that rewrites IP-layer and/or transport-
-layer headers but otherwise preserves the effect of a single session
-between the client and the server.  And of course it does not apply
-to middleboxes that do not implement DNS Stateless Operations.
-
-These restrictions do not apply to such middleboxes:
-since they have no way to understand a DSO message, a pass-through
-middlebox like the one described in the previous paragraph will pass
-DSO messages unchanged or drop them (or possibly drop the connection).
-A middlebox that is not doing a strict pass-through will have no way
-to know on which connection to forward a DSO message, and therefore
-will not be able to behave incorrectly.
-
-To illustrate the above, consider a network where a middlebox
-terminates one or more TCP connections from clients and multiplexes the
-queries therein over a single TCP connection to an upstream server.
-The DSO messages and any associated state are specific to the individual
-TCP connections.  A DSO-aware middlebox MAY in some circumstances be
-able to retain associated state and pass it between the client and
-server (or vice versa) but this would be highly TLV-specific.  For
-example, the middlebox may be able to maintain a list of which clients
-have made Push Notification subscriptions {{?I-D.ietf-dnssd-push}} and
-make its own subscription(s) on their behalf, relaying any subsequent
-notifications to the client (or clients) that have subscribed to that
-particular notification.
 
 ## Message Format {#format}
 
@@ -1191,7 +1026,7 @@ and the cancelled operation's MESSAGE ID is now free for reuse.
 
 # DSO Session Lifecycle and Timers {#lifecycle}
 
-## DSO Session Initiation
+## DSO Session Initiation {#initiation}
 
 A DSO Session begins as described in {{establishment}}.
 
@@ -1296,7 +1131,7 @@ server. A server with scarce memory resources can offer a low inactivity timeout
 to cause clients to promptly close DSO Sessions whenever they have no outstanding
 operations with that server, and then create a new DSO Session later when needed.
 
-### Closing Inactive DSO Sessions
+### Closing Inactive DSO Sessions {#inactive}
 
 When a connection's inactivity timeout is reached the client MUST
 begin closing the idle connection, but a client is not required to
@@ -1528,7 +1363,7 @@ A Retry Delay message MUST NOT be initiated by a client.
 If a server receives a Retry Delay message this is a fatal error
 and the server MUST forcibly abort the connection immediately.
 
-#### Outstanding Operations
+#### Outstanding Operations {#outstanding}
 
 At the instant a server chooses to initiate a Retry Delay message
 there may be DNS requests already in flight from client to server on this 
@@ -1560,7 +1395,7 @@ These adjustments MAY be selected randomly, pseudorandomly, or deterministically
 (e.g., incrementing the time value by one tenth of a second for each successive
 client, yielding a post-restart reconnection rate of ten clients per second).
 
-#### Client Reconnection
+### Client Reconnection {#reconnect}
 
 After a DSO Session is ended by the server
 (either by sending the client a Retry Delay message,
@@ -1589,6 +1424,33 @@ In reality, if a client is rebooted or otherwise lose state, it
 may well attempt to reconnect before 49.7 days elapses, for as
 long as the DNS or other configuration information continues to
 indicate that this is the service instance the client should use.
+
+### Reconnecting After a Forcible Abort {#forcereconnect}
+
+If a connection was forcibly aborted by the client, the client SHOULD
+mark that service instance as not supporting DSO.   The client MAY
+reconnect but not attempt to use DSO, or may connect to a different
+service instance, if applicable.
+
+#### Reconnecting After an Unexplained Connection Drop {#dropreconnect}
+
+It is also possible for a server to forcibly terminate the connection; in
+this case the client doesn't know whether the termination was the result
+of a protocol error or a network outage.   The client could determine
+which of the two is occurring by noticing if a connection is repeatedly
+dropped by the server; if so, the client can mark the server as not
+supporting DSO.
+
+#### Probing for Working DSO Support {#dsoprobe}
+
+Once a server has been marked by the client as not supporting DSO, the client
+SHOULD NOT attempt DSO operations on that server until some time has
+elapsed.  A reasonable minimum would be an hour.  Since forcibly aborted
+connections are the result of a software failure, it's not likely that the
+problem will be solved in the first hour after it's first encountered.
+However, by restricting the retry interval to an hour, the client will
+be able to notice when the problem has been fixed without placing an
+undue burden on the server.
 
 # Base TLVs for DNS Stateful Operations
 
@@ -1759,7 +1621,7 @@ before the server resorts to forcibly aborting it, the server
 SHOULD give the client an additional grace period of one quarter
 of the new inactivity timeout, or five seconds, whichever is greater.
 
-### Relation to edns-tcp-keepalive EDNS0 Option
+### Relation to edns-tcp-keepalive EDNS0 Option {#edns0keepalive}
 
 The inactivity timeout value in the Keepalive TLV (DSO-TYPE=1) has
 similar intent to the edns-tcp-keepalive EDNS0 Option {{?RFC7828}}. A
@@ -1971,6 +1833,179 @@ Note that some of the columns in this table are currently empty.
 The table provides a template for future TLV definitions to follow.
 It is recommended that definitions of future TLVs include a
 similar table summarizing the contexts where the new TLV is valid.
+
+# Additional Considerations
+
+## Service Instances {#serviceinstances}
+
+We use the term service instance to refer to software running on a host
+which can receive connections on some set of IP address and port tuples.
+What makes the software an instance is that regardless of which of these
+tuples the client uses to connect to it, the client is connected to the
+same software, running on the same node (but see {{anycast}}), and will
+receive the same answers and the same keying information.
+
+Service instances are identified from the perspective of the client.  If
+the client is configured with IP addresses and port number tuples, it has no way
+to tell if the service offered at one tuple is the same server that
+is listening on a different tuple.   So in this case, the client treats
+each such tuple as if it references a separate service instance.
+
+In the case where a server is specified using a hostname and the
+port number is implicit, for example port 53 for DNS-over-TCP or
+port 853 for DNS-over-TLS, the (hostname, port) tuple uniquely
+identifies the service instance (hostname comparisons are case-insensitive
+{{RFC1034}}.
+
+In cases where a server is specified or configured using
+a hostname and TCP port number,
+such as in the content of a DNS SRV record {{?RFC2782}},
+two different configurations (or DNS SRV records) are considered
+to be referring to the same service instance if they
+contain the same hostname (subject to the usual case insensitive
+DNS name matching rules {{!RFC1034}} {{!RFC1035}}) and TCP port number.
+
+It is possible that two hostnames
+might point to some common IP addresses; this is a configuration error
+which the client is not obliged to detect.   The effect of this could
+be that after being told to disconnect, the client might reconnect
+to the same server because it is represented as a different service
+instance.
+
+Implementations SHOULD NOT resolve hostnames and then
+perform matching of IP address(es) in order to evaluate whether
+two entities should be determined to be the "same service instance".
+
+## Anycast Considerations {#anycast}
+
+When an anycast service is configured on a particular IP address and port, it
+must be the case that although there is more than one physical server
+responding on that IP address, each such server can be treated as equivalent.
+What we mean by "equivalent" here is that both servers can provide the
+same service and, where appropriate, the same authentication information,
+such as PKI certificates, when establishing connections.
+
+In principle, anycast servers could maintain sufficient state that they can both handle packets
+in the same TCP connection.  In order for this to work with DSO, they would need to also share
+DSO state.  It is unlikely that this can be done successfully, however, so we recommend that
+each anycast server instance maintain its own session state.
+
+If a change in network topology causes
+packets in a particular TCP connection to be sent to an anycast
+server instance that does not know about the connection, the new
+server will automatically terminate the connection with a TCP reset,
+since it will have no record of the connection, and then the client can
+reconnect or stop using the connection, as appropriate.
+
+If after the connection is re-established, the client's assumption that it is
+connected to the same service is violated in some way, that would be considered
+to be incorrect behavior in this context. It is however out of the possible
+scope for this specification to make specific recommendations in this regard;
+that would be up to follow-on documents that describe specific uses of DNS
+stateful operations.
+
+## Connection Sharing {#sharing}
+
+As previously specified for DNS over TCP {{!RFC7766}}:
+
+       To mitigate the risk of unintentional server overload, DNS
+       clients MUST take care to minimize the number of concurrent
+       TCP connections made to any individual server.  It is RECOMMENDED
+       that for any given client/server interaction there SHOULD be
+       no more than one connection for regular queries, one for zone
+       transfers, and one for each protocol that is being used on top
+       of TCP (for example, if the resolver was using TLS). However,
+       it is noted that certain primary/secondary configurations
+       with many busy zones might need to use more than one TCP
+       connection for zone transfers for operational reasons (for
+       example, to support concurrent transfers of multiple zones).
+
+A single server may support multiple services, including DNS Updates 
+{{?RFC2136}}, DNS Push Notifications {{?I-D.ietf-dnssd-push}},
+and other services, for one or more DNS zones.
+When a client discovers that the target server for several different operations
+is the same service instance (see {{serviceinstances}}), the client SHOULD use a single
+shared DSO Session for all those operations.
+
+This requirement has two benefits.
+First, it reduces unnecessary connection load on the DNS server.
+Second, it avoids paying the TCP slow start penalty when making subsequent
+connections to the same server.
+
+However, server implementers and operators should be aware that connection
+sharing may not be possible in all cases.
+A single host device may be home to multiple independent client software
+instances that don't coordinate with each other.
+Similarly, multiple independent client devices behind the same NAT gateway
+will also typically appear to the DNS server as different source ports on
+the same client IP address.
+Because of these constraints, a DNS server MUST be prepared to accept
+multiple connections from different source ports on the same client IP address.
+
+## Zero Round-Trip Operation
+
+DSO permits zero round-trip operation
+using TCP Fast Open {{?RFC7413}}
+and TLS 1.3 {{?I-D.ietf-tls-tls13}}
+to reduce or eliminate
+round trips in session establishment.
+
+A client MAY send multiple response-requiring DSO messages using TCP fast
+open or TLS 1.3 early data,
+without having to wait for a response to the first request message
+to confirm successful establishment of a DSO session.
+
+However, a client MUST NOT send unacknowledged DSO request
+messages until after a DSO Session has been mutually established.
+
+Similarly, a server MUST NOT send DSO request messages until it
+has received a response-requiring DSO request message from a
+client and transmitted a successful NOERROR response for that request.
+
+Caution must be taken to ensure that DSO messages sent before the first
+round-trip is completed are idempotent, or are otherwise immune to any problems
+that could be result from the inadvertent replay that can occur with zero round-trip operation.
+
+## Middlebox Considerations
+
+Where an application-layer middlebox (e.g., a DNS proxy, forwarder,
+or session multiplexer) is in the path, care must be taken to avoid
+inappropriately passing session signaling through the middlebox.
+
+In cases where a DSO session is terminated on one side of a middlebox,
+and then some session is opened on the other side of the middlebox in
+order to satisfy requests sent over the first DSO session, any such session
+MUST be treated as a separate session. If the middlebox does implement DSO
+sessions, it MUST handle unrecognized TLVs in the same way as any other DSO implementation as described below in {{unrecognized}}.
+
+This does not
+preclude the use of DSO messages in the presence of an IP-layer
+middlebox, such as a NAT that rewrites IP-layer and/or transport-
+layer headers but otherwise preserves the effect of a single session
+between the client and the server.  And of course it does not apply
+to middleboxes that do not implement DNS Stateless Operations.
+
+These restrictions do not apply to such middleboxes:
+since they have no way to understand a DSO message, a pass-through
+middlebox like the one described in the previous paragraph will pass
+DSO messages unchanged or drop them (or possibly drop the connection).
+A middlebox that is not doing a strict pass-through will have no way
+to know on which connection to forward a DSO message, and therefore
+will not be able to behave incorrectly.
+
+To illustrate the above, consider a network where a middlebox
+terminates one or more TCP connections from clients and multiplexes the
+queries therein over a single TCP connection to an upstream server.
+The DSO messages and any associated state are specific to the individual
+TCP connections.  A DSO-aware middlebox MAY in some circumstances be
+able to retain associated state and pass it between the client and
+server (or vice versa) but this would be highly TLV-specific.  For
+example, the middlebox may be able to maintain a list of which clients
+have made Push Notification subscriptions {{?I-D.ietf-dnssd-push}} and
+make its own subscription(s) on their behalf, relaying any subsequent
+notifications to the client (or clients) that have subscribed to that
+particular notification.
+
 
 # IANA Considerations
 
