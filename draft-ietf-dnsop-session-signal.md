@@ -676,7 +676,7 @@ open or TLS 1.3 early data,
 without having to wait for a response to the first request message
 to confirm successful establishment of a DSO session.
 
-However, a client MUST NOT send non-response-requiring DSO request
+However, a client MUST NOT send unacknowledged DSO request
 messages until after a DSO Session has been mutually established.
 
 Similarly, a server MUST NOT send DSO request messages until it
@@ -1103,7 +1103,7 @@ the responder tracks query MESSAGE IDs, and the MESSAGE ID
 matches the MESSAGE ID of a query it received for which a response has not yet been sent,
 it MUST forcibly abort the connection immediately.   This behavior is required to prevent
 a hypothetical attack that takes advantage of undefined behavior in this case.   However,
-if the server does not track MESSAGE IDs in this way, no such risk exists, so tracking
+if the responder does not track MESSAGE IDs in this way, no such risk exists, so tracking
 MESSAGE IDs just to implement this sanity check is not required.
 
 ### Error Responses
@@ -1718,8 +1718,8 @@ message or a reply to its own client-initiated Keepalive message, it updates the
 for the DSO Session. The new keepalive
 interval indicates the maximum time that may elapse before another message must be sent or
 received on this DSO Session, if the DSO Session is to remain alive.
-If the client receives a response to a keepalive message that specifies a keepalive interval
-shorter than the current keepalive timer, the client MUST immediately send a Keepalive message.
+If the client receives a response to a DSO Keepalive message that specifies a keepalive interval
+shorter than the current keepalive timer, the client MUST immediately send a DOS Keepalive message.
 However, this should not normally happen in practice: it would require that Keepalive interval
 the server be shorter than the round-trip time of the connection.
 
