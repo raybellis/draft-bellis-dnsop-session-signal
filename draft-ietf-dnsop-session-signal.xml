@@ -428,15 +428,14 @@ instance.  If the client no longer needs service, it does not reconnect.</t>
 behavior.  The client or server closes the connection, sending a TCP RST, or the equivalent for
 other protocols.  In the BSD Sockets API this is achieved by setting the SO_LINGER option to
 zero before closing the socket.</t>
-</list></t>
-
-<t>Abort Reconnect Wait:
-The client has forcibly aborted the connection, but still needs service.   Or, the server
+  <t hangText='Abort Reconnect Wait:'>
+  The client has forcibly aborted the connection, but still needs service.   Or, the server
 forcibly aborted the connection, but the client still needs service.   The client can’t
 immediately reconnect to the server, because the same problem will happen.   Either the client
 marks the server as not supporting DSO and reconnects without DSO, or it connects to a
 different service instance, or it waits for an extended period (e.g., an hour) before
 reconnecting.</t>
+</list></t>
 
 <section anchor="establishment" title="DSO Session Establishment">
 

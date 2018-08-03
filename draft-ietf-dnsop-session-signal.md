@@ -418,7 +418,7 @@ other protocols.  In the BSD Sockets API this is achieved by setting the SO_LING
 zero before closing the socket.
 
 Abort Reconnect Wait:
-The client has forcibly aborted the connection, but still needs service.   Or, the server
+: The client has forcibly aborted the connection, but still needs service.   Or, the server
 forcibly aborted the connection, but the client still needs service.   The client can't
 immediately reconnect to the server, because the same problem will happen.   Either the client
 marks the server as not supporting DSO and reconnects without DSO, or it connects to a
