@@ -185,8 +185,6 @@ Each DSO request message communicates just one primary operation,
 and the RCODE in the corresponding response message indicates the
 success or failure of that operation.
 
-***
-
 # Requirements Language
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
@@ -197,192 +195,132 @@ appear in all capitals, as shown here.
 
 # Terminology {#terminology}
 
-"DSO" is used to mean DNS Stateful Operation.
+DSO:
+: DNS Stateful Operations.
 
-The term "connection" means a bidirectional byte (or message) stream,
+connection:
+: a bidirectional byte (or message) stream,
 where the bytes (or messages) are delivered reliably and in-order,
 such as provided by using
 DNS over TCP {{!RFC1035}} {{!RFC7766}} or DNS over TLS {{?RFC7858}}.
 
-The unqualified term "session" in the context of this document means the exchange of
-DNS messages over a connection where:
-
-- The connection between client and server is persistent and relatively
-  long-lived.
-- Either end of the connection may initiate messages to the other.
-
-In this document the term "session" is used exclusively as described above.
+session:
+: The unqualified term "session" in the context of this document refers to
+a persistent network connection between two endpoints which allows for
+the exchange of
+DNS messages over a connection where either end of the connection can
+send messages to the other end.
 The term has no relationship to the "session layer" of the
 OSI "seven-layer model".
 
-A "DSO Session" is established between two endpoints that acknowledge
+DSO Session:
+: a session established between two endpoints that acknowledge
 persistent DNS state via the exchange of DSO messages over the connection.
 This is distinct from a DNS-over-TCP session as described in
 the previous specification for DNS over TCP {{!RFC7766}}.
 
-A "DSO Session" is terminated when the underlying connection is closed.
-The underlying connection can be closed in two ways:
+close gracefully:
+: a normal session shutdown, where the client closes the TCP connection
+to the server (see {{sessiontermination}})
 
-Where this specification says, "close gracefully,"
-that means sending a TLS close_notify (if TLS is in use) followed by a TCP FIN,
-or the equivalents for other protocols.
-Where this specification requires a connection to be closed gracefully,
-the requirement to initiate that graceful close is placed on the client,
-to place the burden of TCP's TIME-WAIT state on the client rather than the server.
+forcibly abort:
+: a session shutdown as a result of a fatal error (see {{sessiontermination}})
 
-Where this specification says, "forcibly abort,"
-that means sending a TCP RST,
-or the equivalent for other protocols.
-In the BSD Sockets API this is achieved by setting the
-SO_LINGER option to zero before closing the socket.
-
-The term "server" means the software with a listening socket, awaiting
+server:
+: the software with a listening socket, awaiting
 incoming connection requests in the usual DNS sense.
 
-The term "client" means the software which initiates a connection
+client:
+: the software which initiates a connection
 to the server's listening socket in the usual DNS sense.
 
-The terms "initiator" and "responder" correspond respectively to the
-initial sender and subsequent receiver of a DSO request message or unacknowledged message,
-regardless of which was the "client" and "server" in the usual DNS sense.
+initiator:
+: the software which sends a request or an unacknowledged message during a DSO
+session.  Either a client or server can be an initiator
 
-The term "sender" may apply to
-either an initiator (when sending a DSO request message or unacknowledged message)
-or a responder (when sending a DSO response message).
+responder:
+: the software which receives a request or unacknowledged message during a DSO
+session.  Either a client or server can be a responder.
 
-Likewise, the term "receiver" may apply to
-either a responder (when receiving a DSO request message or unacknowledged message)
-or an initiator (when receiving a DSO response message).
+sender:
+: the software which is sending a DNS message, a DSO message, a DNS response, or a DSO response.
 
-In protocol implementation there are generally two kinds of errors
-that software writers have to deal with.
-The first is situations that arise due to factors in the environment,
-such as temporary loss of connectivity. While undesirable, these
-situations do not indicate a flaw in the software, and they are
-situations that software should generally be able to recover from.
-The second is situations that should never happen when communicating
-with a correctly-implemented peer.
-If they do happen, they indicate a serious flaw in the protocol implementation,
-beyond what it is reasonable to expect software to recover from.
-This document describes this latter form of error condition as a
-"fatal error" and specifies that an implementation encountering
-a fatal error condition "MUST forcibly abort the connection immediately".
-Given that these fatal error conditions signify defective software,
-and given that defective software is likely to remain defective for
-some time until it is fixed, after forcibly aborting a connection,
-a client SHOULD refrain from automatically reconnecting to that
-same service instance for at least one hour.
+receiver:
+: the software which is receiving a DNS message, a DSO message, a DNS response, or a DSO response.
 
-This document uses the term "same service instance" as follows:
+service instance:
+: a specific instance of server software running on a specific host ({{serviceinstances}}).
 
-* In cases where a server is specified or configured using
-an IP address and TCP port number,
-two different configurations are referring to the same service instance if they
-contain the same IP address and TCP port number.
+long-lived operations:
+: this term refers to a DSO session on which either (or both) the client or the server,
+acting as an initiator, has issued a request for the responder to send data to the
+initiator as it becomes available.  See {{subscriptions}}.
 
-* In cases where a server is specified or configured using
-a hostname and TCP port number,
-such as in the content of a DNS SRV record {{?RFC2782}},
-two different configurations (or DNS SRV records) are considered
-to be referring to the same service instance if they
-contain the same hostname (subject to the usual case insensitive
-DNS name matching rules {{!RFC1034}} {{!RFC1035}}) and TCP port number.
-In these cases, configurations with different hostnames are considered
-to be referring to different service instances, even if those different hostnames
-happen to be aliases, or happen to resolve to the same IP address(es).
-Implementations SHOULD NOT resolve hostnames and then
-perform matching of IP address(es) in order to evaluate whether
-two entities should be determined to be the "same service instance".
+DNS message:
+: any non-DSO DNS message (but not a DNS response).
 
-When an anycast service is configured on a particular IP address and port, it
-must be the case that although there is more than one physical server
-responding on that IP address, each such server can be treated as equivalent.
-What we mean by "equivalent" here is that both servers can provide the
-same service and, where appropriate, the same authentication information,
-such as PKI certificates, when establishing connections.
+DSO message:
+: a DSO request message or a DSO unacknowledged message.  Whether a DSO message is a
+DSO Request or a DSO response is determined by the specification of its primary TLV.
 
-In principle, anycast servers could maintain sufficient state that they can both handle packets
-in the same TCP connection.  In order for this to work with DSO, they would need to also share
-DSO state.  It is unlikely that this can be done successfully, however, so we recommend that
-each anycast server instance maintain its own session state.
+DNS response:
+: any non-DSO response.
 
-If a change in network topology causes
-packets in a particular TCP connection to be sent to an anycast
-server instance that does not know about the connection, the new
-server will automatically terminate the connection with a TCP reset,
-since it will have no record of the connection, and then the client can
-reconnect or stop using the connection, as appropriate.
+DSO response:
+: a response to a DSO request message.
 
-If after the connection is re-established, the client's assumption that it is
-connected to the same service is violated in some way, that would be considered
-to be incorrect behavior in this context. It is however out of the possible
-scope for this specification to make specific recommendations in this regard;
-that would be up to follow-on documents that describe specific uses of DNS
-stateful operations.
+DSO request message:
+: a DSO message that requires a response.
 
-The term "long-lived operations" refers to operations
-such as Push Notification subscriptions {{?I-D.ietf-dnssd-push}},
-Discovery Relay interface subscriptions {{?I-D.ietf-dnssd-mdns-relay}},
-and other future long-lived DNS operations that choose to use
-DSO as their basis. These operations establish state that persists beyond
-the lifetime of a traditional brief request/response transaction.
-This document, the base specification for DNS Stateful Operations,
-defines a framework for supporting long-lived operations,
-but does not itself define any long-lived operations.
-Nonetheless, to appreciate the design rationale behind
-DNS Stateful Operations, it is helpful to understand
-the kind of long-lived operations that it is intended to support.
+DSO unacknowledged message:
+: a DSO message that does not require and cannot induce a response.
 
-DNS Stateful Operations uses three kinds of message:
-"DSO request messages", "DSO response messages", and
-"DSO unacknowledged messages".
-A DSO request message elicits a DSO response message.
-DSO unacknowledged messages are unidirectional messages and do not induce a DNS response.
+Primary TLV:
+: The first TLV in a DSO message or DSO response; in the DSO message
+this determines the nature of the operation being performed.
 
-Both DSO request messages and DSO unacknowledged messages are formatted as DNS
-request messages (the header QR bit is set to zero, as described in {{format}}).
-One difference is that in DSO request messages the MESSAGE ID field is nonzero;
-in DSO unacknowledged messages it is zero.
+Additional TLV:
+: Any TLVs in a DSO message response that follow the primary TLV.
 
-The content of DSO messages is expressed using type-length-value (TLV) syntax.
+Response Primary TLV:
+: The (optional) first TLV in a DSO response.
 
-In a DSO request message or DSO unacknowledged message
-the first TLV is referred to as the "Primary TLV"
-and determines the nature of the operation being performed,
-including whether it is an acknowledged or unacknowledged operation;
-any other TLVs in a DSO request message or unacknowledged message are referred to as "Additional TLVs"
-and serve additional non-primary purposes, which may be related to
-the primary purpose, or not, as in the case of the encryption padding TLV.
+Response Additional TLV:
+: Any TLVs in a DSO response that follow the Response Primary TLV.
 
-A DSO response message may contain no TLVs, or it may contain one
-or more TLVs as appropriate to the information being communicated.
-In the context of DSO response messages,
-one or more TLVs with the same DSO-TYPE as the Primary TLV in the
-corresponding DSO request message are referred to as "Response Primary TLVs".
-Any other TLVs with different DSO-TYPEs are referred to as "Response Additional TLVs".
-The Response Primary TLV(s), if present, MUST occur first in the response message,
-before any Response Additional TLVs.
+inactivity timer:
+: the time since the most recent non-keepalive message was sent (on the client) or received (on the server).
+(see {{inactivetimer}})
 
-Two timers (elapsed time since an event) are defined in this document: 
+keepalive timer:
+: the time since the most recent message was sent (on the client) or received (on the server).
+(see {{keepalivetimer}})
 
-* an inactivity timer (see {{inactivetimer}} and {{keepalive}})
-* a keepalive timer (see {{keepalivetimer}} and {{keepalive}})
+session timeouts:
+: the inactivity timer and the keepalive timer.
 
-The timeouts associated with these timers are called
-the inactivity timeout and 
-the keepalive interval, respectively. 
-The term "Session Timeouts" is used to refer to this pair of timeout values.
+inactivity timeout:
+: the maximum value that the inactivity timer can have before the connection is gracefully closed.
 
-Resetting a timer means resetting the timer value to zero and starting the timer again.
-Clearing a timer means resetting the timer value to zero but NOT starting the timer again.
+keepalive interval:
+: the maximum value that the keepalive timer can have before the client is required to send a keepalive.
+({{see keepalive}})
 
-***
+resetting a timer:
+: setting the timer value to zero and restarting the timer.
 
-# Discussion
+clearing a timer:
+: setting the timer value to zero but not restarting the timer.
+
+# Applicability {#applicability}
+
+DNS Stateless Operations are applicable to several known use cases and are only
+applicable on transports that are capable of supporting a DSO Session.
 
 There are several use cases for DNS Stateful operations that can 
 be described here. 
 
+### Session Management {#sessionmanagement}
 Firstly, establishing session parameters such as server-defined timeouts is of 
 great use in the 
 general management of persistent connections. For example, using DSO sessions 
@@ -391,6 +329,8 @@ client and the server than attempting to manage sessions using just the
 edns-tcp-keepalive EDNS0 Option {{?RFC7828}}.
 The simple set of TLVs defined in this document is
 sufficient to greatly enhance connection management for this use case.
+
+### Long-lived Subscriptions {#subscriptions}
 
 Secondly, DNS-SD {{?RFC6763}} has evolved into a naturally session-based mechanism where,
 for example, long-lived subscriptions lend themselves to 'push' mechanisms as 
@@ -406,10 +346,7 @@ This traffic carries no DNS data and is not considered 'activity'
 in the classic DNS sense, but serves to maintain state in middleboxes,
 and to assure client and server that they still have connectivity to each other.
 
-***
-
-# Applicability {#applicability}
-
+## Applicable Transports {{transports}}
 DNS Stateful Operations are applicable in cases where it is useful to maintain an open session
 between a DNS client and server, where the transport allows such a session to be maintained, and
 where the transport guarantees in-order delivery of messages, on which DSO depends.  Examples of
@@ -431,6 +368,62 @@ can be added in the future, if they meet the requirements set out in the first p
 section.
 
 # Protocol Details {#details}
+
+The overall flow of DNS Stateless Operations goes through a series of phases:
+
+Connection Establishment:
+: A client establishes a connection to a server.
+
+Connected but sessionless:
+: A connection exists, but a DSO session has not been established.   DNS messages
+can be sent from the client to server, and DNS responses can be sent from servers
+to clients.   In this state a client that wishes to use DSO can attempt to establish
+a DSO session.   {{RFC7766}} inactivity timeout handling is in effect.
+
+DSO Session Establishment in Progress:
+: A client has sent a DSO request, but has not yet received a DSO response.   In this
+phase, the client may send more DSO requests and more DNS requests, but MUST NOT send
+DSO unacknowledged messages.
+
+DSO Session Establishment Failed:
+: The attempt to establish the DSO session did not succeed.   At this point, the client
+is permitted to continue operating without a DSO session (Connected but Sessionless) but
+does not send further DSO messages.
+
+DSO Session Established:
+: Both client and server may send DSO messages and DNS messages; both may send replies
+in response to messages they receive.   The inactivity timer {{inactivetimer}} is
+active; the keepalive timer {{keepalivetimer}} is active.  {{RFC7766}} inactivity
+timeout handling is no longer in effect.
+
+Server Shutdown:
+: The server has decided to gracefully terminate the session, and has sent the client
+a Retry Delay message {{retry}}.   There may still be unprocessed messages from the client;
+the server will ignore these.   The server will not send any further messages to the client.
+
+Client Shutdown:
+: The client has decided to disconnect, either because it no longer needs service, or because
+the server sent it a Retry Delay message.  The client sends a TLS close_notify (if TLS is in
+use) followed by a TCP FIN, or the equivalents for other protocols.
+
+Reconnect:
+: The client disconnected as a result of a server shutdown.   The client either waits
+for the server-specified Retry Delay to expire, or else contacts a different server
+instance.  If the client no longer needs service, it does not reconnect.
+
+Forcibly Abort:
+: The client or server detected a protocol error, and further communication would have undefined
+behavior.  The client or server closes the connection, sending a TCP RST, or the equivalent for
+other protocols.  In the BSD Sockets API this is achieved by setting the SO_LINGER option to
+zero before closing the socket.
+
+Abort Reconnect Wait:
+The client has forcibly aborted the connection, but still needs service.   Or, the server
+forcibly aborted the connection, but the client still needs service.   The client can't
+immediately reconnect to the server, because the same problem will happen.   Either the client
+marks the server as not supporting DSO and reconnects without DSO, or it connects to a
+different service instance, or it waits for an extended period (e.g., an hour) before
+reconnecting.
 
 ## DSO Session Establishment {#establishment}
 
@@ -484,14 +477,14 @@ issue further DSO messages on that connection.
 
 Two other possibilities exist: the server might drop the connection, or
 the server might send no response to the DSO message.   In the first
-case, the client SHOULD mark the server as not supporting DSO, and not
+case, the client SHOULD mark that service instance as not supporting DSO, and not
 attempt a DSO connection for some period of time (at least an hour)
 after the failed attempt.   The client MAY reconnect but not use
 DSO, if appropriate.
 
 In the second case, the client SHOULD set a reasonable timeout, after
 which time the server will be assumed not to support DSO.   At this
-point the client MUST drop the connection to the server, since the
+point the client MUST forcibly abort the connection to the server, since the
 server's behavior is out of spec, and hence its state is undefined.
 The client MAY reconnect, but not use DSO, if appropriate.
 
@@ -526,6 +519,112 @@ gives implementers the option of using that new DSO-TYPE if they wish,
 but does not change the fact that sending a Keepalive TLV
 remains a valid way of initiating a DSO Session.
 
+### Session Termination {#sessiontermination}
+
+A "DSO Session" is terminated when the underlying connection is closed.
+Sessions are closed gracefully as a result of the server closing a session because it
+is overloaded, the client closing the session because it is done,
+or the client closing the session because it is inactive.   Sessions are "forcibly aborted"
+when either the client or server closes the connection because of a protocol error.
+
+- Where this specification says, "close gracefully,"
+that means sending a TLS close_notify (if TLS is in use) followed by a TCP FIN,
+or the equivalents for other protocols.
+Where this specification requires a connection to be closed gracefully,
+the requirement to initiate that graceful close is placed on the client,
+to place the burden of TCP's TIME-WAIT state on the client rather than the server.
+
+- Where this specification says, "forcibly abort,"
+that means sending a TCP RST,
+or the equivalent for other protocols.
+In the BSD Sockets API this is achieved by setting the
+SO_LINGER option to zero before closing the socket.
+
+#### Handling Protocol Errors
+
+In protocol implementation there are generally two kinds of errors
+that software writers have to deal with.
+The first is situations that arise due to factors in the environment,
+such as temporary loss of connectivity. While undesirable, these
+situations do not indicate a flaw in the software, and they are
+situations that software should generally be able to recover from.
+
+The second is situations that should never happen when communicating
+with a correctly-implemented peer.
+If they do happen, they indicate a serious flaw in the protocol implementation,
+beyond what it is reasonable to expect software to recover from.
+This document describes this latter form of error condition as a
+"fatal error" and specifies that an implementation encountering
+a fatal error condition "MUST forcibly abort the connection immediately".
+
+### Service Instances {#serviceinstances}
+
+We use the term service instance to refer to software running on a host
+which can receive connections on some set of IP address and port tuples.
+What makes the software an instance is that regardless of which of these
+tuples the client uses to connect to it, the client is connected to the
+same software, running on the same node (but see {{anycast}}), and will
+receive the same answers and the same keying information.
+
+Service instances are identified from the perspective of the client.  If
+the client is configured with IP addresses and port number tuples, it has no way
+to tell if the service offered at one tuple is the same server that
+is listening on a different tuple.   So in this case, the client treats
+each such tuple as if it references a separate service instance.
+
+In the case where a server is specified using a hostname and the
+port number is implicit, for example port 53 for DNS-over-TCP or
+port 853 for DNS-over-TLS, the [hostname, port] tuple uniquely
+identifies the service instance (hostname comparisons are case-insensitive
+{{RFC1034}}.
+
+In cases where a server is specified or configured using
+a hostname and TCP port number,
+such as in the content of a DNS SRV record {{?RFC2782}},
+two different configurations (or DNS SRV records) are considered
+to be referring to the same service instance if they
+contain the same hostname (subject to the usual case insensitive
+DNS name matching rules {{!RFC1034}} {{!RFC1035}}) and TCP port number.
+
+It is possible that two hostnames
+might point to some common IP addresses; this is a configuration error
+which the client is not obliged to detect.   The effect of this could
+be that after being told to disconnect, the client might reconnect
+to the same server because it is represented as a different service
+instance.
+
+Implementations SHOULD NOT resolve hostnames and then
+perform matching of IP address(es) in order to evaluate whether
+two entities should be determined to be the "same service instance".
+
+### Anycast Considerations
+
+When an anycast service is configured on a particular IP address and port, it
+must be the case that although there is more than one physical server
+responding on that IP address, each such server can be treated as equivalent.
+What we mean by "equivalent" here is that both servers can provide the
+same service and, where appropriate, the same authentication information,
+such as PKI certificates, when establishing connections.
+
+In principle, anycast servers could maintain sufficient state that they can both handle packets
+in the same TCP connection.  In order for this to work with DSO, they would need to also share
+DSO state.  It is unlikely that this can be done successfully, however, so we recommend that
+each anycast server instance maintain its own session state.
+
+If a change in network topology causes
+packets in a particular TCP connection to be sent to an anycast
+server instance that does not know about the connection, the new
+server will automatically terminate the connection with a TCP reset,
+since it will have no record of the connection, and then the client can
+reconnect or stop using the connection, as appropriate.
+
+If after the connection is re-established, the client's assumption that it is
+connected to the same service is violated in some way, that would be considered
+to be incorrect behavior in this context. It is however out of the possible
+scope for this specification to make specific recommendations in this regard;
+that would be up to follow-on documents that describe specific uses of DNS
+stateful operations.
+
 ### Connection Sharing {#sharing}
 
 As previously specified for DNS over TCP {{!RFC7766}}:
@@ -546,11 +645,9 @@ A single server may support multiple services, including DNS Updates
 {{?RFC2136}}, DNS Push Notifications {{?I-D.ietf-dnssd-push}},
 and other services, for one or more DNS zones.
 When a client discovers that the target server for several different operations
-is the same target hostname and port, the client SHOULD use a single
+is the same service instance (see {{serviceinstances}}), the client SHOULD use a single
 shared DSO Session for all those operations.
-A client SHOULD NOT open multiple connections to the same target host and port
-just because the names being operated on are different or
-happen to fall within different zones.
+
 This requirement has two benefits.
 First, it reduces unnecessary connection load on the DNS server.
 Second, it avoids paying the TCP slow start penalty when making subsequent
@@ -630,8 +727,6 @@ make its own subscription(s) on their behalf, relaying any subsequent
 notifications to the client (or clients) that have subscribed to that
 particular notification.
 
-***
-
 ## Message Format {#format}
 
 A DSO message begins with
@@ -665,7 +760,6 @@ not zero, then a FORMERR MUST be returned.
        /                                                               /
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
-***
 
 ### DNS Header Fields in DSO Messages {#header}
 
@@ -708,8 +802,6 @@ and in both DSO requests and DSO responses the
 Z bits MUST be set to zero (0) on transmission and MUST be silently ignored
 on reception.
 
-***
-
 In a DNS request message (QR=0) the RCODE is set according to the definition of the request.
 For example, in a Retry Delay message ({{retry}}) the RCODE indicates the reason for termination.
 However, in most cases, except where clearly specified otherwise,
@@ -736,8 +828,6 @@ make use of DSO.
 If a document defining a new DSO-TYPE makes use of NXDOMAIN (Name Error)
 or NOTAUTH (Not Authoritative) then that document MUST specify the specific
 interpretation of these RCODE values in the context of that new DSO TLV.
-
-***
 
 ### DSO Data {#dsodata}
 
@@ -823,9 +913,7 @@ by virtue of its Discovery Relay link subscription, thereby indicating
 its support of Discovery Relay, and its desire to receive inbound mDNS
 packets over that DSO session {{?I-D.ietf-dnssd-mdns-relay}}.
 
-***
-
-#### TLV Syntax {#tlvsyntax}
+### TLV Syntax {#tlvsyntax}
 
 All TLVs, whether used as "Primary", "Additional", "Response Primary",
 or "Response Additional", use the same encoding syntax.
@@ -867,8 +955,6 @@ DSO-DATA as an opaque "blob" without attempting to interpret it.
 Interpretation of the meaning of the DSO-DATA for a particular
 DSO-TYPE is the responsibility of the software that implements that DSO-TYPE.
 
-***
-
 #### Request TLVs
 
 The first TLV in a DSO request message or unacknowledged message is the "Primary TLV"
@@ -898,8 +984,6 @@ and the required TLV(s) are not present, then this is a fatal
 error and the recipient of the defective response message MUST
 forcibly abort the connection immediately.
 
-***
-
 #### Unrecognized TLVs {#unrecognized}
 
 If DSO request message is received containing an unrecognized Primary TLV,
@@ -922,8 +1006,6 @@ Similarly, if a DSO response message is received containing one
 or more unrecognized TLVs, the unrecognized TLVs MUST be silently
 ignored, and the remainder of the message is interpreted and
 handled as if the unrecognized parts were not present.
-
-***
 
 ### EDNS(0) and TSIG
 
@@ -960,8 +1042,6 @@ the functionality provided by the DSO Keepalive operation).
 If any message sent on a DSO Session contains an edns-tcp-keepalive EDNS0 Option
 this is a fatal error and the recipient of the defective message MUST
 forcibly abort the connection immediately.
-
-***
 
 ## Message Handling
 
@@ -1109,8 +1189,6 @@ After a response message with nonzero RCODE has been received by the initiator,
 that operation has been terminated from the initiator's point of view,
 and the cancelled operation's MESSAGE ID is now free for reuse.
 
-***
-
 # DSO Session Lifecycle and Timers {#lifecycle}
 
 ## DSO Session Initiation
@@ -1207,8 +1285,6 @@ Just because a DSO Session has no traffic for an extended period of time
 does not automatically make that DSO Session "inactive",
 if it has an active operation that is awaiting events.
 
-***
-
 ## The Inactivity Timeout {#inactivetimer}
 
 The purpose of the inactivity timeout is for the server to balance its trade off 
@@ -1283,8 +1359,6 @@ a new DSO Keepalive message dictating new Session Timeout values to the client.
 The largest **finite** inactivity timeout
 supported by the current Keepalive TLV is
 0xFFFFFFFE (2^32-2 milliseconds, approximately 49.7 days).
-
-***
 
 ## The Keepalive Interval {#keepalivetimer}
 
@@ -1374,8 +1448,6 @@ The largest **finite** keepalive interval
 supported by the current Keepalive TLV is
 0xFFFFFFFE (2^32-2 milliseconds, approximately 49.7 days).
 
-***
-
 ## Server-Initiated Session Termination
 
 In addition to cancelling individual long-lived operations selectively ({{cancellation}})
@@ -1456,8 +1528,6 @@ A Retry Delay message MUST NOT be initiated by a client.
 If a server receives a Retry Delay message this is a fatal error
 and the server MUST forcibly abort the connection immediately.
 
-***
-
 #### Outstanding Operations
 
 At the instant a server chooses to initiate a Retry Delay message
@@ -1490,8 +1560,6 @@ These adjustments MAY be selected randomly, pseudorandomly, or deterministically
 (e.g., incrementing the time value by one tenth of a second for each successive
 client, yielding a post-restart reconnection rate of ten clients per second).
 
-***
-
 #### Client Reconnection
 
 After a DSO Session is ended by the server
@@ -1521,8 +1589,6 @@ In reality, if a client is rebooted or otherwise lose state, it
 may well attempt to reconnect before 49.7 days elapses, for as
 long as the DNS or other configuration information continues to
 indicate that this is the service instance the client should use.
-
-***
 
 # Base TLVs for DNS Stateful Operations
 
@@ -1657,8 +1723,6 @@ shorter than the current keepalive timer, the client MUST immediately send a Kee
 However, this should not normally happen in practice: it would require that Keepalive interval
 the server be shorter than the round-trip time of the connection.
 
-***
-
 In the case of the inactivity timeout, the handling of the received
 value is a little more subtle, though the meaning of the inactivity
 timeout remains as specified --- it still indicates the maximum
@@ -1695,8 +1759,6 @@ before the server resorts to forcibly aborting it, the server
 SHOULD give the client an additional grace period of one quarter
 of the new inactivity timeout, or five seconds, whichever is greater.
 
-***
-
 ### Relation to edns-tcp-keepalive EDNS0 Option
 
 The inactivity timeout value in the Keepalive TLV (DSO-TYPE=1) has
@@ -1710,8 +1772,6 @@ or server receives a DNS message over the DSO Session that contains
 an edns-tcp-keepalive EDNS0 Option, this is a fatal error and the
 receiver of the edns-tcp-keepalive EDNS0 Option MUST forcibly abort
 the connection immediately.
-
-***
 
 ## Retry Delay TLV {#delay}
 
@@ -1837,8 +1897,6 @@ The length of padding is intentionally not specified in this document and
 is a function of current best practices with respect to the type and length
 of data in the preceding TLVs {{?I-D.ietf-dprive-padding-policy}}.
 
-***
-
 # Summary Highlights
 
 This section summarizes some noteworthy highlights about
@@ -1861,8 +1919,6 @@ The table below illustrates which combinations are legal and how they are interp
        +--------+--------------------------+------------------------+
        |  QR=1  |  Invalid - Fatal Error   |    Response Message    |
        +--------+--------------------------+------------------------+
-
-***
 
 ## TLV Usage {#TLV}
 
@@ -1915,8 +1971,6 @@ Note that some of the columns in this table are currently empty.
 The table provides a template for future TLV definitions to follow.
 It is recommended that definitions of future TLVs include a
 similar table summarizing the contexts where the new TLV is valid.
-
-***
 
 # IANA Considerations
 
@@ -2034,7 +2088,5 @@ David Schinazi,
 Manju Shankar Rao,
 and Bernie Volz
 for their helpful contributions to this document.
-
-***
 
 --- back
