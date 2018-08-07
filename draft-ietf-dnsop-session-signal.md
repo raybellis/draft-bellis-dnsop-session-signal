@@ -436,8 +436,7 @@ case, the session is established as soon as the connection is established;
 this is referred to as implicit session establishment.
 
 However, in the typical case a server will not know in advance whether a
-client supports DSO, so in general, unless it is known in advance by other means
-that a client does support DSO, a server MUST NOT initiate DSO request messages
+client supports DSO, so in general a server MUST NOT initiate DSO request messages
 or DSO unacknowledged messages
 until a DSO Session has been mutually established
 by at least one successful DSO request/response exchange
@@ -481,13 +480,13 @@ the server might send no response to the DSO message.   In the first
 case, the client SHOULD mark that service instance as not supporting DSO, and not
 attempt a DSO connection for some period of time (at least an hour)
 after the failed attempt.   The client MAY reconnect but not use
-DSO, if appropriate ({{forcereconnect}}).
+DSO, if appropriate ({{dropreconnect}}).
 
 In the second case, the client SHOULD set a reasonable timeout, after which time the server will
 be assumed not to support DSO.  If the server doesn't respond within that time, the client MUST
 forcibly abort the connection to the server, since the server's behavior is out of spec, and
 hence its state is undefined.  The client MAY reconnect, but not use DSO, if
-appropriate ({{dropreconnect}}).
+appropriate ({{forcereconnect}}).
 
 ### Session Establishment Success {#stabsuccess}
 
