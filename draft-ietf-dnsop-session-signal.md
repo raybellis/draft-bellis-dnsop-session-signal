@@ -135,9 +135,9 @@ used to manage session timeouts, termination, and encryption padding.
 All three TLVs defined here are mandatory for all implementations of DSO.
 Further TLVs may be defined in additional specifications.
 
-DSO messages may or may not be acknowledged; this is signaled by providing a
-non-zero message ID for messages that must be acknowledged (request messages) and a zero message
-ID for messages that are not to be acknowledged (unidirectional messages), and is also specified in the definition
+DSO messages may or may not be acknowledged; this is signalled by providing a
+non-zero message ID for messages that must be acknowledged (DSO request messages) and a zero message
+ID for messages that are not to be acknowledged (DSO unidirectional messages), and is also specified in the definition
 of a particular message type.   Messages are pipelined; answers may appear out
 of order when more than one answer is pending.
 
@@ -243,11 +243,12 @@ client:
 to the server's listening socket, in the usual DNS sense.
 
 initiator:
-: the software which sends a request or a unidirectional message during a DSO
+: the software which sends a DSO request message or a DSO unidirectional message during a DSO
 session.  Either a client or server can be an initiator
 
 responder:
-: the software which receives a request or unidirectional message during a DSO
+: the software which receives a DSO request message or a DSO unidirectional message during a DSO
+
 session.  Either a client or server can be a responder.
 
 sender:
@@ -457,7 +458,7 @@ until a DSO Session has been mutually established
 by at least one successful DSO request/response exchange
 initiated by the client, as described below.   This is referred to as explicit
 session establishment.
-
+ 
 Until a DSO session has been implicitly or explicitly established, a client MUST NOT initiate
 DSO unidirectional messages.
 
@@ -497,13 +498,13 @@ In the first
 case, the client SHOULD mark that service instance as not supporting DSO, and not
 attempt a DSO connection for some period of time (at least an hour)
 after the failed attempt.   The client MAY reconnect but not use
-DSO, if appropriate ({{forcereconnect}}).
+DSO, if appropriate ({{dropreconnect}}).
 
 In the second case, the client SHOULD wait 30 seconds, after which time the server will
 be assumed not to support DSO.  If the server doesn't respond within 30 seconds, the client MUST
 forcibly abort the connection to the server, since the server's behavior is out of spec, and
 hence its state is undefined.  The client MAY reconnect, but not use DSO, if
-appropriate ({{dropreconnect}}).
+appropriate ({{forcereconnect}}).
 
 ### Session Establishment Success {#stabsuccess}
 
@@ -545,7 +546,7 @@ remains a valid way of initiating a DSO Session.
 ## Session Termination {#sessiontermination}
 
 A "DSO Session" is terminated when the underlying connection is closed.
-Sessions are closed gracefully as a result of the server closing a session because it
+Sessions are "closed gracefully" as a result of the server closing a session because it
 is overloaded, the client closing the session because it is done,
 or the client closing the session because it is inactive.   Sessions are "forcibly aborted"
 when either the client or server closes the connection because of a protocol error.
@@ -621,11 +622,12 @@ In a DSO request message the MESSAGE ID field MUST
 be set to a unique nonzero value, that the initiator is not
 currently using for any other active operation on this connection.
 For the purposes here, a MESSAGE ID is in use in this DSO Session if the
-initiator has used it in a request for which it is still awaiting a response,
+initiator has used it in a DSO request message for which it is still awaiting a response,
 or if the client has used it to set up a long-lived operation that has not yet been cancelled.
 For example, a long-lived operation could be
 a Push Notification subscription {{?I-D.ietf-dnssd-push}} or
 a Discovery Relay interface subscription {{?I-D.ietf-dnssd-mdns-relay}}.
+
 
 Whether a message is a DSO request message or a DSO unidirectional message is
 determined only by the specification for the Primary TLV.
@@ -651,14 +653,14 @@ this is a fatal error and the recipient MUST forcibly abort the connection immed
 The DNS Header OPCODE field holds the DSO OPCODE value (\[TBA1\] tentatively 6).
 
 The Z bits are currently unused in DSO messages,
-and in both DSO requests and DSO responses the
-Z bits MUST be set to zero (0) on transmission and MUST be silently ignored
+and in both DSO request messages and DSO responses the
+Z bits MUST be set to zero (0) on transmission and MUST be ignored
 on reception.
 
-In a DNS request message (QR=0) the RCODE is set according to the definition of the request.
+In a DSO request message (QR=0) the RCODE is set according to the definition of the request.
 For example, in a Retry Delay message ({{retry}}) the RCODE indicates the reason for termination.
 However, in most cases, except where clearly specified otherwise,
-in a DNS request message (QR=0) the RCODE is set to zero on transmission,
+in a DSO request message (QR=0) the RCODE is set to zero on transmission,
 and silently ignored on reception.
 
 The RCODE value in a response message (QR=1) may be one of the following values:
@@ -667,7 +669,7 @@ The RCODE value in a response message (QR=1) may be one of the following values:
 |-----:|----------|-------------|
 | 0 | NOERROR | Operation processed successfully |
 | 1 | FORMERR | Format error |
-| 2 | SERVFAIL | Server failed to process request due to a problem with the server |
+| 2 | SERVFAIL | Server failed to process DSO request message due to a problem with the server |
 | 3 | NXDOMAIN | Name Error --- Named entity does not exist (TLV-dependent) |
 | 4 | NOTIMP | DSO not supported |
 | 5 | REFUSED | Operation declined for policy reasons |
@@ -721,40 +723,41 @@ Response Primary TLV(s), if present, MUST occur first in the response message,
 before any Response Additional TLVs.
 
 It is anticipated that most DSO operations will be specified
-to use request messages, which generate corresponding responses.
+to use DSO request messages, which generate corresponding DSO responses.
 In some specialized high-traffic use cases,
 it may be appropriate to specify DSO unidirectional messages.
 DSO unidirectional messages can be more efficient on the network,
 because they don't generate a stream of corresponding reply messages.
-Using unidirectional messages can also simplify software
+Using DSO unidirectional messages can also simplify software
 in some cases, by removing need for an initiator to maintain
 state while it waits to receive replies it doesn't care about.
 When the specification for a particular TLV states that,
-when used as a Primary TLV (i.e., first) in an outgoing DNS request message (i.e., QR=0),
+when used as a Primary TLV (i.e., first) in an outgoing DSO request message (i.e., QR=0),
 that message is to be unidirectional,
 the MESSAGE ID field MUST be set to zero and
 the receiver MUST NOT generate any response message
-corresponding to this unidirectional message.
+corresponding to this DSO unidirectional message.
 
 The previous point, that the receiver MUST NOT generate responses to
-unidirectional messages, applies even in the case of errors.
+DSO unidirectional messages, applies even in the case of errors.
+
 When a DSO message is received where both the QR bit and the MESSAGE ID field
 are zero, the receiver MUST NOT generate any response.
 For example, if the DSO-TYPE in the Primary TLV is unrecognized,
 then a DSOTYPENI error MUST NOT be returned; instead the receiver
 MUST forcibly abort the connection immediately.
 
-Unidirectional messages MUST NOT be used "speculatively"
+DSO unidirectional messages MUST NOT be used "speculatively"
 in cases where the sender doesn't know if the receiver supports
 the Primary TLV in the message, because there is no way to receive
 any response to indicate success or failure.
-Unidirectional messages are only appropriate in cases
+DSO unidirectional messages are only appropriate in cases
 where the sender already knows that the receiver supports,
 and wishes to receive, these messages.
 
 For example, after a client has subscribed for Push Notifications
 {{?I-D.ietf-dnssd-push}}, the subsequent event notifications are
-then sent as unidirectional messages, and this is appropriate
+then sent as DSO unidirectional messages, and this is appropriate
 because the client initiated the message stream by virtue of its
 Push Notification subscription, thereby indicating its support of
 Push Notifications, and its desire to receive those notifications.
@@ -762,7 +765,7 @@ Push Notifications, and its desire to receive those notifications.
 Similarly, after a Discovery Relay client has subscribed to receive
 inbound mDNS (multicast DNS, {{?RFC6762}}) traffic from a Discovery
 Relay, the subsequent stream of received
-packets is then sent using unidirectional messages, and this
+packets is then sent using DSO unidirectional messages, and this
 is appropriate because the client initiated the message stream
 by virtue of its Discovery Relay link subscription, thereby indicating
 its support of Discovery Relay, and its desire to receive inbound mDNS
@@ -812,26 +815,26 @@ DSO-TYPE is the responsibility of the software that implements that DSO-TYPE.
 
 #### Request TLVs
 
-The first TLV in a DSO request message or unidirectional message is the "Primary TLV"
+The first TLV in a DSO request message or DSO unidirectional message is the "Primary TLV"
 and indicates the operation to be performed.
-A DSO request message or unidirectional message MUST contain at at least one TLV - the Primary TLV.
+A DSO request message or DSO unidirectional message MUST contain at at least one TLV - the Primary TLV.
 
-Immediately following the Primary TLV, a DSO request message or unidirectional message
+Immediately following the Primary TLV, a DSO request message or DSO unidirectional message
 MAY contain one or more "Additional TLVs", which specify
 additional parameters relating to the operation.
 
 #### Response TLVs
 
 Depending on the operation, a DSO response message MAY contain no TLVs,
-because it is simply a response to a previous request message, and the
-MESSAGE ID in the header is sufficient to identify the request in question.
+because it is simply a response to a previous DSO request message, and the
+MESSAGE ID in the header is sufficient to identify the DSO request in question.
 Or it may contain a single response TLV, with the same DSO-TYPE as the
 Primary TLV in the request message.
 Alternatively it may contain one or more TLVs of other
 types, or a combination of the above, as appropriate
 for the information that needs to be communicated.
 The specification for each DSO TLV determines
-what TLVs are required in a response to a request using that TLV.
+what TLVs are required in a response to a DSO request message using that TLV.
 
 If a DSO response is received for an operation where the specification
 requires that the response carry a particular TLV or TLVs,
@@ -852,7 +855,7 @@ with a zero MESSAGE ID (indicating that no response is expected),
 then this is a fatal error and the recipient
 MUST forcibly abort the connection immediately.
 
-If a DSO request message or unidirectional message is received where the Primary TLV is recognized,
+If a DSO request message or DSO unidirectional message is received where the Primary TLV is recognized,
 containing one or more unrecognized Additional TLVs, the unrecognized
 Additional TLVs MUST be silently ignored, and the remainder of the message
 is interpreted and handled as if the unrecognized parts were not present.
@@ -903,7 +906,7 @@ forcibly abort the connection immediately.
 The initiator MUST set the value of the QR bit in the DNS header to zero (0),
 and the responder MUST set it to one (1).
 
-As described above in {{header}}, whether an outgoing message with QR=0
+As described above in {{header}}, whether an outgoing DSO message with QR=0
 is a DSO request or DSO unidirectional message is determined by the specification
 for the Primary TLV, which in turn determines whether the MESSAGE ID field
 in that outgoing message will be zero or nonzero.
@@ -913,7 +916,7 @@ and MUST NOT elicit a response.
 
 Every DSO request message (QR=0) with a nonzero MESSAGE ID field
 is a DSO request message, and MUST elicit a corresponding response (QR=1),
-which MUST have the same MESSAGE ID in the DNS message header as in the corresponding request.
+which MUST have the same MESSAGE ID in the DNS message header as in the corresponding DSO request message.
 
 Valid DSO request messages sent by the client with a nonzero MESSAGE ID field
 elicit a response from the server, and
@@ -921,7 +924,7 @@ valid DSO request messages sent by the server with a nonzero MESSAGE ID field
 elicit a response from the client.
 
 The namespaces of 16-bit MESSAGE IDs are independent in each direction.
-This means it is **not** an error for both client and server to send request
+This means it is **not** an error for both client and server to send DSO request
 messages at the same time as each other, using the same MESSAGE ID, in different directions.
 This simplification is necessary in order for the protocol to be implementable.
 It would be infeasible to require the client and server
@@ -939,12 +942,12 @@ MESSAGE ID field of the DSO message, and the most-significant
 bit is implicit from the direction of the message.
 
 As described above in {{header}}, an initiator MUST NOT reuse a
-MESSAGE ID that it already has in use for an outstanding request
+MESSAGE ID that it already has in use for an outstanding DSO request message
 (unless specified otherwise by the relevant specification for the DSO-TYPE in question).
 At the very least, this means that a MESSAGE ID can't
 be reused in a particular direction on a particular DSO
 Session while the initiator is waiting for a response to a
-previous request using that MESSAGE ID on that DSO Session
+previous DSO request message using that MESSAGE ID on that DSO Session
 (unless specified otherwise by the relevant specification for the DSO-TYPE in question),
 and for a long-lived operation the MESSAGE ID for the operation
 can't be reused while that operation remains active.
@@ -953,9 +956,9 @@ If a client or server receives a response (QR=1) where the MESSAGE ID is zero, o
 any other value that does not match the MESSAGE ID of any of its outstanding operations,
 this is a fatal error and the recipient MUST forcibly abort the connection immediately.
 
-If a responder receives a request (QR=0) where the MESSAGE ID is not zero, and
+If a responder receives a DSO request message(QR=0) where the MESSAGE ID is not zero, and
 the responder tracks request MESSAGE IDs, and the MESSAGE ID
-matches the MESSAGE ID of a request it received for which a response has not yet been sent,
+matches the MESSAGE ID of a DSO request message it received for which a response has not yet been sent,
 it MUST forcibly abort the connection immediately.   This behavior is required to prevent
 a hypothetical attack that takes advantage of undefined behavior in this case.   However,
 if the responder does not track MESSAGE IDs in this way, no such risk exists, so tracking
@@ -1540,7 +1543,7 @@ This is modeled after the DHCP protocol, where the client requests a certain
 lease lifetime using DHCP option 51 {{?RFC2132}}, but the server is the
 ultimate authority for deciding what lease lifetime is actually granted.
 
-When a client is sending its second and subsequent DSO Keepalive requests to
+When a client is sending its second and subsequent DSO Keepalive request messages to
 the server, the client SHOULD continue to request its preferred values each time.
 This allows flexibility, so that if conditions change during the lifetime of a
 DSO Session, the server can adapt its responses to better fit the client's needs.
@@ -1548,11 +1551,11 @@ DSO Session, the server can adapt its responses to better fit the client's needs
 Once a DSO Session is in progress ({{establishment}})
 a DSO Keepalive message MAY be initiated by a server.
 When sent by a server, the DSO Keepalive message MUST be
-sent as an unidirectional message, with the MESSAGE ID set to zero.
+sent as a DSO unidirectional message, with the MESSAGE ID set to zero.
 The client MUST NOT generate a response to a server-initiated DSO Keepalive message.
 If a client receives a DSO Keepalive request message with a nonzero MESSAGE ID then
 this is a fatal error and the client MUST forcibly abort the connection immediately.
-The unidirectional DSO Keepalive message from the server resets a DSO Session's keepalive timer,
+The DSO Keepalive unidirectional message from the server resets a DSO Session's keepalive timer,
 and at the same time unilaterally informs the client of the new
 Session Timeout values to use from this point forward in this DSO Session.
 No client DSO response to this unilateral declaration is required or allowed.
@@ -1563,7 +1566,7 @@ the client.
 A Keepalive TLV MUST NOT be added to other responses as a Response Additional TLV.
 If the server wishes to update a client's Session Timeout values
 other than in response to a DSO Keepalive request message from the client,
-then it does so by sending an unidirectional DSO Keepalive message
+then it does so by sending an DSO Keepalive unidirectional message
 of its own, as described above.
 
 It is not required that the Keepalive TLV be used in every DSO Session.
@@ -1573,7 +1576,7 @@ not all DNS Stateful operations require long-lived session state,
 and in some cases the default 15-second value for both the inactivity timeout
 and keepalive interval may be perfectly appropriate.
 However, note that for clients that implement only the DSO-TYPEs defined in this document,
-a Keepalive request message is the only way for a client to initiate a DSO Session.
+a DSO Keepalive request message is the only way for a client to initiate a DSO Session.
 
 ### Client handling of received Session Timeout values
 
@@ -1664,7 +1667,7 @@ Recommendations for the RETRY DELAY value are given in {{retry}}.
 ### Retry Delay TLV used as a Primary TLV
 
 When sent from server to client, the
-Retry Delay TLV is used as the Primary TLV in a unidirectional message.
+Retry Delay TLV is used as the Primary TLV in a DSO unidirectional message.
 It is used by a server
 to instruct a client to close the DSO Session and underlying connection,
 and not to reconnect for the indicated time interval.
@@ -1713,7 +1716,7 @@ wait before attempting a new connection to this service instance.
 For clients that do in some way modify their behavior depending on the RCODE value,
 they should treat unknown RCODE values the same as RCODE=NOERROR (routine shutdown or restart).
 
-A Retry Delay message from server to client is a unidirectional message;
+A Retry Delay message from server to client is a DSO unidirectional message;
 the MESSAGE ID MUST be set to zero in the outgoing message
 and the client MUST NOT send a response.
 
@@ -1723,7 +1726,7 @@ this is a fatal error and the server MUST forcibly abort the connection immediat
 
 ### Retry Delay TLV used as a Response Additional TLV
 
-In the case of a request that returns a nonzero RCODE value,
+In the case of a DSO request message that results in a nonzero RCODE value,
 the responder MAY append a Retry Delay TLV to the response,
 indicating the time interval during which the initiator
 SHOULD NOT attempt this operation again.
@@ -1756,10 +1759,10 @@ for example, in cases where there is a concern that the padded
 message could be subject to compression before encryption.
 PADDING bytes of any value MUST be accepted in the messages received.
    
-The Encryption Padding TLV may be included in either a DSO request, response, or both.
+The Encryption Padding TLV may be included in either a DSO request message, response, or both.
 As specified for the EDNS(0) Padding Option {{!RFC7830}}
-if a request is received with an Encryption Padding TLV,
-then the response MUST also include an Encryption Padding TLV.
+if a DSO request message is received with an Encryption Padding TLV,
+then the DSO response MUST also include an Encryption Padding TLV.
 
 The length of padding is intentionally not specified in this document and
 is a function of current best practices with respect to the type and length
@@ -1780,27 +1783,27 @@ In DSO Unidirectional Messages the QR bit is 0 and the MESSAGE ID is zero.
 
 The table below illustrates which combinations are legal and how they are interpreted:
 
-                +--------------------------+------------------------+
-                |     MESSAGE ID zero      |   MESSAGE ID nonzero   |
-       +--------+--------------------------+------------------------+
-       |  QR=0  |  Unidirectional Message  |    Request Message     |
-       +--------+--------------------------+------------------------+
-       |  QR=1  |  Invalid - Fatal Error   |    Response Message    |
-       +--------+--------------------------+------------------------+
+                +------------------------------+------------------------+
+                |       MESSAGE ID zero        |   MESSAGE ID nonzero   |
+       +--------+------------------------------+------------------------+
+       |  QR=0  |  DSO unidirectional Message  |  DSO Request Message   |
+       +--------+------------------------------+------------------------+
+       |  QR=1  |    Invalid - Fatal Error     |  DSO Response Message  |
+       +--------+------------------------------+------------------------+
 
 ## TLV Usage {#TLV}
 
 The table below indicates, for each of the three TLVs defined in this
 document, whether they are valid in each of ten different contexts.
 
-The first five contexts are requests or unidirectional messages from client to server,
+The first five contexts are DSO requests or DSO unidirectional messages from client to server,
 and the corresponding responses from server back to client:
 
 * C-P - Primary TLV, sent in DSO Request message, from client to server,
 with nonzero MESSAGE ID indicating that this request MUST generate response message.
 * C-U - Primary TLV, sent in DSO Unidirectional message, from client to server,
 with zero MESSAGE ID indicating that this request MUST NOT generate response message.
-* C-A - Additional TLV, optionally added to request message or unidirectional message from client to server.
+* C-A - Additional TLV, optionally added to a DSO request message or DSO unidirectional message from client to server.
 * CRP - Response Primary TLV, included in response message sent back to the client
 (in response to a client "C-P" request with nonzero MESSAGE ID indicating that a response is required)
 where the DSO-TYPE of the Response TLV matches the DSO-TYPE of the Primary TLV in the request.
@@ -1809,13 +1812,13 @@ where the DSO-TYPE of the Response TLV matches the DSO-TYPE of the Primary TLV i
 where the DSO-TYPE of the Response TLV does not match the DSO-TYPE of the Primary TLV in the request.
 
 The second five contexts are their counterparts in the opposite direction:
-DSO requests or unidirectional messages from server to client, and the corresponding responses from client back to server.
+DSO requests or DSO unidirectional messages from server to client, and the corresponding responses from client back to server.
 
 * S-P - Primary TLV, sent in DSO Request message, from server to client,
 with nonzero MESSAGE ID indicating that this request MUST generate response message.
 * S-U - Primary TLV, sent in DSO Unidirectional message, from server to client,
 with zero MESSAGE ID indicating that this request MUST NOT generate response message.
-* S-A - Additional TLV, optionally added to request message or unidirectional message from server to client.
+* S-A - Additional TLV, optionally added to a DSO request message or DSO unidirectional message from server to client.
 * SRP - Response Primary TLV, included in response message sent back to the server
 (in response to a server "S-P" request with nonzero MESSAGE ID indicating that a response is required)
 where the DSO-TYPE of the Response TLV matches the DSO-TYPE of the Primary TLV in the request.
@@ -1951,7 +1954,7 @@ round trips in session establishment.
 
 A client MAY send multiple response-requiring DSO messages using TCP fast
 open or TLS 1.3 early data,
-without having to wait for a response to the first request message
+without having to wait for a DSO response to the first DSO request message
 to confirm successful establishment of a DSO session.
 
 However, a client MUST NOT send DSO unidirectional
