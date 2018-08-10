@@ -252,9 +252,7 @@ service instance:
 : a specific instance of server software running on a specific host ({{serviceinstances}}).
 
 long-lived operations:
-: this term refers to a DSO session on which either (or both) the client or the server,
-acting as an initiator, has issued a request for the responder to send data to the
-initiator as it becomes available.  See {{subscriptions}}.
+: a long-lived operation is an outstanding operation on a DSO session where either the client or server, acting as initiator, has requested that the responder send new information regarding the request, as it becomes available.
 
 DNS message:
 : any non-DSO DNS message (but not a DNS response).
