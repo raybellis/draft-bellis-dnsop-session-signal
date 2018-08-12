@@ -1946,7 +1946,7 @@ multiple connections from different source ports on the same client IP address.
 
 DSO permits zero round-trip operation
 using TCP Fast Open {{?RFC7413}}
-and TLS 1.3 {{?I-D.ietf-tls-tls13}}
+and TLS 1.3 {{?RFC8446}}
 to reduce or eliminate
 round trips in session establishment.
 

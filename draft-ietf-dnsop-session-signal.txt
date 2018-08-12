@@ -40,7 +40,7 @@ Status of This Memo
    Internet-Drafts are working documents of the Internet Engineering
    Task Force (IETF).  Note that other groups may also distribute
    working documents as Internet-Drafts.  The list of current Internet-
-   Drafts is at http://datatracker.ietf.org/drafts/current/.
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
 
    Internet-Drafts are draft documents valid for a maximum of six months
    and may be updated, replaced, or obsoleted by other documents at any
@@ -65,7 +65,7 @@ Copyright Notice
 
    This document is subject to BCP 78 and the IETF Trust's Legal
    Provisions Relating to IETF Documents
-   (http://trustee.ietf.org/license-info) in effect on the date of
+   (https://trustee.ietf.org/license-info) in effect on the date of
    publication of this document.  Please review these documents
    carefully, as they describe your rights and restrictions with respect
    to this document.  Code Components extracted from this document must
@@ -192,10 +192,11 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
    DSO messages may or may not be acknowledged; this is signaled by
    providing a non-zero message ID for messages that must be
-   acknowledged and a zero message ID for messages that are not to be
-   acknowledged, and is also part of the definition of a particular
-   message type.  Messages are pipelined; answers may appear out of
-   order when more than one answer is pending.
+   acknowledged (request messages) and a zero message ID for messages
+   that are not to be acknowledged (unidirectional messages), and is
+   also part of the definition of a particular message type.  Messages
+   are pipelined; answers may appear out of order when more than one
+   answer is pending.
 
    The format for DSO messages (Section 5.4) differs somewhat from the
    traditional DNS message format used for standard queries and
@@ -217,7 +218,6 @@ Internet-Draft           DNS Stateful Operations             August 2018
    This new format has distinct advantages over an RR-based format
    because it is more explicit and more compact.  Each TLV definition is
    specific to its use case, and as a result contains no redundant or
-   overloaded fields.  Importantly, it completely avoids conflating DNS
 
 
 
@@ -226,6 +226,7 @@ Bellis, et al.          Expires February 3, 2019                [Page 4]
 Internet-Draft           DNS Stateful Operations             August 2018
 
 
+   overloaded fields.  Importantly, it completely avoids conflating DNS
    Stateful Operations in any way with normal DNS operations or with
    existing EDNS(0)-based functionality.  A goal of this approach is to
    avoid the operational issues that have befallen EDNS(0), particularly
@@ -272,8 +273,7 @@ Internet-Draft           DNS Stateful Operations             August 2018
       document refers to a persistent network connection between two
       endpoints which allows for the exchange of DNS messages over a
       connection where either end of the connection can send messages to
-      the other end.  The term has no relationship to the "session
-      layer" of the OSI "seven-layer model".
+
 
 
 
@@ -281,6 +281,9 @@ Bellis, et al.          Expires February 3, 2019                [Page 5]
 
 Internet-Draft           DNS Stateful Operations             August 2018
 
+
+      the other end.  The term has no relationship to the "session
+      layer" of the OSI "seven-layer model".
 
    DSO Session:  a session established between two endpoints that
       acknowledge persistent DNS state via the exchange of DSO messages
@@ -300,11 +303,11 @@ Internet-Draft           DNS Stateful Operations             August 2018
    client:  the software which initiates a connection to the server's
       listening socket in the usual DNS sense.
 
-   initiator:  the software which sends a request or an unacknowledged
+   initiator:  the software which sends a request or a unidirectional
       message during a DSO session.  Either a client or server can be an
       initiator
 
-   responder:  the software which receives a request or unacknowledged
+   responder:  the software which receives a request or unidirectional
       message during a DSO session.  Either a client or server can be a
       responder.
 
@@ -317,19 +320,16 @@ Internet-Draft           DNS Stateful Operations             August 2018
    service instance:  a specific instance of server software running on
       a specific host (Section 9.1).
 
-   long-lived operations:  this term refers to a DSO session on which
-      either (or both) the client or the server, acting as an initiator,
-      has issued a request for the responder to send data to the
-      initiator as it becomes available.  See Section 4.1.2.
+   long-lived operations:  a long-lived operation is an outstanding
+      operation on a DSO session where either the client or server,
+      acting as initiator, has requested that the responder send new
+      information regarding the request, as it becomes available.
 
    DNS message:  any non-DSO DNS message (but not a DNS response).
 
-   DSO message:  a DSO request message or a DSO unacknowledged message.
+   DSO message:  a DSO request message or a DSO unidirectional message.
       Whether a DSO message is a DSO Request or a DSO response is
       determined by the specification of its primary TLV.
-
-   DNS response:  any non-DSO response.
-
 
 
 
@@ -338,11 +338,13 @@ Bellis, et al.          Expires February 3, 2019                [Page 6]
 Internet-Draft           DNS Stateful Operations             August 2018
 
 
+   DNS response:  any non-DSO response.
+
    DSO response:  a response to a DSO request message.
 
    DSO request message:  a DSO message that requires a response.
 
-   DSO unacknowledged message:  a DSO message that does not require and
+   DSO unidirectional message:  a DSO message that does not require and
       cannot induce a response.
 
    Primary TLV:  The first TLV in a DSO message or DSO response; in the
@@ -384,8 +386,6 @@ Internet-Draft           DNS Stateful Operations             August 2018
    DNS Stateless Operations are applicable to several known use cases
    and are only applicable on transports that are capable of supporting
    a DSO Session.
-
-
 
 
 
@@ -482,7 +482,7 @@ Internet-Draft           DNS Stateful Operations             August 2018
    DSO Session Establishment in Progress:  A client has sent a DSO
       request, but has not yet received a DSO response.  In this phase,
       the client may send more DSO requests and more DNS requests, but
-      MUST NOT send DSO unacknowledged messages (Section 5.1).
+      MUST NOT send DSO unidirectional messages (Section 5.1).
 
    DSO Session Establishment Failed:  The attempt to establish the DSO
       session did not succeed.  At this point, the client is permitted
@@ -547,7 +547,7 @@ Internet-Draft           DNS Stateful Operations             August 2018
    However, in the typical case a server will not know in advance
    whether a client supports DSO, so in general, unless it is known in
    advance by other means that a client does support DSO, a server MUST
-   NOT initiate DSO request messages or DSO unacknowledged messages
+   NOT initiate DSO request messages or DSO unidirectional messages
    until a DSO Session has been mutually established by at least one
    successful DSO request/response exchange initiated by the client, as
    described below.  This is referred to as explicit session
@@ -563,7 +563,7 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
    Until a DSO session has been implicitly or explicitly established, a
-   client MUST NOT initiate DSO unacknowledged messages.
+   client MUST NOT initiate DSO unidirectional messages.
 
    A DSO Session is established over a connection by the client sending
    a DSO request message, such as a DSO Keepalive request message
@@ -752,32 +752,32 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 5.4.1.  DNS Header Fields in DSO Messages
 
-   In an unacknowledged message the MESSAGE ID field MUST be set to
-   zero.  In an acknowledged request message the MESSAGE ID field MUST
-   be set to a unique nonzero value, that the initiator is not currently
-   using for any other active operation on this connection.  For the
-   purposes here, a MESSAGE ID is in use in this DSO Session if the
-   initiator has used it in a request for which it is still awaiting a
-   response, or if the client has used it to set up a long-lived
-   operation that has not yet been cancelled.  For example, a long-lived
-   operation could be a Push Notification subscription
-   [I-D.ietf-dnssd-push] or a Discovery Relay interface subscription
-   [I-D.ietf-dnssd-mdns-relay].
+   In a DSO unidirectional message the MESSAGE ID field MUST be set to
+   zero.  In a DSO request message the MESSAGE ID field MUST be set to a
+   unique nonzero value, that the initiator is not currently using for
+   any other active operation on this connection.  For the purposes
+   here, a MESSAGE ID is in use in this DSO Session if the initiator has
+   used it in a request for which it is still awaiting a response, or if
+   the client has used it to set up a long-lived operation that has not
+   yet been cancelled.  For example, a long-lived operation could be a
+   Push Notification subscription [I-D.ietf-dnssd-push] or a Discovery
+   Relay interface subscription [I-D.ietf-dnssd-mdns-relay].
 
-   Whether a message is acknowledged or unacknowledged is determined
-   only by the specification for the Primary TLV.  An acknowledgment
-   cannot be requested by including a nonzero message ID in a message
-   the primary TLV of which is specified to be unacknowledged, nor can
-   an acknowledgment be prevented by sending a message ID of zero in a
-   message with a primary TLV that is specified to be acknowledged.  A
-   responder that receives either such malformed message MUST treat it
-   as a fatal error and forcibly abort the connection immediately.
+   Whether a message is a DSO request message or a DSO unidirectional
+   message is determined only by the specification for the Primary TLV.
+   An acknowledgment cannot be requested by including a nonzero message
+   ID in a message that is required according to its primary TLV to be
+   unidirectional.  Nor can an acknowledgment be prevented by sending a
+   message ID of zero in a message that is required to be a DSO request
+   message according to its primary TLV.  A responder that receives
+   either such malformed message MUST treat it as a fatal error and
+   forcibly abort the connection immediately.
 
-   In a request or unacknowledged message the DNS Header QR bit MUST be
-   zero (QR=0).  If the QR bit is not zero the message is not a request
-   or unacknowledged message.
+   In a DSO request message or DSO unidirectional message the DNS Header
+   QR bit MUST be zero (QR=0).  If the QR bit is not zero the message is
+   not a DSO request or DSO unidirectional message.
 
-   In a response message the DNS Header QR bit MUST be one (QR=1).
+   In a DSO response message the DNS Header QR bit MUST be one (QR=1).
 
 
 
@@ -788,12 +788,12 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
    If the QR bit is not one the message is not a response message.
 
-   In a response message (QR=1) the MESSAGE ID field MUST contain a copy
-   of the value of the MESSAGE ID field in the request message being
-   responded to.  In a response message (QR=1) the MESSAGE ID field MUST
-   NOT be zero.  If a response message (QR=1) is received where the
-   MESSAGE ID is zero this is a fatal error and the recipient MUST
-   forcibly abort the connection immediately.
+   In a DSO response message (QR=1) the MESSAGE ID field MUST contain a
+   copy of the value of the MESSAGE ID field in the DSO request message
+   being responded to.  In a DSO response message (QR=1) the MESSAGE ID
+   field MUST NOT be zero.  If a DSO response message (QR=1) is received
+   where the MESSAGE ID is zero this is a fatal error and the recipient
+   MUST forcibly abort the connection immediately.
 
    The DNS Header OPCODE field holds the DSO OPCODE value ([TBA1]
    tentatively 6).
@@ -857,15 +857,15 @@ Internet-Draft           DNS Stateful Operations             August 2018
    count fields is followed by the DSO Data, expressed using TLV syntax,
    as described below Section 5.4.3.
 
-   A DSO request message or DSO unacknowledged message MUST contain at
+   A DSO request message or DSO unidirectional message MUST contain at
    least one TLV.  The first TLV in a DSO request message or DSO
-   unacknowledged message is referred to as the "Primary TLV" and
+   unidirectional message is referred to as the "Primary TLV" and
    determines the nature of the operation being performed, including
-   whether it is an acknowledged or unacknowledged operation.  In some
-   cases it may be appropriate to include other TLVs in a request
-   message or unacknowledged message, such as the Encryption Padding TLV
-   (Section 7.3), and these extra TLVs are referred to as the
-   "Additional TLVs" and are not limited to what is defined in this
+   whether it is a DSO request or a DSO unidirectional operation.  In
+   some cases it may be appropriate to include other TLVs in a DSO
+   request message or DSO unidirectional message, such as the Encryption
+   Padding TLV (Section 7.3), and these extra TLVs are referred to as
+   the "Additional TLVs" and are not limited to what is defined in this
    document.  New "Additional TLVs" may be defined in the future and
    those definitions will describe when their use is appropriate.
 
@@ -904,36 +904,36 @@ Internet-Draft           DNS Stateful Operations             August 2018
    It is anticipated that most DSO operations will be specified to use
    request messages, which generate corresponding responses.  In some
    specialized high-traffic use cases, it may be appropriate to specify
-   unacknowledged messages.  Unacknowledged messages can be more
+   DSO unidirectional messages.  DSO unidirectional messages can be more
    efficient on the network, because they don't generate a stream of
-   corresponding reply messages.  Using unacknowledged messages can also
+   corresponding reply messages.  Using unidirectional messages can also
    simplify software in some cases, by removing need for an initiator to
    maintain state while it waits to receive replies it doesn't care
    about.  When the specification for a particular TLV states that, when
    used as a Primary TLV (i.e., first) in an outgoing DNS request
-   message (i.e., QR=0), that message is to be unacknowledged, the
+   message (i.e., QR=0), that message is to be unidirectional, the
    MESSAGE ID field MUST be set to zero and the receiver MUST NOT
-   generate any response message corresponding to this unacknowledged
+   generate any response message corresponding to this unidirectional
    message.
 
    The previous point, that the receiver MUST NOT generate responses to
-   unacknowledged messages, applies even in the case of errors.  When a
+   unidirectional messages, applies even in the case of errors.  When a
    DSO message is received where both the QR bit and the MESSAGE ID
    field are zero, the receiver MUST NOT generate any response.  For
    example, if the DSO-TYPE in the Primary TLV is unrecognized, then a
    DSOTYPENI error MUST NOT be returned; instead the receiver MUST
    forcibly abort the connection immediately.
 
-   Unacknowledged messages MUST NOT be used "speculatively" in cases
+   Unidirectional messages MUST NOT be used "speculatively" in cases
    where the sender doesn't know if the receiver supports the Primary
    TLV in the message, because there is no way to receive any response
-   to indicate success or failure.  Unacknowledged messages are only
+   to indicate success or failure.  Unidirectional messages are only
    appropriate in cases where the sender already knows that the receiver
    supports, and wishes to receive, these messages.
 
    For example, after a client has subscribed for Push Notifications
    [I-D.ietf-dnssd-push], the subsequent event notifications are then
-   sent as unacknowledged messages, and this is appropriate because the
+   sent as unidirectional messages, and this is appropriate because the
    client initiated the message stream by virtue of its Push
    Notification subscription, thereby indicating its support of Push
    Notifications, and its desire to receive those notifications.
@@ -941,7 +941,7 @@ Internet-Draft           DNS Stateful Operations             August 2018
    Similarly, after a Discovery Relay client has subscribed to receive
    inbound mDNS (multicast DNS, [RFC6762]) traffic from a Discovery
    Relay, the subsequent stream of received packets is then sent using
-   unacknowledged messages, and this is appropriate because the client
+   unidirectional messages, and this is appropriate because the client
    initiated the message stream by virtue of its Discovery Relay link
    subscription, thereby indicating its support of Discovery Relay, and
    its desire to receive inbound mDNS packets over that DSO session
@@ -963,12 +963,12 @@ Internet-Draft           DNS Stateful Operations             August 2018
    can be used as the Primary TLV, used as an Additional TLV, or used in
    either context, both in the case of requests and of responses.  The
    specification for a TLV must also state whether, when used as the
-   Primary (i.e., first) TLV in a DNS request message (i.e., QR=0), that
-   DSO message is to be acknowledged.  If the DSO message is to be
-   acknowledged, the specification must also state which TLVs, if any,
-   are to be included in the response.  The Primary TLV may or may not
-   be contained in the response, depending on what is specified for that
-   TLV.
+   Primary (i.e., first) TLV in a DSO message (i.e., QR=0), that DSO
+   message is unidirectional or is a request message which requires a
+   response.  If the DSO message requires a response, the specification
+   must also state which TLVs, if any, are to be included in the
+   response.  The Primary TLV may or may not be contained in the
+   response, depending on what is specified for that TLV.
 
                                                 1   1   1   1   1   1
         0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
@@ -997,9 +997,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 5.4.3.1.  Request TLVs
 
-   The first TLV in a DSO request message or unacknowledged message is
+   The first TLV in a DSO request message or unidirectional message is
    the "Primary TLV" and indicates the operation to be performed.  A DSO
-   request message or unacknowledged message MUST contain at at least
+   request message or unidirectional message MUST contain at at least
    one TLV, the Primary TLV.
 
 
@@ -1011,7 +1011,7 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
    Immediately following the Primary TLV, a DSO request message or
-   unacknowledged message MAY contain one or more "Additional TLVs",
+   unidirectional message MAY contain one or more "Additional TLVs",
    which specify additional parameters relating to the operation.
 
 5.4.3.2.  Response TLVs
@@ -1042,12 +1042,12 @@ Internet-Draft           DNS Stateful Operations             August 2018
    The error response MUST NOT contain a copy of the unrecognized
    Primary TLV.
 
-   If DSO unacknowledged message is received containing an unrecognized
+   If DSO unidirectional message is received containing an unrecognized
    Primary TLV, with a zero MESSAGE ID (indicating that no response is
    expected), then this is a fatal error and the recipient MUST forcibly
    abort the connection immediately.
 
-   If a DSO request message or unacknowledged message is received where
+   If a DSO request message or unidirectional message is received where
    the Primary TLV is recognized, containing one or more unrecognized
    Additional TLVs, the unrecognized Additional TLVs MUST be silently
    ignored, and the remainder of the message is interpreted and handled
@@ -1109,9 +1109,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
    zero (0), and the responder MUST set it to one (1).
 
    As described above in Section 5.4.1 whether an outgoing message with
-   QR=0 is unacknowledged or acknowledged is determined by the
-   specification for the Primary TLV, which in turn determines whether
-   the MESSAGE ID field in that outgoing message will be zero or
+   QR=0 is a DSO request or DSO unidirectional message is determined by
+   the specification for the Primary TLV, which in turn determines
+   whether the MESSAGE ID field in that outgoing message will be zero or
    nonzero.
 
 
@@ -1122,13 +1122,13 @@ Bellis, et al.          Expires February 3, 2019               [Page 20]
 Internet-Draft           DNS Stateful Operations             August 2018
 
 
-   A DSO unacknowledged message has both the QR bit and the MESSAGE ID
+   A DSO unidirectional message has both the QR bit and the MESSAGE ID
    field set to zero, and MUST NOT elicit a response.
 
-   Every DSO request message (QR=0) with a nonzero MESSAGE ID field is
-   an acknowledged DSO request, and MUST elicit a corresponding response
-   (QR=1), which MUST have the same MESSAGE ID in the DNS message header
-   as in the corresponding request.
+   Every DSO request message (QR=0) with a nonzero MESSAGE ID field is a
+   DSO request message, and MUST elicit a corresponding response (QR=1),
+   which MUST have the same MESSAGE ID in the DNS message header as in
+   the corresponding request.
 
    Valid DSO request messages sent by the client with a nonzero MESSAGE
    ID field elicit a response from the server, and Valid DSO request
@@ -1190,18 +1190,18 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 5.5.1.  Error Responses
 
-   When an unacknowledged DSO message type is received (MESSAGE ID field
+   When a DSO unidirectional message type is received (MESSAGE ID field
    is zero), the receiver SHOULD already be expecting this DSO message
    type.  Section 5.4.3.3 describes the handling of unknown DSO message
    types.  Parsing errors MUST also result in the receiver aborting the
-   connection.  When an unacknowledged DSO message of an unexpected type
-   is received, the receiver should abort the connection.  Other
-   internal errors processing the unacknowledged DSO message are
-   implementation dependent as to whether the connection should be
-   aborted according to the severity of the error.
+   connection.  When a DSO unidirectional message of an unexpected type
+   is received, the receiver should forcibly abort the connection.
+   Whether the connection should be aborted for other internal errors
+   processing the DSO unidirectional message is implementation
+   dependent, according to the severity of the error.
 
-   When an acknowledged DSO request message is unsuccessful for some
-   reason, the responder returns an error code to the initiator.
+   When a DSO request message is unsuccessful for some reason, the
+   responder returns an error code to the initiator.
 
    In the case of a server returning an error code to a client in
    response to an unsuccessful DSO request message, the server MAY
@@ -1239,7 +1239,7 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 5.6.  Flow Control Considerations
 
-   Because unacknowledged DSO messages do not generate an immediate
+   Because unidirectional DSO messages do not generate an immediate
    response from the responder, if there is no other traffic flowing
    from the responder to the initiator, this can result in a 200ms delay
    before the TCP acknowledgment is sent to the initiator [NagleDA].  If
@@ -1907,7 +1907,7 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
    When sent by a client, the DSO Keepalive request message MUST be sent
-   as an acknowledged request, with a nonzero MESSAGE ID.  If a server
+   as an DSO request message, with a nonzero MESSAGE ID.  If a server
    receives a DSO Keepalive message with a zero MESSAGE ID then this is
    a fatal error and the server MUST forcibly abort the connection
    immediately.  The DSO Keepalive request message resets a DSO
@@ -1929,12 +1929,12 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
    Once a DSO Session is in progress (Section 5.1) a DSO Keepalive
    message MAY be initiated by a server.  When sent by a server, the DSO
-   Keepalive message MUST be sent as an unacknowledged message, with the
+   Keepalive message MUST be sent as an unidirectional message, with the
    MESSAGE ID set to zero.  The client MUST NOT generate a response to a
    server-initiated DSO Keepalive message.  If a client receives a DSO
    Keepalive request message with a nonzero MESSAGE ID then this is a
    fatal error and the client MUST forcibly abort the connection
-   immediately.  The unacknowledged DSO Keepalive message from the
+   immediately.  The unidirectional DSO Keepalive message from the
    server resets a DSO Session's keepalive timer, and at the same time
    unilaterally informs the client of the new Session Timeout values to
    use from this point forward in this DSO Session.  No client DSO
@@ -1947,7 +1947,7 @@ Internet-Draft           DNS Stateful Operations             August 2018
    be added to other responses as a Response Additional TLV.  If the
    server wishes to update a client's Session Timeout values other than
    in response to a DSO Keepalive request message from the client, then
-   it does so by sending an unacknowledged DSO Keepalive message of its
+   it does so by sending an unidirectional DSO Keepalive message of its
    own, as described above.
 
    It is not required that the Keepalive TLV be used in every DSO
@@ -2059,7 +2059,7 @@ Internet-Draft           DNS Stateful Operations             August 2018
 7.2.  Retry Delay TLV
 
    The Retry Delay TLV (DSO-TYPE=2) can be used as a Primary TLV
-   (unacknowledged) in a server-to-client message, or as a Response
+   (unidirectional) in a server-to-client message, or as a Response
    Additional TLV in either direction.
 
    The DSO-DATA for the the Retry Delay TLV is as follows:
@@ -2089,7 +2089,7 @@ Internet-Draft           DNS Stateful Operations             August 2018
 7.2.1.  Retry Delay TLV used as a Primary TLV
 
    When sent from server to client, the Retry Delay TLV is used as the
-   Primary TLV in an unacknowledged message.  It is used by a server to
+   Primary TLV in a unidirectional message.  It is used by a server to
    instruct a client to close the DSO Session and underlying connection,
    and not to reconnect for the indicated time interval.
 
@@ -2157,7 +2157,7 @@ Internet-Draft           DNS Stateful Operations             August 2018
    the RCODE value, they should treat unknown RCODE values the same as
    RCODE=NOERROR (routine shutdown or restart).
 
-   A Retry Delay message from server to client is an unacknowledged
+   A Retry Delay message from server to client is a unidirectional
    message; the MESSAGE ID MUST be set to zero in the outgoing message
    and the client MUST NOT send a response.
 
@@ -2242,7 +2242,7 @@ Bellis, et al.          Expires February 3, 2019               [Page 40]
 Internet-Draft           DNS Stateful Operations             August 2018
 
 
-   In DSO Unacknowledged Messages the QR bit is 0 and the MESSAGE ID is
+   In DSO Unidirectional Messages the QR bit is 0 and the MESSAGE ID is
    zero.
 
    The table below illustrates which combinations are legal and how they
@@ -2251,7 +2251,7 @@ Internet-Draft           DNS Stateful Operations             August 2018
                +--------------------------+------------------------+
                |     MESSAGE ID zero      |   MESSAGE ID nonzero   |
       +--------+--------------------------+------------------------+
-      |  QR=0  |  Unacknowledged Message  |    Request Message     |
+      |  QR=0  |  Unidirectional Message  |    Request Message     |
       +--------+--------------------------+------------------------+
       |  QR=1  |  Invalid - Fatal Error   |    Response Message    |
       +--------+--------------------------+------------------------+
@@ -2261,7 +2261,7 @@ Internet-Draft           DNS Stateful Operations             August 2018
    The table below indicates, for each of the three TLVs defined in this
    document, whether they are valid in each of ten different contexts.
 
-   The first five contexts are requests or unacknowledged messages from
+   The first five contexts are requests or unidirectional messages from
    client to server, and the corresponding responses from server back to
    client:
 
@@ -2269,12 +2269,12 @@ Internet-Draft           DNS Stateful Operations             August 2018
       server, with nonzero MESSAGE ID indicating that this request MUST
       generate response message.
 
-   o  C-U - Primary TLV, sent in DSO Unacknowledged message, from client
+   o  C-U - Primary TLV, sent in DSO Unidirectional message, from client
       to server, with zero MESSAGE ID indicating that this request MUST
       NOT generate response message.
 
    o  C-A - Additional TLV, optionally added to request message or
-      unacknowledged message from client to server.
+      unidirectional message from client to server.
 
    o  CRP - Response Primary TLV, included in response message sent back
       to the client (in response to a client "C-P" request with nonzero
@@ -2299,19 +2299,19 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
    The second five contexts are their counterparts in the opposite
-   direction: requests or unacknowledged messages from server to client,
-   and the corresponding responses from client back to server.
+   direction: DSO requests or unidirectional messages from server to
+   client, and the corresponding responses from client back to server.
 
    o  S-P - Primary TLV, sent in DSO Request message, from server to
       client, with nonzero MESSAGE ID indicating that this request MUST
       generate response message.
 
-   o  S-U - Primary TLV, sent in DSO Unacknowledged message, from server
+   o  S-U - Primary TLV, sent in DSO Unidirectional message, from server
       to client, with zero MESSAGE ID indicating that this request MUST
       NOT generate response message.
 
    o  S-A - Additional TLV, optionally added to request message or
-      unacknowledged message from server to client.
+      unidirectional message from server to client.
 
    o  SRP - Response Primary TLV, included in response message sent back
       to the server (in response to a server "S-P" request with nonzero
@@ -2484,16 +2484,16 @@ Internet-Draft           DNS Stateful Operations             August 2018
 9.4.  Zero Round-Trip Operation
 
    DSO permits zero round-trip operation using TCP Fast Open [RFC7413]
-   and TLS 1.3 [I-D.ietf-tls-tls13] to reduce or eliminate round trips
-   in session establishment.
+   and TLS 1.3 [RFC8446] to reduce or eliminate round trips in session
+   establishment.
 
    A client MAY send multiple response-requiring DSO messages using TCP
    fast open or TLS 1.3 early data, without having to wait for a
    response to the first request message to confirm successful
    establishment of a DSO session.
 
-   However, a client MUST NOT send unacknowledged DSO request messages
-   until after a DSO Session has been mutually established.
+   However, a client MUST NOT send DSO unidirectional messages until
+   after a DSO Session has been mutually established.
 
    Similarly, a server MUST NOT send DSO request messages until it has
    received a response-requiring DSO request message from a client and
@@ -2654,10 +2654,10 @@ Internet-Draft           DNS Stateful Operations             August 2018
    should be avoided when not required.
 
    When used without TLS or similar cryptographic protection, a
-   malicious entity maybe able to inject a malicious Retry Delay
-   Unacknowledged Message into the data stream, specifying an
-   unreasonably large RETRY DELAY, causing a denial-of-service attack
-   against the client.
+   malicious entity maybe able to inject a malicious unidirectional DSO
+   Retry Delay Message into the data stream, specifying an unreasonably
+   large RETRY DELAY, causing a denial-of-service attack against the
+   client.
 
    The establishment of DSO sessions has an increasing impact on the
    number of open TCP connections on a DNS server.  Additional resources
@@ -2723,8 +2723,8 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
-              DOI 10.17487/RFC2119, March 1997, <https://www.rfc-
-              editor.org/info/rfc2119>.
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/info/rfc2119>.
 
    [RFC2136]  Vixie, P., Ed., Thomson, S., Rekhter, Y., and J. Bound,
               "Dynamic Updates in the Domain Name System (DNS UPDATE)",
@@ -2733,8 +2733,8 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
    [RFC6891]  Damas, J., Graff, M., and P. Vixie, "Extension Mechanisms
               for DNS (EDNS(0))", STD 75, RFC 6891,
-              DOI 10.17487/RFC6891, April 2013, <https://www.rfc-
-              editor.org/info/rfc6891>.
+              DOI 10.17487/RFC6891, April 2013,
+              <https://www.rfc-editor.org/info/rfc6891>.
 
 
 
@@ -2752,8 +2752,8 @@ Internet-Draft           DNS Stateful Operations             August 2018
               <https://www.rfc-editor.org/info/rfc7766>.
 
    [RFC7830]  Mayrhofer, A., "The EDNS(0) Padding Option", RFC 7830,
-              DOI 10.17487/RFC7830, May 2016, <https://www.rfc-
-              editor.org/info/rfc7830>.
+              DOI 10.17487/RFC7830, May 2016,
+              <https://www.rfc-editor.org/info/rfc7830>.
 
    [RFC8126]  Cotton, M., Leiba, B., and T. Narten, "Guidelines for
               Writing an IANA Considerations Section in RFCs", BCP 26,
@@ -2782,17 +2782,17 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
    [I-D.ietf-doh-dns-over-https]
               Hoffman, P. and P. McManus, "DNS Queries over HTTPS
-              (DoH)", draft-ietf-doh-dns-over-https-12 (work in
-              progress), June 2018.
+              (DoH)", draft-ietf-doh-dns-over-https-13 (work in
+              progress), August 2018.
 
    [I-D.ietf-dprive-padding-policy]
               Mayrhofer, A., "Padding Policy for EDNS(0)", draft-ietf-
               dprive-padding-policy-06 (work in progress), July 2018.
 
-   [I-D.ietf-tls-tls13]
-              Rescorla, E., "The Transport Layer Security (TLS) Protocol
-              Version 1.3", draft-ietf-tls-tls13-28 (work in progress),
-              March 2018.
+   [NagleDA]  Cheshire, S., "TCP Performance problems caused by
+              interaction between Nagle's Algorithm and Delayed ACK",
+              May 2005,
+              <http://www.stuartcheshire.org/papers/nagledelayedack/>.
 
 
 
@@ -2802,19 +2802,14 @@ Bellis, et al.          Expires February 3, 2019               [Page 50]
 Internet-Draft           DNS Stateful Operations             August 2018
 
 
-   [NagleDA]  Cheshire, S., "TCP Performance problems caused by
-              interaction between Nagle's Algorithm and Delayed ACK",
-              May 2005,
-              <http://www.stuartcheshire.org/papers/nagledelayedack/>.
-
    [RFC2132]  Alexander, S. and R. Droms, "DHCP Options and BOOTP Vendor
               Extensions", RFC 2132, DOI 10.17487/RFC2132, March 1997,
               <https://www.rfc-editor.org/info/rfc2132>.
 
    [RFC2782]  Gulbrandsen, A., Vixie, P., and L. Esibov, "A DNS RR for
               specifying the location of services (DNS SRV)", RFC 2782,
-              DOI 10.17487/RFC2782, February 2000, <https://www.rfc-
-              editor.org/info/rfc2782>.
+              DOI 10.17487/RFC2782, February 2000,
+              <https://www.rfc-editor.org/info/rfc2782>.
 
    [RFC5382]  Guha, S., Ed., Biswas, K., Ford, B., Sivakumar, S., and P.
               Srisuresh, "NAT Behavioral Requirements for TCP", BCP 142,
@@ -2822,8 +2817,8 @@ Internet-Draft           DNS Stateful Operations             August 2018
               <https://www.rfc-editor.org/info/rfc5382>.
 
    [RFC6762]  Cheshire, S. and M. Krochmal, "Multicast DNS", RFC 6762,
-              DOI 10.17487/RFC6762, February 2013, <https://www.rfc-
-              editor.org/info/rfc6762>.
+              DOI 10.17487/RFC6762, February 2013,
+              <https://www.rfc-editor.org/info/rfc6762>.
 
    [RFC6763]  Cheshire, S. and M. Krochmal, "DNS-Based Service
               Discovery", RFC 6763, DOI 10.17487/RFC6763, February 2013,
@@ -2835,19 +2830,24 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
    [RFC7828]  Wouters, P., Abley, J., Dickinson, S., and R. Bellis, "The
               edns-tcp-keepalive EDNS0 Option", RFC 7828,
-              DOI 10.17487/RFC7828, April 2016, <https://www.rfc-
-              editor.org/info/rfc7828>.
+              DOI 10.17487/RFC7828, April 2016,
+              <https://www.rfc-editor.org/info/rfc7828>.
 
    [RFC7857]  Penno, R., Perreault, S., Boucadair, M., Ed., Sivakumar,
               S., and K. Naito, "Updates to Network Address Translation
               (NAT) Behavioral Requirements", BCP 127, RFC 7857,
-              DOI 10.17487/RFC7857, April 2016, <https://www.rfc-
-              editor.org/info/rfc7857>.
+              DOI 10.17487/RFC7857, April 2016,
+              <https://www.rfc-editor.org/info/rfc7857>.
 
    [RFC7858]  Hu, Z., Zhu, L., Heidemann, J., Mankin, A., Wessels, D.,
               and P. Hoffman, "Specification for DNS over Transport
               Layer Security (TLS)", RFC 7858, DOI 10.17487/RFC7858, May
               2016, <https://www.rfc-editor.org/info/rfc7858>.
+
+   [RFC8446]  Rescorla, E., "The Transport Layer Security (TLS) Protocol
+              Version 1.3", RFC 8446, DOI 10.17487/RFC8446, August 2018,
+              <https://www.rfc-editor.org/info/rfc8446>.
+
 
 
 
