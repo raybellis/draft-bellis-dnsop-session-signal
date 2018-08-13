@@ -92,13 +92,16 @@ informative:
 
 --- abstract
 
-This document defines a new DNS OPCODE for DNS Stateful Operations (DSO).
-DSO messages communicate operations within persistent
-stateful sessions, using type-length-value (TLV) syntax.
-Three TLVs are defined that manage session timeouts,
-termination, and encryption padding, and 
-a framework is defined for extensions to enable new stateful operations.
-This document updates RFC 1035 by adding a new DNS header opcode and result code which has different message semantics.  This document updates RFC 7766 by redefining a session, providing new guidance on connection re-use, and providing a new mechanism for handling session idle timeouts.
+This document defines a new DNS OPCODE for DNS Stateful Operations
+(DSO).  DSO messages communicate operations within persistent stateful
+sessions, using type-length-value (TLV) syntax.  Three TLVs are defined
+that manage session timeouts, termination, and encryption padding, and a
+framework is defined for extensions to enable new stateful operations.
+This document updates RFC 1035 by adding a new DNS header opcode which
+has different message semantics, and a new result code.  This document
+updates RFC 7766 by redefining a session, providing new guidance on
+connection re-use, and providing a new mechanism for handling session
+idle timeouts.
 
 --- middle
 

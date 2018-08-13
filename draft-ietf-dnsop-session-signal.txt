@@ -27,8 +27,8 @@ Abstract
    are defined that manage session timeouts, termination, and encryption
    padding, and a framework is defined for extensions to enable new
    stateful operations.  This document updates RFC 1035 by adding a new
-   DNS header opcode and result code which has different message
-   semantics.  This document updates RFC 7766 by redefining a session,
+   DNS header opcode which has different message semantics, and a new
+   result code.  This document updates RFC 7766 by redefining a session,
    providing new guidance on connection re-use, and providing a new
    mechanism for handling session idle timeouts.
 
@@ -40,7 +40,7 @@ Status of This Memo
    Internet-Drafts are working documents of the Internet Engineering
    Task Force (IETF).  Note that other groups may also distribute
    working documents as Internet-Drafts.  The list of current Internet-
-   Drafts is at https://datatracker.ietf.org/drafts/current/.
+   Drafts is at http://datatracker.ietf.org/drafts/current/.
 
    Internet-Drafts are draft documents valid for a maximum of six months
    and may be updated, replaced, or obsoleted by other documents at any
@@ -65,7 +65,7 @@ Copyright Notice
 
    This document is subject to BCP 78 and the IETF Trust's Legal
    Provisions Relating to IETF Documents
-   (https://trustee.ietf.org/license-info) in effect on the date of
+   (http://trustee.ietf.org/license-info) in effect on the date of
    publication of this document.  Please review these documents
    carefully, as they describe your rights and restrictions with respect
    to this document.  Code Components extracted from this document must
@@ -2752,9 +2752,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
               <https://www.rfc-editor.org/info/rfc1918>.
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
-              Requirement Levels", BCP 14, RFC 2119,
-              DOI 10.17487/RFC2119, March 1997,
-              <https://www.rfc-editor.org/info/rfc2119>.
+              Requirement Levels", BCP 14, RFC 2119, DOI 10.17487/
+              RFC2119, March 1997, <https://www.rfc-editor.org/info/
+              rfc2119>.
 
    [RFC2136]  Vixie, P., Ed., Thomson, S., Rekhter, Y., and J. Bound,
               "Dynamic Updates in the Domain Name System (DNS UPDATE)",
@@ -2762,18 +2762,18 @@ Internet-Draft           DNS Stateful Operations             August 2018
               <https://www.rfc-editor.org/info/rfc2136>.
 
    [RFC6891]  Damas, J., Graff, M., and P. Vixie, "Extension Mechanisms
-              for DNS (EDNS(0))", STD 75, RFC 6891,
-              DOI 10.17487/RFC6891, April 2013,
-              <https://www.rfc-editor.org/info/rfc6891>.
+              for DNS (EDNS(0))", STD 75, RFC 6891, DOI 10.17487/
+              RFC6891, April 2013, <https://www.rfc-editor.org/info/
+              rfc6891>.
 
    [RFC7766]  Dickinson, J., Dickinson, S., Bellis, R., Mankin, A., and
               D. Wessels, "DNS Transport over TCP - Implementation
               Requirements", RFC 7766, DOI 10.17487/RFC7766, March 2016,
               <https://www.rfc-editor.org/info/rfc7766>.
 
-   [RFC7830]  Mayrhofer, A., "The EDNS(0) Padding Option", RFC 7830,
-              DOI 10.17487/RFC7830, May 2016,
-              <https://www.rfc-editor.org/info/rfc7830>.
+   [RFC7830]  Mayrhofer, A., "The EDNS(0) Padding Option", RFC 7830, DOI
+              10.17487/RFC7830, May 2016, <https://www.rfc-
+              editor.org/info/rfc7830>.
 
    [RFC8126]  Cotton, M., Leiba, B., and T. Narten, "Guidelines for
               Writing an IANA Considerations Section in RFCs", BCP 26,
@@ -2813,8 +2813,8 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
    [I-D.ietf-doh-dns-over-https]
               Hoffman, P. and P. McManus, "DNS Queries over HTTPS
-              (DoH)", draft-ietf-doh-dns-over-https-12 (work in
-              progress), June 2018.
+              (DoH)", draft-ietf-doh-dns-over-https-13 (work in
+              progress), August 2018.
 
    [I-D.ietf-dprive-padding-policy]
               Mayrhofer, A., "Padding Policy for EDNS(0)", draft-ietf-
@@ -2835,8 +2835,8 @@ Internet-Draft           DNS Stateful Operations             August 2018
               <https://www.rfc-editor.org/info/rfc5382>.
 
    [RFC6762]  Cheshire, S. and M. Krochmal, "Multicast DNS", RFC 6762,
-              DOI 10.17487/RFC6762, February 2013,
-              <https://www.rfc-editor.org/info/rfc6762>.
+              DOI 10.17487/RFC6762, February 2013, <https://www.rfc-
+              editor.org/info/rfc6762>.
 
    [RFC6763]  Cheshire, S. and M. Krochmal, "DNS-Based Service
               Discovery", RFC 6763, DOI 10.17487/RFC6763, February 2013,
@@ -2847,9 +2847,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
               <https://www.rfc-editor.org/info/rfc7413>.
 
    [RFC7828]  Wouters, P., Abley, J., Dickinson, S., and R. Bellis, "The
-              edns-tcp-keepalive EDNS0 Option", RFC 7828,
-              DOI 10.17487/RFC7828, April 2016,
-              <https://www.rfc-editor.org/info/rfc7828>.
+              edns-tcp-keepalive EDNS0 Option", RFC 7828, DOI 10.17487/
+              RFC7828, April 2016, <https://www.rfc-editor.org/info/
+              rfc7828>.
 
 
 
@@ -2860,9 +2860,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
    [RFC7857]  Penno, R., Perreault, S., Boucadair, M., Ed., Sivakumar,
               S., and K. Naito, "Updates to Network Address Translation
-              (NAT) Behavioral Requirements", BCP 127, RFC 7857,
-              DOI 10.17487/RFC7857, April 2016,
-              <https://www.rfc-editor.org/info/rfc7857>.
+              (NAT) Behavioral Requirements", BCP 127, RFC 7857, DOI
+              10.17487/RFC7857, April 2016, <https://www.rfc-
+              editor.org/info/rfc7857>.
 
    [RFC7858]  Hu, Z., Zhu, L., Heidemann, J., Mankin, A., Wessels, D.,
               and P. Hoffman, "Specification for DNS over Transport
