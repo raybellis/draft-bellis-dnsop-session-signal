@@ -187,8 +187,8 @@ Internet-Draft           DNS Stateful Operations             August 2018
    three TLVs, used to manage session timeouts, termination, and
    encryption padding.
 
-   The three TLVs defined here are all mandatory for all implementations
-   of DSO.  Further TLVs may be defined in additional specifications.
+   All three TLVs defined here are mandatory for all implementations of
+   DSO.  Further TLVs may be defined in additional specifications.
 
    DSO messages may or may not be acknowledged; this is signaled by
    providing a non-zero message ID for messages that must be
@@ -588,6 +588,13 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 5.1.1.  Session Establishment Failure
 
+   If the response RCODE is set to NOTIMP (4), or in practise any value
+   other than NOERROR (0) or DSOTYPENI ([TBA2] tentatively 11), then the
+   client MUST assume that the server does not implement DSO at all.  In
+   this case the client is permitted to continue sending DNS messages on
+   that connection, but the client MUST NOT issue further DSO messages
+   on that connection.
+
    If the RCODE in the response is set to DSOTYPENI ("DSO-TYPE Not
    Implemented", [TBA2] tentatively RCODE 11) this indicates that the
    server does support DSO, but does not implement the DSO-TYPE of the
@@ -602,13 +609,6 @@ Internet-Draft           DNS Stateful Operations             August 2018
    continue sending DNS messages on the connection, including other DSO
    messages such as the DSO Keepalive, which may result in a successful
    NOERROR response, yielding the establishment of a DSO Session.
-
-   If the RCODE is set to any value other than NOERROR (0) or DSOTYPENI
-   ([TBA2] tentatively 11), then the client MUST assume that the server
-   does not implement DSO at all.  In this case the client is permitted
-   to continue sending DNS messages on that connection, but the client
-   MUST NOT issue further DSO messages on that connection.
-
 
 
 
@@ -1040,7 +1040,7 @@ Internet-Draft           DNS Stateful Operations             August 2018
    The first TLV in a DSO request message or unidirectional message is
    the "Primary TLV" and indicates the operation to be performed.  A DSO
    request message or unidirectional message MUST contain at at least
-   one TLV, the Primary TLV.
+   one TLV - the Primary TLV.
 
    Immediately following the Primary TLV, a DSO request message or
    unidirectional message MAY contain one or more "Additional TLVs",
@@ -1281,7 +1281,7 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
    However, it is possible that a long-lived operation may be valid at
    the time it was initiated, but then a later change of circumstances
-   may render that previously valid operation invalid.
+   may render that operation invalid.  For example, a long-lived client
 
 
 
@@ -1290,9 +1290,9 @@ Bellis, et al.          Expires February 3, 2019               [Page 23]
 Internet-Draft           DNS Stateful Operations             August 2018
 
 
-   For example, a long-lived client operation may pertain to a name that
-   the server is authoritative for, but then the server configuration is
-   changed such that it is no longer authoritative for that name.
+   operation may pertain to a name that the server is authoritative for,
+   but then the server configuration is changed such that it is no
+   longer authoritative for that name.
 
    In such cases, instead of terminating the entire session it may be
    desirable for the responder to be able to cancel selectively only
@@ -1329,7 +1329,7 @@ Internet-Draft           DNS Stateful Operations             August 2018
    available in order to return them in the order the requests were
    received.
 
-   Section 3.3 of the DNS-over-TCP specification [RFC7766] specifies
+   Section 6.2.1.1 of the DNS-over-TCP specification [RFC7766] specifies
    this in more detail.
 
    [No it doesn't.  RFC7766 has no section 3.3.]
@@ -1426,7 +1426,7 @@ Internet-Draft           DNS Stateful Operations             August 2018
    For long-lived DNS Stateful operations (such as a Push Notification
    subscription [I-D.ietf-dnssd-push] or a Discovery Relay interface
    subscription [I-D.ietf-dnssd-mdns-relay]), an operation is considered
-   in progress for as long as the operation is active, until it is
+   in progress for as long as the operation is active, i.e. until it is
    cancelled.  This means that a DSO Session can exist, with active
    operations, with no messages flowing in either direction, for far
    longer than the inactivity timeout, and this is not an error.  This
@@ -1438,7 +1438,7 @@ Internet-Draft           DNS Stateful Operations             August 2018
 6.4.  The Inactivity Timeout
 
    The purpose of the inactivity timeout is for the server to balance
-   its trade off between the costs of setting up new DSO Sessions and
+   the trade off between the costs of setting up new DSO Sessions and
    the costs of maintaining inactive DSO Sessions.  A server with
    abundant DSO Session capacity can offer a high inactivity timeout, to
    permit clients to keep a speculative DSO Session open for a long

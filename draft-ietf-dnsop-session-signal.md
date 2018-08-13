@@ -132,7 +132,7 @@ stateful sessions, expressed using type-length-value (TLV) syntax.
 This document defines an initial set of three TLVs,
 used to manage session timeouts, termination, and encryption padding.
 
-The three TLVs defined here are all mandatory for all implementations of DSO.
+All three TLVs defined here are mandatory for all implementations of DSO.
 Further TLVs may be defined in additional specifications.
 
 DSO messages may or may not be acknowledged; this is signaled by providing a
@@ -468,6 +468,12 @@ set to NOERROR (0), indicating that the DSO request was successful.
 
 ### Session Establishment Failure {#stabfail}
 
+If the response RCODE is set to NOTIMP (4), or in practise any value other than NOERROR (0) or DSOTYPENI
+(\[TBA2\] tentatively 11), then the client MUST assume that the server does
+not implement DSO at all. In this case the client is permitted to continue
+sending DNS messages on that connection, but the client MUST NOT
+issue further DSO messages on that connection.
+
 If the RCODE in the response is set to DSOTYPENI
 ("DSO-TYPE Not Implemented", \[TBA2\] tentatively RCODE 11)
 this indicates that the server does support DSO, but does not implement
@@ -483,12 +489,6 @@ sending DNS messages on the connection,
 including other DSO messages such as the DSO Keepalive,
 which may result in a successful NOERROR response,
 yielding the establishment of a DSO Session.
-
-If the RCODE is set to any value other than NOERROR (0) or DSOTYPENI
-(\[TBA2\] tentatively 11), then the client MUST assume that the server does
-not implement DSO at all. In this case the client is permitted to continue
-sending DNS messages on that connection, but the client MUST NOT
-issue further DSO messages on that connection.
 
 Two other possibilities exist: the server might drop the connection, or
 the server might send no response to the DSO message.
@@ -814,7 +814,7 @@ DSO-TYPE is the responsibility of the software that implements that DSO-TYPE.
 
 The first TLV in a DSO request message or unidirectional message is the "Primary TLV"
 and indicates the operation to be performed.
-A DSO request message or unidirectional message MUST contain at at least one TLV, the Primary TLV.
+A DSO request message or unidirectional message MUST contain at at least one TLV - the Primary TLV.
 
 Immediately following the Primary TLV, a DSO request message or unidirectional message
 MAY contain one or more "Additional TLVs", which specify
@@ -1009,8 +1009,7 @@ and, if successful, remains active until the initiator terminates the operation.
 
 However, it is possible that a long-lived operation may be valid
 at the time it was initiated, but then a later change of circumstances
-may render that previously valid operation invalid.
-
+may render that operation invalid.
 For example, a long-lived client operation may pertain to a name
 that the server is authoritative for, but then the server configuration
 is changed such that it is no longer authoritative for that name.
@@ -1047,7 +1046,7 @@ The server MUST act on messages in the order they are received, but
 SHOULD NOT delay sending responses to those messages as they become available in
 order to return them in the order the requests were received.
 
-Section 3.3 of the DNS-over-TCP specification {{?RFC7766}} specifies this in more detail.
+Section 6.2.1.1 of the DNS-over-TCP specification {{?RFC7766}} specifies this in more detail.
 
 \[No it doesn't. RFC7766 has no section 3.3.\]
 
@@ -1120,7 +1119,7 @@ For long-lived DNS Stateful operations (such as
 a Push Notification subscription {{?I-D.ietf-dnssd-push}} or
 a Discovery Relay interface subscription {{?I-D.ietf-dnssd-mdns-relay}}),
 an operation is considered in progress
-for as long as the operation is active, until it is cancelled.
+for as long as the operation is active, i.e. until it is cancelled.
 This means that a DSO Session can exist, with active operations,
 with no messages flowing in either direction, for far longer than the 
 inactivity timeout, and this is not an error.
@@ -1132,7 +1131,7 @@ if it has an active operation that is awaiting events.
 
 ## The Inactivity Timeout {#inactivetimer}
 
-The purpose of the inactivity timeout is for the server to balance its trade off 
+The purpose of the inactivity timeout is for the server to balance the trade off
 between the costs of setting up new DSO Sessions and the costs of maintaining inactive 
 DSO Sessions. A server with abundant DSO Session capacity can offer a high inactivity timeout, 
 to permit clients to keep a speculative DSO Session open for a long time, to save 
