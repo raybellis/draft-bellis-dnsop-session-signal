@@ -1968,60 +1968,99 @@ Caution must be taken to ensure that DSO messages sent before the first
 round-trip is completed are idempotent, or are otherwise immune to any problems
 that could be result from the inadvertent replay that can occur with zero round-trip operation.
 
-## Middlebox Considerations
-
-\[This whole section needs a rewrite.\]
+## Operational Considerations for Middlebox
 
 Where an application-layer middlebox (e.g., a DNS proxy, forwarder,
 or session multiplexer) is in the path, care must be taken to avoid
-inappropriately passing DNS Stateful Operations messages through the middlebox.
+a configuration in which DSO traffic is mis-handled.   The simplest way to
+avoid such problems is to avoid using middleboxes.   When this is not possible,
+middleboxes should be evaluated to make sure that they behave correctly.
 
-In cases where a DSO session is terminated on one side of a middlebox,
-and then some session is opened on the other side of the middlebox in
-order to satisfy requests sent over the first DSO session, any such session
-MUST be treated as a separate session. If the middlebox does implement DSO
-sessions, it MUST handle unrecognized TLVs in the same way as any other DSO implementation as described in {{unrecognized}}.
+Correct behavior for middleboxes consists of one of:
+- The middlebox does not forward DSO messages, and responds to DSO messages
+  with a response code other than NOERROR or DSOTYPENI.
+- The middlebox acts as a DSO server and follows this specification in
+  establishing connections.
+- There is a 1:1 correspondence between incoming and outgoing connections,
+  such that when a connection is established to the middlebox, it is guaranteed
+  that exactly one corresponding connection will be established from the middlebox
+  to some DNS resolver, and all incoming messages will be forwarded without
+  modification or reordering.   An example of this would be a NAT forwarder or
+  TCP connection optimizer (e.g. for a high-latency connection such as a
+  geosynchronous satellite link).
 
-This does not
-preclude the use of DSO messages in the presence of an IP-layer
-middlebox, such as a NAT that rewrites IP-layer and/or transport-layer
-headers but otherwise preserves the effect of a single session
-between the client and the server.  And of course it applies especially
-to middleboxes that do not know about DNS Stateful Operations.
+Middleboxes that do not meet one of the above criteria are very likely to
+fail in unexpected and difficult-to-diagnose ways.   For example, a DNS
+load balancer might unbundle DNS messages from the incoming TCP stream and
+forward each message from the stream to a different DNS server.   If such
+a load balancer is in use, and the DNS servers it points implement DSO and
+are configured to enable DSO, DSO session establishment will succeed, but
+no coherent session will exist between the client and the server.   If such
+a load balancer is pointed at a DNS server that does not implement DSO or
+is configured not to allow DSO, no such problem will exist, but such a
+configuration risks unexpected failure if new server software is installed
+which does implement DSO.
 
-These restrictions definitely apply to such middleboxes:
-since they have no way to understand a DSO message, a pass-through
-middlebox like the one described in the previous paragraph will pass
-DSO messages unchanged or drop them (or possibly drop the connection).
-A middlebox that is not doing a strict pass-through will have no way
-to know on which connection to forward a DSO message, and therefore
-will not be able to behave incorrectly.
-
-To illustrate the above, consider a network where a middlebox
-terminates one or more DNS-over-TCP connections from clients and multiplexes the
-queries therein over a single TCP connection to an upstream server.
-The DSO messages and any associated state are specific to the individual
-TCP connections.  A DSO-aware middlebox MAY in some circumstances be
-able to retain associated state and pass it between the client and
-server (or vice versa) but this would be highly TLV-specific.  For
-example, the middlebox may be able to maintain a list of which clients
-have made Push Notification subscriptions {{?I-D.ietf-dnssd-push}} and
-make its own subscription(s) on their behalf, relaying any subsequent
-notifications to the client (or clients) that have subscribed to that
-particular notification.
+It is of course possible to implement a middlebox that properly supports DSO.
+It is even possible to implement one that implements DSO with long-lived operations.
+This can be done either by maintaining a 1:1 correspondence between incoming
+and outgoing connections, as mentioned above, or by terminating incoming
+sessions at the middlebox, but maintaining state in the middlebox about any
+long-lived that are requested.   Specifying this in detail is beyond the scope
+of this document.
 
 ## TCP Delayed Acknowledgement Considerations
 
-\[Need to put back the text explaining the problem here.\]
+Because DSO Unidirectional messages do not elicit a response from the receiver, they will
+trigger the TCP stack to use the TCP Delayed Acknowledgment algorithm {{NagleDA}}, which
+will create inappropriate delays in message flow on the TCP connection.
 
-Because unidirectional DSO messages do not generate an immediate response from the responder, if
-there is no other traffic flowing from the responder to the initiator, this can result in a
-200 ms delay before the TCP acknowledgment is sent to the initiator {{NagleDA}}.  If the
-initiator has another message pending, but has not yet filled its output buffer, this can delay
-the delivery of that message by more than 200 ms.  In many cases, this will make no difference.
-However, implementors should be aware of this issue.  Some operating systems offer ways to
-disable the 200 ms TCP acknowledgment delay; this may be useful for relatively low-traffic
-sessions, or sessions with bursty traffic flows.
+At the time that this document is being prepared for publication, it is known that at least one
+TCP implementation provides the ability for the recipient of a TCP message to signal that it is not
+going to send a response, and hence Nagle's algorithm need not be used.  Implementations on
+operating systems where this feature is available SHOULD make use of it.
+
+With most TCP implementations, for DSO requests that generate a
+response, the TCP data acknowledgement (generated because data has
+been received by TCP), the TCP window update (generated because TCP
+has delivered that data to the receiving software), and the DSO
+response (generated by the receiving application-layer software
+itself) are all combined into a single IP packet.  Combining these
+three elements into a single IP packet can give a significant
+improvement in network efficiency, assuming that the DSO response is
+sent before the TCP Delayed Acknowledgement timer goes off.
+
+For DSO requests that do not generate a response, if the TCP
+implementation receives no signal from the recipient indicating that no
+response will be forthcoming, it can only wait fruitlessly for the
+response that isn't coming, until the Delayed
+ACK timer fires [RFC1122] (typically 200 milliseconds).   Only then
+does it send the TCP ACK and window update.
+
+In conjunction with
+Nagle's Algorithm at the sender, this can delay the sender's
+transmission of its next (non-full-sized) TCP segment, while the
+sender is waiting for its previous (non-full-sized) TCP segment to be
+acknowledged, which won't happen until the Delayed ACK timer fires.
+
+Nagle's Algorithm exists to combine multiple small application writes
+into more-efficient large TCP segments, to guard against wasteful use
+of the network by applications that would otherwise transmit a stream
+of small TCP segments, but in this case Nagle's Algorithm (created to
+improve network efficiency) can interact badly with TCP's Delayed ACK
+feature (also created to improve network efficiency) [NagleDA] with
+the result of delaying some messages by up to 200 milliseconds.
+
+It is possible with many TCP implementations either to disable Nagle's algorithm, or to disable
+delayed acknowledgment, or both.  Unfortunately, this affects every message sent over the
+connection, not just those connections for which this help is needed.  It may give the
+implementor the impression that their software is going faster, but on a heavily-used network,
+or a low-bandwidth or high-latency network, the result can be a significant degradation in
+overall network performance.
+
+For this reason, we do not recommend either of these strategies, and instead recommend that
+implementations take advantage of the capability to signal that no response will be sent, where
+that capability is present.
 
 # IANA Considerations
 
