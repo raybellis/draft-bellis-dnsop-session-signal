@@ -426,7 +426,7 @@
 <link href="#rfc.section.9.2" rel="Chapter" title="9.2 Anycast Considerations"/>
 <link href="#rfc.section.9.3" rel="Chapter" title="9.3 Connection Sharing"/>
 <link href="#rfc.section.9.4" rel="Chapter" title="9.4 Zero Round-Trip Operation"/>
-<link href="#rfc.section.9.5" rel="Chapter" title="9.5 Middlebox Considerations"/>
+<link href="#rfc.section.9.5" rel="Chapter" title="9.5 Operational Considerations for Middlebox"/>
 <link href="#rfc.section.9.6" rel="Chapter" title="9.6 TCP Delayed Acknowledgement Considerations"/>
 <link href="#rfc.section.10" rel="Chapter" title="10 IANA Considerations"/>
 <link href="#rfc.section.10.1" rel="Chapter" title="10.1 DSO OPCODE Registration"/>
@@ -587,7 +587,7 @@
 <li>9.2.   <a href="#rfc.section.9.2">Anycast Considerations</a></li>
 <li>9.3.   <a href="#rfc.section.9.3">Connection Sharing</a></li>
 <li>9.4.   <a href="#rfc.section.9.4">Zero Round-Trip Operation</a></li>
-<li>9.5.   <a href="#rfc.section.9.5">Middlebox Considerations</a></li>
+<li>9.5.   <a href="#rfc.section.9.5">Operational Considerations for Middlebox</a></li>
 <li>9.6.   <a href="#rfc.section.9.6">TCP Delayed Acknowledgement Considerations</a></li>
 </ul><li>10.   <a href="#rfc.section.10">IANA Considerations</a></li>
 <ul><li>10.1.   <a href="#rfc.section.10.1">DSO OPCODE Registration</a></li>
@@ -1199,16 +1199,27 @@
 <p id="rfc.section.9.4.p.3">However, a client MUST NOT send DSO unidirectional messages until after a DSO Session has been mutually established.</p>
 <p id="rfc.section.9.4.p.4">Similarly, a server MUST NOT send DSO request messages until it has received a response-requiring DSO request message from a client and transmitted a successful NOERROR response for that request.</p>
 <p id="rfc.section.9.4.p.5">Caution must be taken to ensure that DSO messages sent before the first round-trip is completed are idempotent, or are otherwise immune to any problems that could be result from the inadvertent replay that can occur with zero round-trip operation.</p>
-<h1 id="rfc.section.9.5"><a href="#rfc.section.9.5">9.5.</a> <a href="#middlebox-considerations" id="middlebox-considerations">Middlebox Considerations</a></h1>
-<p id="rfc.section.9.5.p.1">[This whole section needs a rewrite.]</p>
-<p id="rfc.section.9.5.p.2">Where an application-layer middlebox (e.g., a DNS proxy, forwarder, or session multiplexer) is in the path, care must be taken to avoid inappropriately passing DNS Stateful Operations messages through the middlebox.</p>
-<p id="rfc.section.9.5.p.3">In cases where a DSO session is terminated on one side of a middlebox, and then some session is opened on the other side of the middlebox in order to satisfy requests sent over the first DSO session, any such session MUST be treated as a separate session. If the middlebox does implement DSO sessions, it MUST handle unrecognized TLVs in the same way as any other DSO implementation as described in <a href="#unrecognized">Section 5.4.3.3</a>.</p>
-<p id="rfc.section.9.5.p.4">This does not preclude the use of DSO messages in the presence of an IP-layer middlebox, such as a NAT that rewrites IP-layer and/or transport-layer headers but otherwise preserves the effect of a single session between the client and the server.  And of course it applies especially to middleboxes that do not know about DNS Stateful Operations.</p>
-<p id="rfc.section.9.5.p.5">These restrictions definitely apply to such middleboxes: since they have no way to understand a DSO message, a pass-through middlebox like the one described in the previous paragraph will pass DSO messages unchanged or drop them (or possibly drop the connection).  A middlebox that is not doing a strict pass-through will have no way to know on which connection to forward a DSO message, and therefore will not be able to behave incorrectly.</p>
-<p id="rfc.section.9.5.p.6">To illustrate the above, consider a network where a middlebox terminates one or more DNS-over-TCP connections from clients and multiplexes the queries therein over a single TCP connection to an upstream server.  The DSO messages and any associated state are specific to the individual TCP connections.  A DSO-aware middlebox MAY in some circumstances be able to retain associated state and pass it between the client and server (or vice versa) but this would be highly TLV-specific.  For example, the middlebox may be able to maintain a list of which clients have made Push Notification subscriptions <a href="#I-D.ietf-dnssd-push">[I-D.ietf-dnssd-push]</a> and make its own subscription(s) on their behalf, relaying any subsequent notifications to the client (or clients) that have subscribed to that particular notification.</p>
+<h1 id="rfc.section.9.5"><a href="#rfc.section.9.5">9.5.</a> <a href="#operational-considerations-for-middlebox" id="operational-considerations-for-middlebox">Operational Considerations for Middlebox</a></h1>
+<p id="rfc.section.9.5.p.1">Where an application-layer middlebox (e.g., a DNS proxy, forwarder, or session multiplexer) is in the path, care must be taken to avoid a configuration in which DSO traffic is mis-handled.   The simplest way to avoid such problems is to avoid using middleboxes.   When this is not possible, middleboxes should be evaluated to make sure that they behave correctly.</p>
+<p id="rfc.section.9.5.p.2">Correct behavior for middleboxes consists of one of:</p>
+<p/>
+
+<ul>
+  <li>The middlebox does not forward DSO messages, and responds to DSO messages with a response code other than NOERROR or DSOTYPENI.</li>
+  <li>The middlebox acts as a DSO server and follows this specification in establishing connections.</li>
+  <li>There is a 1:1 correspondence between incoming and outgoing connections, such that when a connection is established to the middlebox, it is guaranteed that exactly one corresponding connection will be established from the middlebox to some DNS resolver, and all incoming messages will be forwarded without modification or reordering.   An example of this would be a NAT forwarder or TCP connection optimizer (e.g. for a high-latency connection such as a geosynchronous satellite link).</li>
+</ul>
+<p id="rfc.section.9.5.p.4">Middleboxes that do not meet one of the above criteria are very likely to fail in unexpected and difficult-to-diagnose ways.   For example, a DNS load balancer might unbundle DNS messages from the incoming TCP stream and forward each message from the stream to a different DNS server.   If such a load balancer is in use, and the DNS servers it points implement DSO and are configured to enable DSO, DSO session establishment will succeed, but no coherent session will exist between the client and the server.   If such a load balancer is pointed at a DNS server that does not implement DSO or is configured not to allow DSO, no such problem will exist, but such a configuration risks unexpected failure if new server software is installed which does implement DSO.</p>
+<p id="rfc.section.9.5.p.5">It is of course possible to implement a middlebox that properly supports DSO.  It is even possible to implement one that implements DSO with long-lived operations.  This can be done either by maintaining a 1:1 correspondence between incoming and outgoing connections, as mentioned above, or by terminating incoming sessions at the middlebox, but maintaining state in the middlebox about any long-lived that are requested.   Specifying this in detail is beyond the scope of this document.</p>
 <h1 id="rfc.section.9.6"><a href="#rfc.section.9.6">9.6.</a> <a href="#tcp-delayed-acknowledgement-considerations" id="tcp-delayed-acknowledgement-considerations">TCP Delayed Acknowledgement Considerations</a></h1>
-<p id="rfc.section.9.6.p.1">[Need to put back the text explaining the problem here.]</p>
-<p id="rfc.section.9.6.p.2">Because unidirectional DSO messages do not generate an immediate response from the responder, if there is no other traffic flowing from the responder to the initiator, this can result in a 200 ms delay before the TCP acknowledgment is sent to the initiator <a href="#NagleDA">[NagleDA]</a>.  If the initiator has another message pending, but has not yet filled its output buffer, this can delay the delivery of that message by more than 200 ms.  In many cases, this will make no difference.  However, implementors should be aware of this issue.  Some operating systems offer ways to disable the 200 ms TCP acknowledgment delay; this may be useful for relatively low-traffic sessions, or sessions with bursty traffic flows.</p>
+<p id="rfc.section.9.6.p.1">Because DSO Unidirectional messages do not elicit a response from the receiver, they will trigger the TCP stack to use the TCP Delayed Acknowledgment algorithm <a href="#NagleDA">[NagleDA]</a>, which will create inappropriate delays in message flow on the TCP connection.</p>
+<p id="rfc.section.9.6.p.2">At the time that this document is being prepared for publication, it is known that at least one TCP implementation provides the ability for the recipient of a TCP message to signal that it is not going to send a response, and hence Nagle&#8217;s algorithm need not be used.  Implementations on operating systems where this feature is available SHOULD make use of it.</p>
+<p id="rfc.section.9.6.p.3">With most TCP implementations, for DSO requests that generate a response, the TCP data acknowledgement (generated because data has been received by TCP), the TCP window update (generated because TCP has delivered that data to the receiving software), and the DSO response (generated by the receiving application-layer software itself) are all combined into a single IP packet.  Combining these three elements into a single IP packet can give a significant improvement in network efficiency, assuming that the DSO response is sent before the TCP Delayed Acknowledgement timer goes off.</p>
+<p id="rfc.section.9.6.p.4">For DSO requests that do not generate a response, if the TCP implementation receives no signal from the recipient indicating that no response will be forthcoming, it can only wait fruitlessly for the response that isn&#8217;t coming, until the Delayed ACK timer fires <a href="#RFC1122">[RFC1122]</a> (typically 200 milliseconds).   Only then does it send the TCP ACK and window update.</p>
+<p id="rfc.section.9.6.p.5">In conjunction with Nagle&#8217;s Algorithm at the sender, this can delay the sender&#8217;s transmission of its next (non-full-sized) TCP segment, while the sender is waiting for its previous (non-full-sized) TCP segment to be acknowledged, which won&#8217;t happen until the Delayed ACK timer fires.</p>
+<p id="rfc.section.9.6.p.6">Nagle&#8217;s Algorithm exists to combine multiple small application writes into more-efficient large TCP segments, to guard against wasteful use of the network by applications that would otherwise transmit a stream of small TCP segments, but in this case Nagle&#8217;s Algorithm (created to improve network efficiency) can interact badly with TCP&#8217;s Delayed ACK feature (also created to improve network efficiency) <a href="#NagleDA">[NagleDA]</a> with the result of delaying some messages by up to 200 milliseconds.</p>
+<p id="rfc.section.9.6.p.7">It is possible with many TCP implementations either to disable Nagle&#8217;s algorithm, or to disable delayed acknowledgment, or both.  Unfortunately, this affects every message sent over the connection, not just those connections for which this help is needed.  It may give the implementor the impression that their software is going faster, but on a heavily-used network, or a low-bandwidth or high-latency network, the result can be a significant degradation in overall network performance.</p>
+<p id="rfc.section.9.6.p.8">For this reason, we do not recommend either of these strategies, and instead recommend that implementations take advantage of the capability to signal that no response will be sent, where that capability is present.</p>
 <h1 id="rfc.section.10"><a href="#rfc.section.10">10.</a> <a href="#iana-considerations" id="iana-considerations">IANA Considerations</a></h1>
 <h1 id="rfc.section.10.1"><a href="#rfc.section.10.1">10.1.</a> <a href="#dso-opcode-registration" id="dso-opcode-registration">DSO OPCODE Registration</a></h1>
 <p id="rfc.section.10.1.p.1">The IANA is requested to record the value [TBA1] (tentatively 6) for the DSO&#160;OPCODE in the DNS&#160;OPCODE&#160;Registry. DSO stands for DNS Stateful Operations.</p>
@@ -1396,6 +1407,12 @@
         <b id="NagleDA">[NagleDA]</b>
       </td>
       <td class="top"><a>Cheshire, S.</a>, "<a href="http://www.stuartcheshire.org/papers/nagledelayedack/">TCP Performance problems caused by interaction between Nagle's Algorithm and Delayed ACK</a>", May 2005.</td>
+    </tr>
+    <tr>
+      <td class="reference">
+        <b id="RFC1122">[RFC1122]</b>
+      </td>
+      <td class="top"><a>Braden, R.</a>, "<a href="http://tools.ietf.org/html/rfc1122">Requirements for Internet Hosts - Communication Layers</a>", STD 3, RFC 1122, DOI 10.17487/RFC1122, October 1989.</td>
     </tr>
     <tr>
       <td class="reference">

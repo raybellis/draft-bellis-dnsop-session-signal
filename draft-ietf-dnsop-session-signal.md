@@ -1977,17 +1977,18 @@ avoid such problems is to avoid using middleboxes.   When this is not possible,
 middleboxes should be evaluated to make sure that they behave correctly.
 
 Correct behavior for middleboxes consists of one of:
-- The middlebox does not forward DSO messages, and responds to DSO messages
-  with a response code other than NOERROR or DSOTYPENI.
-- The middlebox acts as a DSO server and follows this specification in
-  establishing connections.
-- There is a 1:1 correspondence between incoming and outgoing connections,
-  such that when a connection is established to the middlebox, it is guaranteed
-  that exactly one corresponding connection will be established from the middlebox
-  to some DNS resolver, and all incoming messages will be forwarded without
-  modification or reordering.   An example of this would be a NAT forwarder or
-  TCP connection optimizer (e.g. for a high-latency connection such as a
-  geosynchronous satellite link).
+
+* The middlebox does not forward DSO messages, and responds to DSO messages
+with a response code other than NOERROR or DSOTYPENI.
+* The middlebox acts as a DSO server and follows this specification in
+establishing connections.
+* There is a 1:1 correspondence between incoming and outgoing connections,
+such that when a connection is established to the middlebox, it is guaranteed
+that exactly one corresponding connection will be established from the middlebox
+to some DNS resolver, and all incoming messages will be forwarded without
+modification or reordering.   An example of this would be a NAT forwarder or
+TCP connection optimizer (e.g. for a high-latency connection such as a
+geosynchronous satellite link).
 
 Middleboxes that do not meet one of the above criteria are very likely to
 fail in unexpected and difficult-to-diagnose ways.   For example, a DNS
@@ -2034,7 +2035,7 @@ For DSO requests that do not generate a response, if the TCP
 implementation receives no signal from the recipient indicating that no
 response will be forthcoming, it can only wait fruitlessly for the
 response that isn't coming, until the Delayed
-ACK timer fires [RFC1122] (typically 200 milliseconds).   Only then
+ACK timer fires {{?RFC1122}} (typically 200 milliseconds).   Only then
 does it send the TCP ACK and window update.
 
 In conjunction with
@@ -2048,7 +2049,7 @@ into more-efficient large TCP segments, to guard against wasteful use
 of the network by applications that would otherwise transmit a stream
 of small TCP segments, but in this case Nagle's Algorithm (created to
 improve network efficiency) can interact badly with TCP's Delayed ACK
-feature (also created to improve network efficiency) [NagleDA] with
+feature (also created to improve network efficiency) {{NagleDA}} with
 the result of delaying some messages by up to 200 milliseconds.
 
 It is possible with many TCP implementations either to disable Nagle's algorithm, or to disable
