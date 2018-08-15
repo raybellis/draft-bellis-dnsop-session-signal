@@ -814,7 +814,7 @@ DSO-TYPE is the responsibility of the software that implements that DSO-TYPE.
 
 The first TLV in a DSO request message or DSO unidirectional message is the "Primary TLV"
 and indicates the operation to be performed.
-A DSO request message or DSO unidirectional message MUST contain at at least one TLV - the Primary TLV.
+A DSO request message or DSO unidirectional message MUST contain at at least one TLV--the Primary TLV.
 
 Immediately following the Primary TLV, a DSO request message or DSO unidirectional message
 MAY contain one or more "Additional TLVs", which specify
@@ -2149,7 +2149,7 @@ defined here have this property.   If a new TLV is specified that does have this
 property, the specification should require that some kind of exchange be done with
 the server before work is done.   That is, the TLV that requires work could not
 be processed without a round-trip from the server to the client to verify that
-the source address of the packet is reachable.
+the source address of the TCP SYN packet is reachable.
 
 One way to accomplish this would be to have the client send a TLV indicating that
 it wishes to have the server do work of this sort; this TLV would not actually result
