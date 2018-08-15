@@ -705,12 +705,12 @@ It may be permissible for an additional TLV to appear in a response
 to a primary TLV even though the specification of that primary TLV
 does not specify it explicitly.  See {{TLV}} for more information. 
 
-A DSO response message may contain one or more TLVs with
-DSO-TYPE the same as the Primary TLV from the corresponding DSO request message,
-in which case those TLV(s) are referred to as "Response Primary TLVs".
-A DSO response message is not required to carry Response Primary TLVs.
-The MESSAGE ID field in the DNS message header is sufficient to identify
-the DSO request message to which this response message relates.
+A DSO response message may contain one or more TLVs with the Primary
+TLV DSO-TYPE the same as the Primary TLV from the corresponding DSO
+request message or it may contain zero or more Additional TLVs only.
+The MESSAGE ID field in the DNS message header is sufficient to
+identify the DSO request message to which this response message
+relates.
 
 A DSO response message may contain one or more TLVs with
 DSO-TYPEs different from the Primary TLV from the corresponding DSO request message,
@@ -875,13 +875,12 @@ is not permitted in a DSO message,
 so if message padding is desired for DSO messages
 then the Encryption Padding TLV described in {{padding}} MUST be used.
 
-Similarly, a DSO message MUST NOT contain a TSIG record.
-A TSIG record in a conventional DNS message is added as the last record in
-the additional records section, and carries a signature computed over the
-preceding message content. Since DSO data appears **after** the additional
-records section, it would not be included in the signature calculation. 
-If use of signatures with DSO messages becomes necessary in the 
-future, a new DSO TLV needs to be defined to perform this function.
+A DSO message can't contain a TSIG record, because a TSIG record
+is included in the additional section of the message, which would
+mean that ARCOUNT would be greater than zero.   DSO messages are
+required to have an ARCOUNT of zero.  Therefore, if use of signatures
+with DSO messages becomes necessary in the future, a new DSO TLV
+would have to be defined to perform this function.
 
 Note however that, while DSO **messages** cannot include
 EDNS(0) or TSIG records, a DSO **session** is typically used to 

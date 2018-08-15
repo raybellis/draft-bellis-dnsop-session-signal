@@ -903,13 +903,12 @@ Internet-Draft           DNS Stateful Operations             August 2018
    primary TLV even though the specification of that primary TLV does
    not specify it explicitly.  See Section 8.2 for more information.
 
-   A DSO response message may contain one or more TLVs with DSO-TYPE the
-   same as the Primary TLV from the corresponding DSO request message,
-   in which case those TLV(s) are referred to as "Response Primary
-   TLVs".  A DSO response message is not required to carry Response
-   Primary TLVs.  The MESSAGE ID field in the DNS message header is
-   sufficient to identify the DSO request message to which this response
-   message relates.
+   A DSO response message may contain one or more TLVs with the Primary
+   TLV DSO-TYPE the same as the Primary TLV from the corresponding DSO
+   request message or it may contain zero or more Additional TLVs only.
+   The MESSAGE ID field in the DNS message header is sufficient to
+   identify the DSO request message to which this response message
+   relates.
 
    A DSO response message may contain one or more TLVs with DSO-TYPEs
    different from the Primary TLV from the corresponding DSO request
@@ -946,6 +945,7 @@ Internet-Draft           DNS Stateful Operations             August 2018
    DSO unidirectional messages MUST NOT be used "speculatively" in cases
    where the sender doesn't know if the receiver supports the Primary
    TLV in the message, because there is no way to receive any response
+   to indicate success or failure.  DSO unidirectional messages are only
 
 
 
@@ -954,7 +954,6 @@ Bellis, et al.          Expires February 3, 2019               [Page 17]
 Internet-Draft           DNS Stateful Operations             August 2018
 
 
-   to indicate success or failure.  DSO unidirectional messages are only
    appropriate in cases where the sender already knows that the receiver
    supports, and wishes to receive, these messages.
 
@@ -1001,6 +1000,7 @@ Internet-Draft           DNS Stateful Operations             August 2018
       /                           DSO-DATA                            /
       /                                                               /
       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+
 
 
 
@@ -1098,14 +1098,12 @@ Internet-Draft           DNS Stateful Operations             August 2018
    desired for DSO messages then the Encryption Padding TLV described in
    Section 7.3 MUST be used.
 
-   Similarly, a DSO message MUST NOT contain a TSIG record.  A TSIG
-   record in a conventional DNS message is added as the last record in
-   the additional records section, and carries a signature computed over
-   the preceding message content.  Since DSO data appears *after* the
-   additional records section, it would not be included in the signature
-   calculation.  If use of signatures with DSO messages becomes
-   necessary in the future, a new DSO TLV needs to be defined to perform
-   this function.
+   A DSO message can't contain a TSIG record, because a TSIG record is
+   included in the additional section of the message, which would mean
+   that ARCOUNT would be greater than zero.  DSO messages are required
+   to have an ARCOUNT of zero.  Therefore, if use of signatures with DSO
+   messages becomes necessary in the future, a new DSO TLV would have to
+   be defined to perform this function.
 
    Note however that, while DSO *messages* cannot include EDNS(0) or
    TSIG records, a DSO *session* is typically used to carry a whole
@@ -1113,7 +1111,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
    and other DNS message types like Query [RFC1034] [RFC1035] and Update
    [RFC2136], and those messages can carry EDNS(0) and TSIG records.
 
-
+   Although messages may contain other EDNS(0) options as appropriate,
+   this specification explicitly prohibits use of the edns-tcp-keepalive
+   EDNS0 Option [RFC7828] in *any* messages sent on a DSO Session
 
 
 
@@ -1122,9 +1122,6 @@ Bellis, et al.          Expires February 3, 2019               [Page 20]
 Internet-Draft           DNS Stateful Operations             August 2018
 
 
-   Although messages may contain other EDNS(0) options as appropriate,
-   this specification explicitly prohibits use of the edns-tcp-keepalive
-   EDNS0 Option [RFC7828] in *any* messages sent on a DSO Session
    (because it is obsoleted by the functionality provided by the DSO
    Keepalive operation).  If any message sent on a DSO Session contains
    an edns-tcp-keepalive EDNS0 Option this is a fatal error and the
@@ -1170,6 +1167,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
    thought of as a 17-bit message identifier space, using message
    identifiers 0x00001-0x0FFFF for client-to-server DSO request
    messages, and message identifiers 0x10001-0x1FFFF for server-to-
+   client DSO request messages.  The least-significant 16 bits are
+   stored explicitly in the MESSAGE ID field of the DSO message, and the
+   most-significant bit is implicit from the direction of the message.
 
 
 
@@ -1177,10 +1177,6 @@ Bellis, et al.          Expires February 3, 2019               [Page 21]
 
 Internet-Draft           DNS Stateful Operations             August 2018
 
-
-   client DSO request messages.  The least-significant 16 bits are
-   stored explicitly in the MESSAGE ID field of the DSO message, and the
-   most-significant bit is implicit from the direction of the message.
 
    As described above in Section 5.4.1, an initiator MUST NOT reuse a
    MESSAGE ID that it already has in use for an outstanding DSO request
@@ -1226,6 +1222,10 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
    In the case of a server returning an error code to a client in
    response to an unsuccessful DSO request message, the server MAY
+   choose to end the DSO Session, or MAY choose to allow the DSO Session
+   to remain open.  For error conditions that only affect the single
+   operation in question, the server SHOULD return an error response to
+   the client and leave the DSO Session open for further operations.
 
 
 
@@ -1233,11 +1233,6 @@ Bellis, et al.          Expires February 3, 2019               [Page 22]
 
 Internet-Draft           DNS Stateful Operations             August 2018
 
-
-   choose to end the DSO Session, or MAY choose to allow the DSO Session
-   to remain open.  For error conditions that only affect the single
-   operation in question, the server SHOULD return an error response to
-   the client and leave the DSO Session open for further operations.
 
    For error conditions that are likely to make all operations
    unsuccessful in the immediate future, the server SHOULD return an
@@ -1282,6 +1277,11 @@ Internet-Draft           DNS Stateful Operations             August 2018
    The responder performs this selective cancellation by sending a new
    response message, with the MESSAGE ID field containing the MESSAGE ID
    of the long-lived operation that is to be terminated (that it had
+   previously acknowledged with a NOERROR RCODE), and the RCODE field of
+   the new response message giving the reason for cancellation.
+
+
+
 
 
 
@@ -1289,9 +1289,6 @@ Bellis, et al.          Expires February 3, 2019               [Page 23]
 
 Internet-Draft           DNS Stateful Operations             August 2018
 
-
-   previously acknowledged with a NOERROR RCODE), and the RCODE field of
-   the new response message giving the reason for cancellation.
 
    After a response message with nonzero RCODE has been sent, that
    operation has been terminated from the responder's point of view, and
@@ -1338,6 +1335,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
    permitted interval between messages if the client wishes to keep the
    DSO Session alive.
 
+   The two timeout values are independent.  The inactivity timeout may
+   be lower, the same, or higher than the keepalive interval, though in
+
 
 
 
@@ -1346,8 +1346,6 @@ Bellis, et al.          Expires February 3, 2019               [Page 24]
 Internet-Draft           DNS Stateful Operations             August 2018
 
 
-   The two timeout values are independent.  The inactivity timeout may
-   be lower, the same, or higher than the keepalive interval, though in
    most cases the inactivity timeout is expected to be shorter than the
    keepalive interval.
 
@@ -1394,6 +1392,8 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
    For short-lived DNS operations like traditional queries and updates,
    an operation is considered in progress for the time between request
+   and response, typically a period of a few hundred milliseconds at
+   most.  At the client, the inactivity timer is cleared upon
 
 
 
@@ -1402,8 +1402,6 @@ Bellis, et al.          Expires February 3, 2019               [Page 25]
 Internet-Draft           DNS Stateful Operations             August 2018
 
 
-   and response, typically a period of a few hundred milliseconds at
-   most.  At the client, the inactivity timer is cleared upon
    transmission of a request and remains cleared until reception of the
    corresponding response.  At the server, the inactivity timer is
    cleared upon reception of a request and remains cleared until
@@ -1450,6 +1448,8 @@ Internet-Draft           DNS Stateful Operations             August 2018
    being any operation active on the DSO Session, the client MUST close
    the connection gracefully.
 
+   If, at any time during the life of the DSO Session, twice the
+   inactivity timeout value (i.e., 30 seconds by default), or five
 
 
 
@@ -1458,8 +1458,6 @@ Bellis, et al.          Expires February 3, 2019               [Page 26]
 Internet-Draft           DNS Stateful Operations             August 2018
 
 
-   If, at any time during the life of the DSO Session, twice the
-   inactivity timeout value (i.e., 30 seconds by default), or five
    seconds, if twice the inactivity timeout value is less than five
    seconds, elapses without there being any operation active on the DSO
    Session, the server MUST consider the client delinquent, and MUST
@@ -1504,7 +1502,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
    by sending a new DSO Keepalive message dictating new Session Timeout
    values to the client.
 
-
+   The largest *finite* inactivity timeout supported by the current
+   Keepalive TLV is 0xFFFFFFFE (2^32-2 milliseconds, approximately 49.7
+   days).
 
 
 
@@ -1513,10 +1513,6 @@ Bellis, et al.          Expires February 3, 2019               [Page 27]
 
 Internet-Draft           DNS Stateful Operations             August 2018
 
-
-   The largest *finite* inactivity timeout supported by the current
-   Keepalive TLV is 0xFFFFFFFE (2^32-2 milliseconds, approximately 49.7
-   days).
 
 6.5.  The Keepalive Interval
 
@@ -1563,6 +1559,10 @@ Internet-Draft           DNS Stateful Operations             August 2018
    impose a higher keepalive interval, because frequent DSO keepalive
    traffic is not required.
 
+   A public DNS server that is serving primarily residential consumer
+   clients, where it is likely there will be a NAT gateway on the path,
+
+
 
 
 Bellis, et al.          Expires February 3, 2019               [Page 28]
@@ -1570,8 +1570,6 @@ Bellis, et al.          Expires February 3, 2019               [Page 28]
 Internet-Draft           DNS Stateful Operations             August 2018
 
 
-   A public DNS server that is serving primarily residential consumer
-   clients, where it is likely there will be a NAT gateway on the path,
    may impose a lower keepalive interval, to generate more frequent DSO
    keepalive traffic.
 
@@ -1616,6 +1614,8 @@ Internet-Draft           DNS Stateful Operations             August 2018
    The largest *finite* keepalive interval supported by the current
    Keepalive TLV is 0xFFFFFFFE (2^32-2 milliseconds, approximately 49.7
    days).
+
+
 
 
 
