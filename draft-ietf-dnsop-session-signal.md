@@ -138,7 +138,7 @@ Further TLVs may be defined in additional specifications.
 DSO messages may or may not be acknowledged; this is signalled by providing a
 non-zero message ID for messages that must be acknowledged (DSO request messages) and a zero message
 ID for messages that are not to be acknowledged (DSO unidirectional messages), and is also specified in the definition
-of a particular message type.   Messages are pipelined; answers may appear out
+of a particular DSO message type.   Messages are pipelined; answers may appear out
 of order when more than one answer is pending.
 
 The format for DSO messages
@@ -153,7 +153,7 @@ The actual data pertaining to DNS Stateful Operations
 Just as in traditional DNS over TCP {{!RFC1035}} {{!RFC7766}}
 the stream protocol carrying DSO messages (which are just another kind of DNS message)
 frames them by putting a 16-bit message length at the start, so
-the length of the DSO data is determined from that length, rather than from any of
+the length of the DSO message is determined from that length, rather than from any of
 the DNS header counts.
 
 When displayed using packet analyzer tools that have not been
@@ -260,7 +260,7 @@ receiver:
 service instance:
 : a specific instance of server software running on a specific host ({{serviceinstances}}).
 
-long-lived operations:
+long-lived operation:
 : a long-lived operation is an outstanding operation on a DSO session where
 either the client or server, acting as initiator, has requested that the
 responder send new information regarding the request, as it becomes available.
@@ -470,7 +470,7 @@ set to NOERROR (0), indicating that the DSO request was successful.
 ### Session Establishment Failure {#stabfail}
 
 If the response RCODE is set to NOTIMP (4), or in practise any value other than NOERROR (0) or DSOTYPENI
-(\[TBA2\] tentatively 11), then the client MUST assume that the server does
+(defined below), then the client MUST assume that the server does
 not implement DSO at all. In this case the client is permitted to continue
 sending DNS messages on that connection, but the client MUST NOT
 issue further DSO messages on that connection.
@@ -574,7 +574,7 @@ situations do not indicate a flaw in the software, and they are
 situations that software should generally be able to recover from.
 
 The second is situations that should never happen when communicating
-with a correctly-implemented peer.
+with a compliant DSO implementation.
 If they do happen, they indicate a serious flaw in the protocol implementation,
 beyond what it is reasonable to expect software to recover from.
 This document describes this latter form of error condition as a
@@ -585,7 +585,7 @@ a fatal error condition "MUST forcibly abort the connection immediately".
 
 A DSO message begins with
 the standard twelve-byte DNS message header {{!RFC1035}}
-with the OPCODE field set to the DSO OPCODE (\[TBA1\] tentatively 6).
+with the OPCODE field set to the DSO OPCODE.
 However, unlike standard DNS messages, the question section, answer section,
 authority records section and additional records sections are not present.
 The corresponding count fields (QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT) MUST be
@@ -642,7 +642,7 @@ In a DSO request message or DSO unidirectional message the DNS Header QR bit MUS
 If the QR bit is not zero the message is not a DSO request or DSO unidirectional message.
 
 In a DSO response message the DNS Header QR bit MUST be one (QR=1).  
-If the QR bit is not one the message is not a response message.
+If the QR bit is not one, the message is not a response message.
 
 In a DSO response message (QR=1) the MESSAGE ID field MUST contain a copy of the value of
 the MESSAGE ID field in the DSO request message being responded to.
@@ -650,7 +650,7 @@ In a DSO response message (QR=1) the MESSAGE ID field MUST NOT be zero.
 If a DSO response message (QR=1) is received where the MESSAGE ID is zero
 this is a fatal error and the recipient MUST forcibly abort the connection immediately.
 
-The DNS Header OPCODE field holds the DSO OPCODE value (\[TBA1\] tentatively 6).
+The DNS Header OPCODE field holds the DSO OPCODE value.
 
 The Z bits are currently unused in DSO messages,
 and in both DSO request messages and DSO responses the
@@ -670,19 +670,16 @@ The RCODE value in a response message (QR=1) may be one of the following values:
 | 0 | NOERROR | Operation processed successfully |
 | 1 | FORMERR | Format error |
 | 2 | SERVFAIL | Server failed to process DSO request message due to a problem with the server |
-| 3 | NXDOMAIN | Name Error --- Named entity does not exist (TLV-dependent) |
 | 4 | NOTIMP | DSO not supported |
 | 5 | REFUSED | Operation declined for policy reasons |
-| 9 | NOTAUTH | Not Authoritative (TLV-dependent) |
 | \[TBA2\] 11 | DSOTYPENI | Primary TLV's DSO-Type is not implemented |
 
 Use of the above RCODEs is likely to be common in DSO but 
 does not preclude the definition and use of other codes in future documents that 
 make use of DSO.
 
-If a document defining a new DSO-TYPE makes use of NXDOMAIN (Name Error)
-or NOTAUTH (Not Authoritative) then that document MUST specify the specific
-interpretation of these RCODE values in the context of that new DSO TLV.
+If a document defining a new DSO-TYPE makes use of response codes not defined here, then that document MUST specify the specific
+interpretation of those RCODE values in the context of that new DSO TLV.
 
 ### DSO Data {#dsodata}
 
@@ -847,7 +844,7 @@ forcibly abort the connection immediately.
 If DSO request message is received containing an unrecognized Primary TLV,
 with a nonzero MESSAGE ID (indicating that a response is expected),
 then the receiver MUST send an error response with matching MESSAGE ID,
-and RCODE DSOTYPENI (\[TBA2\] tentatively 11).
+and RCODE DSOTYPENI.
 The error response MUST NOT contain a copy of the unrecognized Primary TLV.
 
 If DSO unidirectional message is received containing an unrecognized Primary TLV,
@@ -868,7 +865,7 @@ handled as if the unrecognized parts were not present.
 ### EDNS(0) and TSIG
 
 Since the ARCOUNT field MUST be zero, a DSO message
-can't contain a valid EDNS(0) option in the additional records section.
+cannot contain a valid EDNS(0) option in the additional records section.
 If functionality provided by current or future EDNS(0) options
 is desired for DSO messages, one or more new DSO TLVs
 need to be defined to carry the necessary information.
@@ -1007,8 +1004,7 @@ but it defines a framework for supporting long-lived operations,
 such as Push Notification subscriptions {{?I-D.ietf-dnssd-push}} and
 Discovery Relay interface subscriptions {{?I-D.ietf-dnssd-mdns-relay}}.
 
-Generally speaking, a long-lived operation is initiated by the initiator,
-and, if successful, remains active until the initiator terminates the operation.
+Long-lived operations, if successful, will remain active until the initiator terminates the operation.
 
 However, it is possible that a long-lived operation may be valid
 at the time it was initiated, but then a later change of circumstances
@@ -1479,7 +1475,7 @@ purpose of keeping a session alive.
 The client will request the desired session timeout values and the server will
 acknowledge with the response values that it requires the client to use.
 
-The DSO-DATA for the the Keepalive TLV is as follows:
+The DSO-DATA for the Keepalive TLV is as follows:
 
                             1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
         0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -1534,7 +1530,7 @@ be sent as an DSO request message, with a nonzero MESSAGE ID.
 If a server receives a DSO Keepalive message with a zero MESSAGE ID then
 this is a fatal error and the server MUST forcibly abort the connection immediately.
 The DSO Keepalive request message resets a DSO Session's keepalive timer,
-and at the same time communicates to the server the the client's
+and at the same time communicates to the server the client's
 requested Session Timeout values.
 In a server response to a client-initiated DSO Keepalive request message,
 the Session Timeouts contain the server's chosen values from
@@ -1650,7 +1646,7 @@ The Retry Delay TLV (DSO-TYPE=2) can be used as
 a Primary TLV (unidirectional) in a server-to-client message,
 or as a Response Additional TLV in either direction.
 
-The DSO-DATA for the the Retry Delay TLV is as follows:
+The DSO-DATA for the Retry Delay TLV is as follows:
 
                             1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
         0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -1690,7 +1686,7 @@ because it does not have authority over the names in question
 such that is is no longer accepting DNS Push Notification
 requests for one or more of the currently subscribed names).
 
-This document specifies only these RCODE values for Retry Delay message.
+This document specifies only these RCODE values for the Retry Delay message.
 Servers sending Retry Delay messages SHOULD use one of these values.
 However, future circumstances may create situations where other RCODE values
 are appropriate in Retry Delay messages, so clients MUST be prepared
@@ -1741,7 +1737,7 @@ an Additional or Response Additional TLV.
 It is only applicable when the DSO Transport layer uses encryption
 such as TLS.
 
-The DSO-DATA for the the Padding TLV is optional and is a
+The DSO-DATA for the Padding TLV is optional and is a
 variable length field containing non-specified values. A DSO-LENGTH
 of 0 essentially provides for 4 bytes of padding (the minimum amount).
 
