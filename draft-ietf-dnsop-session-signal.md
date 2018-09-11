@@ -899,25 +899,55 @@ forcibly abort the connection immediately.
 
 ## Message Handling
 
-The initiator MUST set the value of the QR bit in the DNS header to zero (0),
-and the responder MUST set it to one (1).
-
-As described above in {{header}}, whether an outgoing DSO message with QR=0
+As described above in {{header}}, whether an outgoing DSO message with
+the QR bit in the DNS header set to zero
 is a DSO request or DSO unidirectional message is determined by the specification
 for the Primary TLV, which in turn determines whether the MESSAGE ID field
 in that outgoing message will be zero or nonzero.
 
-A DSO unidirectional message has both the QR bit and the MESSAGE ID field set to zero,
-and MUST NOT elicit a response.
-
-Every DSO request message (QR=0) with a nonzero MESSAGE ID field
-is a DSO request message, and MUST elicit a corresponding response (QR=1),
-which MUST have the same MESSAGE ID in the DNS message header as in the corresponding DSO request message.
+Every DSO message with the QR bit in the DNS header set to zero and a nonzero MESSAGE ID field
+is a DSO request message, and MUST elicit a corresponding response,
+with the QR bit in the DNS header set to one and the MESSAGE ID field set to the
+value given in the corresponding DSO request message.
 
 Valid DSO request messages sent by the client with a nonzero MESSAGE ID field
 elicit a response from the server, and
 valid DSO request messages sent by the server with a nonzero MESSAGE ID field
 elicit a response from the client.
+
+Every DSO message with both the QR bit in the DNS header and the MESSAGE ID field set to zero
+is a DSO unidirectional message, and MUST NOT elicit a response.
+
+### Delayed Acknowledgement Management
+
+Generally, most good TCP implementations employ a delayed acknowledgement timer
+to provide more efficient use of the network and better performance.
+
+With a DSO request message, the TCP implementation waits for the
+application-layer client software to generate the corresponding DSO
+response message, which enables the TCP implementation to send a
+single combined IP packet containing the TCP acknowledgement, the
+TCP window update, and the application-generated DSO response message.
+This is more efficient than sending three separate IP packets.
+
+With a DSO unidirectional message or DSO response message,
+there is no corresponding application-generated DSO response message,
+and consequently, no hint to the transport protocol about
+when it should send its acknowledgement and window update.
+Some networking APIs provide a mechanism that allows the
+application-layer client software to signal to the
+transport protocol that no response will be forthcoming
+(in effect it can be thought of as a zero-length "empty" write).
+Where available in the networking API being used,
+the recipient of a DSO unidirectional message or DSO response message,
+having parsed and interpreted the message,
+SHOULD then use this mechanism provided by the networking
+API to signal that no response for this message will be forthcoming,
+so that the TCP implementation can go ahead and send its
+acknowledgement and window update without further delay.
+See {{delack}} for further discussion of why this is important.
+
+### MESSAGE ID Namespaces
 
 The namespaces of 16-bit MESSAGE IDs are independent in each direction.
 This means it is **not** an error for both client and server to send DSO request
@@ -2003,7 +2033,7 @@ sessions at the middlebox, but maintaining state in the middlebox about any
 long-lived that are requested.   Specifying this in detail is beyond the scope
 of this document.
 
-## TCP Delayed Acknowledgement Considerations
+## TCP Delayed Acknowledgement Considerations {#delack}
 
 Most modern implementations of the Transmission Control Protocol (TCP) include a
 feature called "Delayed Acknowledgement" {{?RFC1122}}.
@@ -2024,11 +2054,11 @@ almost instantaneously (ack, window update, data).
 
 Clearly it would be more efficient if the TCP implementation were to
 combine the three separate packets into one,
-and this is what the delayed ack feature is for.
+and this is what the delayed ack feature enables.
 
 With delayed ack, the TCP implementation waits after receiving a data packet,
 typically for 200 ms, and then send its ack if
-(a) one more data packet arrives (or sometimes more than one)
+(a) more data packet(s) arrive
 (b) the receiving process generates some reply data, or
 (c) 200 ms elapses without either of the above occurring.
 
@@ -2044,8 +2074,8 @@ particular message, then by definition the thing at the other end cannot be
 waiting for anything, so the 200 ms delay is harmless.
 
 This assumption may be true, unless the sender is using Nagle's algorithm,
-a similar efficiency feature created to protect the network from poorly
-written client software that performs many rapid small writes in sucession.
+a similar efficiency feature, created to protect the network from poorly
+written client software that performs many rapid small writes in succession.
 Nagle's algorithm allows these small writes to be combined into larger,
 less wasteful packets.
 
@@ -2053,9 +2083,9 @@ Unfortunately, Nagle's algorithm and delayed ack,
 two valuable efficiency features,
 can interact badly with each other when used together {{NagleDA}}.
 
-Some DSO messages elicit responses; others do not.
+DSO request messages elicit responses; DSO unidirectional messages and DSO response messages do not.
 
-For DSO messages that do elicit responses, Nagle's algorithm and delayed ack work as intended.
+For DSO request messages, which do elicit responses, Nagle's algorithm and delayed ack work as intended.
 
 For DSO messages that do not elicit responses, the delayed ack mechanism
 causes the ack to be delayed by 200 ms.
@@ -2064,7 +2094,8 @@ sender from sending any more data for 200 ms until the awaited ack arrives.
 On an enterprise GigE backbone with sub-millisecond round-trip times,
 a 200 ms delay is enormous in comparison.
 
-Two solutions have been proposed:
+When this issues is raised, there are two solutions that are often offered,
+neither of them ideal:
 
 1. Disable delayed ack.
 For DSO messages that elicit no response, removing delayed ack
