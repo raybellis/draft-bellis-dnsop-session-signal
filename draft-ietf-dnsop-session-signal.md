@@ -952,7 +952,7 @@ If a client or server receives a response (QR=1) where the MESSAGE ID is zero, o
 any other value that does not match the MESSAGE ID of any of its outstanding operations,
 this is a fatal error and the recipient MUST forcibly abort the connection immediately.
 
-If a responder receives a DSO request message(QR=0) where the MESSAGE ID is not zero, and
+If a responder receives a DSO request message (QR=0) where the MESSAGE ID is not zero, and
 the responder tracks request MESSAGE IDs, and the MESSAGE ID
 matches the MESSAGE ID of a DSO request message it received for which a response has not yet been sent,
 it MUST forcibly abort the connection immediately.   This behavior is required to prevent
@@ -1045,8 +1045,6 @@ SHOULD NOT delay sending responses to those messages as they become available in
 order to return them in the order the requests were received.
 
 Section 6.2.1.1 of the DNS-over-TCP specification {{?RFC7766}} specifies this in more detail.
-
-\[No it doesn't. RFC7766 has no section 3.3.\]
 
 ## DSO Session Timeouts {#sessiontimeouts}
 

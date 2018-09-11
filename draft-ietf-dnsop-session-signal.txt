@@ -1195,9 +1195,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
    any of its outstanding operations, this is a fatal error and the
    recipient MUST forcibly abort the connection immediately.
 
-   If a responder receives a DSO request message(QR=0) where the MESSAGE
-   ID is not zero, and the responder tracks request MESSAGE IDs, and the
-   MESSAGE ID matches the MESSAGE ID of a DSO request message it
+   If a responder receives a DSO request message (QR=0) where the
+   MESSAGE ID is not zero, and the responder tracks request MESSAGE IDs,
+   and the MESSAGE ID matches the MESSAGE ID of a DSO request message it
    received for which a response has not yet been sent, it MUST forcibly
    abort the connection immediately.  This behavior is required to
    prevent a hypothetical attack that takes advantage of undefined
@@ -1318,8 +1318,6 @@ Internet-Draft           DNS Stateful Operations             August 2018
    Section 6.2.1.1 of the DNS-over-TCP specification [RFC7766] specifies
    this in more detail.
 
-   [No it doesn't.  RFC7766 has no section 3.3.]
-
 6.2.  DSO Session Timeouts
 
    Two timeout values are associated with a DSO Session: the inactivity
@@ -1337,6 +1335,8 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
    The two timeout values are independent.  The inactivity timeout may
    be lower, the same, or higher than the keepalive interval, though in
+   most cases the inactivity timeout is expected to be shorter than the
+   keepalive interval.
 
 
 
@@ -1345,9 +1345,6 @@ Bellis, et al.          Expires February 3, 2019               [Page 24]
 
 Internet-Draft           DNS Stateful Operations             August 2018
 
-
-   most cases the inactivity timeout is expected to be shorter than the
-   keepalive interval.
 
    A shorter inactivity timeout with a longer keepalive interval signals
    to the client that it should not speculatively keep an inactive DSO
@@ -1394,6 +1391,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
    an operation is considered in progress for the time between request
    and response, typically a period of a few hundred milliseconds at
    most.  At the client, the inactivity timer is cleared upon
+   transmission of a request and remains cleared until reception of the
+   corresponding response.  At the server, the inactivity timer is
+
 
 
 
@@ -1402,8 +1402,6 @@ Bellis, et al.          Expires February 3, 2019               [Page 25]
 Internet-Draft           DNS Stateful Operations             August 2018
 
 
-   transmission of a request and remains cleared until reception of the
-   corresponding response.  At the server, the inactivity timer is
    cleared upon reception of a request and remains cleared until
    transmission of the corresponding response.
 
@@ -1450,6 +1448,8 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
    If, at any time during the life of the DSO Session, twice the
    inactivity timeout value (i.e., 30 seconds by default), or five
+   seconds, if twice the inactivity timeout value is less than five
+   seconds, elapses without there being any operation active on the DSO
 
 
 
@@ -1458,8 +1458,6 @@ Bellis, et al.          Expires February 3, 2019               [Page 26]
 Internet-Draft           DNS Stateful Operations             August 2018
 
 
-   seconds, if twice the inactivity timeout value is less than five
-   seconds, elapses without there being any operation active on the DSO
    Session, the server MUST consider the client delinquent, and MUST
    forcibly abort the DSO Session.
 
@@ -1505,6 +1503,8 @@ Internet-Draft           DNS Stateful Operations             August 2018
    The largest *finite* inactivity timeout supported by the current
    Keepalive TLV is 0xFFFFFFFE (2^32-2 milliseconds, approximately 49.7
    days).
+
+
 
 
 
@@ -2615,7 +2615,7 @@ Internet-Draft           DNS Stateful Operations             August 2018
        removing delayed ack avoids the needless 200 ms delay, and sends
        back an immediate ack, which tells Nagle's algorithm that it
        should immediately grant the sender permission to send its next
-       packet.  Unfortunately, for DSO messages that *do* elicit
+       packet.  Unfortunately, for DSO messages that *do* elicit a
        response, removing delayed ack removes the efficiency gains of
        combining acks with data, and the responder will now send two or
        three packets instead of one.
