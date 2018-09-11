@@ -198,6 +198,8 @@ and "OPTIONAL" in this document are to be interpreted as
 described in BCP 14 {{!RFC2119}} {{!RFC8174}} when, and only when, they
 appear in all capitals, as shown here.
 
+***
+
 # Terminology {#terminology}
 
 DSO:
@@ -326,6 +328,8 @@ resetting a timer:
 clearing a timer:
 : setting the timer value to zero but not restarting the timer.
 
+***
+
 # Applicability {#applicability}
 
 DNS Stateful Operations are applicable to several known use cases and are only
@@ -362,7 +366,10 @@ This traffic carries no DNS data and is not considered 'activity'
 in the classic DNS sense, but serves to maintain state in middleboxes,
 and to assure client and server that they still have connectivity to each other.
 
+***
+
 ## Applicable Transports {#transports}
+
 DNS Stateful Operations are applicable in cases where it is useful to maintain an open session
 between a DNS client and server, where the transport allows such a session to be maintained, and
 where the transport guarantees in-order delivery of messages, on which DSO depends.  Examples of
@@ -383,6 +390,8 @@ mechanism for managing sessions, and this is incompatible with the mechanism spe
 No other transports are currently defined for use with DNS Stateful Operations.  Such transports
 can be added in the future, if they meet the requirements set out in the first paragraph of this
 section.
+
+***
 
 # Protocol Details {#details}
 
@@ -543,6 +552,8 @@ gives implementers the option of using that new DSO-TYPE if they wish,
 but does not change the fact that sending a Keepalive TLV
 remains a valid way of initiating a DSO Session.
 
+***
+
 ## Session Termination {#sessiontermination}
 
 A "DSO Session" is terminated when the underlying connection is closed.
@@ -581,6 +592,8 @@ This document describes this latter form of error condition as a
 "fatal error" and specifies that an implementation encountering
 a fatal error condition "MUST forcibly abort the connection immediately".
 
+***
+
 ## Message Format {#format}
 
 A DSO message begins with
@@ -614,6 +627,8 @@ not zero, then a FORMERR MUST be returned.
        /                                                               /
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
+
+***
 
 ### DNS Header Fields in DSO Messages {#header}
 
@@ -680,6 +695,8 @@ make use of DSO.
 
 If a document defining a new DSO-TYPE makes use of response codes not defined here, then that document MUST specify the specific
 interpretation of those RCODE values in the context of that new DSO TLV.
+
+***
 
 ### DSO Data {#dsodata}
 
@@ -768,6 +785,8 @@ by virtue of its Discovery Relay link subscription, thereby indicating
 its support of Discovery Relay, and its desire to receive inbound mDNS
 packets over that DSO session {{?I-D.ietf-dnssd-mdns-relay}}.
 
+***
+
 ### TLV Syntax {#tlvsyntax}
 
 All TLVs, whether used as "Primary", "Additional", "Response Primary",
@@ -810,6 +829,8 @@ DSO-DATA as an opaque "blob" without attempting to interpret it.
 Interpretation of the meaning of the DSO-DATA for a particular
 DSO-TYPE is the responsibility of the software that implements that DSO-TYPE.
 
+***
+
 #### Request TLVs
 
 The first TLV in a DSO request message or DSO unidirectional message is the "Primary TLV"
@@ -839,6 +860,8 @@ and the required TLV(s) are not present, then this is a fatal
 error and the recipient of the defective response message MUST
 forcibly abort the connection immediately.
 
+***
+
 #### Unrecognized TLVs {#unrecognized}
 
 If DSO request message is received containing an unrecognized Primary TLV,
@@ -861,6 +884,8 @@ Similarly, if a DSO response message is received containing one
 or more unrecognized TLVs, the unrecognized TLVs MUST be silently
 ignored, and the remainder of the message is interpreted and
 handled as if the unrecognized parts were not present.
+
+***
 
 ### EDNS(0) and TSIG
 
@@ -897,6 +922,8 @@ If any message sent on a DSO Session contains an edns-tcp-keepalive EDNS0 Option
 this is a fatal error and the recipient of the defective message MUST
 forcibly abort the connection immediately.
 
+***
+
 ## Message Handling
 
 As described above in {{header}}, whether an outgoing DSO message with
@@ -917,6 +944,8 @@ elicit a response from the client.
 
 Every DSO message with both the QR bit in the DNS header and the MESSAGE ID field set to zero
 is a DSO unidirectional message, and MUST NOT elicit a response.
+
+***
 
 ### Delayed Acknowledgement Management
 
@@ -946,6 +975,8 @@ API to signal that no response for this message will be forthcoming,
 so that the TCP implementation can go ahead and send its
 acknowledgement and window update without further delay.
 See {{delack}} for further discussion of why this is important.
+
+***
 
 ### MESSAGE ID Namespaces
 
@@ -1025,6 +1056,8 @@ subsequent operations. If the server does not end the DSO Session by
 sending the client a Retry Delay message ({{retry}}) then the client
 SHOULD continue to use that DSO Session for subsequent operations.
 
+***
+
 ## Responder-Initiated Operation Cancellation {#cancellation}
 
 This document, the base specification for DNS Stateful Operations,
@@ -1060,6 +1093,8 @@ After a response message with nonzero RCODE has been received by the initiator,
 that operation has been terminated from the initiator's point of view,
 and the cancelled operation's MESSAGE ID is now free for reuse.
 
+***
+
 # DSO Session Lifecycle and Timers {#lifecycle}
 
 ## DSO Session Initiation {#initiation}
@@ -1075,6 +1110,8 @@ SHOULD NOT delay sending responses to those messages as they become available in
 order to return them in the order the requests were received.
 
 Section 6.2.1.1 of the DNS-over-TCP specification {{?RFC7766}} specifies this in more detail.
+
+***
 
 ## DSO Session Timeouts {#sessiontimeouts}
 
@@ -1155,6 +1192,8 @@ Just because a DSO Session has no traffic for an extended period of time
 does not automatically make that DSO Session "inactive",
 if it has an active operation that is awaiting events.
 
+***
+
 ## The Inactivity Timeout {#inactivetimer}
 
 The purpose of the inactivity timeout is for the server to balance the trade off
@@ -1229,6 +1268,8 @@ a new DSO Keepalive message dictating new Session Timeout values to the client.
 The largest **finite** inactivity timeout
 supported by the current Keepalive TLV is
 0xFFFFFFFE (2^32-2 milliseconds, approximately 49.7 days).
+
+***
 
 ## The Keepalive Interval {#keepalivetimer}
 
@@ -1336,7 +1377,6 @@ The client makes the determination of when to close a DSO
 Session based on an evaluation of both its own needs,
 and the inactivity timeout value dictated by the server.
 A server only causes a DSO Session to be ended in the exceptional circumstances outlined below.
-
 Some of the exceptional situations in which a server may terminate a DSO Session include:
 
 * The server application software or underlying operating system
@@ -1486,6 +1526,8 @@ problem will be solved in the first hour after it's first encountered.
 However, by restricting the retry interval to an hour, the client will
 be able to notice when the problem has been fixed without placing an
 undue burden on the server.
+
+***
 
 # Base TLVs for DNS Stateful Operations
 
@@ -1653,7 +1695,7 @@ before the server resorts to forcibly aborting it, the server
 SHOULD give the client an additional grace period of one quarter
 of the new inactivity timeout, or five seconds, whichever is greater.
 
-### Relation to edns-tcp-keepalive EDNS0 Option {#edns0keepalive}
+### Relationship to edns-tcp-keepalive EDNS0 Option {#edns0keepalive}
 
 The inactivity timeout value in the Keepalive TLV (DSO-TYPE=1) has
 similar intent to the edns-tcp-keepalive EDNS0 Option {{?RFC7828}}. A
@@ -1757,6 +1799,8 @@ SHOULD NOT attempt this operation again.
 The indicated time interval during which the initiator SHOULD NOT retry
 applies only to the failed operation, not to the DSO Session as a whole.
 
+***
+
 ## Encryption Padding TLV {#padding}
 
 The Encryption Padding TLV (DSO-TYPE=3) can only be used as
@@ -1791,6 +1835,8 @@ The length of padding is intentionally not specified in this document and
 is a function of current best practices with respect to the type and length
 of data in the preceding TLVs {{?I-D.ietf-dprive-padding-policy}}.
 
+***
+
 # Summary Highlights
 
 This section summarizes some noteworthy highlights about
@@ -1813,6 +1859,8 @@ The table below illustrates which combinations are legal and how they are interp
        +--------+------------------------------+------------------------+
        |  QR=1  |    Invalid - Fatal Error     |  DSO Response Message  |
        +--------+------------------------------+------------------------+
+
+***
 
 ## TLV Usage {#TLV}
 
@@ -1866,6 +1914,8 @@ The table provides a template for future TLV definitions to follow.
 It is recommended that definitions of future TLVs include a
 similar table summarizing the contexts where the new TLV is valid.
 
+***
+
 # Additional Considerations
 
 ## Service Instances {#serviceinstances}
@@ -1901,6 +1951,8 @@ Implementations SHOULD NOT resolve hostnames and then
 perform matching of IP address(es) in order to evaluate whether
 two entities should be determined to be the "same service instance".
 
+***
+
 ## Anycast Considerations {#anycast}
 
 When an anycast service is configured on a particular IP address and port, it
@@ -1928,6 +1980,8 @@ to be incorrect behavior in this context. It is however out of the possible
 scope for this specification to make specific recommendations in this regard;
 that would be up to follow-on documents that describe specific uses of DNS
 stateful operations.
+
+***
 
 ## Connection Sharing {#sharing}
 
@@ -1967,6 +2021,8 @@ the same client IP address.
 Because of these constraints, a DNS server MUST be prepared to accept
 multiple connections from different source ports on the same client IP address.
 
+***
+
 ## Zero Round-Trip Operation
 
 DSO permits zero round-trip operation
@@ -1990,6 +2046,8 @@ client and transmitted a successful NOERROR response for that request.
 Caution must be taken to ensure that DSO messages sent before the first
 round-trip is completed are idempotent, or are otherwise immune to any problems
 that could be result from the inadvertent replay that can occur with zero round-trip operation.
+
+***
 
 ## Operational Considerations for Middlebox
 
@@ -2139,6 +2197,8 @@ TCP message to signal that it is not going to send a response, and hence
 the delayed ack mechanism can stop waiting.
 Implementations on operating systems where this
 feature is available SHOULD make use of it.
+
+***
 
 # IANA Considerations
 
