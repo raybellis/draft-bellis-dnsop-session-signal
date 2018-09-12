@@ -1,7 +1,7 @@
 ---
 title: DNS Stateful Operations
-docname: draft-ietf-dnsop-session-signal-14
-date: 2018-8-2
+docname: draft-ietf-dnsop-session-signal-15
+date: 2018-9-12
 ipr: trust200902
 area: Internet
 wg: DNSOP Working Group

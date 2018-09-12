@@ -6,18 +6,18 @@ DNSOP Working Group                                            R. Bellis
 Internet-Draft                                                       ISC
 Updates: 1035, 7766 (if approved)                            S. Cheshire
 Intended status: Standards Track                              Apple Inc.
-Expires: February 3, 2019                                   J. Dickinson
+Expires: March 16, 2019                                     J. Dickinson
                                                             S. Dickinson
                                                                  Sinodun
                                                                 T. Lemon
                                                      Nibbhaya Consulting
                                                              T. Pusateri
                                                             Unaffiliated
-                                                         August 02, 2018
+                                                      September 12, 2018
 
 
                         DNS Stateful Operations
-                   draft-ietf-dnsop-session-signal-14
+                   draft-ietf-dnsop-session-signal-15
 
 Abstract
 
@@ -40,22 +40,22 @@ Status of This Memo
    Internet-Drafts are working documents of the Internet Engineering
    Task Force (IETF).  Note that other groups may also distribute
    working documents as Internet-Drafts.  The list of current Internet-
-   Drafts is at https://datatracker.ietf.org/drafts/current/.
+   Drafts is at http://datatracker.ietf.org/drafts/current/.
 
    Internet-Drafts are draft documents valid for a maximum of six months
    and may be updated, replaced, or obsoleted by other documents at any
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on February 3, 2019.
+   This Internet-Draft will expire on March 16, 2019.
 
 
 
 
 
-Bellis, et al.          Expires February 3, 2019                [Page 1]
+Bellis, et al.           Expires March 16, 2019                 [Page 1]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 Copyright Notice
@@ -65,7 +65,7 @@ Copyright Notice
 
    This document is subject to BCP 78 and the IETF Trust's Legal
    Provisions Relating to IETF Documents
-   (https://trustee.ietf.org/license-info) in effect on the date of
+   (http://trustee.ietf.org/license-info) in effect on the date of
    publication of this document.  Please review these documents
    carefully, as they describe your rights and restrictions with respect
    to this document.  Code Components extracted from this document must
@@ -109,9 +109,9 @@ Table of Contents
 
 
 
-Bellis, et al.          Expires February 3, 2019                [Page 2]
+Bellis, et al.           Expires March 16, 2019                 [Page 2]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
        6.4.2.  Values for the Inactivity Timeout . . . . . . . . . .  34
@@ -165,9 +165,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019                [Page 3]
+Bellis, et al.           Expires March 16, 2019                 [Page 3]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
    situations it is also advantageous to support server-initiated
@@ -221,9 +221,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019                [Page 4]
+Bellis, et al.           Expires March 16, 2019                 [Page 4]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
    displayed as unknown additional data after the end of the DNS
@@ -277,9 +277,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019                [Page 5]
+Bellis, et al.           Expires March 16, 2019                 [Page 5]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 3.  Terminology
@@ -333,9 +333,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019                [Page 6]
+Bellis, et al.           Expires March 16, 2019                 [Page 6]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
    receiver:  the software which is receiving a DNS message, a DSO
@@ -389,9 +389,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019                [Page 7]
+Bellis, et al.           Expires March 16, 2019                 [Page 7]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
    session timeouts:  the inactivity timer and the keepalive timer.
@@ -445,9 +445,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019                [Page 8]
+Bellis, et al.           Expires March 16, 2019                 [Page 8]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 4.  Applicability
@@ -501,9 +501,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019                [Page 9]
+Bellis, et al.           Expires March 16, 2019                 [Page 9]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 4.2.  Applicable Transports
@@ -557,9 +557,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 10]
+Bellis, et al.           Expires March 16, 2019                [Page 10]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 5.  Protocol Details
@@ -613,9 +613,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 11]
+Bellis, et al.           Expires March 16, 2019                [Page 11]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
       instance.  If the client no longer needs service, it does not
@@ -669,9 +669,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 12]
+Bellis, et al.           Expires March 16, 2019                [Page 12]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
    case the client is permitted to continue sending DNS messages on that
@@ -725,9 +725,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 13]
+Bellis, et al.           Expires March 16, 2019                [Page 13]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 5.2.  Operations After Session Establishment
@@ -781,9 +781,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 14]
+Bellis, et al.           Expires March 16, 2019                [Page 14]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 5.3.  Session Termination
@@ -837,9 +837,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 15]
+Bellis, et al.           Expires March 16, 2019                [Page 15]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 5.4.  Message Format
@@ -893,9 +893,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 16]
+Bellis, et al.           Expires March 16, 2019                [Page 16]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 5.4.1.  DNS Header Fields in DSO Messages
@@ -949,9 +949,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 17]
+Bellis, et al.           Expires March 16, 2019                [Page 17]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
    a DSO request message (QR=0) the RCODE is set to zero on
@@ -1005,9 +1005,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 18]
+Bellis, et al.           Expires March 16, 2019                [Page 18]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 5.4.2.  DSO Data
@@ -1061,9 +1061,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 19]
+Bellis, et al.           Expires March 16, 2019                [Page 19]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
    for an initiator to maintain state while it waits to receive replies
@@ -1117,9 +1117,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 20]
+Bellis, et al.           Expires March 16, 2019                [Page 20]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 5.4.3.  TLV Syntax
@@ -1173,9 +1173,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 21]
+Bellis, et al.           Expires March 16, 2019                [Page 21]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 5.4.3.1.  Request TLVs
@@ -1229,9 +1229,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 22]
+Bellis, et al.           Expires March 16, 2019                [Page 22]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 5.4.3.3.  Unrecognized TLVs
@@ -1285,9 +1285,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 23]
+Bellis, et al.           Expires March 16, 2019                [Page 23]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 5.4.4.  EDNS(0) and TSIG
@@ -1341,9 +1341,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 24]
+Bellis, et al.           Expires March 16, 2019                [Page 24]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 5.5.  Message Handling
@@ -1397,9 +1397,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 25]
+Bellis, et al.           Expires March 16, 2019                [Page 25]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 5.5.1.  Delayed Acknowledgement Management
@@ -1453,9 +1453,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 26]
+Bellis, et al.           Expires March 16, 2019                [Page 26]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 5.5.2.  MESSAGE ID Namespaces
@@ -1509,9 +1509,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 27]
+Bellis, et al.           Expires March 16, 2019                [Page 27]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 5.5.3.  Error Responses
@@ -1565,9 +1565,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 28]
+Bellis, et al.           Expires March 16, 2019                [Page 28]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 5.6.  Responder-Initiated Operation Cancellation
@@ -1621,9 +1621,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 29]
+Bellis, et al.           Expires March 16, 2019                [Page 29]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 6.  DSO Session Lifecycle and Timers
@@ -1677,9 +1677,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 30]
+Bellis, et al.           Expires March 16, 2019                [Page 30]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 6.2.  DSO Session Timeouts
@@ -1733,9 +1733,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 31]
+Bellis, et al.           Expires March 16, 2019                [Page 31]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 6.3.  Inactive DSO Sessions
@@ -1789,9 +1789,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 32]
+Bellis, et al.           Expires March 16, 2019                [Page 32]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 6.4.  The Inactivity Timeout
@@ -1845,9 +1845,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 33]
+Bellis, et al.           Expires March 16, 2019                [Page 33]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 6.4.2.  Values for the Inactivity Timeout
@@ -1901,9 +1901,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 34]
+Bellis, et al.           Expires March 16, 2019                [Page 34]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 6.5.  The Keepalive Interval
@@ -1957,9 +1957,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 35]
+Bellis, et al.           Expires March 16, 2019                [Page 35]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
    may impose a lower keepalive interval, to generate more frequent DSO
@@ -2013,9 +2013,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 36]
+Bellis, et al.           Expires March 16, 2019                [Page 36]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 6.6.  Server-Initiated Session Termination
@@ -2069,9 +2069,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 37]
+Bellis, et al.           Expires March 16, 2019                [Page 37]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 6.6.1.  Server-Initiated Retry Delay Message
@@ -2125,9 +2125,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 38]
+Bellis, et al.           Expires March 16, 2019                [Page 38]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
    be considered failed, and should be retried at a later time, as
@@ -2181,9 +2181,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 39]
+Bellis, et al.           Expires March 16, 2019                [Page 39]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
    then clients MAY attempt to reconnect.  In reality, if a client is
@@ -2237,9 +2237,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 40]
+Bellis, et al.           Expires March 16, 2019                [Page 40]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 7.  Base TLVs for DNS Stateful Operations
@@ -2293,9 +2293,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 41]
+Bellis, et al.           Expires March 16, 2019                [Page 41]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
    keepalive timer, not the inactivity timer.  The reason for this is
@@ -2349,9 +2349,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 42]
+Bellis, et al.           Expires March 16, 2019                [Page 42]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
    use from this point forward in this DSO Session.  No client DSO
@@ -2405,9 +2405,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 43]
+Bellis, et al.           Expires March 16, 2019                [Page 43]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
    Keepalive TLV in the received message does update the timeout
@@ -2461,9 +2461,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 44]
+Bellis, et al.           Expires March 16, 2019                [Page 44]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 7.2.  Retry Delay TLV
@@ -2517,9 +2517,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 45]
+Bellis, et al.           Expires March 16, 2019                [Page 45]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
       this DSO Session because it does not have authority over the names
@@ -2573,9 +2573,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 46]
+Bellis, et al.           Expires March 16, 2019                [Page 46]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 7.2.2.  Retry Delay TLV used as a Response Additional TLV
@@ -2629,9 +2629,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 47]
+Bellis, et al.           Expires March 16, 2019                [Page 47]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 7.3.  Encryption Padding TLV
@@ -2685,9 +2685,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 48]
+Bellis, et al.           Expires March 16, 2019                [Page 48]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 8.  Summary Highlights
@@ -2741,9 +2741,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 49]
+Bellis, et al.           Expires March 16, 2019                [Page 49]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 8.2.  TLV Usage
@@ -2797,9 +2797,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 50]
+Bellis, et al.           Expires March 16, 2019                [Page 50]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
    o  SRP - Response Primary TLV, included in response message sent back
@@ -2853,9 +2853,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 51]
+Bellis, et al.           Expires March 16, 2019                [Page 51]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 9.  Additional Considerations
@@ -2909,9 +2909,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 52]
+Bellis, et al.           Expires March 16, 2019                [Page 52]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 9.2.  Anycast Considerations
@@ -2965,9 +2965,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 53]
+Bellis, et al.           Expires March 16, 2019                [Page 53]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 9.3.  Connection Sharing
@@ -3021,9 +3021,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 54]
+Bellis, et al.           Expires March 16, 2019                [Page 54]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 9.4.  Zero Round-Trip Operation
@@ -3077,9 +3077,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 55]
+Bellis, et al.           Expires March 16, 2019                [Page 55]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 9.5.  Operational Considerations for Middlebox
@@ -3133,9 +3133,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 56]
+Bellis, et al.           Expires March 16, 2019                [Page 56]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 9.6.  TCP Delayed Acknowledgement Considerations
@@ -3189,9 +3189,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 57]
+Bellis, et al.           Expires March 16, 2019                [Page 57]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
    Unfortunately, Nagle's algorithm and delayed ack, two valuable
@@ -3245,9 +3245,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 58]
+Bellis, et al.           Expires March 16, 2019                [Page 58]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
    and no response for this message will be generated.  TCP can then
@@ -3301,9 +3301,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 59]
+Bellis, et al.           Expires March 16, 2019                [Page 59]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 10.  IANA Considerations
@@ -3357,9 +3357,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 60]
+Bellis, et al.           Expires March 16, 2019                [Page 60]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
    range FC00-FFFF require publication of an IETF Standards Action
@@ -3413,9 +3413,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 61]
+Bellis, et al.           Expires March 16, 2019                [Page 61]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
 11.1.  TCP Fast Open Considerations
@@ -3469,15 +3469,15 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 62]
+Bellis, et al.           Expires March 16, 2019                [Page 62]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
-              DOI 10.17487/RFC2119, March 1997,
-              <https://www.rfc-editor.org/info/rfc2119>.
+              DOI 10.17487/RFC2119, March 1997, <https://www.rfc-
+              editor.org/info/rfc2119>.
 
    [RFC2136]  Vixie, P., Ed., Thomson, S., Rekhter, Y., and J. Bound,
               "Dynamic Updates in the Domain Name System (DNS UPDATE)",
@@ -3486,8 +3486,8 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
    [RFC6891]  Damas, J., Graff, M., and P. Vixie, "Extension Mechanisms
               for DNS (EDNS(0))", STD 75, RFC 6891,
-              DOI 10.17487/RFC6891, April 2013,
-              <https://www.rfc-editor.org/info/rfc6891>.
+              DOI 10.17487/RFC6891, April 2013, <https://www.rfc-
+              editor.org/info/rfc6891>.
 
    [RFC7766]  Dickinson, J., Dickinson, S., Bellis, R., Mankin, A., and
               D. Wessels, "DNS Transport over TCP - Implementation
@@ -3495,8 +3495,8 @@ Internet-Draft           DNS Stateful Operations             August 2018
               <https://www.rfc-editor.org/info/rfc7766>.
 
    [RFC7830]  Mayrhofer, A., "The EDNS(0) Padding Option", RFC 7830,
-              DOI 10.17487/RFC7830, May 2016,
-              <https://www.rfc-editor.org/info/rfc7830>.
+              DOI 10.17487/RFC7830, May 2016, <https://www.rfc-
+              editor.org/info/rfc7830>.
 
    [RFC8126]  Cotton, M., Leiba, B., and T. Narten, "Guidelines for
               Writing an IANA Considerations Section in RFCs", BCP 26,
@@ -3525,9 +3525,9 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 63]
+Bellis, et al.           Expires March 16, 2019                [Page 63]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
    [I-D.ietf-doh-dns-over-https]
@@ -3546,8 +3546,8 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
    [RFC1122]  Braden, R., Ed., "Requirements for Internet Hosts -
               Communication Layers", STD 3, RFC 1122,
-              DOI 10.17487/RFC1122, October 1989,
-              <https://www.rfc-editor.org/info/rfc1122>.
+              DOI 10.17487/RFC1122, October 1989, <https://www.rfc-
+              editor.org/info/rfc1122>.
 
    [RFC2132]  Alexander, S. and R. Droms, "DHCP Options and BOOTP Vendor
               Extensions", RFC 2132, DOI 10.17487/RFC2132, March 1997,
@@ -3559,8 +3559,8 @@ Internet-Draft           DNS Stateful Operations             August 2018
               <https://www.rfc-editor.org/info/rfc5382>.
 
    [RFC6762]  Cheshire, S. and M. Krochmal, "Multicast DNS", RFC 6762,
-              DOI 10.17487/RFC6762, February 2013,
-              <https://www.rfc-editor.org/info/rfc6762>.
+              DOI 10.17487/RFC6762, February 2013, <https://www.rfc-
+              editor.org/info/rfc6762>.
 
    [RFC6763]  Cheshire, S. and M. Krochmal, "DNS-Based Service
               Discovery", RFC 6763, DOI 10.17487/RFC6763, February 2013,
@@ -3572,8 +3572,8 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
    [RFC7828]  Wouters, P., Abley, J., Dickinson, S., and R. Bellis, "The
               edns-tcp-keepalive EDNS0 Option", RFC 7828,
-              DOI 10.17487/RFC7828, April 2016,
-              <https://www.rfc-editor.org/info/rfc7828>.
+              DOI 10.17487/RFC7828, April 2016, <https://www.rfc-
+              editor.org/info/rfc7828>.
 
 
 
@@ -3581,16 +3581,16 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 64]
+Bellis, et al.           Expires March 16, 2019                [Page 64]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
    [RFC7857]  Penno, R., Perreault, S., Boucadair, M., Ed., Sivakumar,
               S., and K. Naito, "Updates to Network Address Translation
               (NAT) Behavioral Requirements", BCP 127, RFC 7857,
-              DOI 10.17487/RFC7857, April 2016,
-              <https://www.rfc-editor.org/info/rfc7857>.
+              DOI 10.17487/RFC7857, April 2016, <https://www.rfc-
+              editor.org/info/rfc7857>.
 
    [RFC7858]  Hu, Z., Zhu, L., Heidemann, J., Mankin, A., Wessels, D.,
               and P. Hoffman, "Specification for DNS over Transport
@@ -3637,9 +3637,9 @@ Authors' Addresses
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 65]
+Bellis, et al.           Expires March 16, 2019                [Page 65]
 
-Internet-Draft           DNS Stateful Operations             August 2018
+Internet-Draft           DNS Stateful Operations          September 2018
 
 
    Sara Dickinson
@@ -3693,4 +3693,4 @@ Internet-Draft           DNS Stateful Operations             August 2018
 
 
 
-Bellis, et al.          Expires February 3, 2019               [Page 66]
+Bellis, et al.           Expires March 16, 2019                [Page 66]
