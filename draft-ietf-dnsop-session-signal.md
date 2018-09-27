@@ -267,6 +267,12 @@ long-lived operation:
 either the client or server, acting as initiator, has requested that the
 responder send new information regarding the request, as it becomes available.
 
+Fast Open message:
+A TCP SYN packet that begins a DSO connection and contains early data ({{RFC8446}} section 2.3).   Fast
+Open is only permitted when using TLS encapsulation: a TCP SYN message that does not use TLS encapsulation
+but contains early data is not permitted.
+
+
 DNS message:
 : any DNS message, including DNS queries, response, updates, DSO messages, etc.
 
@@ -475,6 +481,16 @@ A DSO Session is established over a connection by the client
 sending a DSO request message, such as a DSO Keepalive request message ({{keepalive}}),
 and receiving a response, with matching MESSAGE ID, and RCODE
 set to NOERROR (0), indicating that the DSO request was successful.
+
+Some DSO messages are permitted in Fast Open messages ({{zrtt}}).  Others are not.
+Unidirectional messages are never permitted in Fast Open messages unless an implicit session
+exists.
+
+If a server receives a Fast Open message containing a DSO message whose primary TLV is not
+permitted to appear in a Fast Open message, the server MUST forcible abort the connection.  If a
+client receives a Fast Open message containing any DSO message, and there is no implicit DSO
+session, the client MUST forcibly abort the connection.   If a server or client receives a Fast
+Open message that is not a TLS 1.3 message, it MUST forcibly abort the connection.
 
 ### Session Establishment Failure {#stabfail}
 
@@ -1544,6 +1560,9 @@ purpose of keeping a session alive.
 The client will request the desired session timeout values and the server will
 acknowledge with the response values that it requires the client to use.
 
+DSO messages with the Keepalive TLV as the primary TLV may appear in
+Fast Open messages.
+
 The DSO-DATA for the Keepalive TLV is as follows:
 
                             1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
@@ -1713,7 +1732,8 @@ the connection immediately.
 
 The Retry Delay TLV (DSO-TYPE=2) can be used as
 a Primary TLV (unidirectional) in a server-to-client message,
-or as a Response Additional TLV in either direction.
+or as a Response Additional TLV in either direction.   DSO messages
+with a Relay Delay TLV as their primary TLV are not permitted in Fast Open messages.
 
 The DSO-DATA for the Retry Delay TLV is as follows:
 
@@ -2023,32 +2043,6 @@ multiple connections from different source ports on the same client IP address.
 
 ***
 
-## Zero Round-Trip Operation
-
-DSO permits zero round-trip operation
-using TCP Fast Open {{?RFC7413}}
-and TLS 1.3 {{?RFC8446}}
-to reduce or eliminate
-round trips in session establishment.
-
-A client MAY send multiple response-requiring DSO messages using TCP fast
-open or TLS 1.3 early data,
-without having to wait for a DSO response to the first DSO request message
-to confirm successful establishment of a DSO session.
-
-However, a client MUST NOT send DSO unidirectional
-messages until after a DSO Session has been mutually established.
-
-Similarly, a server MUST NOT send DSO request messages until it
-has received a response-requiring DSO request message from a
-client and transmitted a successful NOERROR response for that request.
-
-Caution must be taken to ensure that DSO messages sent before the first
-round-trip is completed are idempotent, or are otherwise immune to any problems
-that could be result from the inadvertent replay that can occur with zero round-trip operation.
-
-***
-
 ## Operational Considerations for Middlebox
 
 Where an application-layer middlebox (e.g., a DNS proxy, forwarder,
@@ -2220,16 +2214,30 @@ the specific DSO-TYPE of the primary TLV in the DSO request message.
 The IANA is requested to create the 16-bit DSO Type Code Registry,
 with initial (hexadecimal) values as shown below:
 
-| Type | Name | Status | Reference |
-|------|------|--------|-----------|
-| 0000 | Reserved | Standard | RFC-TBD |
-| 0001 | KeepAlive | Standard | RFC-TBD |
-| 0002 | RetryDelay | Standard | RFC-TBD |
-| 0003 | EncryptionPadding | Standard | RFC-TBD |
-| 0004-003F | Unassigned, reserved for    DSO session-management TLVs | | |
-| 0040-F7FF | Unassigned | | |
-| F800-FBFF | Experimental/local use | | |
-| FC00-FFFF | Reserved for future expansion | | |
+| Type | Name | Fast Open | Status | Reference |
+|------|------|-----------|--------|-----------|
+| 0000 | Reserved | NO | Standard | RFC-TBD |
+| 0001 | KeepAlive | OK | Standard | RFC-TBD |
+| 0002 | RetryDelay | NO | Standard | RFC-TBD |
+| 0003 | EncryptionPadding | NA | Standard | RFC-TBD |
+| 0004-003F | Unassigned, reserved for DSO session-management TLVs | NO, until assigned | | |
+| 0040-F7FF | Unassigned | NO, until assigned | | |
+| F800-FBFF | Experimental/local use | NO, except on local experimental basis | | |
+| FC00-FFFF | Reserved for future expansion | NO, until defined | | |
+
+The meanings of the fields are as follows:
+
+Type:
+: the 16-bit DSO type code
+Name:
+: the human-readable name of the TLV
+Fast Open:
+: If OK, this TLV may be sent in a Fast Open (TLS 0-RTT) ({{I-D.draft-ietf-tls-tls13}} Section 2.3) message.   If NA,
+the TLV may appear as a secondary TLV in a DSO message that is included in a Fast Open message.
+Status:
+: IETF Document status (or "External" if not documented in an IETF document.
+Reference:
+: A stable reference to the document in which this TLV is defined.
 
 DSO Type Code zero is reserved and is not currently intended for allocation.
 
@@ -2237,6 +2245,10 @@ Registrations of new DSO Type Codes in
 the "Reserved for DSO session-management" range 0004-003F
 and the "Reserved for future expansion" range FC00-FFFF
 require publication of an IETF Standards Action document {{!RFC8126}}.
+
+Any document defining a new TLV which lists a value of "OK" in the Fast Open or 0-RTT column
+must include a threat analysis for the use of the TLV in the case of TCP Fast Open and in the
+case of TLS 0-RTT.  See {{zrtt}} for details.
 
 Requests to register additional new DSO Type Codes
 in the "Unassigned" range 0040-F7FF
@@ -2282,24 +2294,46 @@ server as a result. However, because the server can limit the number of DSO
 sessions established and can also close existing DSO sessions as needed, denial
 of service or resource exhaustion should not be a concern.
 
-## TCP Fast Open Considerations
+## TCP Fast Open and TLS 0-RTT Considerations {#zrtt}
+
+DSO permits zero round-trip operation using TCP Fast Open {{?RFC7413}} with TLS 1.3 {{?RFC8446}}
+0-RTT to reduce or eliminate round trips in session establishment.
+
+A DSO message may or may not be permitted to be sent in a Fast Open message.  The definition for
+each TLV that can be used as a primary TLV is required to state whether or not that TLV is
+permitted in Fast Open messages.  Only response-requiring messages are ever permitted in
+Fast Open messages, and only clients are permitted to send any DSO message in a Fast Open
+message, unless there is an implicit session (see {{establishment}}).
+
+For DSO messages that are permitted in Fast Open messages, a client MAY include one or more such
+messages messages in a Fast Open message without having to wait for a DSO response to the first
+DSO request message to confirm successful establishment of a DSO session.
+
+However, unless there is an implicit session, a client MUST NOT send DSO unidirectional messages
+until after a DSO Session has been mutually established.
+
+Similarly, unless there is an implicit session, a server MUST NOT send DSO request messages
+until it has received a response-requiring DSO request message from a client and transmitted a
+successful NOERROR response for that request.
+
+Caution must be taken to ensure that DSO messages sent before the first round-trip is completed
+are idempotent, or are otherwise immune to any problems that could be result from the
+inadvertent replay that can occur with zero round-trip operation.
 
 It would be possible to add a TLV that requires the server to do some significant
 work, and send that to the server as initial data in a TCP SYN packet.   A flood
 of such packets could be used as a DoS attack on the server.   None of the TLVs
-defined here have this property.   If a new TLV is specified that does have this
-property, the specification should require that some kind of exchange be done with
-the server before work is done.   That is, the TLV that requires work could not
-be processed without a round-trip from the server to the client to verify that
-the source address of the packet is reachable.
+defined here have this property.
 
-One way to accomplish this would be to have the client send a TLV indicating that
-it wishes to have the server do work of this sort; this TLV would not actually result
-in work being done, but would request a nonce from the server.   The client could
-then use that nonce to request that work be done.
+If a new TLV is specified that does have this property, that TLV must be specified as not
+permitted in 0-RTT messages.  This prevents work from being done until a round-trip has occurred
+from the server to the client to verify that the source address of the packet is reachable.
 
-Alternatively, the server could simply disable TCP fast open.   This same problem
-would exist for DNS-over-TLS with TLS early data; the same remedies would apply.
+Documents that define new TLVs must state whether each new TLV is permitted for use with TCP
+Fast Open and 0-RTT.  Such documents must include a threat analysis in the security
+considerations section for each TLV defined in the document that is permitted to be used for TCP
+Fast Open and 0-RTT.  This threat analysis should be done based on the advice given in
+{{RFC8446}} Section 2.3, 8 and Appendix E.5.
 
 # Acknowledgements
 
