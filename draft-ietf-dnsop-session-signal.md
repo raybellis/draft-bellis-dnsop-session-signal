@@ -1,7 +1,7 @@
 ---
 title: DNS Stateful Operations
-docname: draft-ietf-dnsop-session-signal-14
-date: 2018-8-2
+docname: draft-ietf-dnsop-session-signal-15
+date: 2018-9-12
 ipr: trust200902
 area: Internet
 wg: DNSOP Working Group
@@ -198,6 +198,8 @@ and "OPTIONAL" in this document are to be interpreted as
 described in BCP 14 {{!RFC2119}} {{!RFC8174}} when, and only when, they
 appear in all capitals, as shown here.
 
+***
+
 # Terminology {#terminology}
 
 DSO:
@@ -326,6 +328,8 @@ resetting a timer:
 clearing a timer:
 : setting the timer value to zero but not restarting the timer.
 
+***
+
 # Applicability {#applicability}
 
 DNS Stateful Operations are applicable to several known use cases and are only
@@ -362,7 +366,10 @@ This traffic carries no DNS data and is not considered 'activity'
 in the classic DNS sense, but serves to maintain state in middleboxes,
 and to assure client and server that they still have connectivity to each other.
 
+***
+
 ## Applicable Transports {#transports}
+
 DNS Stateful Operations are applicable in cases where it is useful to maintain an open session
 between a DNS client and server, where the transport allows such a session to be maintained, and
 where the transport guarantees in-order delivery of messages, on which DSO depends.  Examples of
@@ -383,6 +390,8 @@ mechanism for managing sessions, and this is incompatible with the mechanism spe
 No other transports are currently defined for use with DNS Stateful Operations.  Such transports
 can be added in the future, if they meet the requirements set out in the first paragraph of this
 section.
+
+***
 
 # Protocol Details {#details}
 
@@ -543,6 +552,8 @@ gives implementers the option of using that new DSO-TYPE if they wish,
 but does not change the fact that sending a Keepalive TLV
 remains a valid way of initiating a DSO Session.
 
+***
+
 ## Session Termination {#sessiontermination}
 
 A "DSO Session" is terminated when the underlying connection is closed.
@@ -581,6 +592,8 @@ This document describes this latter form of error condition as a
 "fatal error" and specifies that an implementation encountering
 a fatal error condition "MUST forcibly abort the connection immediately".
 
+***
+
 ## Message Format {#format}
 
 A DSO message begins with
@@ -614,6 +627,8 @@ not zero, then a FORMERR MUST be returned.
        /                                                               /
        +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
+
+***
 
 ### DNS Header Fields in DSO Messages {#header}
 
@@ -680,6 +695,8 @@ make use of DSO.
 
 If a document defining a new DSO-TYPE makes use of response codes not defined here, then that document MUST specify the specific
 interpretation of those RCODE values in the context of that new DSO TLV.
+
+***
 
 ### DSO Data {#dsodata}
 
@@ -768,6 +785,8 @@ by virtue of its Discovery Relay link subscription, thereby indicating
 its support of Discovery Relay, and its desire to receive inbound mDNS
 packets over that DSO session {{?I-D.ietf-dnssd-mdns-relay}}.
 
+***
+
 ### TLV Syntax {#tlvsyntax}
 
 All TLVs, whether used as "Primary", "Additional", "Response Primary",
@@ -810,6 +829,8 @@ DSO-DATA as an opaque "blob" without attempting to interpret it.
 Interpretation of the meaning of the DSO-DATA for a particular
 DSO-TYPE is the responsibility of the software that implements that DSO-TYPE.
 
+***
+
 #### Request TLVs
 
 The first TLV in a DSO request message or DSO unidirectional message is the "Primary TLV"
@@ -839,6 +860,8 @@ and the required TLV(s) are not present, then this is a fatal
 error and the recipient of the defective response message MUST
 forcibly abort the connection immediately.
 
+***
+
 #### Unrecognized TLVs {#unrecognized}
 
 If DSO request message is received containing an unrecognized Primary TLV,
@@ -861,6 +884,8 @@ Similarly, if a DSO response message is received containing one
 or more unrecognized TLVs, the unrecognized TLVs MUST be silently
 ignored, and the remainder of the message is interpreted and
 handled as if the unrecognized parts were not present.
+
+***
 
 ### EDNS(0) and TSIG
 
@@ -897,27 +922,63 @@ If any message sent on a DSO Session contains an edns-tcp-keepalive EDNS0 Option
 this is a fatal error and the recipient of the defective message MUST
 forcibly abort the connection immediately.
 
+***
+
 ## Message Handling
 
-The initiator MUST set the value of the QR bit in the DNS header to zero (0),
-and the responder MUST set it to one (1).
-
-As described above in {{header}}, whether an outgoing DSO message with QR=0
+As described above in {{header}}, whether an outgoing DSO message with
+the QR bit in the DNS header set to zero
 is a DSO request or DSO unidirectional message is determined by the specification
 for the Primary TLV, which in turn determines whether the MESSAGE ID field
 in that outgoing message will be zero or nonzero.
 
-A DSO unidirectional message has both the QR bit and the MESSAGE ID field set to zero,
-and MUST NOT elicit a response.
-
-Every DSO request message (QR=0) with a nonzero MESSAGE ID field
-is a DSO request message, and MUST elicit a corresponding response (QR=1),
-which MUST have the same MESSAGE ID in the DNS message header as in the corresponding DSO request message.
+Every DSO message with the QR bit in the DNS header set to zero and a nonzero MESSAGE ID field
+is a DSO request message, and MUST elicit a corresponding response,
+with the QR bit in the DNS header set to one and the MESSAGE ID field set to the
+value given in the corresponding DSO request message.
 
 Valid DSO request messages sent by the client with a nonzero MESSAGE ID field
 elicit a response from the server, and
 valid DSO request messages sent by the server with a nonzero MESSAGE ID field
 elicit a response from the client.
+
+Every DSO message with both the QR bit in the DNS header and the MESSAGE ID field set to zero
+is a DSO unidirectional message, and MUST NOT elicit a response.
+
+***
+
+### Delayed Acknowledgement Management
+
+Generally, most good TCP implementations employ a delayed acknowledgement timer
+to provide more efficient use of the network and better performance.
+
+With a DSO request message, the TCP implementation waits for the
+application-layer client software to generate the corresponding DSO
+response message, which enables the TCP implementation to send a
+single combined IP packet containing the TCP acknowledgement, the
+TCP window update, and the application-generated DSO response message.
+This is more efficient than sending three separate IP packets.
+
+With a DSO unidirectional message or DSO response message,
+there is no corresponding application-generated DSO response message,
+and consequently, no hint to the transport protocol about
+when it should send its acknowledgement and window update.
+Some networking APIs provide a mechanism that allows the
+application-layer client software to signal to the
+transport protocol that no response will be forthcoming
+(in effect it can be thought of as a zero-length "empty" write).
+Where available in the networking API being used,
+the recipient of a DSO unidirectional message or DSO response message,
+having parsed and interpreted the message,
+SHOULD then use this mechanism provided by the networking
+API to signal that no response for this message will be forthcoming,
+so that the TCP implementation can go ahead and send its
+acknowledgement and window update without further delay.
+See {{delack}} for further discussion of why this is important.
+
+***
+
+### MESSAGE ID Namespaces
 
 The namespaces of 16-bit MESSAGE IDs are independent in each direction.
 This means it is **not** an error for both client and server to send DSO request
@@ -952,7 +1013,7 @@ If a client or server receives a response (QR=1) where the MESSAGE ID is zero, o
 any other value that does not match the MESSAGE ID of any of its outstanding operations,
 this is a fatal error and the recipient MUST forcibly abort the connection immediately.
 
-If a responder receives a DSO request message(QR=0) where the MESSAGE ID is not zero, and
+If a responder receives a DSO request message (QR=0) where the MESSAGE ID is not zero, and
 the responder tracks request MESSAGE IDs, and the MESSAGE ID
 matches the MESSAGE ID of a DSO request message it received for which a response has not yet been sent,
 it MUST forcibly abort the connection immediately.   This behavior is required to prevent
@@ -995,6 +1056,8 @@ subsequent operations. If the server does not end the DSO Session by
 sending the client a Retry Delay message ({{retry}}) then the client
 SHOULD continue to use that DSO Session for subsequent operations.
 
+***
+
 ## Responder-Initiated Operation Cancellation {#cancellation}
 
 This document, the base specification for DNS Stateful Operations,
@@ -1030,6 +1093,8 @@ After a response message with nonzero RCODE has been received by the initiator,
 that operation has been terminated from the initiator's point of view,
 and the cancelled operation's MESSAGE ID is now free for reuse.
 
+***
+
 # DSO Session Lifecycle and Timers {#lifecycle}
 
 ## DSO Session Initiation {#initiation}
@@ -1046,7 +1111,7 @@ order to return them in the order the requests were received.
 
 Section 6.2.1.1 of the DNS-over-TCP specification {{?RFC7766}} specifies this in more detail.
 
-\[No it doesn't. RFC7766 has no section 3.3.\]
+***
 
 ## DSO Session Timeouts {#sessiontimeouts}
 
@@ -1127,6 +1192,8 @@ Just because a DSO Session has no traffic for an extended period of time
 does not automatically make that DSO Session "inactive",
 if it has an active operation that is awaiting events.
 
+***
+
 ## The Inactivity Timeout {#inactivetimer}
 
 The purpose of the inactivity timeout is for the server to balance the trade off
@@ -1201,6 +1268,8 @@ a new DSO Keepalive message dictating new Session Timeout values to the client.
 The largest **finite** inactivity timeout
 supported by the current Keepalive TLV is
 0xFFFFFFFE (2^32-2 milliseconds, approximately 49.7 days).
+
+***
 
 ## The Keepalive Interval {#keepalivetimer}
 
@@ -1308,7 +1377,6 @@ The client makes the determination of when to close a DSO
 Session based on an evaluation of both its own needs,
 and the inactivity timeout value dictated by the server.
 A server only causes a DSO Session to be ended in the exceptional circumstances outlined below.
-
 Some of the exceptional situations in which a server may terminate a DSO Session include:
 
 * The server application software or underlying operating system
@@ -1458,6 +1526,8 @@ problem will be solved in the first hour after it's first encountered.
 However, by restricting the retry interval to an hour, the client will
 be able to notice when the problem has been fixed without placing an
 undue burden on the server.
+
+***
 
 # Base TLVs for DNS Stateful Operations
 
@@ -1625,7 +1695,7 @@ before the server resorts to forcibly aborting it, the server
 SHOULD give the client an additional grace period of one quarter
 of the new inactivity timeout, or five seconds, whichever is greater.
 
-### Relation to edns-tcp-keepalive EDNS0 Option {#edns0keepalive}
+### Relationship to edns-tcp-keepalive EDNS0 Option {#edns0keepalive}
 
 The inactivity timeout value in the Keepalive TLV (DSO-TYPE=1) has
 similar intent to the edns-tcp-keepalive EDNS0 Option {{?RFC7828}}. A
@@ -1729,6 +1799,8 @@ SHOULD NOT attempt this operation again.
 The indicated time interval during which the initiator SHOULD NOT retry
 applies only to the failed operation, not to the DSO Session as a whole.
 
+***
+
 ## Encryption Padding TLV {#padding}
 
 The Encryption Padding TLV (DSO-TYPE=3) can only be used as
@@ -1763,6 +1835,8 @@ The length of padding is intentionally not specified in this document and
 is a function of current best practices with respect to the type and length
 of data in the preceding TLVs {{?I-D.ietf-dprive-padding-policy}}.
 
+***
+
 # Summary Highlights
 
 This section summarizes some noteworthy highlights about
@@ -1785,6 +1859,8 @@ The table below illustrates which combinations are legal and how they are interp
        +--------+------------------------------+------------------------+
        |  QR=1  |    Invalid - Fatal Error     |  DSO Response Message  |
        +--------+------------------------------+------------------------+
+
+***
 
 ## TLV Usage {#TLV}
 
@@ -1838,6 +1914,8 @@ The table provides a template for future TLV definitions to follow.
 It is recommended that definitions of future TLVs include a
 similar table summarizing the contexts where the new TLV is valid.
 
+***
+
 # Additional Considerations
 
 ## Service Instances {#serviceinstances}
@@ -1873,6 +1951,8 @@ Implementations SHOULD NOT resolve hostnames and then
 perform matching of IP address(es) in order to evaluate whether
 two entities should be determined to be the "same service instance".
 
+***
+
 ## Anycast Considerations {#anycast}
 
 When an anycast service is configured on a particular IP address and port, it
@@ -1900,6 +1980,8 @@ to be incorrect behavior in this context. It is however out of the possible
 scope for this specification to make specific recommendations in this regard;
 that would be up to follow-on documents that describe specific uses of DNS
 stateful operations.
+
+***
 
 ## Connection Sharing {#sharing}
 
@@ -1939,6 +2021,8 @@ the same client IP address.
 Because of these constraints, a DNS server MUST be prepared to accept
 multiple connections from different source ports on the same client IP address.
 
+***
+
 ## Zero Round-Trip Operation
 
 DSO permits zero round-trip operation
@@ -1962,6 +2046,8 @@ client and transmitted a successful NOERROR response for that request.
 Caution must be taken to ensure that DSO messages sent before the first
 round-trip is completed are idempotent, or are otherwise immune to any problems
 that could be result from the inadvertent replay that can occur with zero round-trip operation.
+
+***
 
 ## Operational Considerations for Middlebox
 
@@ -2005,58 +2091,114 @@ sessions at the middlebox, but maintaining state in the middlebox about any
 long-lived that are requested.   Specifying this in detail is beyond the scope
 of this document.
 
-## TCP Delayed Acknowledgement Considerations
+## TCP Delayed Acknowledgement Considerations {#delack}
 
-Because DSO Unidirectional messages do not elicit a response from the receiver, they will
-trigger the TCP stack to use the TCP Delayed Acknowledgment algorithm {{NagleDA}}, which
-will create inappropriate delays in message flow on the TCP connection.
+Most modern implementations of the Transmission Control Protocol (TCP) include a
+feature called "Delayed Acknowledgement" {{?RFC1122}}.
 
-At the time that this document is being prepared for publication, it is known that at least one
-TCP implementation provides the ability for the recipient of a TCP message to signal that it is not
-going to send a response, and hence Nagle's algorithm need not be used.  Implementations on
-operating systems where this feature is available SHOULD make use of it.
+Without this feature, TCP can be very wasteful on the network.
+For illustration, consider a simple example like remote login,
+using a very simple TCP implementation that lacks delayed acks.
+When the user types a keystroke, a data packet is sent.
+When the data packet arrives at the server,
+the simple TCP implementation sends an immediate acknowledgement.
+Mere milliseconds later, the server process reads the one byte of keystroke data,
+and consequently the simple TCP implementation sends an immediate window update.
+Mere milliseconds later, the server process generates the character echo,
+and sends this data back in reply.
+The simple TCP implementation then sends this data packet immediately too.
+In this case, this simple TCP implementation sends a burst of three packets
+almost instantaneously (ack, window update, data).
 
-With most TCP implementations, for DSO requests that generate a
-response, the TCP data acknowledgement (generated because data has
-been received by TCP), the TCP window update (generated because TCP
-has delivered that data to the receiving software), and the DSO
-response (generated by the receiving application-layer software
-itself) are all combined into a single IP packet.  Combining these
-three elements into a single IP packet can give a significant
-improvement in network efficiency, assuming that the DSO response is
-sent before the TCP Delayed Acknowledgement timer goes off.
+Clearly it would be more efficient if the TCP implementation were to
+combine the three separate packets into one,
+and this is what the delayed ack feature enables.
 
-For DSO requests that do not generate a response, if the TCP
-implementation receives no signal from the recipient indicating that no
-response will be forthcoming, it can only wait fruitlessly for the
-response that isn't coming, until the Delayed
-ACK timer fires {{?RFC1122}} (typically 200 milliseconds).   Only then
-does it send the TCP ACK and window update.
+With delayed ack, the TCP implementation waits after receiving a data packet,
+typically for 200 ms, and then send its ack if
+(a) more data packet(s) arrive
+(b) the receiving process generates some reply data, or
+(c) 200 ms elapses without either of the above occurring.
 
-In conjunction with
-Nagle's Algorithm at the sender, this can delay the sender's
-transmission of its next (non-full-sized) TCP segment, while the
-sender is waiting for its previous (non-full-sized) TCP segment to be
-acknowledged, which won't happen until the Delayed ACK timer fires.
+With delayed ack, remote login becomes much more efficient,
+generating just one packet instead of three for each character echo.
 
-Nagle's Algorithm exists to combine multiple small application writes
-into more-efficient large TCP segments, to guard against wasteful use
-of the network by applications that would otherwise transmit a stream
-of small TCP segments, but in this case Nagle's Algorithm (created to
-improve network efficiency) can interact badly with TCP's Delayed ACK
-feature (also created to improve network efficiency) {{NagleDA}} with
-the result of delaying some messages by up to 200 milliseconds.
+The logic of delayed ack is that the 200 ms delay cannot do any significant harm.
+If something at the other end were waiting for something, then the receiving
+process should generate the reply that the thing at the end is waiting for,
+and TCP will then immediately send that reply (and the ack and window update).
+And if the receiving process does not in fact generate any reply for this
+particular message, then by definition the thing at the other end cannot be
+waiting for anything, so the 200 ms delay is harmless.
 
-It is possible with many TCP implementations either to disable Nagle's algorithm, or to disable
-delayed acknowledgment, or both.  Unfortunately, this affects every message sent over the
-connection, not just those connections for which this help is needed.  It may give the
-implementor the impression that their software is going faster, but on a heavily-used network,
-or a low-bandwidth or high-latency network, the result can be a significant degradation in
-overall network performance.
+This assumption may be true, unless the sender is using Nagle's algorithm,
+a similar efficiency feature, created to protect the network from poorly
+written client software that performs many rapid small writes in succession.
+Nagle's algorithm allows these small writes to be combined into larger,
+less wasteful packets.
 
-For this reason, we do not recommend either of these strategies, and instead recommend that
-implementations take advantage of the capability to signal that no response will be sent, where
-that capability is present.
+Unfortunately, Nagle's algorithm and delayed ack,
+two valuable efficiency features,
+can interact badly with each other when used together {{NagleDA}}.
+
+DSO request messages elicit responses; DSO unidirectional messages and DSO response messages do not.
+
+For DSO request messages, which do elicit responses, Nagle's algorithm and delayed ack work as intended.
+
+For DSO messages that do not elicit responses, the delayed ack mechanism
+causes the ack to be delayed by 200 ms.
+The 200 ms delay on the ack can in turn cause Nagle's algorithm to prevent the
+sender from sending any more data for 200 ms until the awaited ack arrives.
+On an enterprise GigE backbone with sub-millisecond round-trip times,
+a 200 ms delay is enormous in comparison.
+
+When this issues is raised, there are two solutions that are often offered,
+neither of them ideal:
+
+1. Disable delayed ack.
+For DSO messages that elicit no response, removing delayed ack
+avoids the needless 200 ms delay,
+and sends back an immediate ack, which tells Nagle's algorithm that it should
+immediately grant the sender permission to send its next packet.
+Unfortunately, for DSO messages that **do** elicit a response, removing delayed ack
+removes the efficiency gains of combining acks with data, and the responder will
+now send two or three packets instead of one.
+
+2. Disable Nagle's algorithm.
+When acks are delayed by the delayed ack algorithm, removing Nagle's algorithm
+prevents the sender from being blocked from sending its next small packet immediately.
+Unfortunately, on a network with a higher round-trip time, removing Nagle's algorithm
+removes the efficiency gains of combining multiple small packets into fewer larger ones,
+with the goal of limiting the number of small packets in flight at any one time.
+
+For DSO messages that elicit a response, delayed ack and Nagle's algorithm do
+the right thing.
+
+The problem here is that with DSO messages that elicit no response,
+the TCP implementation is stuck waiting, unsure if a response is about to be
+generated, or whether the TCP implementation should go ahead and send
+an ack and window update.
+
+The solution is networking APIs that allow the receiver to inform the
+TCP implementation that a received message has been read, processed,
+and no response for this message will be generated.
+TCP can then stop waiting for a response that will never come,
+and immediately go ahead and send an ack and window update.
+
+For implementations of DSO, disabling delayed ack is NOT RECOMMENDED,
+because of the harm this can do to the network.
+
+For implementations of DSO, disabling Nagle's algorithm is NOT RECOMMENDED,
+because of the harm this can do to the network.
+
+At the time that this document is being prepared for publication, it is known
+that at least one TCP implementation provides the ability for the recipient of a
+TCP message to signal that it is not going to send a response, and hence
+the delayed ack mechanism can stop waiting.
+Implementations on operating systems where this
+feature is available SHOULD make use of it.
+
+***
 
 # IANA Considerations
 
