@@ -1,7 +1,7 @@
 ---
 title: DNS Stateful Operations
-docname: draft-ietf-dnsop-session-signal-15
-date: 2018-9-12
+docname: draft-ietf-dnsop-session-signal-16
+date: 2018-9-27
 ipr: trust200902
 area: Internet
 wg: DNSOP Working Group
@@ -2220,22 +2220,26 @@ with initial (hexadecimal) values as shown below:
 | 0001 | KeepAlive | OK | Standard | RFC-TBD |
 | 0002 | RetryDelay | NO | Standard | RFC-TBD |
 | 0003 | EncryptionPadding | NA | Standard | RFC-TBD |
-| 0004-003F | Unassigned, reserved for DSO session-management TLVs | NO, until assigned | | |
-| 0040-F7FF | Unassigned | NO, until assigned | | |
-| F800-FBFF | Experimental/local use | NO, except on local experimental basis | | |
-| FC00-FFFF | Reserved for future expansion | NO, until defined | | |
+| 0004-003F | Unassigned, reserved for DSO session-management TLVs | NO | | |
+| 0040-F7FF | Unassigned | NO | | |
+| F800-FBFF | Experimental/local use | NO | | |
+| FC00-FFFF | Reserved for future expansion | NO | | |
 
 The meanings of the fields are as follows:
 
 Type:
 : the 16-bit DSO type code
+
 Name:
 : the human-readable name of the TLV
+
 Fast Open:
-: If OK, this TLV may be sent in a Fast Open (TLS 0-RTT) ({{I-D.draft-ietf-tls-tls13}} Section 2.3) message.   If NA,
+: If OK, this TLV may be sent in a Fast Open (TLS 0-RTT) ({{RFC8446}} Section 2.3) message.   If NA,
 the TLV may appear as a secondary TLV in a DSO message that is included in a Fast Open message.
+
 Status:
 : IETF Document status (or "External" if not documented in an IETF document.
+
 Reference:
 : A stable reference to the document in which this TLV is defined.
 

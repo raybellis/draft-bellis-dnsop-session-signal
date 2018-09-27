@@ -427,15 +427,14 @@
 <link href="#rfc.section.9.1" rel="Chapter" title="9.1 Service Instances"/>
 <link href="#rfc.section.9.2" rel="Chapter" title="9.2 Anycast Considerations"/>
 <link href="#rfc.section.9.3" rel="Chapter" title="9.3 Connection Sharing"/>
-<link href="#rfc.section.9.4" rel="Chapter" title="9.4 Zero Round-Trip Operation"/>
-<link href="#rfc.section.9.5" rel="Chapter" title="9.5 Operational Considerations for Middlebox"/>
-<link href="#rfc.section.9.6" rel="Chapter" title="9.6 TCP Delayed Acknowledgement Considerations"/>
+<link href="#rfc.section.9.4" rel="Chapter" title="9.4 Operational Considerations for Middlebox"/>
+<link href="#rfc.section.9.5" rel="Chapter" title="9.5 TCP Delayed Acknowledgement Considerations"/>
 <link href="#rfc.section.10" rel="Chapter" title="10 IANA Considerations"/>
 <link href="#rfc.section.10.1" rel="Chapter" title="10.1 DSO OPCODE Registration"/>
 <link href="#rfc.section.10.2" rel="Chapter" title="10.2 DSO RCODE Registration"/>
 <link href="#rfc.section.10.3" rel="Chapter" title="10.3 DSO Type Code Registry"/>
 <link href="#rfc.section.11" rel="Chapter" title="11 Security Considerations"/>
-<link href="#rfc.section.11.1" rel="Chapter" title="11.1 TCP Fast Open Considerations"/>
+<link href="#rfc.section.11.1" rel="Chapter" title="11.1 TCP Fast Open and TLS 0-RTT Considerations"/>
 <link href="#rfc.section.12" rel="Chapter" title="12 Acknowledgements"/>
 <link href="#rfc.references" rel="Chapter" title="13 References"/>
 <link href="#rfc.references.1" rel="Chapter" title="13.1 Normative References"/>
@@ -447,8 +446,8 @@
   <link rel="schema.dct" href="http://purl.org/dc/terms/" />
 
   <meta name="dct.creator" content="Bellis, R., Cheshire, S., Dickinson, J., Dickinson, S., Lemon, T., and T. Pusateri" />
-  <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-dnsop-session-signal-15" />
-  <meta name="dct.issued" scheme="ISO8601" content="2018-9-12" />
+  <meta name="dct.identifier" content="urn:ietf:id:draft-ietf-dnsop-session-signal-16" />
+  <meta name="dct.issued" scheme="ISO8601" content="2018-9-27" />
   <meta name="dct.abstract" content="This document defines a new DNS OPCODE for DNS Stateful Operations (DSO).  DSO messages communicate operations within persistent stateful sessions, using type-length-value (TLV) syntax.  Three TLVs are defined that manage session timeouts, termination, and encryption padding, and a framework is defined for extensions to enable new stateful operations.  This document updates RFC 1035 by adding a new DNS header opcode which has different message semantics, and a new result code.  This document updates RFC 7766 by redefining a session, providing new guidance on connection re-use, and providing a new mechanism for handling session idle timeouts." />
   <meta name="description" content="This document defines a new DNS OPCODE for DNS Stateful Operations (DSO).  DSO messages communicate operations within persistent stateful sessions, using type-length-value (TLV) syntax.  Three TLVs are defined that manage session timeouts, termination, and encryption padding, and a framework is defined for extensions to enable new stateful operations.  This document updates RFC 1035 by adding a new DNS header opcode which has different message semantics, and a new result code.  This document updates RFC 7766 by redefining a session, providing new guidance on connection re-use, and providing a new mechanism for handling session idle timeouts." />
 
@@ -476,7 +475,7 @@
   <td class="right">Apple Inc.</td>
 </tr>
 <tr>
-  <td class="left">Expires: March 16, 2019</td>
+  <td class="left">Expires: March 31, 2019</td>
   <td class="right">J. Dickinson</td>
 </tr>
 <tr>
@@ -505,7 +504,7 @@
 </tr>
 <tr>
   <td class="left"></td>
-  <td class="right">September 12, 2018</td>
+  <td class="right">September 27, 2018</td>
 </tr>
 
     	
@@ -513,7 +512,7 @@
   </table>
 
   <p class="title">DNS Stateful Operations<br />
-  <span class="filename">draft-ietf-dnsop-session-signal-15</span></p>
+  <span class="filename">draft-ietf-dnsop-session-signal-16</span></p>
   
   <h1 id="rfc.abstract">
   <a href="#rfc.abstract">Abstract</a>
@@ -525,7 +524,7 @@
 <p>This Internet-Draft is submitted in full conformance with the provisions of BCP 78 and BCP 79.</p>
 <p>Internet-Drafts are working documents of the Internet Engineering Task Force (IETF).  Note that other groups may also distribute working documents as Internet-Drafts.  The list of current Internet-Drafts is at http://datatracker.ietf.org/drafts/current/.</p>
 <p>Internet-Drafts are draft documents valid for a maximum of six months and may be updated, replaced, or obsoleted by other documents at any time.  It is inappropriate to use Internet-Drafts as reference material or to cite them other than as "work in progress."</p>
-<p>This Internet-Draft will expire on March 16, 2019.</p>
+<p>This Internet-Draft will expire on March 31, 2019.</p>
 <h1 id="rfc.copyrightnotice">
   <a href="#rfc.copyrightnotice">Copyright Notice</a>
 </h1>
@@ -590,15 +589,14 @@
 <ul><li>9.1.   <a href="#rfc.section.9.1">Service Instances</a></li>
 <li>9.2.   <a href="#rfc.section.9.2">Anycast Considerations</a></li>
 <li>9.3.   <a href="#rfc.section.9.3">Connection Sharing</a></li>
-<li>9.4.   <a href="#rfc.section.9.4">Zero Round-Trip Operation</a></li>
-<li>9.5.   <a href="#rfc.section.9.5">Operational Considerations for Middlebox</a></li>
-<li>9.6.   <a href="#rfc.section.9.6">TCP Delayed Acknowledgement Considerations</a></li>
+<li>9.4.   <a href="#rfc.section.9.4">Operational Considerations for Middlebox</a></li>
+<li>9.5.   <a href="#rfc.section.9.5">TCP Delayed Acknowledgement Considerations</a></li>
 </ul><li>10.   <a href="#rfc.section.10">IANA Considerations</a></li>
 <ul><li>10.1.   <a href="#rfc.section.10.1">DSO OPCODE Registration</a></li>
 <li>10.2.   <a href="#rfc.section.10.2">DSO RCODE Registration</a></li>
 <li>10.3.   <a href="#rfc.section.10.3">DSO Type Code Registry</a></li>
 </ul><li>11.   <a href="#rfc.section.11">Security Considerations</a></li>
-<ul><li>11.1.   <a href="#rfc.section.11.1">TCP Fast Open Considerations</a></li>
+<ul><li>11.1.   <a href="#rfc.section.11.1">TCP Fast Open and TLS 0-RTT Considerations</a></li>
 </ul><li>12.   <a href="#rfc.section.12">Acknowledgements</a></li>
 <li>13.   <a href="#rfc.references">References</a></li>
 <ul><li>13.1.   <a href="#rfc.references.1">Normative References</a></li>
@@ -1661,6 +1659,11 @@
   <dd style="margin-left: 8">a specific instance of server software running on a specific host (<a href="#serviceinstances">Section 9.1</a>).</dd>
   <dt>long-lived operation:</dt>
   <dd style="margin-left: 8">a long-lived operation is an outstanding operation on a DSO session where either the client or server, acting as initiator, has requested that the responder send new information regarding the request, as it becomes available.</dd>
+</dl>
+<p id="rfc.section.3.p.4">Fast Open message: A TCP SYN packet that begins a DSO connection and contains early data (<a href="#RFC8446">[RFC8446]</a> section 2.3).   Fast Open is only permitted when using TLS encapsulation: a TCP SYN message that does not use TLS encapsulation but contains early data is not permitted.</p>
+<p/>
+
+<dl>
   <dt>DNS message:</dt>
   <dd style="margin-left: 8">any DNS message, including DNS queries, response, updates, DSO messages, etc.</dd>
   <dt>DNS request message:</dt>
@@ -4750,6 +4753,8 @@
 <p id="rfc.section.5.1.p.3">However, in the typical case a server will not know in advance whether a client supports DSO, so in general, unless it is known in advance by other means that a client does support DSO, a server MUST NOT initiate DSO request messages or DSO unidirectional messages until a DSO Session has been mutually established by at least one successful DSO request/response exchange initiated by the client, as described below.   This is referred to as explicit session establishment.</p>
 <p id="rfc.section.5.1.p.4">Until a DSO session has been implicitly or explicitly established, a client MUST NOT initiate DSO unidirectional messages.</p>
 <p id="rfc.section.5.1.p.5">A DSO Session is established over a connection by the client sending a DSO request message, such as a DSO Keepalive request message (<a href="#keepalive">Section 7.1</a>), and receiving a response, with matching MESSAGE ID, and RCODE set to NOERROR (0), indicating that the DSO request was successful.</p>
+<p id="rfc.section.5.1.p.6">Some DSO messages are permitted in Fast Open messages (<a href="#zrtt">Section 11.1</a>).  Others are not.  Unidirectional messages are never permitted in Fast Open messages unless an implicit session exists.</p>
+<p id="rfc.section.5.1.p.7">If a server receives a Fast Open message containing a DSO message whose primary TLV is not permitted to appear in a Fast Open message, the server MUST forcible abort the connection.  If a client receives a Fast Open message containing any DSO message, and there is no implicit DSO session, the client MUST forcibly abort the connection.   If a server or client receives a Fast Open message that is not a TLS 1.3 message, it MUST forcibly abort the connection.</p>
 <h1 id="rfc.section.5.1.1"><a href="#rfc.section.5.1.1">5.1.1.</a> <a href="#stabfail" id="stabfail">Session Establishment Failure</a></h1>
 <p id="rfc.section.5.1.1.p.1">If the response RCODE is set to NOTIMP (4), or in practise any value other than NOERROR (0) or DSOTYPENI (defined below), then the client MUST assume that the server does not implement DSO at all. In this case the client is permitted to continue sending DNS messages on that connection, but the client MUST NOT issue further DSO messages on that connection.</p>
 <p id="rfc.section.5.1.1.p.2">If the RCODE in the response is set to DSOTYPENI (&#8220;DSO-TYPE Not Implemented&#8221;, [TBA2] tentatively RCODE 11) this indicates that the server does support DSO, but does not implement the DSO-TYPE of the primary TLV in this DSO request message.  A server implementing DSO MUST NOT return DSOTYPENI for a DSO Keepalive request message, because the Keepalive TLV is mandatory to implement.  But in the future, if a client attempts to establish a DSO Session using a response-requiring DSO request message using some newly-defined DSO-TYPE that the server does not understand, that would result in a DSOTYPENI response.  If the server returns DSOTYPENI then a DSO Session is not considered established, but the client is permitted to continue sending DNS messages on the connection, including other DSO messages such as the DSO Keepalive, which may result in a successful NOERROR response, yielding the establishment of a DSO Session.</p>
@@ -14935,7 +14940,7 @@
 <h1 id="rfc.section.5.5.1"><a href="#rfc.section.5.5.1">5.5.1.</a> <a href="#delayed-acknowledgement-management" id="delayed-acknowledgement-management">Delayed Acknowledgement Management</a></h1>
 <p id="rfc.section.5.5.1.p.1">Generally, most good TCP implementations employ a delayed acknowledgement timer to provide more efficient use of the network and better performance.</p>
 <p id="rfc.section.5.5.1.p.2">With a DSO request message, the TCP implementation waits for the application-layer client software to generate the corresponding DSO response message, which enables the TCP implementation to send a single combined IP packet containing the TCP acknowledgement, the TCP window update, and the application-generated DSO response message.  This is more efficient than sending three separate IP packets.</p>
-<p id="rfc.section.5.5.1.p.3">With a DSO unidirectional message or DSO response message, there is no corresponding application-generated DSO response message, and consequently, no hint to the transport protocol about when it should send its acknowledgement and window update.  Some networking APIs provide a mechanism that allows the application-layer client software to signal to the transport protocol that no response will be forthcoming (in effect it can be thought of as a zero-length &#8220;empty&#8221; write).  Where available in the networking API being used, the recipient of a DSO unidirectional message or DSO response message, having parsed and interpreted the message, SHOULD then use this mechanism provided by the networking API to signal that no response for this message will be forthcoming, so that the TCP implementation can go ahead and send its acknowledgement and window update without further delay.  See <a href="#delack">Section 9.6</a> for further discussion of why this is important.</p>
+<p id="rfc.section.5.5.1.p.3">With a DSO unidirectional message or DSO response message, there is no corresponding application-generated DSO response message, and consequently, no hint to the transport protocol about when it should send its acknowledgement and window update.  Some networking APIs provide a mechanism that allows the application-layer client software to signal to the transport protocol that no response will be forthcoming (in effect it can be thought of as a zero-length &#8220;empty&#8221; write).  Where available in the networking API being used, the recipient of a DSO unidirectional message or DSO response message, having parsed and interpreted the message, SHOULD then use this mechanism provided by the networking API to signal that no response for this message will be forthcoming, so that the TCP implementation can go ahead and send its acknowledgement and window update without further delay.  See <a href="#delack">Section 9.5</a> for further discussion of why this is important.</p>
 <p>
   <br/>
   <br/>
@@ -22061,7 +22066,8 @@
 <p id="rfc.section.7.p.1">This section describes the three base TLVs for DNS Stateful Operations: Keepalive, Retry Delay, and Encryption Padding.</p>
 <h1 id="rfc.section.7.1"><a href="#rfc.section.7.1">7.1.</a> <a href="#keepalive" id="keepalive">Keepalive TLV</a></h1>
 <p id="rfc.section.7.1.p.1">The Keepalive TLV (DSO-TYPE=1) performs two functions.  Primarily it establishes the values for the Session Timeouts.  Incidentally, it also resets the keepalive timer for the DSO Session, meaning that it can be used as a kind of &#8220;no-op&#8221; message for the purpose of keeping a session alive.  The client will request the desired session timeout values and the server will acknowledge with the response values that it requires the client to use.</p>
-<p id="rfc.section.7.1.p.2">The DSO-DATA for the Keepalive TLV is as follows:</p>
+<p id="rfc.section.7.1.p.2">DSO messages with the Keepalive TLV as the primary TLV may appear in Fast Open messages.</p>
+<p id="rfc.section.7.1.p.3">The DSO-DATA for the Keepalive TLV is as follows:</p>
 <pre>
                         1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -22079,12 +22085,12 @@
   <dt>KEEPALIVE INTERVAL:</dt>
   <dd style="margin-left: 8">The keepalive interval for the current DSO Session, specified as a 32-bit unsigned integer, in network (big endian) byte order, in units of milliseconds.  This is the interval at which a client MUST generate DSO keepalive traffic to maintain connection state.  The keepalive interval MUST NOT be less than ten seconds.  If the client does not generate the mandated DSO keepalive traffic, then after twice this interval the server will forcibly abort the connection.  Since the minimum allowed keepalive interval is ten seconds, the minimum time at which a server will forcibly disconnect a client for failing to generate the mandated DSO keepalive traffic is twenty seconds.</dd>
 </dl>
-<p id="rfc.section.7.1.p.4">The transmission or reception of DSO Keepalive messages (i.e., messages where the Keepalive TLV is the first TLV) reset only the keepalive timer, not the inactivity timer.  The reason for this is that periodic DSO Keepalive messages are sent for the sole purpose of keeping a DSO Session alive, when that DSO Session has current or recent non-maintenance activity that warrants keeping that DSO Session alive.  Sending DSO keepalive traffic itself is not considered a client activity; it is considered a maintenance activity that is performed in service of other client activities.  If DSO keepalive traffic itself were to reset the inactivity timer, then that would create a circular livelock where keepalive traffic would be sent indefinitely to keep a DSO Session alive, where the only activity on that DSO Session would be the keepalive traffic keeping the DSO Session alive so that further keepalive traffic can be sent.  For a DSO Session to be considered active, it must be carrying something more than just keepalive traffic.  This is why merely sending or receiving a DSO Keepalive message does not reset the inactivity timer.</p>
-<p id="rfc.section.7.1.p.5">When sent by a client, the DSO Keepalive request message MUST be sent as an DSO request message, with a nonzero MESSAGE ID.  If a server receives a DSO Keepalive message with a zero MESSAGE ID then this is a fatal error and the server MUST forcibly abort the connection immediately.  The DSO Keepalive request message resets a DSO Session&#8217;s keepalive timer, and at the same time communicates to the server the client&#8217;s requested Session Timeout values.  In a server response to a client-initiated DSO Keepalive request message, the Session Timeouts contain the server&#8217;s chosen values from this point forward in the DSO Session, which the client MUST respect.  This is modeled after the DHCP protocol, where the client requests a certain lease lifetime using DHCP option 51 <a href="#RFC2132">[RFC2132]</a>, but the server is the ultimate authority for deciding what lease lifetime is actually granted.</p>
-<p id="rfc.section.7.1.p.6">When a client is sending its second and subsequent DSO Keepalive request messages to the server, the client SHOULD continue to request its preferred values each time.  This allows flexibility, so that if conditions change during the lifetime of a DSO Session, the server can adapt its responses to better fit the client&#8217;s needs.</p>
-<p id="rfc.section.7.1.p.7">Once a DSO Session is in progress (<a href="#establishment">Section 5.1</a>) a DSO Keepalive message MAY be initiated by a server.  When sent by a server, the DSO Keepalive message MUST be sent as a DSO unidirectional message, with the MESSAGE ID set to zero.  The client MUST NOT generate a response to a server-initiated DSO Keepalive message.  If a client receives a DSO Keepalive request message with a nonzero MESSAGE ID then this is a fatal error and the client MUST forcibly abort the connection immediately.  The DSO Keepalive unidirectional message from the server resets a DSO Session&#8217;s keepalive timer, and at the same time unilaterally informs the client of the new Session Timeout values to use from this point forward in this DSO Session.  No client DSO response to this unilateral declaration is required or allowed.</p>
-<p id="rfc.section.7.1.p.8">In DSO Keepalive response messages, the Keepalive TLV is REQUIRED and is used only as a Response Primary TLV sent as a reply to a DSO Keepalive request message from the client.  A Keepalive TLV MUST NOT be added to other responses as a Response Additional TLV.  If the server wishes to update a client&#8217;s Session Timeout values other than in response to a DSO Keepalive request message from the client, then it does so by sending an DSO Keepalive unidirectional message of its own, as described above.</p>
-<p id="rfc.section.7.1.p.9">It is not required that the Keepalive TLV be used in every DSO Session.  While many DNS Stateful operations will be used in conjunction with a long-lived session state, not all DNS Stateful operations require long-lived session state, and in some cases the default 15-second value for both the inactivity timeout and keepalive interval may be perfectly appropriate.  However, note that for clients that implement only the DSO-TYPEs defined in this document, a DSO Keepalive request message is the only way for a client to initiate a DSO Session.</p>
+<p id="rfc.section.7.1.p.5">The transmission or reception of DSO Keepalive messages (i.e., messages where the Keepalive TLV is the first TLV) reset only the keepalive timer, not the inactivity timer.  The reason for this is that periodic DSO Keepalive messages are sent for the sole purpose of keeping a DSO Session alive, when that DSO Session has current or recent non-maintenance activity that warrants keeping that DSO Session alive.  Sending DSO keepalive traffic itself is not considered a client activity; it is considered a maintenance activity that is performed in service of other client activities.  If DSO keepalive traffic itself were to reset the inactivity timer, then that would create a circular livelock where keepalive traffic would be sent indefinitely to keep a DSO Session alive, where the only activity on that DSO Session would be the keepalive traffic keeping the DSO Session alive so that further keepalive traffic can be sent.  For a DSO Session to be considered active, it must be carrying something more than just keepalive traffic.  This is why merely sending or receiving a DSO Keepalive message does not reset the inactivity timer.</p>
+<p id="rfc.section.7.1.p.6">When sent by a client, the DSO Keepalive request message MUST be sent as an DSO request message, with a nonzero MESSAGE ID.  If a server receives a DSO Keepalive message with a zero MESSAGE ID then this is a fatal error and the server MUST forcibly abort the connection immediately.  The DSO Keepalive request message resets a DSO Session&#8217;s keepalive timer, and at the same time communicates to the server the client&#8217;s requested Session Timeout values.  In a server response to a client-initiated DSO Keepalive request message, the Session Timeouts contain the server&#8217;s chosen values from this point forward in the DSO Session, which the client MUST respect.  This is modeled after the DHCP protocol, where the client requests a certain lease lifetime using DHCP option 51 <a href="#RFC2132">[RFC2132]</a>, but the server is the ultimate authority for deciding what lease lifetime is actually granted.</p>
+<p id="rfc.section.7.1.p.7">When a client is sending its second and subsequent DSO Keepalive request messages to the server, the client SHOULD continue to request its preferred values each time.  This allows flexibility, so that if conditions change during the lifetime of a DSO Session, the server can adapt its responses to better fit the client&#8217;s needs.</p>
+<p id="rfc.section.7.1.p.8">Once a DSO Session is in progress (<a href="#establishment">Section 5.1</a>) a DSO Keepalive message MAY be initiated by a server.  When sent by a server, the DSO Keepalive message MUST be sent as a DSO unidirectional message, with the MESSAGE ID set to zero.  The client MUST NOT generate a response to a server-initiated DSO Keepalive message.  If a client receives a DSO Keepalive request message with a nonzero MESSAGE ID then this is a fatal error and the client MUST forcibly abort the connection immediately.  The DSO Keepalive unidirectional message from the server resets a DSO Session&#8217;s keepalive timer, and at the same time unilaterally informs the client of the new Session Timeout values to use from this point forward in this DSO Session.  No client DSO response to this unilateral declaration is required or allowed.</p>
+<p id="rfc.section.7.1.p.9">In DSO Keepalive response messages, the Keepalive TLV is REQUIRED and is used only as a Response Primary TLV sent as a reply to a DSO Keepalive request message from the client.  A Keepalive TLV MUST NOT be added to other responses as a Response Additional TLV.  If the server wishes to update a client&#8217;s Session Timeout values other than in response to a DSO Keepalive request message from the client, then it does so by sending an DSO Keepalive unidirectional message of its own, as described above.</p>
+<p id="rfc.section.7.1.p.10">It is not required that the Keepalive TLV be used in every DSO Session.  While many DNS Stateful operations will be used in conjunction with a long-lived session state, not all DNS Stateful operations require long-lived session state, and in some cases the default 15-second value for both the inactivity timeout and keepalive interval may be perfectly appropriate.  However, note that for clients that implement only the DSO-TYPEs defined in this document, a DSO Keepalive request message is the only way for a client to initiate a DSO Session.</p>
 <h1 id="rfc.section.7.1.1"><a href="#rfc.section.7.1.1">7.1.1.</a> <a href="#client-handling-of-received-session-timeout-values" id="client-handling-of-received-session-timeout-values">Client handling of received Session Timeout values</a></h1>
 <p id="rfc.section.7.1.1.p.1">When a client receives a response to its client-initiated DSO Keepalive message, or receives a server-initiated DSO Keepalive message, the client has then received Session Timeout values dictated by the server. The two timeout values contained in the Keepalive TLV from the server may each be higher, lower, or the same as the respective Session Timeout values the client previously had for this DSO Session.</p>
 <p id="rfc.section.7.1.1.p.2">In the case of the keepalive timer, the handling of the received value is straightforward.  The act of receiving the message containing the DSO Keepalive TLV itself resets the keepalive timer, and updates the keepalive interval for the DSO Session.  The new keepalive interval indicates the maximum time that may elapse before another message must be sent or received on this DSO Session, if the DSO Session is to remain alive.</p>
@@ -22100,7 +22106,7 @@
 <h1 id="rfc.section.7.1.2"><a href="#rfc.section.7.1.2">7.1.2.</a> <a href="#edns0keepalive" id="edns0keepalive">Relationship to edns-tcp-keepalive EDNS0 Option</a></h1>
 <p id="rfc.section.7.1.2.p.1">The inactivity timeout value in the Keepalive TLV (DSO-TYPE=1) has similar intent to the edns-tcp-keepalive EDNS0 Option <a href="#RFC7828">[RFC7828]</a>. A client/server pair that supports DSO MUST NOT use the edns-tcp-keepalive EDNS0 Option within any message after a DSO Session has been established. A client that has sent a DSO message to establish a session MUST NOT send an edns-tcp-keepalive EDNS0 Option from this point on. Once a DSO Session has been established, if either client or server receives a DNS message over the DSO Session that contains an edns-tcp-keepalive EDNS0 Option, this is a fatal error and the receiver of the edns-tcp-keepalive EDNS0 Option MUST forcibly abort the connection immediately.</p>
 <h1 id="rfc.section.7.2"><a href="#rfc.section.7.2">7.2.</a> <a href="#delay" id="delay">Retry Delay TLV</a></h1>
-<p id="rfc.section.7.2.p.1">The Retry Delay TLV (DSO-TYPE=2) can be used as a Primary TLV (unidirectional) in a server-to-client message, or as a Response Additional TLV in either direction.</p>
+<p id="rfc.section.7.2.p.1">The Retry Delay TLV (DSO-TYPE=2) can be used as a Primary TLV (unidirectional) in a server-to-client message, or as a Response Additional TLV in either direction.   DSO messages with a Relay Delay TLV as their primary TLV are not permitted in Fast Open messages.</p>
 <p id="rfc.section.7.2.p.2">The DSO-DATA for the Retry Delay TLV is as follows:</p>
 <pre>
                         1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 3 3
@@ -29245,1017 +29251,9 @@
   <br/>
   <br/>
 </p>
-<h1 id="rfc.section.9.4"><a href="#rfc.section.9.4">9.4.</a> <a href="#zero-round-trip-operation" id="zero-round-trip-operation">Zero Round-Trip Operation</a></h1>
-<p id="rfc.section.9.4.p.1">DSO permits zero round-trip operation using TCP Fast Open <a href="#RFC7413">[RFC7413]</a> and TLS 1.3 <a href="#RFC8446">[RFC8446]</a> to reduce or eliminate round trips in session establishment.</p>
-<p id="rfc.section.9.4.p.2">A client MAY send multiple response-requiring DSO messages using TCP fast open or TLS 1.3 early data, without having to wait for a DSO response to the first DSO request message to confirm successful establishment of a DSO session.</p>
-<p id="rfc.section.9.4.p.3">However, a client MUST NOT send DSO unidirectional messages until after a DSO Session has been mutually established.</p>
-<p id="rfc.section.9.4.p.4">Similarly, a server MUST NOT send DSO request messages until it has received a response-requiring DSO request message from a client and transmitted a successful NOERROR response for that request.</p>
-<p id="rfc.section.9.4.p.5">Caution must be taken to ensure that DSO messages sent before the first round-trip is completed are idempotent, or are otherwise immune to any problems that could be result from the inadvertent replay that can occur with zero round-trip operation.</p>
-<p>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-  <br/>
-</p>
-<h1 id="rfc.section.9.5"><a href="#rfc.section.9.5">9.5.</a> <a href="#operational-considerations-for-middlebox" id="operational-considerations-for-middlebox">Operational Considerations for Middlebox</a></h1>
-<p id="rfc.section.9.5.p.1">Where an application-layer middlebox (e.g., a DNS proxy, forwarder, or session multiplexer) is in the path, care must be taken to avoid a configuration in which DSO traffic is mis-handled.   The simplest way to avoid such problems is to avoid using middleboxes.   When this is not possible, middleboxes should be evaluated to make sure that they behave correctly.</p>
-<p id="rfc.section.9.5.p.2">Correct behavior for middleboxes consists of one of:</p>
+<h1 id="rfc.section.9.4"><a href="#rfc.section.9.4">9.4.</a> <a href="#operational-considerations-for-middlebox" id="operational-considerations-for-middlebox">Operational Considerations for Middlebox</a></h1>
+<p id="rfc.section.9.4.p.1">Where an application-layer middlebox (e.g., a DNS proxy, forwarder, or session multiplexer) is in the path, care must be taken to avoid a configuration in which DSO traffic is mis-handled.   The simplest way to avoid such problems is to avoid using middleboxes.   When this is not possible, middleboxes should be evaluated to make sure that they behave correctly.</p>
+<p id="rfc.section.9.4.p.2">Correct behavior for middleboxes consists of one of:</p>
 <p/>
 
 <ul>
@@ -30263,33 +29261,33 @@
   <li>The middlebox acts as a DSO server and follows this specification in establishing connections.</li>
   <li>There is a 1:1 correspondence between incoming and outgoing connections, such that when a connection is established to the middlebox, it is guaranteed that exactly one corresponding connection will be established from the middlebox to some DNS resolver, and all incoming messages will be forwarded without modification or reordering.   An example of this would be a NAT forwarder or TCP connection optimizer (e.g. for a high-latency connection such as a geosynchronous satellite link).</li>
 </ul>
-<p id="rfc.section.9.5.p.4">Middleboxes that do not meet one of the above criteria are very likely to fail in unexpected and difficult-to-diagnose ways.   For example, a DNS load balancer might unbundle DNS messages from the incoming TCP stream and forward each message from the stream to a different DNS server.   If such a load balancer is in use, and the DNS servers it points implement DSO and are configured to enable DSO, DSO session establishment will succeed, but no coherent session will exist between the client and the server.   If such a load balancer is pointed at a DNS server that does not implement DSO or is configured not to allow DSO, no such problem will exist, but such a configuration risks unexpected failure if new server software is installed which does implement DSO.</p>
-<p id="rfc.section.9.5.p.5">It is of course possible to implement a middlebox that properly supports DSO.  It is even possible to implement one that implements DSO with long-lived operations.  This can be done either by maintaining a 1:1 correspondence between incoming and outgoing connections, as mentioned above, or by terminating incoming sessions at the middlebox, but maintaining state in the middlebox about any long-lived that are requested.   Specifying this in detail is beyond the scope of this document.</p>
-<h1 id="rfc.section.9.6"><a href="#rfc.section.9.6">9.6.</a> <a href="#delack" id="delack">TCP Delayed Acknowledgement Considerations</a></h1>
-<p id="rfc.section.9.6.p.1">Most modern implementations of the Transmission Control Protocol (TCP) include a feature called &#8220;Delayed Acknowledgement&#8221; <a href="#RFC1122">[RFC1122]</a>.</p>
-<p id="rfc.section.9.6.p.2">Without this feature, TCP can be very wasteful on the network.  For illustration, consider a simple example like remote login, using a very simple TCP implementation that lacks delayed acks.  When the user types a keystroke, a data packet is sent.  When the data packet arrives at the server, the simple TCP implementation sends an immediate acknowledgement.  Mere milliseconds later, the server process reads the one byte of keystroke data, and consequently the simple TCP implementation sends an immediate window update.  Mere milliseconds later, the server process generates the character echo, and sends this data back in reply.  The simple TCP implementation then sends this data packet immediately too.  In this case, this simple TCP implementation sends a burst of three packets almost instantaneously (ack, window update, data).</p>
-<p id="rfc.section.9.6.p.3">Clearly it would be more efficient if the TCP implementation were to combine the three separate packets into one, and this is what the delayed ack feature enables.</p>
-<p id="rfc.section.9.6.p.4">With delayed ack, the TCP implementation waits after receiving a data packet, typically for 200 ms, and then send its ack if (a) more data packet(s) arrive (b) the receiving process generates some reply data, or (c) 200 ms elapses without either of the above occurring.</p>
-<p id="rfc.section.9.6.p.5">With delayed ack, remote login becomes much more efficient, generating just one packet instead of three for each character echo.</p>
-<p id="rfc.section.9.6.p.6">The logic of delayed ack is that the 200 ms delay cannot do any significant harm.  If something at the other end were waiting for something, then the receiving process should generate the reply that the thing at the end is waiting for, and TCP will then immediately send that reply (and the ack and window update).  And if the receiving process does not in fact generate any reply for this particular message, then by definition the thing at the other end cannot be waiting for anything, so the 200 ms delay is harmless.</p>
-<p id="rfc.section.9.6.p.7">This assumption may be true, unless the sender is using Nagle&#8217;s algorithm, a similar efficiency feature, created to protect the network from poorly written client software that performs many rapid small writes in succession.  Nagle&#8217;s algorithm allows these small writes to be combined into larger, less wasteful packets.</p>
-<p id="rfc.section.9.6.p.8">Unfortunately, Nagle&#8217;s algorithm and delayed ack, two valuable efficiency features, can interact badly with each other when used together <a href="#NagleDA">[NagleDA]</a>.</p>
-<p id="rfc.section.9.6.p.9">DSO request messages elicit responses; DSO unidirectional messages and DSO response messages do not.</p>
-<p id="rfc.section.9.6.p.10">For DSO request messages, which do elicit responses, Nagle&#8217;s algorithm and delayed ack work as intended.</p>
-<p id="rfc.section.9.6.p.11">For DSO messages that do not elicit responses, the delayed ack mechanism causes the ack to be delayed by 200 ms.  The 200 ms delay on the ack can in turn cause Nagle&#8217;s algorithm to prevent the sender from sending any more data for 200 ms until the awaited ack arrives.  On an enterprise GigE backbone with sub-millisecond round-trip times, a 200 ms delay is enormous in comparison.</p>
-<p id="rfc.section.9.6.p.12">When this issues is raised, there are two solutions that are often offered, neither of them ideal:</p>
+<p id="rfc.section.9.4.p.4">Middleboxes that do not meet one of the above criteria are very likely to fail in unexpected and difficult-to-diagnose ways.   For example, a DNS load balancer might unbundle DNS messages from the incoming TCP stream and forward each message from the stream to a different DNS server.   If such a load balancer is in use, and the DNS servers it points implement DSO and are configured to enable DSO, DSO session establishment will succeed, but no coherent session will exist between the client and the server.   If such a load balancer is pointed at a DNS server that does not implement DSO or is configured not to allow DSO, no such problem will exist, but such a configuration risks unexpected failure if new server software is installed which does implement DSO.</p>
+<p id="rfc.section.9.4.p.5">It is of course possible to implement a middlebox that properly supports DSO.  It is even possible to implement one that implements DSO with long-lived operations.  This can be done either by maintaining a 1:1 correspondence between incoming and outgoing connections, as mentioned above, or by terminating incoming sessions at the middlebox, but maintaining state in the middlebox about any long-lived that are requested.   Specifying this in detail is beyond the scope of this document.</p>
+<h1 id="rfc.section.9.5"><a href="#rfc.section.9.5">9.5.</a> <a href="#delack" id="delack">TCP Delayed Acknowledgement Considerations</a></h1>
+<p id="rfc.section.9.5.p.1">Most modern implementations of the Transmission Control Protocol (TCP) include a feature called &#8220;Delayed Acknowledgement&#8221; <a href="#RFC1122">[RFC1122]</a>.</p>
+<p id="rfc.section.9.5.p.2">Without this feature, TCP can be very wasteful on the network.  For illustration, consider a simple example like remote login, using a very simple TCP implementation that lacks delayed acks.  When the user types a keystroke, a data packet is sent.  When the data packet arrives at the server, the simple TCP implementation sends an immediate acknowledgement.  Mere milliseconds later, the server process reads the one byte of keystroke data, and consequently the simple TCP implementation sends an immediate window update.  Mere milliseconds later, the server process generates the character echo, and sends this data back in reply.  The simple TCP implementation then sends this data packet immediately too.  In this case, this simple TCP implementation sends a burst of three packets almost instantaneously (ack, window update, data).</p>
+<p id="rfc.section.9.5.p.3">Clearly it would be more efficient if the TCP implementation were to combine the three separate packets into one, and this is what the delayed ack feature enables.</p>
+<p id="rfc.section.9.5.p.4">With delayed ack, the TCP implementation waits after receiving a data packet, typically for 200 ms, and then send its ack if (a) more data packet(s) arrive (b) the receiving process generates some reply data, or (c) 200 ms elapses without either of the above occurring.</p>
+<p id="rfc.section.9.5.p.5">With delayed ack, remote login becomes much more efficient, generating just one packet instead of three for each character echo.</p>
+<p id="rfc.section.9.5.p.6">The logic of delayed ack is that the 200 ms delay cannot do any significant harm.  If something at the other end were waiting for something, then the receiving process should generate the reply that the thing at the end is waiting for, and TCP will then immediately send that reply (and the ack and window update).  And if the receiving process does not in fact generate any reply for this particular message, then by definition the thing at the other end cannot be waiting for anything, so the 200 ms delay is harmless.</p>
+<p id="rfc.section.9.5.p.7">This assumption may be true, unless the sender is using Nagle&#8217;s algorithm, a similar efficiency feature, created to protect the network from poorly written client software that performs many rapid small writes in succession.  Nagle&#8217;s algorithm allows these small writes to be combined into larger, less wasteful packets.</p>
+<p id="rfc.section.9.5.p.8">Unfortunately, Nagle&#8217;s algorithm and delayed ack, two valuable efficiency features, can interact badly with each other when used together <a href="#NagleDA">[NagleDA]</a>.</p>
+<p id="rfc.section.9.5.p.9">DSO request messages elicit responses; DSO unidirectional messages and DSO response messages do not.</p>
+<p id="rfc.section.9.5.p.10">For DSO request messages, which do elicit responses, Nagle&#8217;s algorithm and delayed ack work as intended.</p>
+<p id="rfc.section.9.5.p.11">For DSO messages that do not elicit responses, the delayed ack mechanism causes the ack to be delayed by 200 ms.  The 200 ms delay on the ack can in turn cause Nagle&#8217;s algorithm to prevent the sender from sending any more data for 200 ms until the awaited ack arrives.  On an enterprise GigE backbone with sub-millisecond round-trip times, a 200 ms delay is enormous in comparison.</p>
+<p id="rfc.section.9.5.p.12">When this issues is raised, there are two solutions that are often offered, neither of them ideal:</p>
 <p/>
 
 <ol>
   <li>Disable delayed ack.  For DSO messages that elicit no response, removing delayed ack avoids the needless 200 ms delay, and sends back an immediate ack, which tells Nagle&#8217;s algorithm that it should immediately grant the sender permission to send its next packet.  Unfortunately, for DSO messages that <strong>do</strong> elicit a response, removing delayed ack removes the efficiency gains of combining acks with data, and the responder will now send two or three packets instead of one.</li>
   <li>Disable Nagle&#8217;s algorithm.  When acks are delayed by the delayed ack algorithm, removing Nagle&#8217;s algorithm prevents the sender from being blocked from sending its next small packet immediately.  Unfortunately, on a network with a higher round-trip time, removing Nagle&#8217;s algorithm removes the efficiency gains of combining multiple small packets into fewer larger ones, with the goal of limiting the number of small packets in flight at any one time.</li>
 </ol>
-<p id="rfc.section.9.6.p.14">For DSO messages that elicit a response, delayed ack and Nagle&#8217;s algorithm do the right thing.</p>
-<p id="rfc.section.9.6.p.15">The problem here is that with DSO messages that elicit no response, the TCP implementation is stuck waiting, unsure if a response is about to be generated, or whether the TCP implementation should go ahead and send an ack and window update.</p>
-<p id="rfc.section.9.6.p.16">The solution is networking APIs that allow the receiver to inform the TCP implementation that a received message has been read, processed, and no response for this message will be generated.  TCP can then stop waiting for a response that will never come, and immediately go ahead and send an ack and window update.</p>
-<p id="rfc.section.9.6.p.17">For implementations of DSO, disabling delayed ack is NOT RECOMMENDED, because of the harm this can do to the network.</p>
-<p id="rfc.section.9.6.p.18">For implementations of DSO, disabling Nagle&#8217;s algorithm is NOT RECOMMENDED, because of the harm this can do to the network.</p>
-<p id="rfc.section.9.6.p.19">At the time that this document is being prepared for publication, it is known that at least one TCP implementation provides the ability for the recipient of a TCP message to signal that it is not going to send a response, and hence the delayed ack mechanism can stop waiting.  Implementations on operating systems where this feature is available SHOULD make use of it.</p>
+<p id="rfc.section.9.5.p.14">For DSO messages that elicit a response, delayed ack and Nagle&#8217;s algorithm do the right thing.</p>
+<p id="rfc.section.9.5.p.15">The problem here is that with DSO messages that elicit no response, the TCP implementation is stuck waiting, unsure if a response is about to be generated, or whether the TCP implementation should go ahead and send an ack and window update.</p>
+<p id="rfc.section.9.5.p.16">The solution is networking APIs that allow the receiver to inform the TCP implementation that a received message has been read, processed, and no response for this message will be generated.  TCP can then stop waiting for a response that will never come, and immediately go ahead and send an ack and window update.</p>
+<p id="rfc.section.9.5.p.17">For implementations of DSO, disabling delayed ack is NOT RECOMMENDED, because of the harm this can do to the network.</p>
+<p id="rfc.section.9.5.p.18">For implementations of DSO, disabling Nagle&#8217;s algorithm is NOT RECOMMENDED, because of the harm this can do to the network.</p>
+<p id="rfc.section.9.5.p.19">At the time that this document is being prepared for publication, it is known that at least one TCP implementation provides the ability for the recipient of a TCP message to signal that it is not going to send a response, and hence the delayed ack mechanism can stop waiting.  Implementations on operating systems where this feature is available SHOULD make use of it.</p>
 <p>
   <br/>
   <br/>
@@ -31304,6 +30302,7 @@
     <tr>
       <th class="left">Type</th>
       <th class="left">Name</th>
+      <th class="left">Fast Open</th>
       <th class="left">Status</th>
       <th class="left">Reference</th>
     </tr>
@@ -31312,67 +30311,97 @@
     <tr>
       <td class="left">0000</td>
       <td class="left">Reserved</td>
+      <td class="left">NO</td>
       <td class="left">Standard</td>
       <td class="left">RFC-TBD</td>
     </tr>
     <tr>
       <td class="left">0001</td>
       <td class="left">KeepAlive</td>
+      <td class="left">OK</td>
       <td class="left">Standard</td>
       <td class="left">RFC-TBD</td>
     </tr>
     <tr>
       <td class="left">0002</td>
       <td class="left">RetryDelay</td>
+      <td class="left">NO</td>
       <td class="left">Standard</td>
       <td class="left">RFC-TBD</td>
     </tr>
     <tr>
       <td class="left">0003</td>
       <td class="left">EncryptionPadding</td>
+      <td class="left">NA</td>
       <td class="left">Standard</td>
       <td class="left">RFC-TBD</td>
     </tr>
     <tr>
       <td class="left">0004-003F</td>
-      <td class="left">Unassigned, reserved for    DSO session-management TLVs</td>
+      <td class="left">Unassigned, reserved for DSO session-management TLVs</td>
+      <td class="left">NO</td>
       <td class="left"/>
       <td class="left"/>
     </tr>
     <tr>
       <td class="left">0040-F7FF</td>
       <td class="left">Unassigned</td>
+      <td class="left">NO</td>
       <td class="left"/>
       <td class="left"/>
     </tr>
     <tr>
       <td class="left">F800-FBFF</td>
       <td class="left">Experimental/local use</td>
+      <td class="left">NO</td>
       <td class="left"/>
       <td class="left"/>
     </tr>
     <tr>
       <td class="left">FC00-FFFF</td>
       <td class="left">Reserved for future expansion</td>
+      <td class="left">NO</td>
       <td class="left"/>
       <td class="left"/>
     </tr>
   </tbody>
 </table>
-<p id="rfc.section.10.3.p.2">DSO Type Code zero is reserved and is not currently intended for allocation.</p>
-<p id="rfc.section.10.3.p.3">Registrations of new DSO Type Codes in the &#8220;Reserved for DSO session-management&#8221; range 0004-003F and the &#8220;Reserved for future expansion&#8221; range FC00-FFFF require publication of an IETF Standards Action document <a href="#RFC8126">[RFC8126]</a>.</p>
-<p id="rfc.section.10.3.p.4">Requests to register additional new DSO Type Codes in the &#8220;Unassigned&#8221; range 0040-F7FF are to be recorded by IANA after Expert Review <a href="#RFC8126">[RFC8126]</a>.  The expert review should validate that the requested type code is specified in a way that conforms to this specification, and that the intended use for the code would not be addressed with an experimental/local assignment.</p>
-<p id="rfc.section.10.3.p.5">DSO Type Codes in the &#8220;experimental/local&#8221; range F800-FBFF may be used as Experimental Use or Private Use values <a href="#RFC8126">[RFC8126]</a> and may be used freely for development purposes, or for other purposes within a single site.  No attempt is made to prevent multiple sites from using the same value in different (and incompatible) ways.  There is no need for IANA to review such assignments (since IANA does not record them) and assignments are not generally useful for broad interoperability.  It is the responsibility of the sites making use of &#8220;experimental/local&#8221; values to ensure that no conflicts occur within the intended scope of use.</p>
+<p id="rfc.section.10.3.p.2">The meanings of the fields are as follows:</p>
+<p/>
+
+<dl>
+  <dt>Type:</dt>
+  <dd style="margin-left: 8">the 16-bit DSO type code</dd>
+  <dt>Name:</dt>
+  <dd style="margin-left: 8">the human-readable name of the TLV</dd>
+  <dt>Fast Open:</dt>
+  <dd style="margin-left: 8">If OK, this TLV may be sent in a Fast Open (TLS 0-RTT) (<a href="#RFC8446">[RFC8446]</a> Section 2.3) message.   If NA, the TLV may appear as a secondary TLV in a DSO message that is included in a Fast Open message.</dd>
+  <dt>Status:</dt>
+  <dd style="margin-left: 8">IETF Document status (or &#8220;External&#8221; if not documented in an IETF document.</dd>
+  <dt>Reference:</dt>
+  <dd style="margin-left: 8">A stable reference to the document in which this TLV is defined.</dd>
+</dl>
+<p id="rfc.section.10.3.p.4">DSO Type Code zero is reserved and is not currently intended for allocation.</p>
+<p id="rfc.section.10.3.p.5">Registrations of new DSO Type Codes in the &#8220;Reserved for DSO session-management&#8221; range 0004-003F and the &#8220;Reserved for future expansion&#8221; range FC00-FFFF require publication of an IETF Standards Action document <a href="#RFC8126">[RFC8126]</a>.</p>
+<p id="rfc.section.10.3.p.6">Any document defining a new TLV which lists a value of &#8220;OK&#8221; in the Fast Open or 0-RTT column must include a threat analysis for the use of the TLV in the case of TCP Fast Open and in the case of TLS 0-RTT.  See <a href="#zrtt">Section 11.1</a> for details.</p>
+<p id="rfc.section.10.3.p.7">Requests to register additional new DSO Type Codes in the &#8220;Unassigned&#8221; range 0040-F7FF are to be recorded by IANA after Expert Review <a href="#RFC8126">[RFC8126]</a>.  The expert review should validate that the requested type code is specified in a way that conforms to this specification, and that the intended use for the code would not be addressed with an experimental/local assignment.</p>
+<p id="rfc.section.10.3.p.8">DSO Type Codes in the &#8220;experimental/local&#8221; range F800-FBFF may be used as Experimental Use or Private Use values <a href="#RFC8126">[RFC8126]</a> and may be used freely for development purposes, or for other purposes within a single site.  No attempt is made to prevent multiple sites from using the same value in different (and incompatible) ways.  There is no need for IANA to review such assignments (since IANA does not record them) and assignments are not generally useful for broad interoperability.  It is the responsibility of the sites making use of &#8220;experimental/local&#8221; values to ensure that no conflicts occur within the intended scope of use.</p>
 <h1 id="rfc.section.11"><a href="#rfc.section.11">11.</a> <a href="#security-considerations" id="security-considerations">Security Considerations</a></h1>
 <p id="rfc.section.11.p.1">If this mechanism is to be used with DNS over TLS, then these messages are subject to the same constraints as any other DNS-over-TLS messages and MUST NOT be sent in the clear before the TLS session is established.</p>
 <p id="rfc.section.11.p.2">The data field of the &#8220;Encryption Padding&#8221; TLV could be used as a covert channel.</p>
 <p id="rfc.section.11.p.3">When designing new DSO TLVs, the potential for data in the TLV to be used as a tracking identifier should be taken into consideration, and should be avoided when not required.</p>
 <p id="rfc.section.11.p.4">When used without TLS or similar cryptographic protection, a malicious entity maybe able to inject a malicious unidirectional DSO Retry Delay Message into the data stream, specifying an unreasonably large RETRY DELAY, causing a denial-of-service attack against the client.</p>
 <p id="rfc.section.11.p.5">The establishment of DSO sessions has an impact on the number of open TCP connections on a DNS server. Additional resources may be used on the server as a result. However, because the server can limit the number of DSO sessions established and can also close existing DSO sessions as needed, denial of service or resource exhaustion should not be a concern.</p>
-<h1 id="rfc.section.11.1"><a href="#rfc.section.11.1">11.1.</a> <a href="#tcp-fast-open-considerations" id="tcp-fast-open-considerations">TCP Fast Open Considerations</a></h1>
-<p id="rfc.section.11.1.p.1">It would be possible to add a TLV that requires the server to do some significant work, and send that to the server as initial data in a TCP SYN packet.   A flood of such packets could be used as a DoS attack on the server.   None of the TLVs defined here have this property.   If a new TLV is specified that does have this property, the specification should require that some kind of exchange be done with the server before work is done.   That is, the TLV that requires work could not be processed without a round-trip from the server to the client to verify that the source address of the packet is reachable.</p>
-<p id="rfc.section.11.1.p.2">One way to accomplish this would be to have the client send a TLV indicating that it wishes to have the server do work of this sort; this TLV would not actually result in work being done, but would request a nonce from the server.   The client could then use that nonce to request that work be done.</p>
-<p id="rfc.section.11.1.p.3">Alternatively, the server could simply disable TCP fast open.   This same problem would exist for DNS-over-TLS with TLS early data; the same remedies would apply.</p>
+<h1 id="rfc.section.11.1"><a href="#rfc.section.11.1">11.1.</a> <a href="#zrtt" id="zrtt">TCP Fast Open and TLS 0-RTT Considerations</a></h1>
+<p id="rfc.section.11.1.p.1">DSO permits zero round-trip operation using TCP Fast Open <a href="#RFC7413">[RFC7413]</a> with TLS 1.3 <a href="#RFC8446">[RFC8446]</a> 0-RTT to reduce or eliminate round trips in session establishment.</p>
+<p id="rfc.section.11.1.p.2">A DSO message may or may not be permitted to be sent in a Fast Open message.  The definition for each TLV that can be used as a primary TLV is required to state whether or not that TLV is permitted in Fast Open messages.  Only response-requiring messages are ever permitted in Fast Open messages, and only clients are permitted to send any DSO message in a Fast Open message, unless there is an implicit session (see <a href="#establishment">Section 5.1</a>).</p>
+<p id="rfc.section.11.1.p.3">For DSO messages that are permitted in Fast Open messages, a client MAY include one or more such messages messages in a Fast Open message without having to wait for a DSO response to the first DSO request message to confirm successful establishment of a DSO session.</p>
+<p id="rfc.section.11.1.p.4">However, unless there is an implicit session, a client MUST NOT send DSO unidirectional messages until after a DSO Session has been mutually established.</p>
+<p id="rfc.section.11.1.p.5">Similarly, unless there is an implicit session, a server MUST NOT send DSO request messages until it has received a response-requiring DSO request message from a client and transmitted a successful NOERROR response for that request.</p>
+<p id="rfc.section.11.1.p.6">Caution must be taken to ensure that DSO messages sent before the first round-trip is completed are idempotent, or are otherwise immune to any problems that could be result from the inadvertent replay that can occur with zero round-trip operation.</p>
+<p id="rfc.section.11.1.p.7">It would be possible to add a TLV that requires the server to do some significant work, and send that to the server as initial data in a TCP SYN packet.   A flood of such packets could be used as a DoS attack on the server.   None of the TLVs defined here have this property.</p>
+<p id="rfc.section.11.1.p.8">If a new TLV is specified that does have this property, that TLV must be specified as not permitted in 0-RTT messages.  This prevents work from being done until a round-trip has occurred from the server to the client to verify that the source address of the packet is reachable.</p>
+<p id="rfc.section.11.1.p.9">Documents that define new TLVs must state whether each new TLV is permitted for use with TCP Fast Open and 0-RTT.  Such documents must include a threat analysis in the security considerations section for each TLV defined in the document that is permitted to be used for TCP Fast Open and 0-RTT.  This threat analysis should be done based on the advice given in <a href="#RFC8446">[RFC8446]</a> Section 2.3, 8 and Appendix E.5.</p>
 <h1 id="rfc.section.12"><a href="#rfc.section.12">12.</a> <a href="#acknowledgements" id="acknowledgements">Acknowledgements</a></h1>
 <p id="rfc.section.12.p.1">Thanks to Stephane Bortzmeyer, Tim Chown, Ralph Droms, Paul Hoffman, Jan Komissar, Edward Lewis, Allison Mankin, Rui Paulo, David Schinazi, Manju Shankar Rao, and Bernie Volz for their helpful contributions to this document.</p>
 <h1 id="rfc.references"><a href="#rfc.references">13.</a> References</h1>
@@ -31460,7 +30489,7 @@
       <td class="reference">
         <b id="I-D.ietf-dnssd-push">[I-D.ietf-dnssd-push]</b>
       </td>
-      <td class="top"><a>Pusateri, T.</a> and <a>S. Cheshire</a>, "<a href="http://tools.ietf.org/html/draft-ietf-dnssd-push-14">DNS Push Notifications</a>", Internet-Draft draft-ietf-dnssd-push-14, March 2018.</td>
+      <td class="top"><a>Pusateri, T.</a> and <a>S. Cheshire</a>, "<a href="http://tools.ietf.org/html/draft-ietf-dnssd-push-15">DNS Push Notifications</a>", Internet-Draft draft-ietf-dnssd-push-15, September 2018.</td>
     </tr>
     <tr>
       <td class="reference">
