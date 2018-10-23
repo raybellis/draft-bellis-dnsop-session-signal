@@ -1,7 +1,7 @@
 ---
 title: DNS Stateful Operations
-docname: draft-ietf-dnsop-session-signal-16
-date: 2018-9-27
+docname: draft-ietf-dnsop-session-signal-17
+date: 2018-10-23
 ipr: trust200902
 area: Internet
 wg: DNSOP Working Group
@@ -267,7 +267,7 @@ long-lived operation:
 either the client or server, acting as initiator, has requested that the
 responder send new information regarding the request, as it becomes available.
 
-Early Data
+Early Data:
 : A TCP SYN packet (TCP Fast Open) containing a TLS 1.3 initial handshake containing early data that begins a DSO session ({{RFC8446}} section 2.3).
 TCP Fast Open is only permitted when using TLS encapsulation: a TCP SYN message that does not use TLS encapsulation
 but contains is not permitted.
