@@ -6,18 +6,18 @@ DNSOP Working Group                                            R. Bellis
 Internet-Draft                                                       ISC
 Updates: 1035, 7766 (if approved)                            S. Cheshire
 Intended status: Standards Track                              Apple Inc.
-Expires: March 16, 2019                                     J. Dickinson
+Expires: April 26, 2019                                     J. Dickinson
                                                             S. Dickinson
                                                                  Sinodun
                                                                 T. Lemon
                                                      Nibbhaya Consulting
                                                              T. Pusateri
                                                             Unaffiliated
-                                                      September 12, 2018
+                                                        October 23, 2018
 
 
                         DNS Stateful Operations
-                   draft-ietf-dnsop-session-signal-15
+                   draft-ietf-dnsop-session-signal-18
 
 Abstract
 
@@ -40,22 +40,22 @@ Status of This Memo
    Internet-Drafts are working documents of the Internet Engineering
    Task Force (IETF).  Note that other groups may also distribute
    working documents as Internet-Drafts.  The list of current Internet-
-   Drafts is at http://datatracker.ietf.org/drafts/current/.
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
 
    Internet-Drafts are draft documents valid for a maximum of six months
    and may be updated, replaced, or obsoleted by other documents at any
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on March 16, 2019.
+   This Internet-Draft will expire on April 26, 2019.
 
 
 
 
 
-Bellis, et al.           Expires March 16, 2019                 [Page 1]
+Bellis, et al.           Expires April 26, 2019                 [Page 1]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 Copyright Notice
@@ -65,7 +65,7 @@ Copyright Notice
 
    This document is subject to BCP 78 and the IETF Trust's Legal
    Provisions Relating to IETF Documents
-   (http://trustee.ietf.org/license-info) in effect on the date of
+   (https://trustee.ietf.org/license-info) in effect on the date of
    publication of this document.  Please review these documents
    carefully, as they describe your rights and restrictions with respect
    to this document.  Code Components extracted from this document must
@@ -85,8 +85,8 @@ Table of Contents
      4.2.  Applicable Transports . . . . . . . . . . . . . . . . . .  10
    5.  Protocol Details  . . . . . . . . . . . . . . . . . . . . . .  11
      5.1.  DSO Session Establishment . . . . . . . . . . . . . . . .  12
-       5.1.1.  Session Establishment Failure . . . . . . . . . . . .  12
-       5.1.2.  Session Establishment Success . . . . . . . . . . . .  13
+       5.1.1.  Session Establishment Failure . . . . . . . . . . . .  13
+       5.1.2.  Session Establishment Success . . . . . . . . . . . .  14
      5.2.  Operations After Session Establishment  . . . . . . . . .  14
      5.3.  Session Termination . . . . . . . . . . . . . . . . . . .  15
        5.3.1.  Handling Protocol Errors  . . . . . . . . . . . . . .  15
@@ -109,9 +109,9 @@ Table of Contents
 
 
 
-Bellis, et al.           Expires March 16, 2019                 [Page 2]
+Bellis, et al.           Expires April 26, 2019                 [Page 2]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
        6.4.2.  Values for the Inactivity Timeout . . . . . . . . . .  34
@@ -120,7 +120,8 @@ Internet-Draft           DNS Stateful Operations          September 2018
        6.5.2.  Values for the Keepalive Interval . . . . . . . . . .  35
      6.6.  Server-Initiated Session Termination  . . . . . . . . . .  37
        6.6.1.  Server-Initiated Retry Delay Message  . . . . . . . .  38
-       6.6.2.  Client Reconnection . . . . . . . . . . . . . . . . .  39
+       6.6.2.  Misbehaving Clients . . . . . . . . . . . . . . . . .  39
+       6.6.3.  Client Reconnection . . . . . . . . . . . . . . . . .  39
    7.  Base TLVs for DNS Stateful Operations . . . . . . . . . . . .  41
      7.1.  Keepalive TLV . . . . . . . . . . . . . . . . . . . . . .  41
        7.1.1.  Client handling of received Session Timeout values  .  43
@@ -136,15 +137,14 @@ Internet-Draft           DNS Stateful Operations          September 2018
      9.1.  Service Instances . . . . . . . . . . . . . . . . . . . .  52
      9.2.  Anycast Considerations  . . . . . . . . . . . . . . . . .  53
      9.3.  Connection Sharing  . . . . . . . . . . . . . . . . . . .  54
-     9.4.  Zero Round-Trip Operation . . . . . . . . . . . . . . . .  55
-     9.5.  Operational Considerations for Middlebox  . . . . . . . .  56
-     9.6.  TCP Delayed Acknowledgement Considerations  . . . . . . .  57
-   10. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  60
-     10.1.  DSO OPCODE Registration  . . . . . . . . . . . . . . . .  60
-     10.2.  DSO RCODE Registration . . . . . . . . . . . . . . . . .  60
-     10.3.  DSO Type Code Registry . . . . . . . . . . . . . . . . .  60
-   11. Security Considerations . . . . . . . . . . . . . . . . . . .  61
-     11.1.  TCP Fast Open Considerations . . . . . . . . . . . . . .  62
+     9.4.  Operational Considerations for Middlebox  . . . . . . . .  55
+     9.5.  TCP Delayed Acknowledgement Considerations  . . . . . . .  56
+   10. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  59
+     10.1.  DSO OPCODE Registration  . . . . . . . . . . . . . . . .  59
+     10.2.  DSO RCODE Registration . . . . . . . . . . . . . . . . .  59
+     10.3.  DSO Type Code Registry . . . . . . . . . . . . . . . . .  59
+   11. Security Considerations . . . . . . . . . . . . . . . . . . .  60
+     11.1.  TLS 0-RTT Considerations . . . . . . . . . . . . . . . .  61
    12. Acknowledgements  . . . . . . . . . . . . . . . . . . . . . .  62
    13. References  . . . . . . . . . . . . . . . . . . . . . . . . .  62
      13.1.  Normative References . . . . . . . . . . . . . . . . . .  62
@@ -165,9 +165,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                 [Page 3]
+Bellis, et al.           Expires April 26, 2019                 [Page 3]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
    situations it is also advantageous to support server-initiated
@@ -221,9 +221,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                 [Page 4]
+Bellis, et al.           Expires April 26, 2019                 [Page 4]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
    displayed as unknown additional data after the end of the DNS
@@ -277,9 +277,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                 [Page 5]
+Bellis, et al.           Expires April 26, 2019                 [Page 5]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 3.  Terminology
@@ -333,9 +333,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                 [Page 6]
+Bellis, et al.           Expires April 26, 2019                 [Page 6]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
    receiver:  the software which is receiving a DNS message, a DSO
@@ -348,6 +348,12 @@ Internet-Draft           DNS Stateful Operations          September 2018
       operation on a DSO session where either the client or server,
       acting as initiator, has requested that the responder send new
       information regarding the request, as it becomes available.
+
+   Early Data:  A TCP SYN packet (TCP Fast Open) containing a TLS 1.3
+      initial handshake containing early data that begins a DSO session
+      ([RFC8446] section 2.3).  TCP Fast Open is only permitted when
+      using TLS encapsulation: a TCP SYN message that does not use TLS
+      encapsulation but contains data is not permitted.
 
    DNS message:  any DNS message, including DNS queries, response,
       updates, DSO messages, etc.
@@ -381,18 +387,18 @@ Internet-Draft           DNS Stateful Operations          September 2018
    Response Additional TLV:  Any TLVs in a DSO response that follow the
       (optional) Response Primary TLV.
 
+
+
+Bellis, et al.           Expires April 26, 2019                 [Page 7]
+
+Internet-Draft           DNS Stateful Operations            October 2018
+
+
    inactivity timer:  the time since the most recent non-keepalive DNS
       message was sent or received.  (see Section 6.4)
 
    keepalive timer:  the time since the most recent DNS message was sent
       or received.  (see Section 6.5)
-
-
-
-Bellis, et al.           Expires March 16, 2019                 [Page 7]
-
-Internet-Draft           DNS Stateful Operations          September 2018
-
 
    session timeouts:  the inactivity timer and the keepalive timer.
 
@@ -439,15 +445,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-
-
-
-
-
-
-Bellis, et al.           Expires March 16, 2019                 [Page 8]
+Bellis, et al.           Expires April 26, 2019                 [Page 8]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 4.  Applicability
@@ -501,9 +501,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                 [Page 9]
+Bellis, et al.           Expires April 26, 2019                 [Page 9]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 4.2.  Applicable Transports
@@ -557,9 +557,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 10]
+Bellis, et al.           Expires April 26, 2019                [Page 10]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 5.  Protocol Details
@@ -609,13 +609,13 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
    Reconnect:  The client disconnected as a result of a server shutdown.
       The client either waits for the server-specified Retry Delay to
-      expire (Section 6.6.2), or else contacts a different server
+      expire (Section 6.6.3), or else contacts a different server
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 11]
+Bellis, et al.           Expires April 26, 2019                [Page 11]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
       instance.  If the client no longer needs service, it does not
@@ -629,7 +629,7 @@ Internet-Draft           DNS Stateful Operations          September 2018
       connection, but still needs service.  Or, the server forcibly
       aborted the connection, but the client still needs service.  The
       client either connects to a different service instance
-      (Section 9.1) or waits to reconnect (Section 6.6.2.1).
+      (Section 9.1) or waits to reconnect (Section 6.6.3.1).
 
 5.1.  DSO Session Establishment
 
@@ -661,19 +661,32 @@ Internet-Draft           DNS Stateful Operations          September 2018
    and RCODE set to NOERROR (0), indicating that the DSO request was
    successful.
 
+   Some DSO messages are permitted as early data (Section 11.1).  Others
+   are not.  Unidirectional messages are never permitted as early data
+   unless an implicit session exists.
+
+
+
+
+
+Bellis, et al.           Expires April 26, 2019                [Page 12]
+
+Internet-Draft           DNS Stateful Operations            October 2018
+
+
+   If a server receives a DSO message in early data whose primary TLV is
+   not permitted to appear in early data, the server MUST forcible abort
+   the connection.  If a client receives a DSO message in early data,
+   and there is no implicit DSO session, the client MUST forcibly abort
+   the connection.  If a server or client receives a TCP Fast Open
+   message that is not a TLS 1.3 0-RTT initial handshake, it MUST
+   forcibly abort the connection.
+
 5.1.1.  Session Establishment Failure
 
    If the response RCODE is set to NOTIMP (4), or in practise any value
    other than NOERROR (0) or DSOTYPENI (defined below), then the client
    MUST assume that the server does not implement DSO at all.  In this
-
-
-
-Bellis, et al.           Expires March 16, 2019                [Page 12]
-
-Internet-Draft           DNS Stateful Operations          September 2018
-
-
    case the client is permitted to continue sending DNS messages on that
    connection, but the client MUST NOT issue further DSO messages on
    that connection.
@@ -699,14 +712,23 @@ Internet-Draft           DNS Stateful Operations          September 2018
    In the first case, the client SHOULD mark that service instance as
    not supporting DSO, and not attempt a DSO connection for some period
    of time (at least an hour) after the failed attempt.  The client MAY
-   reconnect but not use DSO, if appropriate (Section 6.6.2.2).
+   reconnect but not use DSO, if appropriate (Section 6.6.3.2).
 
    In the second case, the client SHOULD wait 30 seconds, after which
    time the server will be assumed not to support DSO.  If the server
    doesn't respond within 30 seconds, the client MUST forcibly abort the
    connection to the server, since the server's behavior is out of spec,
    and hence its state is undefined.  The client MAY reconnect, but not
-   use DSO, if appropriate (Section 6.6.2.1).
+   use DSO, if appropriate (Section 6.6.3.1).
+
+
+
+
+
+Bellis, et al.           Expires April 26, 2019                [Page 13]
+
+Internet-Draft           DNS Stateful Operations            October 2018
+
 
 5.1.2.  Session Establishment Success
 
@@ -720,15 +742,6 @@ Internet-Draft           DNS Stateful Operations          September 2018
    Once a DSO Session has been established, either end may unilaterally
    send appropriate DSO messages at any time, and therefore either
    client or server may be the initiator of a message.
-
-
-
-
-
-Bellis, et al.           Expires March 16, 2019                [Page 13]
-
-Internet-Draft           DNS Stateful Operations          September 2018
-
 
 5.2.  Operations After Session Establishment
 
@@ -768,22 +781,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-Bellis, et al.           Expires March 16, 2019                [Page 14]
+Bellis, et al.           Expires April 26, 2019                [Page 14]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 5.3.  Session Termination
@@ -837,9 +837,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 15]
+Bellis, et al.           Expires April 26, 2019                [Page 15]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 5.4.  Message Format
@@ -893,9 +893,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 16]
+Bellis, et al.           Expires April 26, 2019                [Page 16]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 5.4.1.  DNS Header Fields in DSO Messages
@@ -949,9 +949,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 17]
+Bellis, et al.           Expires April 26, 2019                [Page 17]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
    a DSO request message (QR=0) the RCODE is set to zero on
@@ -1005,9 +1005,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 18]
+Bellis, et al.           Expires April 26, 2019                [Page 18]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 5.4.2.  DSO Data
@@ -1061,9 +1061,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 19]
+Bellis, et al.           Expires April 26, 2019                [Page 19]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
    for an initiator to maintain state while it waits to receive replies
@@ -1117,9 +1117,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 20]
+Bellis, et al.           Expires April 26, 2019                [Page 20]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 5.4.3.  TLV Syntax
@@ -1173,9 +1173,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 21]
+Bellis, et al.           Expires April 26, 2019                [Page 21]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 5.4.3.1.  Request TLVs
@@ -1183,7 +1183,7 @@ Internet-Draft           DNS Stateful Operations          September 2018
    The first TLV in a DSO request message or DSO unidirectional message
    is the "Primary TLV" and indicates the operation to be performed.  A
    DSO request message or DSO unidirectional message MUST contain at at
-   least one TLV - the Primary TLV.
+   least one TLV-the Primary TLV.
 
    Immediately following the Primary TLV, a DSO request message or DSO
    unidirectional message MAY contain one or more "Additional TLVs",
@@ -1229,9 +1229,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 22]
+Bellis, et al.           Expires April 26, 2019                [Page 22]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 5.4.3.3.  Unrecognized TLVs
@@ -1285,9 +1285,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 23]
+Bellis, et al.           Expires April 26, 2019                [Page 23]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 5.4.4.  EDNS(0) and TSIG
@@ -1341,9 +1341,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 24]
+Bellis, et al.           Expires April 26, 2019                [Page 24]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 5.5.  Message Handling
@@ -1397,9 +1397,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 25]
+Bellis, et al.           Expires April 26, 2019                [Page 25]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 5.5.1.  Delayed Acknowledgement Management
@@ -1408,28 +1408,31 @@ Internet-Draft           DNS Stateful Operations          September 2018
    acknowledgement timer to provide more efficient use of the network
    and better performance.
 
-   With a DSO request message, the TCP implementation waits for the
-   application-layer client software to generate the corresponding DSO
-   response message, which enables the TCP implementation to send a
-   single combined IP packet containing the TCP acknowledgement, the TCP
-   window update, and the application-generated DSO response message.
-   This is more efficient than sending three separate IP packets.
+   With a bidirectional exchange over TCP, as for example with a DSO
+   request message, the operating system TCP implementation waits for
+   the application-layer client software to generate the corresponding
+   DSO response message.  It can then send a single combined packet
+   containing the TCP acknowledgement, the TCP window update, and the
+   application-generated DSO response message.  This is more efficient
+   than sending three separate packets, as would occur if the TCP packet
+   containing the DSO request were acknowledged immediately.
 
    With a DSO unidirectional message or DSO response message, there is
    no corresponding application-generated DSO response message, and
    consequently, no hint to the transport protocol about when it should
-   send its acknowledgement and window update.  Some networking APIs
-   provide a mechanism that allows the application-layer client software
-   to signal to the transport protocol that no response will be
-   forthcoming (in effect it can be thought of as a zero-length "empty"
-   write).  Where available in the networking API being used, the
-   recipient of a DSO unidirectional message or DSO response message,
-   having parsed and interpreted the message, SHOULD then use this
-   mechanism provided by the networking API to signal that no response
-   for this message will be forthcoming, so that the TCP implementation
-   can go ahead and send its acknowledgement and window update without
-   further delay.  See Section 9.6 for further discussion of why this is
-   important.
+   send its acknowledgement and window update.
+
+   Some networking APIs provide a mechanism that allows the application-
+   layer client software to signal to the transport protocol that no
+   response will be forthcoming (in effect it can be thought of as a
+   zero-length "empty" write).  Where available in the networking API
+   being used, the recipient of a DSO unidirectional message or DSO
+   response message, having parsed and interpreted the message, SHOULD
+   then use this mechanism provided by the networking API to signal that
+   no response for this message will be forthcoming, so that the TCP
+   implementation can go ahead and send its acknowledgement and window
+   update without further delay.  See Section 9.5 for further discussion
+   of why this is important.
 
 
 
@@ -1450,12 +1453,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-
-
-
-Bellis, et al.           Expires March 16, 2019                [Page 26]
+Bellis, et al.           Expires April 26, 2019                [Page 26]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 5.5.2.  MESSAGE ID Namespaces
@@ -1509,9 +1509,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 27]
+Bellis, et al.           Expires April 26, 2019                [Page 27]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 5.5.3.  Error Responses
@@ -1565,9 +1565,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 28]
+Bellis, et al.           Expires April 26, 2019                [Page 28]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 5.6.  Responder-Initiated Operation Cancellation
@@ -1621,9 +1621,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 29]
+Bellis, et al.           Expires April 26, 2019                [Page 29]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 6.  DSO Session Lifecycle and Timers
@@ -1677,9 +1677,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 30]
+Bellis, et al.           Expires April 26, 2019                [Page 30]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 6.2.  DSO Session Timeouts
@@ -1733,9 +1733,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 31]
+Bellis, et al.           Expires April 26, 2019                [Page 31]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 6.3.  Inactive DSO Sessions
@@ -1789,9 +1789,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 32]
+Bellis, et al.           Expires April 26, 2019                [Page 32]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 6.4.  The Inactivity Timeout
@@ -1845,9 +1845,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 33]
+Bellis, et al.           Expires April 26, 2019                [Page 33]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 6.4.2.  Values for the Inactivity Timeout
@@ -1901,9 +1901,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 34]
+Bellis, et al.           Expires April 26, 2019                [Page 34]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 6.5.  The Keepalive Interval
@@ -1957,9 +1957,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 35]
+Bellis, et al.           Expires April 26, 2019                [Page 35]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
    may impose a lower keepalive interval, to generate more frequent DSO
@@ -2013,9 +2013,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 36]
+Bellis, et al.           Expires April 26, 2019                [Page 36]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 6.6.  Server-Initiated Session Termination
@@ -2069,9 +2069,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 37]
+Bellis, et al.           Expires April 26, 2019                [Page 37]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 6.6.1.  Server-Initiated Retry Delay Message
@@ -2125,9 +2125,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 38]
+Bellis, et al.           Expires April 26, 2019                [Page 38]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
    be considered failed, and should be retried at a later time, as
@@ -2153,7 +2153,18 @@ Internet-Draft           DNS Stateful Operations          September 2018
    a second for each successive client, yielding a post-restart
    reconnection rate of ten clients per second).
 
-6.6.2.  Client Reconnection
+6.6.2.  Misbehaving Clients
+
+   A server may determine that a client is not following the protocol
+   correctly.  There may be no way for the server to recover the
+   session, in which case the server forcibly terminates the connection.
+   Since the client doesn't know why the connection dropped, it may
+   reconnect immediately.  If the server has determined that a client is
+   not following the protocol correctly, it may terminate the DSO
+   session as soon as it is established, specifying a long retry-delay
+   to prevent the client from immediately reconnecting.
+
+6.6.3.  Client Reconnection
 
    After a DSO Session is ended by the server (either by sending the
    client a Retry Delay message, or by forcibly aborting the underlying
@@ -2167,6 +2178,14 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
    If the service instance will only be out of service for a short
    maintenance period, it should use a value a little longer that the
+
+
+
+Bellis, et al.           Expires April 26, 2019                [Page 39]
+
+Internet-Draft           DNS Stateful Operations            October 2018
+
+
    expected maintenance window.  It should not default to a very large
    delay value, or clients may not attempt to reconnect after it resumes
    service.
@@ -2178,37 +2197,31 @@ Internet-Draft           DNS Stateful Operations          September 2018
    instruct a client to stay away for longer than 49.7 days.  If, after
    49.7 days, the DNS or other configuration information still indicates
    that this is the valid service instance for a particular service,
-
-
-
-Bellis, et al.           Expires March 16, 2019                [Page 39]
-
-Internet-Draft           DNS Stateful Operations          September 2018
-
-
    then clients MAY attempt to reconnect.  In reality, if a client is
    rebooted or otherwise lose state, it may well attempt to reconnect
    before 49.7 days elapses, for as long as the DNS or other
    configuration information continues to indicate that this is the
    service instance the client should use.
 
-6.6.2.1.  Reconnecting After a Forcible Abort
+6.6.3.1.  Reconnecting After a Forcible Abort
 
    If a connection was forcibly aborted by the client, the client SHOULD
    mark that service instance as not supporting DSO.  The client MAY
    reconnect but not attempt to use DSO, or may connect to a different
    service instance, if applicable.
 
-6.6.2.2.  Reconnecting After an Unexplained Connection Drop
+6.6.3.2.  Reconnecting After an Unexplained Connection Drop
 
    It is also possible for a server to forcibly terminate the
    connection; in this case the client doesn't know whether the
    termination was the result of a protocol error or a network outage.
-   The client could determine which of the two is occurring by noticing
-   if a connection is repeatedly dropped by the server; if so, the
-   client can mark the server as not supporting DSO.
+   When the client notices that the connection has been dropped, it can
+   attempt to reconnect immediately.  However, if the connection is
+   dropped again without the client being able to successfully do
+   whatever it is trying to do, it should mark the server as not
+   supporting DSO.
 
-6.6.2.3.  Probing for Working DSO Support
+6.6.3.3.  Probing for Working DSO Support
 
    Once a server has been marked by the client as not supporting DSO,
    the client SHOULD NOT attempt DSO operations on that server until
@@ -2224,22 +2237,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-Bellis, et al.           Expires March 16, 2019                [Page 40]
+Bellis, et al.           Expires April 26, 2019                [Page 40]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 7.  Base TLVs for DNS Stateful Operations
@@ -2256,6 +2256,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
    session alive.  The client will request the desired session timeout
    values and the server will acknowledge with the response values that
    it requires the client to use.
+
+   DSO messages with the Keepalive TLV as the primary TLV may appear in
+   early data.
 
    The DSO-DATA for the Keepalive TLV is as follows:
 
@@ -2288,16 +2291,15 @@ Internet-Draft           DNS Stateful Operations          September 2018
       which a server will forcibly disconnect a client for failing to
       generate the mandated DSO keepalive traffic is twenty seconds.
 
+
+
+Bellis, et al.           Expires April 26, 2019                [Page 41]
+
+Internet-Draft           DNS Stateful Operations            October 2018
+
+
    The transmission or reception of DSO Keepalive messages (i.e.,
    messages where the Keepalive TLV is the first TLV) reset only the
-
-
-
-Bellis, et al.           Expires March 16, 2019                [Page 41]
-
-Internet-Draft           DNS Stateful Operations          September 2018
-
-
    keepalive timer, not the inactivity timer.  The reason for this is
    that periodic DSO Keepalive messages are sent for the sole purpose of
    keeping a DSO Session alive, when that DSO Session has current or
@@ -2344,16 +2346,16 @@ Internet-Draft           DNS Stateful Operations          September 2018
    DSO Keepalive request message with a nonzero MESSAGE ID then this is
    a fatal error and the client MUST forcibly abort the connection
    immediately.  The DSO Keepalive unidirectional message from the
+
+
+
+Bellis, et al.           Expires April 26, 2019                [Page 42]
+
+Internet-Draft           DNS Stateful Operations            October 2018
+
+
    server resets a DSO Session's keepalive timer, and at the same time
    unilaterally informs the client of the new Session Timeout values to
-
-
-
-Bellis, et al.           Expires March 16, 2019                [Page 42]
-
-Internet-Draft           DNS Stateful Operations          September 2018
-
-
    use from this point forward in this DSO Session.  No client DSO
    response to this unilateral declaration is required or allowed.
 
@@ -2400,16 +2402,16 @@ Internet-Draft           DNS Stateful Operations          September 2018
    permissible time allowed without useful activity on a DSO Session.
    The act of receiving the message containing the Keepalive TLV does
    not itself reset the inactivity timer.  The time elapsed since the
+
+
+
+Bellis, et al.           Expires April 26, 2019                [Page 43]
+
+Internet-Draft           DNS Stateful Operations            October 2018
+
+
    last useful activity on this DSO Session is unaffected by exchange of
    DSO Keepalive messages.  The new inactivity timeout value in the
-
-
-
-Bellis, et al.           Expires March 16, 2019                [Page 43]
-
-Internet-Draft           DNS Stateful Operations          September 2018
-
-
    Keepalive TLV in the received message does update the timeout
    associated with the running inactivity timer; that becomes the new
    maximum permissible time without activity on a DSO Session.
@@ -2459,18 +2461,17 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-
-
-Bellis, et al.           Expires March 16, 2019                [Page 44]
+Bellis, et al.           Expires April 26, 2019                [Page 44]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 7.2.  Retry Delay TLV
 
    The Retry Delay TLV (DSO-TYPE=2) can be used as a Primary TLV
    (unidirectional) in a server-to-client message, or as a Response
-   Additional TLV in either direction.
+   Additional TLV in either direction.  DSO messages with a Relay Delay
+   TLV as their primary TLV are not permitted in early data.
 
    The DSO-DATA for the Retry Delay TLV is as follows:
 
@@ -2513,15 +2514,15 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
    o  NOTAUTH indicates that the server has been reconfigured and at
       this time it is now unable to perform one or more of the long-
-      lived client operations that were previously being performed on
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 45]
+Bellis, et al.           Expires April 26, 2019                [Page 45]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
+      lived client operations that were previously being performed on
       this DSO Session because it does not have authority over the names
       in question (for example, a DNS Push Notification server could be
       reconfigured such that is is no longer accepting DNS Push
@@ -2572,10 +2573,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-
-Bellis, et al.           Expires March 16, 2019                [Page 46]
+Bellis, et al.           Expires April 26, 2019                [Page 46]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 7.2.2.  Retry Delay TLV used as a Response Additional TLV
@@ -2629,9 +2629,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 47]
+Bellis, et al.           Expires April 26, 2019                [Page 47]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 7.3.  Encryption Padding TLV
@@ -2685,9 +2685,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 48]
+Bellis, et al.           Expires April 26, 2019                [Page 48]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 8.  Summary Highlights
@@ -2741,9 +2741,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 49]
+Bellis, et al.           Expires April 26, 2019                [Page 49]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 8.2.  TLV Usage
@@ -2797,9 +2797,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 50]
+Bellis, et al.           Expires April 26, 2019                [Page 50]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
    o  SRP - Response Primary TLV, included in response message sent back
@@ -2853,9 +2853,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 51]
+Bellis, et al.           Expires April 26, 2019                [Page 51]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 9.  Additional Considerations
@@ -2909,9 +2909,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 52]
+Bellis, et al.           Expires April 26, 2019                [Page 52]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 9.2.  Anycast Considerations
@@ -2923,13 +2923,6 @@ Internet-Draft           DNS Stateful Operations          September 2018
    both servers can provide the same service and, where appropriate, the
    same authentication information, such as PKI certificates, when
    establishing connections.
-
-   In principle, anycast servers could maintain sufficient state that
-   they can both handle packets in the same TCP connection.  In order
-   for this to work with DSO, they would need to also share DSO state.
-   It is unlikely that this can be done successfully, however, so we
-   recommend that each anycast server instance maintain its own session
-   state.
 
    If a change in network topology causes packets in a particular TCP
    connection to be sent to an anycast server instance that does not
@@ -2965,9 +2958,16 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 53]
+
+
+
+
+
+
+
+Bellis, et al.           Expires April 26, 2019                [Page 53]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 9.3.  Connection Sharing
@@ -3021,68 +3021,12 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 54]
+Bellis, et al.           Expires April 26, 2019                [Page 54]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
-9.4.  Zero Round-Trip Operation
-
-   DSO permits zero round-trip operation using TCP Fast Open [RFC7413]
-   and TLS 1.3 [RFC8446] to reduce or eliminate round trips in session
-   establishment.
-
-   A client MAY send multiple response-requiring DSO messages using TCP
-   fast open or TLS 1.3 early data, without having to wait for a DSO
-   response to the first DSO request message to confirm successful
-   establishment of a DSO session.
-
-   However, a client MUST NOT send DSO unidirectional messages until
-   after a DSO Session has been mutually established.
-
-   Similarly, a server MUST NOT send DSO request messages until it has
-   received a response-requiring DSO request message from a client and
-   transmitted a successful NOERROR response for that request.
-
-   Caution must be taken to ensure that DSO messages sent before the
-   first round-trip is completed are idempotent, or are otherwise immune
-   to any problems that could be result from the inadvertent replay that
-   can occur with zero round-trip operation.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Bellis, et al.           Expires March 16, 2019                [Page 55]
-
-Internet-Draft           DNS Stateful Operations          September 2018
-
-
-9.5.  Operational Considerations for Middlebox
+9.4.  Operational Considerations for Middlebox
 
    Where an application-layer middlebox (e.g., a DNS proxy, forwarder,
    or session multiplexer) is in the path, care must be taken to avoid a
@@ -3133,12 +3077,12 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 56]
+Bellis, et al.           Expires April 26, 2019                [Page 55]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
-9.6.  TCP Delayed Acknowledgement Considerations
+9.5.  TCP Delayed Acknowledgement Considerations
 
    Most modern implementations of the Transmission Control Protocol
    (TCP) include a feature called "Delayed Acknowledgement" [RFC1122].
@@ -3189,9 +3133,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 57]
+Bellis, et al.           Expires April 26, 2019                [Page 56]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
    Unfortunately, Nagle's algorithm and delayed ack, two valuable
@@ -3245,9 +3189,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 58]
+Bellis, et al.           Expires April 26, 2019                [Page 57]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
    and no response for this message will be generated.  TCP can then
@@ -3301,9 +3245,9 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 59]
+Bellis, et al.           Expires April 26, 2019                [Page 58]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
 10.  IANA Considerations
@@ -3327,43 +3271,65 @@ Internet-Draft           DNS Stateful Operations          September 2018
    The IANA is requested to create the 16-bit DSO Type Code Registry,
    with initial (hexadecimal) values as shown below:
 
-   +-----------+--------------------------------+----------+-----------+
-   | Type      | Name                           | Status   | Reference |
-   +-----------+--------------------------------+----------+-----------+
-   | 0000      | Reserved                       | Standard | RFC-TBD   |
-   |           |                                |          |           |
-   | 0001      | KeepAlive                      | Standard | RFC-TBD   |
-   |           |                                |          |           |
-   | 0002      | RetryDelay                     | Standard | RFC-TBD   |
-   |           |                                |          |           |
-   | 0003      | EncryptionPadding              | Standard | RFC-TBD   |
-   |           |                                |          |           |
-   | 0004-003F | Unassigned, reserved for       |          |           |
-   |           | DSO session-management TLVs    |          |           |
-   |           |                                |          |           |
-   | 0040-F7FF | Unassigned                     |          |           |
-   |           |                                |          |           |
-   | F800-FBFF | Experimental/local use         |          |           |
-   |           |                                |          |           |
-   | FC00-FFFF | Reserved for future expansion  |          |           |
-   +-----------+--------------------------------+----------+-----------+
+   +-----------+------------------------+-------+----------+-----------+
+   | Type      | Name                   | Early | Status   | Reference |
+   |           |                        | Data  |          |           |
+   +-----------+------------------------+-------+----------+-----------+
+   | 0000      | Reserved               | NO    | Standard | RFC-TBD   |
+   |           |                        |       |          |           |
+   | 0001      | KeepAlive              | OK    | Standard | RFC-TBD   |
+   |           |                        |       |          |           |
+   | 0002      | RetryDelay             | NO    | Standard | RFC-TBD   |
+   |           |                        |       |          |           |
+   | 0003      | EncryptionPadding      | NA    | Standard | RFC-TBD   |
+   |           |                        |       |          |           |
+   | 0004-003F | Unassigned, reserved   | NO    |          |           |
+   |           | for DSO session-       |       |          |           |
+   |           | management TLVs        |       |          |           |
+   |           |                        |       |          |           |
+   | 0040-F7FF | Unassigned             | NO    |          |           |
+   |           |                        |       |          |           |
+   | F800-FBFF | Experimental/local use | NO    |          |           |
+   |           |                        |       |          |           |
+   | FC00-FFFF | Reserved for future    | NO    |          |           |
+   |           | expansion              |       |          |           |
+   +-----------+------------------------+-------+----------+-----------+
+
+   The meanings of the fields are as follows:
+
+   Type:  the 16-bit DSO type code
+
+
+
+Bellis, et al.           Expires April 26, 2019                [Page 59]
+
+Internet-Draft           DNS Stateful Operations            October 2018
+
+
+   Name:  the human-readable name of the TLV
+
+   Early Data:  If OK, this TLV may be sent as early data in a TLS 0-RTT
+      ([RFC8446] Section 2.3) initial handshake.  If NA, the TLV may
+      appear as a secondary TLV in a DSO message that is send as early
+      data.
+
+   Status:  IETF Document status (or "External" if not documented in an
+      IETF document.
+
+   Reference:  A stable reference to the document in which this TLV is
+      defined.
 
    DSO Type Code zero is reserved and is not currently intended for
    allocation.
 
    Registrations of new DSO Type Codes in the "Reserved for DSO session-
    management" range 0004-003F and the "Reserved for future expansion"
-
-
-
-
-Bellis, et al.           Expires March 16, 2019                [Page 60]
-
-Internet-Draft           DNS Stateful Operations          September 2018
-
-
    range FC00-FFFF require publication of an IETF Standards Action
    document [RFC8126].
+
+   Any document defining a new TLV which lists a value of "OK" in the
+   0-RTT column must include a threat analysis for the use of the TLV in
+   the case of TLS 0-RTT.  See Section 11.1 for details.
 
    Requests to register additional new DSO Type Codes in the
    "Unassigned" range 0040-F7FF are to be recorded by IANA after Expert
@@ -3387,6 +3353,15 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
    If this mechanism is to be used with DNS over TLS, then these
    messages are subject to the same constraints as any other DNS-over-
+
+
+
+
+Bellis, et al.           Expires April 26, 2019                [Page 60]
+
+Internet-Draft           DNS Stateful Operations            October 2018
+
+
    TLS messages and MUST NOT be sent in the clear before the TLS session
    is established.
 
@@ -3410,43 +3385,74 @@ Internet-Draft           DNS Stateful Operations          September 2018
    sessions as needed, denial of service or resource exhaustion should
    not be a concern.
 
+11.1.  TLS 0-RTT Considerations
+
+   DSO permits zero round-trip operation using TCP Fast Open [RFC7413]
+   with TLS 1.3 [RFC8446] 0-RTT to reduce or eliminate round trips in
+   session establishment.  TCP Fast Open is only permitted in
+   combination with TLS 0-RTT.  In the rest of this section we refer to
+   TLS 1.3 early data in a TLS 0-RTT initial handshake message that is
+   included in a TCP Fast Open packet as "early data."
+
+   A DSO message may or may not be permitted to be sent as early data.
+   The definition for each TLV that can be used as a primary TLV is
+   required to state whether or not that TLV is permitted as early data.
+   Only response-requiring messages are ever permitted as early data,
+   and only clients are permitted to send any DSO message as early data,
+   unless there is an implicit session (see Section 5.1).
+
+   For DSO messages that are permitted as early data, a client MAY
+   include one or more such messages as early data without having to
+   wait for a DSO response to the first DSO request message to confirm
+   successful establishment of a DSO session.
+
+   However, unless there is an implicit session, a client MUST NOT send
+   DSO unidirectional messages until after a DSO Session has been
+   mutually established.
 
 
 
-Bellis, et al.           Expires March 16, 2019                [Page 61]
+
+Bellis, et al.           Expires April 26, 2019                [Page 61]
 
-Internet-Draft           DNS Stateful Operations          September 2018
+Internet-Draft           DNS Stateful Operations            October 2018
 
 
-11.1.  TCP Fast Open Considerations
+   Similarly, unless there is an implicit session, a server MUST NOT
+   send DSO request messages until it has received a response-requiring
+   DSO request message from a client and transmitted a successful
+   NOERROR response for that request.
+
+   Caution must be taken to ensure that DSO messages sent as early data
+   are idempotent, or are otherwise immune to any problems that could be
+   result from the inadvertent replay that can occur with zero round-
+   trip operation.
 
    It would be possible to add a TLV that requires the server to do some
    significant work, and send that to the server as initial data in a
    TCP SYN packet.  A flood of such packets could be used as a DoS
    attack on the server.  None of the TLVs defined here have this
-   property.  If a new TLV is specified that does have this property,
-   the specification should require that some kind of exchange be done
-   with the server before work is done.  That is, the TLV that requires
-   work could not be processed without a round-trip from the server to
+   property.
+
+   If a new TLV is specified that does have this property, that TLV must
+   be specified as not permitted in 0-RTT messages.  This prevents work
+   from being done until a round-trip has occurred from the server to
    the client to verify that the source address of the packet is
    reachable.
 
-   One way to accomplish this would be to have the client send a TLV
-   indicating that it wishes to have the server do work of this sort;
-   this TLV would not actually result in work being done, but would
-   request a nonce from the server.  The client could then use that
-   nonce to request that work be done.
-
-   Alternatively, the server could simply disable TCP fast open.  This
-   same problem would exist for DNS-over-TLS with TLS early data; the
-   same remedies would apply.
+   Documents that define new TLVs must state whether each new TLV may be
+   sent as early data.  Such documents must include a threat analysis in
+   the security considerations section for each TLV defined in the
+   document that may be sent as early data.  This threat analysis should
+   be done based on the advice given in [RFC8446] Section 2.3, 8 and
+   Appendix E.5.
 
 12.  Acknowledgements
 
    Thanks to Stephane Bortzmeyer, Tim Chown, Ralph Droms, Paul Hoffman,
    Jan Komissar, Edward Lewis, Allison Mankin, Rui Paulo, David
-   Schinazi, Manju Shankar Rao, and Bernie Volz for their helpful
-   contributions to this document.
+   Schinazi, Manju Shankar Rao, Bernie Volz and Bob Harold for their
+   helpful contributions to this document.
 
 13.  References
 
@@ -3460,24 +3466,23 @@ Internet-Draft           DNS Stateful Operations          September 2018
               specification", STD 13, RFC 1035, DOI 10.17487/RFC1035,
               November 1987, <https://www.rfc-editor.org/info/rfc1035>.
 
+
+
+
+Bellis, et al.           Expires April 26, 2019                [Page 62]
+
+Internet-Draft           DNS Stateful Operations            October 2018
+
+
    [RFC1918]  Rekhter, Y., Moskowitz, B., Karrenberg, D., de Groot, G.,
               and E. Lear, "Address Allocation for Private Internets",
               BCP 5, RFC 1918, DOI 10.17487/RFC1918, February 1996,
               <https://www.rfc-editor.org/info/rfc1918>.
 
-
-
-
-
-Bellis, et al.           Expires March 16, 2019                [Page 62]
-
-Internet-Draft           DNS Stateful Operations          September 2018
-
-
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
-              DOI 10.17487/RFC2119, March 1997, <https://www.rfc-
-              editor.org/info/rfc2119>.
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/info/rfc2119>.
 
    [RFC2136]  Vixie, P., Ed., Thomson, S., Rekhter, Y., and J. Bound,
               "Dynamic Updates in the Domain Name System (DNS UPDATE)",
@@ -3486,8 +3491,8 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
    [RFC6891]  Damas, J., Graff, M., and P. Vixie, "Extension Mechanisms
               for DNS (EDNS(0))", STD 75, RFC 6891,
-              DOI 10.17487/RFC6891, April 2013, <https://www.rfc-
-              editor.org/info/rfc6891>.
+              DOI 10.17487/RFC6891, April 2013,
+              <https://www.rfc-editor.org/info/rfc6891>.
 
    [RFC7766]  Dickinson, J., Dickinson, S., Bellis, R., Mankin, A., and
               D. Wessels, "DNS Transport over TCP - Implementation
@@ -3495,8 +3500,8 @@ Internet-Draft           DNS Stateful Operations          September 2018
               <https://www.rfc-editor.org/info/rfc7766>.
 
    [RFC7830]  Mayrhofer, A., "The EDNS(0) Padding Option", RFC 7830,
-              DOI 10.17487/RFC7830, May 2016, <https://www.rfc-
-              editor.org/info/rfc7830>.
+              DOI 10.17487/RFC7830, May 2016,
+              <https://www.rfc-editor.org/info/rfc7830>.
 
    [RFC8126]  Cotton, M., Leiba, B., and T. Narten, "Guidelines for
               Writing an IANA Considerations Section in RFCs", BCP 26,
@@ -3514,6 +3519,17 @@ Internet-Draft           DNS Stateful Operations          September 2018
               in DNS Servers - Failure To Respond.", draft-ietf-dnsop-
               no-response-issue-11 (work in progress), July 2018.
 
+
+
+
+
+
+
+Bellis, et al.           Expires April 26, 2019                [Page 63]
+
+Internet-Draft           DNS Stateful Operations            October 2018
+
+
    [I-D.ietf-dnssd-mdns-relay]
               Lemon, T. and S. Cheshire, "Multicast DNS Discovery
               Relay", draft-ietf-dnssd-mdns-relay-01 (work in progress),
@@ -3521,14 +3537,8 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
    [I-D.ietf-dnssd-push]
               Pusateri, T. and S. Cheshire, "DNS Push Notifications",
-              draft-ietf-dnssd-push-14 (work in progress), March 2018.
-
-
-
-Bellis, et al.           Expires March 16, 2019                [Page 63]
-
-Internet-Draft           DNS Stateful Operations          September 2018
-
+              draft-ietf-dnssd-push-15 (work in progress), September
+              2018.
 
    [I-D.ietf-doh-dns-over-https]
               Hoffman, P. and P. McManus, "DNS Queries over HTTPS
@@ -3546,8 +3556,8 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
    [RFC1122]  Braden, R., Ed., "Requirements for Internet Hosts -
               Communication Layers", STD 3, RFC 1122,
-              DOI 10.17487/RFC1122, October 1989, <https://www.rfc-
-              editor.org/info/rfc1122>.
+              DOI 10.17487/RFC1122, October 1989,
+              <https://www.rfc-editor.org/info/rfc1122>.
 
    [RFC2132]  Alexander, S. and R. Droms, "DHCP Options and BOOTP Vendor
               Extensions", RFC 2132, DOI 10.17487/RFC2132, March 1997,
@@ -3559,12 +3569,22 @@ Internet-Draft           DNS Stateful Operations          September 2018
               <https://www.rfc-editor.org/info/rfc5382>.
 
    [RFC6762]  Cheshire, S. and M. Krochmal, "Multicast DNS", RFC 6762,
-              DOI 10.17487/RFC6762, February 2013, <https://www.rfc-
-              editor.org/info/rfc6762>.
+              DOI 10.17487/RFC6762, February 2013,
+              <https://www.rfc-editor.org/info/rfc6762>.
 
    [RFC6763]  Cheshire, S. and M. Krochmal, "DNS-Based Service
               Discovery", RFC 6763, DOI 10.17487/RFC6763, February 2013,
               <https://www.rfc-editor.org/info/rfc6763>.
+
+
+
+
+
+
+Bellis, et al.           Expires April 26, 2019                [Page 64]
+
+Internet-Draft           DNS Stateful Operations            October 2018
+
 
    [RFC7413]  Cheng, Y., Chu, J., Radhakrishnan, S., and A. Jain, "TCP
               Fast Open", RFC 7413, DOI 10.17487/RFC7413, December 2014,
@@ -3572,25 +3592,14 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
    [RFC7828]  Wouters, P., Abley, J., Dickinson, S., and R. Bellis, "The
               edns-tcp-keepalive EDNS0 Option", RFC 7828,
-              DOI 10.17487/RFC7828, April 2016, <https://www.rfc-
-              editor.org/info/rfc7828>.
-
-
-
-
-
-
-
-Bellis, et al.           Expires March 16, 2019                [Page 64]
-
-Internet-Draft           DNS Stateful Operations          September 2018
-
+              DOI 10.17487/RFC7828, April 2016,
+              <https://www.rfc-editor.org/info/rfc7828>.
 
    [RFC7857]  Penno, R., Perreault, S., Boucadair, M., Ed., Sivakumar,
               S., and K. Naito, "Updates to Network Address Translation
               (NAT) Behavioral Requirements", BCP 127, RFC 7857,
-              DOI 10.17487/RFC7857, April 2016, <https://www.rfc-
-              editor.org/info/rfc7857>.
+              DOI 10.17487/RFC7857, April 2016,
+              <https://www.rfc-editor.org/info/rfc7857>.
 
    [RFC7858]  Hu, Z., Zhu, L., Heidemann, J., Mankin, A., Wessels, D.,
               and P. Hoffman, "Specification for DNS over Transport
@@ -3623,6 +3632,16 @@ Authors' Addresses
    Email: cheshire@apple.com
 
 
+
+
+
+
+
+Bellis, et al.           Expires April 26, 2019                [Page 65]
+
+Internet-Draft           DNS Stateful Operations            October 2018
+
+
    John Dickinson
    Sinodun Internet Technologies
    Magadalen Centre
@@ -3631,15 +3650,6 @@ Authors' Addresses
    United Kingdom
 
    Email: jad@sinodun.com
-
-
-
-
-
-
-Bellis, et al.           Expires March 16, 2019                [Page 65]
-
-Internet-Draft           DNS Stateful Operations          September 2018
 
 
    Sara Dickinson
@@ -3683,14 +3693,4 @@ Internet-Draft           DNS Stateful Operations          September 2018
 
 
 
-
-
-
-
-
-
-
-
-
-
-Bellis, et al.           Expires March 16, 2019                [Page 66]
+Bellis, et al.           Expires April 26, 2019                [Page 66]
