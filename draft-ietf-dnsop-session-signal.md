@@ -1,7 +1,7 @@
 ---
 title: DNS Stateful Operations
-docname: draft-ietf-dnsop-session-signal-18
-date: 2018-10-23
+docname: draft-ietf-dnsop-session-signal-19
+date: 2018-12-04
 ipr: trust200902
 area: Internet
 wg: DNSOP Working Group
@@ -268,10 +268,9 @@ either the client or server, acting as initiator, has requested that the
 responder send new information regarding the request, as it becomes available.
 
 Early Data:
-: A TCP SYN packet (TCP Fast Open) containing a TLS 1.3 initial handshake containing early data that begins a DSO session ({{RFC8446}} section 2.3).
-TCP Fast Open is only permitted when using TLS encapsulation: a TCP SYN message that does not use TLS encapsulation
-but contains data is not permitted.
-
+: Early Data:
+A TLS 1.3 handshake containing early data that begins a DSO session ({{RFC8446}} section 2.3).
+TCP Fast Open is only permitted when using TLS.
 
 DNS message:
 : any DNS message, including DNS queries, response, updates, DSO messages, etc.
@@ -487,10 +486,11 @@ Unidirectional messages are never permitted as early data unless an implicit ses
 exists.
 
 If a server receives a DSO message in early data whose primary TLV is not
-permitted to appear in early data, the server MUST forcible abort the connection.  If a
+permitted to appear in early data, the server MUST forcibly abort the connection.  If a
 client receives a DSO message in early data, and there is no implicit DSO
-session, the client MUST forcibly abort the connection.   If a server or client receives a TCP Fast
-Open message that is not a TLS 1.3 0-RTT initial handshake, it MUST forcibly abort the connection.
+session, the client MUST forcibly abort the connection.   This can only be enforced on
+TLS connections; therefore, servers MUST NOT enable TFO when listening for a connection
+that does not require TLS.
 
 ### Session Establishment Failure {#stabfail}
 
@@ -1354,12 +1354,14 @@ that follow the IETF recommended Best Current Practice that the
 "established connection idle-timeout" used by middleboxes
 be at least 2 hours 4 minutes {{?RFC5382}} {{?RFC7857}}.
 
-Note that the lower the keepalive interval value, the higher the load on client
-and server. For example, a (hypothetical and unrealistic) keepalive interval value of 100 ms would result
-in a continuous stream of ten messages per second or more, in both directions,
-to keep the DSO Session alive. And, in this extreme example, a single packet loss and
-retransmission over a long path could introduce a momentary pause in the stream of messages of over 200 ms,
-long enough to cause the server to overzealously abort the connection.
+Note that the lower the keepalive interval value, the higher the load on client and server.
+Moreover for a keep-alive value that is smaller than the time needed for the transport to
+retransmit, a single packet loss would cause a server to overzealously abort the connect. For
+example, a (hypothetical and unrealistic) keepalive interval value of 100 ms would result in a
+continuous stream of ten messages per second or more (if allowed by the current congestion
+control window), in both directions, to keep the DSO Session alive.  And, in this extreme
+example, a single retransmission over a path with, e.g., 100ms RTT would introduce a momentary
+pause in the stream of messages, long enough to cause the server to abort the connection.
 
 Because of this concern, the server MUST NOT send a DSO Keepalive message
 (either a response to a client-initiated request, or a server-initiated message)
@@ -2312,7 +2314,8 @@ of service or resource exhaustion should not be a concern.
 DSO permits zero round-trip operation using TCP Fast Open {{?RFC7413}} with TLS 1.3 {{?RFC8446}}
 0-RTT to reduce or eliminate round trips in session establishment.  TCP Fast Open is only
 permitted in combination with TLS 0-RTT.  In the rest of this section we refer to TLS 1.3 early
-data in a TLS 0-RTT initial handshake message that is included in a TCP Fast Open packet as "early data."
+data in a TLS 0-RTT initial handshake message, whether or not it is included in a TCP Fast Open
+packet, as "early data."
 
 A DSO message may or may not be permitted to be sent as early data.  The definition for
 each TLV that can be used as a primary TLV is required to state whether or not that TLV is
