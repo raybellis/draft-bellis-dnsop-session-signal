@@ -268,7 +268,6 @@ either the client or server, acting as initiator, has requested that the
 responder send new information regarding the request, as it becomes available.
 
 Early Data:
-: Early Data:
 A TLS 1.3 handshake containing early data that begins a DSO session ({{RFC8446}} section 2.3).
 TCP Fast Open is only permitted when using TLS.
 
@@ -2314,8 +2313,8 @@ of service or resource exhaustion should not be a concern.
 DSO permits zero round-trip operation using TCP Fast Open {{?RFC7413}} with TLS 1.3 {{?RFC8446}}
 0-RTT to reduce or eliminate round trips in session establishment.  TCP Fast Open is only
 permitted in combination with TLS 0-RTT.  In the rest of this section we refer to TLS 1.3 early
-data in a TLS 0-RTT initial handshake message, whether or not it is included in a TCP Fast Open
-packet, as "early data."
+data in a TLS 0-RTT initial handshake message, whether or not it is included in a TCP SYN
+packet with early data using the TCP Fast Open option, as "early data."
 
 A DSO message may or may not be permitted to be sent as early data.  The definition for
 each TLV that can be used as a primary TLV is required to state whether or not that TLV is
