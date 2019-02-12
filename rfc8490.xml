@@ -313,7 +313,7 @@ responder send new information regarding the request, as it becomes available.</
   a DSO request message, DSO unidirectional message, or DSO response to a DSO request message.
 If the QR bit is 1 in a DSO message, it is a DSO response message.
 If the QR bit is 0 in a DSO message, it is a DSO request message or DSO unidirectional message,
-as determined by the specification of its primary TLV.</t>
+as determined by the specification of its Primary TLV.</t>
   <t hangText='DSO response message:'>
   a response to a DSO request message.</t>
   <t hangText='DSO request message:'>
@@ -324,7 +324,7 @@ as determined by the specification of its primary TLV.</t>
   The first TLV in a DSO message or DSO response; in the DSO message,
 this determines the nature of the operation being performed.</t>
   <t hangText='Additional TLV:'>
-  any TLVs in a DSO message response that follow the primary TLV</t>
+  any TLVs in a DSO message response that follow the Primary TLV</t>
   <t hangText='Response Primary TLV:'>
   the (optional) first TLV in a DSO response</t>
   <t hangText='Response Additional TLV:'>
@@ -502,7 +502,7 @@ set to NOERROR (0), indicating that the DSO request was successful.</t>
 Unidirectional messages are never permitted as early data, unless an implicit session
 exists.</t>
 
-<t>If a server receives a DSO message in early data whose primary TLV is not
+<t>If a server receives a DSO message in early data whose Primary TLV is not
 permitted to appear in early data, the server MUST forcibly abort the connection.  If a
 client receives a DSO message in early data, and there is no implicit DSO
 session, the client MUST forcibly abort the connection.   This can only be enforced on
@@ -520,7 +520,7 @@ issue further DSO messages on that connection.</t>
 <t>If the RCODE in the response is set to DSOTYPENI
 ("DSO-TYPE Not Implemented"; RCODE 11),
 this indicates that the server does support DSO but does not implement
-the DSO-TYPE of the primary TLV in this DSO request message.
+the DSO-TYPE of the Primary TLV in this DSO request message.
 A server implementing DSO MUST NOT return DSOTYPENI
 for a DSO Keepalive request message because the Keepalive TLV is mandatory to implement.
 But in the future, if a client attempts to establish a DSO Session
@@ -688,9 +688,9 @@ a Discovery Relay interface subscription <xref target="MDNS-DISCOVERY-RELAY"/>.<
 <t>Whether a message is a DSO request message or a DSO unidirectional message is
 determined only by the specification for the Primary TLV.
 An acknowledgment cannot be requested by including a nonzero message ID
-in a message that is required according to its primary TLV to be unidirectional.
+in a message that is required according to its Primary TLV to be unidirectional.
 Nor can an acknowledgment be prevented by sending a message ID of zero
-in a message that is required to be a DSO request message according to its primary TLV.
+in a message that is required to be a DSO request message according to its Primary TLV.
 A responder that receives either such malformed message MUST treat it
 as a fatal error and forcibly abort the connection immediately.</t>
 
@@ -770,18 +770,12 @@ and these extra TLVs are referred to as the "Additional TLVs" and are not limite
 in this document. New "Additional TLVs" may be defined in the future. Their definitions will describe
 when their use is appropriate.</t>
 
-<!-- [rfced] This document contains instances of "Primary TLV" 
-and "primary TLV", where the former is mostly used.
-Should "Primary TLV" be used consistently?
-(We note that "Additional TLV" is used consistently.)
--->
- 
 <t>A DSO response message may contain no TLVs or may be specified to
 contain one or more TLVs appropriate to the information being
 communicated.  This includes "Primary TLVs" and "Additional TLVs"
 defined in this document as well as in future TLV definitions.
 It may be permissible for an additional TLV to appear in a response
-to a primary TLV even though the specification of that primary TLV
+to a Primary TLV even though the specification of that Primary TLV
 does not specify it explicitly.  See <xref target="TLV"/> for more information.</t>
 
 <t>A DSO response message may contain one or more TLVs with the Primary
@@ -1648,7 +1642,7 @@ purpose of keeping a session alive.
 The client will request the desired session timeout values and the server will
 acknowledge with the response values that it requires the client to use.</t>
 
-<t>DSO messages with the Keepalive TLV as the primary TLV may appear in
+<t>DSO messages with the Keepalive TLV as the Primary TLV may appear in
 early data.</t>
 
 <t>The DSO-DATA for the Keepalive TLV is as follows:</t>
@@ -1825,7 +1819,7 @@ the connection immediately.</t>
 <t>The Retry Delay TLV (DSO-TYPE=2) can be used as
 a Primary TLV (unidirectional) in a server-to-client message,
 or as a Response Additional TLV in either direction.   DSO messages
-with a Relay Delay TLV as their primary TLV are not permitted in early data.</t>
+with a Relay Delay TLV as their Primary TLV are not permitted in early data.</t>
 
 <t>The DSO-DATA for the Retry Delay TLV is as follows:</t>
 
@@ -2329,7 +2323,7 @@ in the "DNS OpCodes" registry.</t>
 DSOTYPENI error code in the "DNS RCODEs" registry.
 The DSOTYPENI error code ("DSO-TYPE Not Implemented") indicates that
 the receiver does implement DNS Stateful Operations, but does not implement
-the specific DSO-TYPE of the primary TLV in the DSO request message.</t>
+the specific DSO-TYPE of the Primary TLV in the DSO request message.</t>
 
 </section>
 <section anchor="dso-type-code-registry" title="DSO Type Code Registry">
@@ -2509,7 +2503,7 @@ data in a TLS 0-RTT initial handshake message, regardless of whether or not it i
 packet with early data using the TCP Fast Open option, as "early data."</t>
 
 <t>A DSO message may or may not be permitted to be sent as early data.  The definition for
-each TLV that can be used as a primary TLV is required to state whether or not that TLV is
+each TLV that can be used as a Primary TLV is required to state whether or not that TLV is
 permitted as early data.  Only response-requiring messages are ever permitted as early
 data, and only clients are permitted to send any DSO message as
 early data unless there is an implicit session (see <xref target="establishment"/>).</t>
