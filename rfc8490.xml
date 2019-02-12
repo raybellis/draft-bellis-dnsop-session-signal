@@ -301,26 +301,8 @@ session.  Either a client or server can be an initiator.</t>
   an outstanding operation on a DSO Session where
 either the client or server, acting as initiator, has requested that the
 responder send new information regarding the request, as it becomes available.</t>
-</list></t>
-<!-- [rfced] Because this term includes itself in its definition,
-may the definition be updated as follows or otherwise?
-(Also, we suggest lowercasing to match how other entries appear 
-in the Terminology section.)
-
-Original:
-   Early Data: A TLS 1.3 handshake containing early data that begins a
-   DSO Session ([RFC8446] section 2.3).  TCP Fast Open is only permitted
-   when using TLS.
-
-Perhaps:
-   early data: a TLS 1.3 handshake containing data on the first flight
-   that begins a DSO Session (Section 2.3 of [RFC8446]). TCP Fast Open 
-   is only permitted when using TLS. 
- -->
-<t>Early Data: A TLS 1.3 handshake containing early data that begins a DSO
-session (Section 2.3 of <xref target="RFC8446"/>). TCP Fast Open is only permitted when using TLS.</t>
-
-<t><list style="hanging">
+  <t hangText='early data:'>
+  a TLS 1.3 handshake containing data on the first flight that begins a DSO Session (Section 2.3 of <xref target="RFC8446"/>). TCP Fast Open is only permitted when using TLS.</t>
   <t hangText='DNS message:'>
   any DNS message, including DNS queries, responses, updates, DSO messages, etc.</t>
   <t hangText='DNS request message:'>
