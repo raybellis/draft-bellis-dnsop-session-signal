@@ -123,9 +123,6 @@
     <area>Internet</area>
     <workgroup>DNSOP Working Group</workgroup>
 
-<!-- [rfced] Please insert any keywords (beyond those that appear in 
-the title) for use on https://www.rfc-editor.org/search.
--->
 <keyword>session domain name opcode</keyword>
 
     <abstract>
