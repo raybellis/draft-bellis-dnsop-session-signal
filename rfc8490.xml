@@ -134,20 +134,13 @@ the title) for use on https://www.rfc-editor.org/search.
 sessions using Type Length Value (TLV) syntax.  Three TLVs are defined
 that manage session timeouts, termination, and encryption padding, and a
 framework is defined for extensions to enable new stateful operations.
-This document updates RFC 1035 by adding a new DNS header opcode that
+This document updates RFC 1035 by adding a new DNS header OPCODE that
 has both different message semantics and a new result code.  This document
 updates RFC 7766 by redefining a session, providing new guidance on
 connection reuse, and providing a new mechanism for handling session
 idle timeouts.</t>
     </abstract>
 
-<!-- [rfced] This term appears with various capitalization:
-OPCODE vs. opcode 
-We see "OPCODE" is used in RFC 1035. However, the IANA registry 
-(https://www.iana.org/assignments/dns-parameters) uses "OpCode".
-Please let us know your preference on how this should be 
-handled in this document.
--->
   </front>
 
   <middle>
