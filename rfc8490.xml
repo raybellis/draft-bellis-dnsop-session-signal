@@ -379,21 +379,8 @@ polling. Long-lived stateful connections and server-initiated messages align wit
 
 <t>A general use case is that DNS traffic is often bursty, but session establishment 
 can be expensive. 
-<!-- [rfced] How may this sentence be rephrased to avoid the repetition
-of "to maintain"?
 
-Original:
-   One challenge with long-lived
-   connections is to maintain sufficient traffic to maintain NAT and
-   firewall state.
-
-Perhaps:
-   One challenge with long-lived
-   connections is sustaining sufficient traffic to maintain NAT and
-   firewall state.
--->
-
-One challenge with long-lived connections is to maintain
+One challenge with long-lived connections is sustaining
 sufficient traffic to maintain NAT and firewall state.
 To mitigate this issue, this document introduces a
 new concept for the DNS -- DSO "keepalive traffic".
