@@ -174,20 +174,6 @@ For example, a server cannot arbitrarily
 instruct a client to close a connection because the server can only send EDNS(0) options 
 in responses to queries that contained EDNS(0) options.</t>
 
-<!-- [rfced] This term appears with various capitalization in this
-document. Please let us know if/how this may be made consistent.
-
-DNS Stateful Operations vs. 
-DNS Stateful operations vs. 
-DNS stateful operations 
-
-Similarly, would you like make this term consistent (where it 
-appears in running text, not in the phase names in Section 5)?
-
-DSO Session vs. DSO session
--->
-
-
 <t>This document defines a new DNS OPCODE, 6, for DNS Stateful Operations (DSO).
 DSO messages are used to communicate operations within persistent
 stateful sessions, expressed using Type Length Value (TLV) syntax.
@@ -311,7 +297,7 @@ to the server's listening socket, in the usual DNS sense.</t>
 session.  Either a client or server can be an initiator.</t>
   <t hangText='responder:'>
   the software that receives a DSO request message or a DSO unidirectional
-  message during a DSO session. Either a client or a server can be a responder.</t>
+  message during a DSO Session. Either a client or a server can be a responder.</t>
 </list></t>
 
 <t><list style="hanging">
@@ -322,7 +308,7 @@ session.  Either a client or server can be an initiator.</t>
   <t hangText='service instance:'>
   a specific instance of server software running on a specific host (<xref target="serviceinstances"/>).</t>
   <t hangText='long-lived operation:'>
-  an outstanding operation on a DSO session where
+  an outstanding operation on a DSO Session where
 either the client or server, acting as initiator, has requested that the
 responder send new information regarding the request, as it becomes available.</t>
 </list></t>
@@ -333,12 +319,12 @@ in the Terminology section.)
 
 Original:
    Early Data: A TLS 1.3 handshake containing early data that begins a
-   DSO session ([RFC8446] section 2.3).  TCP Fast Open is only permitted
+   DSO Session ([RFC8446] section 2.3).  TCP Fast Open is only permitted
    when using TLS.
 
 Perhaps:
    early data: a TLS 1.3 handshake containing data on the first flight
-   that begins a DSO session (Section 2.3 of [RFC8446]). TCP Fast Open 
+   that begins a DSO Session (Section 2.3 of [RFC8446]). TCP Fast Open 
    is only permitted when using TLS. 
  -->
 <t>Early Data: A TLS 1.3 handshake containing early data that begins a DSO
@@ -404,7 +390,7 @@ applicable on transports that are capable of supporting a DSO Session.</t>
 <section anchor="sessionmanagement" title="Session Management">
 <t>In one use case, establishing session parameters such as server-defined timeouts is of 
 great use in the 
-general management of persistent connections. For example, using DSO sessions 
+general management of persistent connections. For example, using DSO Sessions 
 for stub-to-recursive DNS-over-TLS <xref target="RFC7858"/> is more flexible for both the 
 client and the server than attempting to manage sessions using just the
 edns-tcp-keepalive EDNS0 Option <xref target="RFC7828"/>.
@@ -483,10 +469,10 @@ section.</t>
   <t hangText='Connection Establishment:'>
   A client establishes a connection to a server (<xref target="transports"/>).</t>
   <t hangText='Connected but Sessionless:'>
-  A connection exists, but a DSO session has not been established.   DNS messages
+  A connection exists, but a DSO Session has not been established.   DNS messages
 can be sent from the client to server, and DNS responses can be sent from servers
 to clients.   In this state, a client that wishes to use DSO can attempt to establish
-a DSO session (<xref target="establishment"/>).
+a DSO Session (<xref target="establishment"/>).
 Standard DNS-over-TCP inactivity timeout handling is in effect <xref
 target="RFC7766"/> (see <xref target="edns0keepalive"/> of this document).</t>
   <t hangText='DSO Session Establishment in Progress:'>
@@ -494,8 +480,8 @@ target="RFC7766"/> (see <xref target="edns0keepalive"/> of this document).</t>
 phase, the client may send more DSO requests and more DNS requests, but MUST NOT send
 DSO unidirectional messages (<xref target="establishment"/>).</t>
   <t hangText='DSO Session Establishment Failed:'>
-  The attempt to establish the DSO session did not succeed.   At this point, the client
-is permitted to continue operating without a DSO session (Connected but Sessionless) but
+  The attempt to establish the DSO Session did not succeed.   At this point, the client
+is permitted to continue operating without a DSO Session (Connected but Sessionless) but
 does not send further DSO messages (<xref target="establishment"/>).</t>
   <t hangText='DSO Session Established:'>
   Both client and server may send DSO messages and DNS messages; both may send replies
@@ -545,7 +531,7 @@ by at least one successful DSO request/response exchange
 initiated by the client, as described below.   This is referred to as explicit
 session establishment.</t>
 
-<t>Until a DSO session has been implicitly or explicitly established, a client MUST NOT initiate
+<t>Until a DSO Session has been implicitly or explicitly established, a client MUST NOT initiate
 DSO unidirectional messages.</t>
 
 <t>A DSO Session is established over a connection by the client
@@ -647,9 +633,9 @@ prescribed in the earlier specification for DNS over TCP <xref target="RFC7766"/
 <t>Because a server that supports DNS Stateful Operations MUST return an RCODE
 of "NOERROR" when it receives a Keepalive TLV DSO request message,
 the Keepalive TLV is an ideal candidate for use in establishing
-a DSO session.
+a DSO Session.
 Any other option that can only succeed when sent to a server of the desired kind
-is also a good candidate for use in establishing a DSO session.
+is also a good candidate for use in establishing a DSO Session.
 For clients that implement only the DSO-TYPEs defined in
 this base specification, sending a Keepalive TLV is the only
 DSO request message they have available to initiate a DSO Session.
@@ -915,7 +901,7 @@ packets is then sent using DSO unidirectional messages. This
 is appropriate because the client initiated the message stream
 by virtue of its Discovery Relay link subscription, thereby indicating
 its support of Discovery Relay and its desire to receive inbound mDNS
-packets over that DSO session <xref target="MDNS-DISCOVERY-RELAY"/>.</t>
+packets over that DSO Session <xref target="MDNS-DISCOVERY-RELAY"/>.</t>
 
 <t><vspace blankLines='999' /></t>
 
@@ -1636,7 +1622,7 @@ client, yielding a post-restart reconnection rate of ten clients per second).</t
 way for the server to recover the session, in which case the server forcibly terminates the
 connection.  Since the client doesn't know why the connection dropped, it may reconnect
 immediately.  If the server has determined that a client is not following the protocol
-correctly, it may terminate the DSO session as soon as it is established, specifying a long
+correctly, it may terminate the DSO Session as soon as it is established, specifying a long
 retry-delay to prevent the client from immediately reconnecting.</t>
 
 </section>
@@ -2257,7 +2243,7 @@ fail in unexpected and difficult-to-diagnose ways.   For example, a DNS
 load balancer might unbundle DNS messages from the incoming TCP stream and
 forward each message from the stream to a different DNS server.   If such
 a load balancer is in use, and the DNS servers it points to implement DSO and
-are configured to enable DSO, DSO session establishment will succeed, but
+are configured to enable DSO, DSO Session establishment will succeed, but
 no coherent session will exist between the client and the server.   If such
 a load balancer is pointed at a DNS server that does not implement DSO or
 is configured not to allow DSO, no such problem will exist, but such a
@@ -2565,10 +2551,10 @@ entity may be able to inject a malicious unidirectional DSO Retry Delay message
 into the data stream, specifying an unreasonably large RETRY DELAY, causing
 a denial-of-service attack against the client.</t>
 
-<t>The establishment of DSO sessions has an impact on the number of
+<t>The establishment of DSO Sessions has an impact on the number of
 open TCP connections on a DNS server. Additional resources may be used on the
 server as a result. However, because the server can limit the number of DSO
-sessions established and can also close existing DSO sessions as needed, denial
+sessions established and can also close existing DSO Sessions as needed, denial
 of service or resource exhaustion should not be a concern.</t>
 
 <section anchor="zrtt" title="TLS 0-RTT Considerations">
@@ -2587,7 +2573,7 @@ early data unless there is an implicit session (see <xref target="establishment"
 
 <t>For DSO messages that are permitted as early data, a client MAY include one or more such
 messages as early data without having to wait for a DSO response to the first
-DSO request message to confirm successful establishment of a DSO session.</t>
+DSO request message to confirm successful establishment of a DSO Session.</t>
 
 <t>However, unless there is an implicit session, a client MUST NOT send DSO unidirectional messages
 until after a DSO Session has been mutually established.</t>
