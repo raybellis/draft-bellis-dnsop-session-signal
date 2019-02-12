@@ -2341,22 +2341,22 @@ with initial (hexadecimal) values as shown below:</t>
       <c>0000</c>
       <c>Reserved</c>
       <c>NO</c>
-      <c>Standard</c>
+      <c>Standards Track</c>
       <c>RFC 8490</c>
       <c>0001</c>
       <c>KeepAlive</c>
       <c>OK</c>
-      <c>Standard</c>
+      <c>Standards Track</c>
       <c>RFC 8490</c>
       <c>0002</c>
       <c>RetryDelay</c>
       <c>NO</c>
-      <c>Standard</c>
+      <c>Standards Track</c>
       <c>RFC 8490</c>
       <c>0003</c>
       <c>EncryptionPadding</c>
       <c>NA</c>
-      <c>Standard</c>
+      <c>Standards Track</c>
       <c>RFC 8490</c>
       <c>0004-003F</c>
       <c>Unassigned, reserved for DSO session-management TLVs</c>
@@ -2393,46 +2393,8 @@ with initial (hexadecimal) values as shown below:</t>
 handshake.  If NA, the TLV may appear as a secondary TLV in a DSO message that is sent as
 early data.</t>
 
-<!-- [rfced] Regarding the new "DSO Type Codes" registry:
-a) Please consider whether "IETF Document status" should
-be changed to a more generic description.  Seemingly the reference 
-could be an RFC that is not from the IETF stream (for example, in 
-the Expert Review range, the reference could an RFC in the 
-Independent stream, and the Status could be "Informational" or 
-"Experimental").
-
-Original:
-   Status:  IETF Document status (or "External" if not documented in an
-      IETF document.
-
-Perhaps:
-   Status: RFC status (or intended status), e.g., "Standards Track", 
-      or "External" if not documented in an RFC.
-
-Or:
-   Status: RFC status (e.g., "Standards Track") or "External" if not
-      documented in an RFC.
-
-b) For the initial values of the registry, should "Standard" 
-be changed to "Standards Track" since it's about document
-status? (Also, "Standard" could be misinterpreted as Internet
-Standard, i.e., the STD subseries).
-
-Original:
-   | Type      | Name                   | Early | Status   | Reference |
-   |           |                        | Data  |          |           |
-[...]
-   | 0000      | Reserved               | NO    | Standard | RFC-TBD   |
-   |           |                        |       |          |           |
-   | 0001      | KeepAlive              | OK    | Standard | RFC-TBD   |
-   |           |                        |       |          |           |
-   | 0002      | RetryDelay             | NO    | Standard | RFC-TBD   |
-   |           |                        |       |          |           |
-   | 0003      | EncryptionPadding      | NA    | Standard | RFC-TBD   |
--->
-
   <t hangText='Status:'>
-  IETF Document status (or "External" if not documented in an IETF document)</t>
+  RFC status (e.g., "Standards Track") or "External" if not documented in an RFC.</t>
   <t hangText='Reference:'>
   a stable reference to the document in which this TLV is defined</t>
 </list></t>
