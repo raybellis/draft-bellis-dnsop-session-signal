@@ -399,7 +399,7 @@ this determines the nature of the operation being performed.</t>
 applicable on transports that are capable of supporting a DSO Session.</t>
 
 <section anchor="use-cases" title="Use Cases">
-<t>Several use cases for DNS Stateful operations are described below.</t>
+<t>Several use cases for DNS Stateful Operations are described below.</t>
 
 <section anchor="sessionmanagement" title="Session Management">
 <t>In one use case, establishing session parameters such as server-defined timeouts is of 
@@ -1332,7 +1332,7 @@ request and remains cleared until reception of the corresponding response.
 At the server, the inactivity timer is cleared upon reception of a request
 and remains cleared until transmission of the corresponding response.</t>
 
-<t>For long-lived DNS Stateful operations (such as
+<t>For long-lived DNS Stateful Operations (such as
 a Push Notification subscription <xref target="DNS-PUSH"/> or
 a Discovery Relay interface subscription <xref target="MDNS-DISCOVERY-RELAY"/>),
 an operation is considered "in progress"
@@ -1816,7 +1816,7 @@ then it does so by sending a DSO Keepalive unidirectional message
 of its own, as described above.</t>
 
 <t>It is not required that the Keepalive TLV be used in every DSO Session.
-While many DNS Stateful operations
+While many DNS Stateful Operations
 will be used in conjunction with a long-lived session state,
 not all DNS Stateful operations require a long-lived session state,
 and in some cases the default 15-second value for both the inactivity timeout
