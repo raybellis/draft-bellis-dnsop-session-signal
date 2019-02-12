@@ -1818,7 +1818,7 @@ of its own, as described above.</t>
 <t>It is not required that the Keepalive TLV be used in every DSO Session.
 While many DNS Stateful Operations
 will be used in conjunction with a long-lived session state,
-not all DNS Stateful operations require a long-lived session state,
+not all DNS Stateful Operations require a long-lived session state,
 and in some cases the default 15-second value for both the inactivity timeout
 and keepalive interval may be perfectly appropriate. However, note that for clients that implement only the DSO-TYPEs defined in this document,
 a DSO Keepalive request message is the only way for a client to initiate a DSO Session.</t>
