@@ -545,24 +545,8 @@ DSO, if appropriate (<xref target="dropreconnect"/>).</t>
 <t>In the second case, the client SHOULD wait 30 seconds, after which time the server will
 be assumed not to support DSO.  
 
-<!-- [rfced] How may this be rephrased in order to clarify "out of spec"?
-
-Original:
-   If the server
-   doesn't respond within 30 seconds, the client MUST forcibly abort the
-   connection to the server, since the server's behavior is out of spec,
-   and hence its state is undefined.
-
-Perhaps:
-   If the server
-   doesn't respond within 30 seconds, the client MUST forcibly abort the
-   connection to the server, since the server's behavior does not
-   conform to the specification, and hence its state is undefined.
--->
-
 If the server doesn't respond within 30 seconds, the client MUST
-forcibly abort the connection to the server since the server's behavior is out
-of spec and
+forcibly abort the connection to the server since the server's behavior does not conform to the specification, and
 hence its state is undefined.  The client MAY reconnect, but not use DSO, if
 appropriate (<xref target="forcereconnect"/>).</t>
 
