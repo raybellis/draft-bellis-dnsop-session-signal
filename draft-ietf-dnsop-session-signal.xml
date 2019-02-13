@@ -281,14 +281,10 @@ incoming connection requests, in the usual DNS sense.</t>
 to the server’s listening socket, in the usual DNS sense.</t>
   <t hangText='initiator:'>
   the software which sends a DSO request message or a DSO unidirectional message during a DSO
-session.  Either a client or server can be an initiator</t>
+  session.  Either a client or server can be an initiator</t>
   <t hangText='responder:'>
-  the software which receives a DSO request message or a DSO unidirectional message during a DSO</t>
-</list></t>
-
-<t>session.  Either a client or server can be a responder.</t>
-
-<t><list style="hanging">
+  the software which receives a DSO request message or a DSO unidirectional message during a DSO
+  session.  Either a client or server can be a responder.</t>
   <t hangText='sender:'>
   the software which is sending a DNS message, a DSO message, a DNS response, or a DSO response.</t>
   <t hangText='receiver:'>
