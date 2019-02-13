@@ -2103,7 +2103,7 @@ connected to the same service is violated in some way, that would be considered
 an incorrect behavior in this context. It is, however, out of the possible
 scope for this specification to make specific recommendations in this regard;
 that would be up to follow-on documents that describe specific uses of DNS
-stateful operations.</t>
+Stateful Operations.</t>
 
 <t><vspace blankLines='999' /></t>
 
