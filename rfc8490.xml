@@ -284,7 +284,7 @@ incoming connection requests, in the usual DNS sense.</t>
 to the server's listening socket, in the usual DNS sense.</t>
   <t hangText='initiator:'>
   the software that sends a DSO request message or a DSO unidirectional message during a DSO
-session.  Either a client or server can be an initiator.</t>
+Session.  Either a client or server can be an initiator.</t>
   <t hangText='responder:'>
   the software that receives a DSO request message or a DSO unidirectional
   message during a DSO Session. Either a client or a server can be a responder.</t>
@@ -505,7 +505,7 @@ exists.</t>
 <t>If a server receives a DSO message in early data whose Primary TLV is not
 permitted to appear in early data, the server MUST forcibly abort the connection.  If a
 client receives a DSO message in early data, and there is no implicit DSO
-session, the client MUST forcibly abort the connection.   This can only be enforced on
+Session, the client MUST forcibly abort the connection.   This can only be enforced on
 TLS connections; therefore, servers MUST NOT enable TCP Fast Open (TFO) when listening for a connection
 that does not require TLS.</t>
 
@@ -2453,7 +2453,7 @@ a denial-of-service attack against the client.</t>
 <t>The establishment of DSO Sessions has an impact on the number of
 open TCP connections on a DNS server. Additional resources may be used on the
 server as a result. However, because the server can limit the number of DSO
-sessions established and can also close existing DSO Sessions as needed, denial
+Sessions established and can also close existing DSO Sessions as needed, denial
 of service or resource exhaustion should not be a concern.</t>
 
 <section anchor="zrtt" title="TLS 0-RTT Considerations">
