@@ -174,7 +174,7 @@ used to manage session timeouts, termination, and encryption padding.</t>
 Further TLVs may be defined in additional specifications.</t>
 
 <t>DSO messages may or may not be acknowledged; this is signaled by providing a
-non-zero message ID for messages that must be acknowledged (DSO request messages), and a zero message
+non-zero MESSAGE ID for messages that must be acknowledged (DSO request messages), and a zero message
 ID for messages that are not to be acknowledged (DSO unidirectional
 messages). This is also specified in the definition
 of a particular DSO message type. Messages are pipelined; answers may appear out
@@ -302,7 +302,7 @@ Session.  Either a client or server can be an initiator.</t>
 either the client or server, acting as initiator, has requested that the
 responder send new information regarding the request, as it becomes available.</t>
   <t hangText='early data:'>
-  a TLS 1.3 handshake containing data on the first flight that begins a DSO Session (Section 2.3 of <xref target="RFC8446"/>). TCP Fast Open is only permitted when using TLS.</t>
+  a TLS 1.3 handshake containing data on the first flight that begins a DSO Session (Section 2.3 of <xref target="RFC8446"/>). TCP Fast Open <xref target="RFC7413"/> is only permitted when using TLS.</t>
   <t hangText='DNS message:'>
   any DNS message, including DNS queries, responses, updates, DSO messages, etc.</t>
   <t hangText='DNS request message:'>
@@ -429,8 +429,8 @@ section.</t>
   A client establishes a connection to a server (<xref target="transports"/>).</t>
   <t hangText='Connected but Sessionless:'>
   A connection exists, but a DSO Session has not been established.   DNS messages
-can be sent from the client to server, and DNS responses can be sent from servers
-to clients.   In this state, a client that wishes to use DSO can attempt to establish
+can be sent from the client to server, and DNS responses can be sent from the server
+to the client.   In this state, a client that wishes to use DSO can attempt to establish
 a DSO Session (<xref target="establishment"/>).
 Standard DNS-over-TCP inactivity timeout handling is in effect <xref
 target="RFC7766"/> (see <xref target="edns0keepalive"/> of this document).</t>
@@ -479,7 +479,7 @@ establish a connection to the server using an applicable transport (see <xref ta
 that both client and server support DSO, and in these cases either
 client or server may initiate DSO messages at any time.  In this
 case, the session is established as soon as the connection is established;
-this is referred to as implicit session establishment.</t>
+this is referred to as implicit DSO Session establishment.</t>
 
 <t>However, in the typical case a server will not know in advance whether a
 client supports DSO, so in general, unless it is known in advance by other means
@@ -488,7 +488,7 @@ or DSO unidirectional messages
 until a DSO Session has been mutually established
 by at least one successful DSO request/response exchange
 initiated by the client, as described below.   This is referred to as explicit
-session establishment.</t>
+DSO Session establishment.</t>
 
 <t>Until a DSO Session has been implicitly or explicitly established, a client MUST NOT initiate
 DSO unidirectional messages.</t>
@@ -499,7 +499,7 @@ and receiving a response with a matching MESSAGE ID, and RCODE
 set to NOERROR (0), indicating that the DSO request was successful.</t>
 
 <t>Some DSO messages are permitted as early data (<xref target="zrtt"/>).  Others are not.
-Unidirectional messages are never permitted as early data, unless an implicit session
+Unidirectional messages are never permitted as early data, unless an implicit DSO Session
 exists.</t>
 
 <t>If a server receives a DSO message in early data whose Primary TLV is not
@@ -509,7 +509,7 @@ Session, the client MUST forcibly abort the connection.   This can only be enfor
 TLS connections; therefore, servers MUST NOT enable TCP Fast Open (TFO) when listening for a connection
 that does not require TLS.</t>
 
-<section anchor="stabfail" title="Session Establishment Failure">
+<section anchor="stabfail" title="DSO Session Establishment Failure">
 
 <t>If the response RCODE is set to NOTIMP (4), or in practice any value other than NOERROR (0) or DSOTYPENI
 (defined below), then the client MUST assume that the server does
@@ -551,7 +551,7 @@ hence its state is undefined.  The client MAY reconnect, but not use DSO, if
 appropriate (<xref target="forcereconnect"/>).</t>
 
 </section>
-<section anchor="stabsuccess" title="Session Establishment Success">
+<section anchor="stabsuccess" title="DSO Session Establishment Success">
 
 <t>When the server receives a DSO request message
 from a client, and transmits a successful NOERROR response to that
@@ -566,7 +566,7 @@ and therefore either client or server may be the initiator of a message.</t>
 
 </section>
 </section>
-<section anchor="stabops" title="Operations After Session Establishment">
+<section anchor="stabops" title="Operations After DSO Session Establishment">
 
 <t>Once a DSO Session has been established,
 clients and servers should behave as described in this specification with
@@ -593,12 +593,12 @@ remains a valid way of initiating a DSO Session.</t>
 <t><vspace blankLines='999' /></t>
 
 </section>
-<section anchor="sessiontermination" title="Session Termination">
+<section anchor="sessiontermination" title="DSO Session Termination">
 
-<t>A "DSO Session" is terminated when the underlying connection is closed.
-Sessions are "closed gracefully" as a result of the server closing a session because it
-is overloaded, because of the client closing the session because it is done,
-or because of the client closing the session because it is inactive.   Sessions are "forcibly aborted"
+<t>A DSO Session is terminated when the underlying connection is closed.
+DSO Sessions are "closed gracefully" as a result of the server closing a DSO Session because it
+is overloaded, because of the client closing the DSO Session because it is done,
+or because of the client closing the DSO Session because it is inactive.   DSO Sessions are "forcibly aborted"
 when either the client or server closes the connection because of a protocol error.</t>
 
 <t><list style="symbols">
@@ -687,9 +687,9 @@ a Discovery Relay interface subscription <xref target="MDNS-DISCOVERY-RELAY"/>.<
 
 <t>Whether a message is a DSO request message or a DSO unidirectional message is
 determined only by the specification for the Primary TLV.
-An acknowledgment cannot be requested by including a nonzero message ID
+An acknowledgment cannot be requested by including a nonzero MESSAGE ID
 in a message that is required according to its Primary TLV to be unidirectional.
-Nor can an acknowledgment be prevented by sending a message ID of zero
+Nor can an acknowledgment be prevented by sending a MESSAGE ID of zero
 in a message that is required to be a DSO request message according to its Primary TLV.
 A responder that receives either such malformed message MUST treat it
 as a fatal error and forcibly abort the connection immediately.</t>
@@ -699,7 +699,7 @@ Query/Response (QR) bit MUST be zero (QR=0).
 If the QR bit is not zero, the message is not a DSO request or DSO unidirectional message.</t>
 
 <t>In a DSO response message, the DNS Header QR bit MUST be one (QR=1).<vspace />
-If the QR bit is not one, the message is not a response message.</t>
+If the QR bit is not one, the message is not a DSO response message.</t>
 
 <t>In a DSO response message (QR=1), the MESSAGE ID field MUST contain a copy of the value of
 the MESSAGE ID field in the DSO request message being responded to. Also, the MESSAGE ID field MUST NOT be zero.
@@ -1153,16 +1153,16 @@ it may be desirable for the responder to be able to cancel
 selectively only those operations that have become invalid.</t>
 
 <t>The responder performs this selective cancellation by sending
-a new response message with the MESSAGE ID field containing the
+a new DSO response message with the MESSAGE ID field containing the
 MESSAGE ID of the long-lived operation that is to be terminated
 (that it had previously acknowledged with a NOERROR RCODE) and the
-RCODE field of the new response message giving the reason for cancellation.</t>
+RCODE field of the new DSO response message giving the reason for cancellation.</t>
 
-<t>After a response message with nonzero RCODE has been sent,
+<t>After a DSO response message with nonzero RCODE has been sent,
 that operation has been terminated from the responder's point of view,
 and the responder sends no more messages relating to that operation.</t>
 
-<t>After a response message with nonzero RCODE has been received by the initiator,
+<t>After a DSO response message with nonzero RCODE has been received by the initiator,
 that operation has been terminated from the initiator's point of view,
 and the canceled operation's MESSAGE ID is now free for reuse.</t>
 
@@ -1417,7 +1417,7 @@ that follow the IETF recommended Best Current Practice that the
 be at least 2 hours and 4 minutes <xref target="RFC5382"/> <xref target="RFC7857"/>.</t>
 
 <t>Note that the lower the keepalive interval value, the higher the load on client and server.
-Moreover, for a keep-alive value that is smaller than the time needed for the transport to
+Moreover, for a keepalive value that is smaller than the time needed for the transport to
 retransmit, a single packet loss would cause a server to overzealously abort the connection. For
 example, a (hypothetical and unrealistic) keepalive interval value of 100 ms would result in a
 continuous stream of ten messages per second or more (if allowed by the current congestion
@@ -1426,7 +1426,7 @@ example, a single retransmission over a path with, as an example, 100 ms RTT wou
 pause in the stream of messages long enough to cause the server to abort the connection.</t>
 
 <t>Because of this concern, the server MUST NOT send a DSO Keepalive message
-(either a response to a client-initiated request or a server-initiated message)
+(either a DSO response to a client-initiated DSO request or a server-initiated DSO message)
 with a keepalive interval value less than ten seconds.
 If a client receives a DSO Keepalive message specifying a keepalive interval value
 less than ten seconds, this is a fatal error and the client MUST
@@ -1444,17 +1444,17 @@ supported by the current Keepalive TLV is
 
 </section>
 </section>
-<section anchor="server-initiated-session-termination" title="Server-Initiated Session Termination">
+<section anchor="server-initiated-session-termination" title="Server-Initiated DSO Session Termination">
 
 <t>In addition to canceling individual long-lived operations selectively (<xref target="cancellation"/>),
-there are also occasions where a server may need to terminate one or more entire sessions.
-An entire session may need to be terminated if the client is defective in some way
-or departs from the network without closing its session.
-Sessions may also need to be terminated if the server becomes overloaded
+there are also occasions where a server may need to terminate one or more entire DSO sessions.
+An entire DSO session may need to be terminated if the client is defective in some way
+or departs from the network without closing its DSO session.
+DSO Sessions may also need to be terminated if the server becomes overloaded
 or is reconfigured and lacks the ability to be selective about
 which operations need to be canceled.</t>
 
-<t>This section discusses various reasons a session may be terminated
+<t>This section discusses various reasons a DSO session may be terminated
 and the mechanisms for doing so.</t>
 
 <t>In normal operation, closing a DSO Session is the client's responsibility.
@@ -1495,38 +1495,38 @@ this as a network failure and reconnect immediately, putting more burden on the 
 <t>Therefore, to avoid this reconnection implosion, a server SHOULD instead choose
 to shed client load by sending a Retry Delay message with an appropriate RCODE
 value informing the client of the reason the DSO Session needs to be terminated.
-The format of the Retry Delay TLV and the interpretations of the various RCODE values
+The format of the DSO Retry Delay TLV and the interpretations of the various RCODE values
 are described in <xref target="delay"/>.
-After sending a Retry Delay message,
+After sending a DSO Retry Delay message,
 the server MUST NOT send any further messages on that DSO Session.</t>
 
 <t>The server MAY randomize retry delays in situations where many retry delays are sent
 in quick succession so as to avoid all the clients attempting to reconnect at once.
-In general, implementations should avoid using the Retry Delay message in a way that
+In general, implementations should avoid using the DSO Retry Delay message in a way that
 would result in many clients reconnecting at the same time if every client attempts
 to reconnect at the exact time specified.</t>
 
-<t>Upon receipt of a Retry Delay message from the server,
+<t>Upon receipt of a DSO Retry Delay message from the server,
 the client MUST make note of the reconnect delay for this server
 and then immediately close the connection gracefully.</t>
 
-<t>After sending a Retry Delay message, the server SHOULD allow the
+<t>After sending a DSO Retry Delay message, the server SHOULD allow the
 client five seconds to close the connection, and if the client has not
 closed the connection after five seconds, then the server SHOULD
 forcibly abort the connection.</t>
 
-<t>A Retry Delay message MUST NOT be initiated by a client.
-If a server receives a Retry Delay message, this is a fatal error
+<t>A DSO Retry Delay message MUST NOT be initiated by a client.
+If a server receives a DSO Retry Delay message, this is a fatal error
 and the server MUST forcibly abort the connection immediately.</t>
 
 <section anchor="outstanding" title="Outstanding Operations">
 
-<t>At the instant a server chooses to initiate a Retry Delay message,
+<t>At the instant a server chooses to initiate a DSO Retry Delay message,
 there may be DNS requests already in flight from client to server on this 
-DSO Session, which will arrive at the server after its Retry Delay message 
+DSO Session, which will arrive at the server after its DSO Retry Delay message 
 has been sent.
 The server MUST silently ignore such incoming requests and MUST NOT generate
-any response messages for them. When the Retry Delay message from the
+any response messages for them. When the DSO Retry Delay message from the
 server arrives at the client, the client will determine that any DNS requests
 it previously sent on this DSO Session that have not yet received a response 
 will now certainly not be receiving any response. Such requests should be considered
@@ -1536,7 +1536,7 @@ failed and should be retried at a later time, as appropriate.</t>
 have become invalid (perhaps because the server has been reconfigured and is no 
 longer authoritative for some of the names),
 but the server is terminating all affected DSO Sessions en masse
-by sending them all a Retry Delay message,
+by sending them all a DSO Retry Delay message,
 the reconnect delay MAY be zero, indicating that the clients SHOULD immediately
 attempt to re-establish operations.</t>
 
@@ -1556,7 +1556,7 @@ client, yielding a post-restart reconnection rate of ten clients per second).</t
 <section anchor="misbehaving-clients" title="Misbehaving Clients">
 
 <t>A server may determine that a client is not following the protocol correctly.  There may be no
-way for the server to recover the session, in which case the server forcibly terminates the
+way for the server to recover the DSO session, in which case the server forcibly terminates the
 connection.  Since the client doesn't know why the connection dropped, it may reconnect
 immediately.  If the server has determined that a client is not following the protocol
 correctly, it may terminate the DSO Session as soon as it is established, specifying a long
@@ -1566,7 +1566,7 @@ retry-delay to prevent the client from immediately reconnecting.</t>
 <section anchor="reconnect" title="Client Reconnection">
 
 <t>After a DSO Session is ended by the server
-(either by sending the client a Retry Delay message
+(either by sending the client a DSO Retry Delay message
 or by forcibly aborting the underlying transport connection),
 the client SHOULD try to reconnect
 to that service instance or to another suitable service instance if more than one is available.
@@ -1639,7 +1639,7 @@ Primarily, it establishes the values for the Session Timeouts.
 Incidentally, it also resets the keepalive timer for the DSO Session,
 meaning that it can be used as a kind of "no-op" message for the
 purpose of keeping a session alive.
-The client will request the desired session timeout values and the server will
+The client will request the desired Session Timeout values and the server will
 acknowledge with the response values that it requires the client to use.</t>
 
 <t>DSO messages with the Keepalive TLV as the Primary TLV may appear in
@@ -1853,7 +1853,7 @@ SHOULD indicate the principal reason for the termination:</t>
 
 <t><list style="symbols">
   <t>NOERROR indicates a routine shutdown or restart.</t>
-  <t>FORMERR indicates that a client request was too badly malformed for the session to continue.</t>
+  <t>FORMERR indicates that a client DSO request was too badly malformed for the session to continue.</t>
   <t>SERVFAIL indicates that the server is overloaded due to resource exhaustion and needs to shed load.</t>
   <t>REFUSED indicates that the server has been reconfigured,
 and at this time it is now unable to perform one or more
@@ -1867,13 +1867,13 @@ such that it is no longer accepting DNS Push Notification
 requests for one or more of the currently subscribed names).</t>
 </list></t>
 
-<t>This document specifies only these RCODE values for the Retry Delay message.
-Servers sending Retry Delay messages SHOULD use one of these values.
+<t>This document specifies only these RCODE values for the DSO Retry Delay message.
+Servers sending DSO Retry Delay messages SHOULD use one of these values.
 However, future circumstances may create situations where other RCODE values
-are appropriate in Retry Delay messages, so clients MUST be prepared
-to accept Retry Delay messages with any RCODE value.</t>
+are appropriate in  DSO Retry Delay messages, so clients MUST be prepared
+to accept DSO Retry Delay messages with any RCODE value.</t>
 
-<t>In some cases, when a server sends a Retry Delay message to a client,
+<t>In some cases, when a server sends a DSO Retry Delay message to a client,
 there may be more than one reason for the server wanting to end the session.
 Possibly, the configuration could have been changed such that some
 long-lived client operations can no longer be continued due to policy (REFUSED), and other
@@ -1882,7 +1882,7 @@ the server no longer being authoritative for those names (NOTAUTH).
 In such cases, the server MAY use any of the applicable RCODE values,
 or RCODE=NOERROR (routine shutdown or restart).</t>
 
-<t>Note that the selection of RCODE value in a Retry Delay message
+<t>Note that the selection of RCODE value in a DSO Retry Delay message
 is not critical since the RCODE value is generally used only for
 information purposes such as writing to a log file for future
 human analysis regarding the nature of the disconnection.
@@ -1893,11 +1893,11 @@ wait before attempting a new connection to this service instance.</t>
 <t>For clients that do in some way modify their behavior depending on the RCODE value,
 they should treat unknown RCODE values the same as RCODE=NOERROR (routine shutdown or restart).</t>
 
-<t>A Retry Delay message from server to client is a DSO unidirectional message;
+<t>A DSO Retry Delay message from server to client is a DSO unidirectional message;
 the MESSAGE ID MUST be set to zero in the outgoing message
 and the client MUST NOT send a response.</t>
 
-<t>A client MUST NOT send a Retry Delay DSO message to a server.
+<t>A client MUST NOT send a DSO Retry Delay message to a server.
 If a server receives a DSO message where the Primary TLV is the Retry Delay TLV,
 this is a fatal error and the server MUST forcibly abort the connection immediately.</t>
 
@@ -1963,11 +1963,11 @@ various aspects of the DSO protocol.</t>
 
 <section anchor="qr-bit-and-message-id" title="QR Bit and MESSAGE ID">
 
-<t>In DSO Request Messages, the QR bit is 0 and the MESSAGE ID is nonzero.</t>
+<t>In DSO request messages, the QR bit is 0 and the MESSAGE ID is nonzero.</t>
 
-<t>In DSO Response Messages, the QR bit is 1 and the MESSAGE ID is nonzero.</t>
+<t>In DSO response messages, the QR bit is 1 and the MESSAGE ID is nonzero.</t>
 
-<t>In DSO Unidirectional Messages, the QR bit is 0 and the MESSAGE ID is zero.</t>
+<t>In DSO unidirectional messages, the QR bit is 0 and the MESSAGE ID is zero.</t>
 
 <t>The table below illustrates which combinations are legal and how they are interpreted:</t>
 
@@ -1975,9 +1975,9 @@ various aspects of the DSO protocol.</t>
             +------------------------------+------------------------+
             |       MESSAGE ID zero        |   MESSAGE ID nonzero   |
    +--------+------------------------------+------------------------+
-   |  QR=0  |  DSO Unidirectional Message  |  DSO Request Message   |
+   |  QR=0  |  DSO unidirectional message  |  DSO request message   |
    +--------+------------------------------+------------------------+
-   |  QR=1  |    Invalid - Fatal Error     |  DSO Response Message  |
+   |  QR=1  |    Invalid - Fatal Error     |  DSO response message  |
    +--------+------------------------------+------------------------+
 ]]></artwork></figure>
 
@@ -1993,9 +1993,9 @@ document, whether they are valid in each of ten different contexts.</t>
 and the corresponding responses from server back to client:</t>
 
 <t><list style="symbols">
-  <t>C-P - Primary TLV, sent in DSO Request message, from client to server,
+  <t>C-P - Primary TLV, sent in DSO request message, from client to server,
 with nonzero MESSAGE ID indicating that this request MUST generate response message.</t>
-  <t>C-U - Primary TLV, sent in DSO Unidirectional message, from client to server,
+  <t>C-U - Primary TLV, sent in DSO unidirectional message, from client to server,
 with zero MESSAGE ID indicating that this request MUST NOT generate response message.</t>
   <t>C-A - Additional TLV, optionally added to a DSO request message or DSO unidirectional message from client to server.</t>
   <t>CRP - Response Primary TLV, included in response message sent back to the client
@@ -2010,9 +2010,9 @@ where the DSO-TYPE of the Response TLV does not match the DSO-TYPE of the Primar
 DSO requests or DSO unidirectional messages from server to client, and the corresponding responses from client back to server.</t>
 
 <t><list style="symbols">
-  <t>S-P - Primary TLV, sent in DSO Request message, from server to client,
+  <t>S-P - Primary TLV, sent in DSO request message, from server to client,
 with nonzero MESSAGE ID indicating that this request MUST generate response message.</t>
-  <t>S-U - Primary TLV, sent in DSO Unidirectional message, from server to client,
+  <t>S-U - Primary TLV, sent in DSO unidirectional message, from server to client,
 with zero MESSAGE ID indicating that this request MUST NOT generate response message.</t>
   <t>S-A - Additional TLV, optionally added to a DSO request message or DSO unidirectional message from server to client.</t>
   <t>SRP - Response Primary TLV, included in response message sent back to the server
@@ -2056,7 +2056,7 @@ same software, running on the same node (but see <xref target="anycast"/>), and 
 receive the same answers and the same keying information.</t>
 
 <t>Service instances are identified from the perspective of the client.  If
-the client is configured with IP addresses and port number tuples, it has no way
+the client is configured with IP address and port number tuples, it has no way
 to tell if the service offered at one tuple is the same server that
 is listening on a different tuple.   So in this case, the client treats
 each such tuple as if it references a separate service instance.</t>
@@ -2151,7 +2151,7 @@ multiple connections from different source ports on the same client IP address.<
 <t><vspace blankLines='999' /></t>
 
 </section>
-<section anchor="operational-considerations-for-middlebox" title="Operational Considerations for Middlebox">
+<section anchor="operational-considerations-for-middlebox" title="Operational Considerations for Middleboxes">
 
 <t>Where an application-layer middlebox (e.g., a DNS proxy, forwarder,
 or session multiplexer) is in the path, care must be taken to avoid
@@ -2390,7 +2390,7 @@ with initial (hexadecimal) values as shown below:</t>
   the human-readable name of the TLV</t>
   <t hangText='Early Data:'>
   If OK, this TLV may be sent as early data in a TLS 0-RTT (Section 2.3 of <xref target="RFC8446"/>) initial
-handshake.  If NA, the TLV may appear as a secondary TLV in a DSO message that is sent as
+handshake.  If NA, the TLV may appear as an Additional TLV in a DSO message that is sent as
 early data.</t>
 
   <t hangText='Status:'>
@@ -2458,7 +2458,7 @@ of service or resource exhaustion should not be a concern.</t>
 
 <section anchor="zrtt" title="TLS 0-RTT Considerations">
 
-<t>DSO permits zero round-trip operation using TCP Fast Open <xref target="RFC7413"/> with TLS 1.3 <xref target="RFC8446"/>
+<t>DSO permits zero round-trip operation using TCP Fast Open with TLS 1.3 <xref target="RFC8446"/>
 0-RTT to reduce or eliminate round trips in session establishment.  TCP Fast Open is only
 permitted in combination with TLS 0-RTT.  In the rest of this section, we refer to TLS 1.3 early
 data in a TLS 0-RTT initial handshake message, regardless of whether or not it is included in a TCP SYN
@@ -2468,16 +2468,16 @@ packet with early data using the TCP Fast Open option, as "early data."</t>
 each TLV that can be used as a Primary TLV is required to state whether or not that TLV is
 permitted as early data.  Only response-requiring messages are ever permitted as early
 data, and only clients are permitted to send any DSO message as
-early data unless there is an implicit session (see <xref target="establishment"/>).</t>
+early data unless there is an implicit DSO session (see <xref target="establishment"/>).</t>
 
 <t>For DSO messages that are permitted as early data, a client MAY include one or more such
 messages as early data without having to wait for a DSO response to the first
 DSO request message to confirm successful establishment of a DSO Session.</t>
 
-<t>However, unless there is an implicit session, a client MUST NOT send DSO unidirectional messages
+<t>However, unless there is a implicit DSO session, a client MUST NOT send DSO unidirectional messages
 until after a DSO Session has been mutually established.</t>
 
-<t>Similarly, unless there is an implicit session, a server MUST NOT send DSO request messages
+<t>Similarly, unless there is an implicit DSO session, a server MUST NOT send DSO request messages
 until it has received a response-requiring DSO request message from a client and transmitted a
 successful NOERROR response for that request.</t>
 
