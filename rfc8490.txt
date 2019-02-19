@@ -89,25 +89,25 @@ Table of Contents
        5.3.1.  Handling Protocol Errors  . . . . . . . . . . . . . .  15
      5.4.  Message Format  . . . . . . . . . . . . . . . . . . . . .  16
        5.4.1.  DNS Header Fields in DSO Messages . . . . . . . . . .  17
-       5.4.2.  DSO Data  . . . . . . . . . . . . . . . . . . . . . .  19
-       5.4.3.  TLV Syntax  . . . . . . . . . . . . . . . . . . . . .  21
-       5.4.4.  EDNS(0) and TSIG  . . . . . . . . . . . . . . . . . .  24
-     5.5.  Message Handling  . . . . . . . . . . . . . . . . . . . .  25
-       5.5.1.  Delayed Acknowledgement Management  . . . . . . . . .  26
-       5.5.2.  MESSAGE ID Namespaces . . . . . . . . . . . . . . . .  27
-       5.5.3.  Error Responses . . . . . . . . . . . . . . . . . . .  28
-     5.6.  Responder-Initiated Operation Cancellation  . . . . . . .  29
-   6.  DSO Session Lifecycle and Timers  . . . . . . . . . . . . . .  30
-     6.1.  DSO Session Initiation  . . . . . . . . . . . . . . . . .  30
-     6.2.  DSO Session Timeouts  . . . . . . . . . . . . . . . . . .  31
-     6.3.  Inactive DSO Sessions . . . . . . . . . . . . . . . . . .  32
-     6.4.  The Inactivity Timeout  . . . . . . . . . . . . . . . . .  33
-       6.4.1.  Closing Inactive DSO Sessions . . . . . . . . . . . .  33
-       6.4.2.  Values for the Inactivity Timeout . . . . . . . . . .  34
-     6.5.  The Keepalive Interval  . . . . . . . . . . . . . . . . .  35
-       6.5.1.  Keepalive Interval Expiry . . . . . . . . . . . . . .  35
-       6.5.2.  Values for the Keepalive Interval . . . . . . . . . .  35
-     6.6.  Server-Initiated DSO Session Termination  . . . . . . . .  37
+       5.4.2.  DSO Data  . . . . . . . . . . . . . . . . . . . . . .  18
+       5.4.3.  DSO Unidirectional Messages . . . . . . . . . . . . .  20
+       5.4.4.  TLV Syntax  . . . . . . . . . . . . . . . . . . . . .  21
+       5.4.5.  Unrecognized TLVs . . . . . . . . . . . . . . . . . .  22
+       5.4.6.  EDNS(0) and TSIG  . . . . . . . . . . . . . . . . . .  23
+     5.5.  Message Handling  . . . . . . . . . . . . . . . . . . . .  24
+       5.5.1.  Delayed Acknowledgement Management  . . . . . . . . .  25
+       5.5.2.  MESSAGE ID Namespaces . . . . . . . . . . . . . . . .  26
+       5.5.3.  Error Responses . . . . . . . . . . . . . . . . . . .  27
+     5.6.  Responder-Initiated Operation Cancellation  . . . . . . .  28
+   6.  DSO Session Lifecycle and Timers  . . . . . . . . . . . . . .  29
+     6.1.  DSO Session Initiation  . . . . . . . . . . . . . . . . .  29
+     6.2.  DSO Session Timeouts  . . . . . . . . . . . . . . . . . .  30
+     6.3.  Inactive DSO Sessions . . . . . . . . . . . . . . . . . .  31
+     6.4.  The Inactivity Timeout  . . . . . . . . . . . . . . . . .  32
+       6.4.1.  Closing Inactive DSO Sessions . . . . . . . . . . . .  32
+       6.4.2.  Values for the Inactivity Timeout . . . . . . . . . .  33
+     6.5.  The Keepalive Interval  . . . . . . . . . . . . . . . . .  34
+       6.5.1.  Keepalive Interval Expiry . . . . . . . . . . . . . .  34
 
 
 
@@ -116,37 +116,39 @@ Bellis, et al.               Standards Track                    [Page 2]
 RFC 8490                 DNS Stateful Operations           February 2019
 
 
-       6.6.1.  Server-Initiated Retry Delay Message  . . . . . . . .  38
-       6.6.2.  Misbehaving Clients . . . . . . . . . . . . . . . . .  39
-       6.6.3.  Client Reconnection . . . . . . . . . . . . . . . . .  39
-   7.  Base TLVs for DNS Stateful Operations . . . . . . . . . . . .  42
-     7.1.  Keepalive TLV . . . . . . . . . . . . . . . . . . . . . .  42
-       7.1.1.  Client Handling of Received Session Timeout Values  .  44
-       7.1.2.  Relationship to edns-tcp-keepalive EDNS0 Option . . .  45
-     7.2.  Retry Delay TLV . . . . . . . . . . . . . . . . . . . . .  46
-       7.2.1.  Retry Delay TLV Used as a Primary TLV . . . . . . . .  46
-       7.2.2.  Retry Delay TLV Used as a Response Additional TLV . .  48
-     7.3.  Encryption Padding TLV  . . . . . . . . . . . . . . . . .  49
-   8.  Summary Highlights  . . . . . . . . . . . . . . . . . . . . .  50
-     8.1.  QR Bit and MESSAGE ID . . . . . . . . . . . . . . . . . .  50
-     8.2.  TLV Usage . . . . . . . . . . . . . . . . . . . . . . . .  51
-   9.  Additional Considerations . . . . . . . . . . . . . . . . . .  53
-     9.1.  Service Instances . . . . . . . . . . . . . . . . . . . .  53
-     9.2.  Anycast Considerations  . . . . . . . . . . . . . . . . .  54
-     9.3.  Connection Sharing  . . . . . . . . . . . . . . . . . . .  55
-     9.4.  Operational Considerations for Middleboxes  . . . . . . .  56
-     9.5.  TCP Delayed Acknowledgement Considerations  . . . . . . .  57
-   10. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  60
-     10.1.  DSO OPCODE Registration  . . . . . . . . . . . . . . . .  60
-     10.2.  DSO RCODE Registration . . . . . . . . . . . . . . . . .  60
-     10.3.  DSO Type Code Registry . . . . . . . . . . . . . . . . .  60
-   11. Security Considerations . . . . . . . . . . . . . . . . . . .  62
-     11.1.  TLS 0-RTT Considerations . . . . . . . . . . . . . . . .  62
-   12. References  . . . . . . . . . . . . . . . . . . . . . . . . .  63
-     12.1.  Normative References . . . . . . . . . . . . . . . . . .  63
-     12.2.  Informative References . . . . . . . . . . . . . . . . .  64
-   Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . .  66
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  66
+       6.5.2.  Values for the Keepalive Interval . . . . . . . . . .  34
+     6.6.  Server-Initiated DSO Session Termination  . . . . . . . .  36
+       6.6.1.  Server-Initiated Retry Delay Message  . . . . . . . .  37
+       6.6.2.  Misbehaving Clients . . . . . . . . . . . . . . . . .  38
+       6.6.3.  Client Reconnection . . . . . . . . . . . . . . . . .  38
+   7.  Base TLVs for DNS Stateful Operations . . . . . . . . . . . .  41
+     7.1.  Keepalive TLV . . . . . . . . . . . . . . . . . . . . . .  41
+       7.1.1.  Client Handling of Received Session Timeout Values  .  43
+       7.1.2.  Relationship to edns-tcp-keepalive EDNS0 Option . . .  44
+     7.2.  Retry Delay TLV . . . . . . . . . . . . . . . . . . . . .  45
+       7.2.1.  Retry Delay TLV Used as a Primary TLV . . . . . . . .  45
+       7.2.2.  Retry Delay TLV Used as a Response Additional TLV . .  47
+     7.3.  Encryption Padding TLV  . . . . . . . . . . . . . . . . .  48
+   8.  Summary Highlights  . . . . . . . . . . . . . . . . . . . . .  49
+     8.1.  QR Bit and MESSAGE ID . . . . . . . . . . . . . . . . . .  49
+     8.2.  TLV Usage . . . . . . . . . . . . . . . . . . . . . . . .  50
+   9.  Additional Considerations . . . . . . . . . . . . . . . . . .  52
+     9.1.  Service Instances . . . . . . . . . . . . . . . . . . . .  52
+     9.2.  Anycast Considerations  . . . . . . . . . . . . . . . . .  53
+     9.3.  Connection Sharing  . . . . . . . . . . . . . . . . . . .  54
+     9.4.  Operational Considerations for Middleboxes  . . . . . . .  55
+     9.5.  TCP Delayed Acknowledgement Considerations  . . . . . . .  56
+   10. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  59
+     10.1.  DSO OPCODE Registration  . . . . . . . . . . . . . . . .  59
+     10.2.  DSO RCODE Registration . . . . . . . . . . . . . . . . .  59
+     10.3.  DSO Type Code Registry . . . . . . . . . . . . . . . . .  59
+   11. Security Considerations . . . . . . . . . . . . . . . . . . .  61
+     11.1.  TLS Zero Round-Trip Considerations . . . . . . . . . . .  61
+   12. References  . . . . . . . . . . . . . . . . . . . . . . . . .  62
+     12.1.  Normative References . . . . . . . . . . . . . . . . . .  62
+     12.2.  Informative References . . . . . . . . . . . . . . . . .  63
+   Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . .  65
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  65
 
 1.  Introduction
 
@@ -159,11 +161,9 @@ RFC 8490                 DNS Stateful Operations           February 2019
    DNS messages, it is of benefit to have a mechanism that can establish
    parameters associated with those sessions, such as timeouts.  In such
    situations, it is also advantageous to support server-initiated
-   messages (such as DNS Push Notifications [DNS-PUSH]).
+   messages (such as DNS Push Notifications [Push]).
 
-   The existing Extension Mechanism for DNS (EDNS(0)) [RFC6891] is
-   explicitly defined to only have "per-message" semantics.  While
-   EDNS(0) has been used to signal at least one session-related
+
 
 
 
@@ -172,6 +172,9 @@ Bellis, et al.               Standards Track                    [Page 3]
 RFC 8490                 DNS Stateful Operations           February 2019
 
 
+   The existing Extension Mechanism for DNS (EDNS(0)) [RFC6891] is
+   explicitly defined to only have "per-message" semantics.  While
+   EDNS(0) has been used to signal at least one session-related
    parameter (edns-tcp-keepalive EDNS0 Option [RFC7828]), the result is
    less than optimal due to the restrictions imposed by the EDNS(0)
    semantics and the lack of server-initiated signaling.  For example, a
@@ -189,13 +192,13 @@ RFC 8490                 DNS Stateful Operations           February 2019
    All three TLVs defined here are mandatory for all implementations of
    DSO.  Further TLVs may be defined in additional specifications.
 
-   DSO messages may or may not be acknowledged; this is signaled by
-   providing a nonzero MESSAGE ID for messages that must be acknowledged
-   (DSO request messages), and a zero message ID for messages that are
-   not to be acknowledged (DSO unidirectional messages).  This is also
-   specified in the definition of a particular DSO message type.
-   Messages are pipelined and answers may appear out of order when more
-   than one answer is pending.
+   DSO messages may or may not be acknowledged.  Whether a DSO message
+   is to be acknowledged (a DSO request message) or is not to be
+   acknowledged (a DSO unidirectional message) is specified in the
+   definition of that particular DSO message type.  The MESSAGE ID is
+   nonzero for DSO request messages, and zero for DSO unidirectional
+   messages.  Messages are pipelined and responses may appear out of
+   order when multiple requests are being processed concurrently.
 
    The format for DSO messages (Section 5.4) differs somewhat from the
    traditional DNS message format used for standard queries and
@@ -217,9 +220,6 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
    This new format has distinct advantages over an RR-based format
    because it is more explicit and more compact.  Each TLV definition is
-   specific to its use case and, as a result, contains no redundant or
-   overloaded fields.  Importantly, it completely avoids conflating DNS
-   Stateful Operations in any way with normal DNS operations or with
 
 
 
@@ -228,10 +228,14 @@ Bellis, et al.               Standards Track                    [Page 4]
 RFC 8490                 DNS Stateful Operations           February 2019
 
 
+   specific to its use case and, as a result, contains no redundant or
+   overloaded fields.  Importantly, it completely avoids conflating DNS
+   Stateful Operations in any way with normal DNS operations or with
    existing EDNS(0)-based functionality.  A goal of this approach is to
    avoid the operational issues that have befallen EDNS(0), particularly
-   relating to middlebox behavior (see, for example, Sections 3.2 and 4
-   of [FTR]).
+   relating to middlebox behavior (see sections discussing EDNS, and
+   problems caused by Firewalls and Load Balancers, in the recent work
+   describing causes of DNS failures [Fail]).
 
    With EDNS(0), multiple options may be packed into a single OPT
    pseudo-RR, and there is no generalized mechanism for a client to be
@@ -275,10 +279,6 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-
-
-
-
 Bellis, et al.               Standards Track                    [Page 5]
 
 RFC 8490                 DNS Stateful Operations           February 2019
@@ -293,7 +293,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
       provided by using DNS over TCP [RFC1035] [RFC7766] or DNS over TLS
       [RFC7858].
 
-   session:  The unqualified term "session" in the context of this
+   session:  the unqualified term "session" in the context of this
       document refers to a persistent network connection between two
       endpoints that allows for the exchange of DNS messages over a
       connection where either end of the connection can send messages to
@@ -352,8 +352,9 @@ RFC 8490                 DNS Stateful Operations           February 2019
       request, as it becomes available.
 
    early data:  a TLS 1.3 handshake containing data on the first flight
-      that begins a DSO Session (Section 2.3 of [RFC8446]).  TCP Fast
-      Open [RFC7413] is only permitted when using TLS.
+      that begins a DSO Session (Section 2.3 of the TLS 1.3
+      specification [RFC8446]).  TCP Fast Open [RFC7413] is only
+      permitted when using TLS.
 
    DNS message:  any DNS message, including DNS queries, responses,
       updates, DSO messages, etc.
@@ -375,19 +376,18 @@ RFC 8490                 DNS Stateful Operations           February 2019
    DSO unidirectional message:  a DSO message that does not require and
       cannot induce a response.
 
-   Primary TLV:  The first TLV in a DSO message or DSO response; in the
-      DSO message, this determines the nature of the operation being
-      performed.
+   Primary TLV:  the first TLV in a DSO request message or DSO
+      unidirectional message; this determines the nature of the
+      operation being performed.
 
-   Additional TLV:  any TLVs in a DSO message response that follow the
-      Primary TLV
+   Additional TLV:  any TLVs that follow the Primary TLV in a DSO
+      request message or DSO unidirectional message.
 
-   Response Primary TLV:  the (optional) first TLV in a DSO response
-
-   Response Additional TLV:  any TLVs in a DSO response that follow the
-      (optional) Response Primary TLV.
-
-
+   Response Primary TLV:  in a DSO response, any TLVs with the same DSO-
+      TYPE as the Primary TLV from the corresponding DSO request
+      message.  If present, any Response Primary TLV(s) MUST appear
+      first in the DSO response message, before any Response Additional
+      TLVs.
 
 
 
@@ -395,6 +395,9 @@ Bellis, et al.               Standards Track                    [Page 7]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
+
+   Response Additional TLV:  any TLVs in a DSO response that follow the
+      (optional) Response Primary TLV(s).
 
    inactivity timer:  the time since the most recent non-keepalive DNS
       message was sent or received (see Section 6.4).
@@ -416,9 +419,6 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
    clearing a timer:  setting the timer value to zero but not restarting
       the timer.
-
-
-
 
 
 
@@ -479,7 +479,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
    has evolved into a naturally session-based mechanism where, for
    example, long-lived subscriptions lend themselves to 'push'
    mechanisms as opposed to polling.  Long-lived stateful connections
-   and server-initiated messages align with this use case [DNS-PUSH].
+   and server-initiated messages align with this use case [Push].
 
    A general use case is that DNS traffic is often bursty, but session
    establishment can be expensive.  One challenge with long-lived
@@ -514,29 +514,29 @@ RFC 8490                 DNS Stateful Operations           February 2019
    maintain an open session between a DNS client and server, where the
    transport allows such a session to be maintained, and where the
    transport guarantees in-order delivery of messages on which DSO
-   depends.  Examples of transports that can support DNS Stateful
-   Operations are DNS-over-TCP [RFC1035] [RFC7766] and DNS-over-TLS
-   [RFC7858].
+   depends.  Two specific transports that meet the requirements to
+   support DNS Stateful Operations are DNS-over-TCP [RFC1035] [RFC7766]
+   and DNS-over-TLS [RFC7858].
 
    Note that in the case of DNS over TLS, there is no mechanism for
    upgrading from DNS-over-TCP to DNS-over-TLS mid-connection (see
-   Section 7 of [RFC7858]).  A connection is either DNS-over-TCP from
-   the start, or DNS-over-TLS from the start.
+   Section 7 of the DNS-over-TLS specification [RFC7858]).  A connection
+   is either DNS-over-TCP from the start, or DNS-over-TLS from the
+   start.
 
    DNS Stateful Operations are not applicable for transports that cannot
    support clean session semantics or that do not guarantee in-order
    delivery.  While in principle such a transport could be constructed
-   over UDP, the current DNS specification over UDP transport [RFC1035]
-   does not provide in-order delivery or session semantics and hence
-   cannot be used.  Similarly, DNS-over-HTTP [RFC8484] cannot be used
-   because HTTP has its own mechanism for managing sessions.  This is
+   over UDP, the current specification of DNS over UDP [RFC1035] does
+   not provide in-order delivery or session semantics and hence cannot
+   be used.  Similarly, DNS-over-HTTP [RFC8484] cannot be used because
+   HTTP has its own mechanism for managing sessions, which is
    incompatible with the mechanism specified here.
 
-   No other transports are currently defined for use with DNS Stateful
-   Operations.  Such transports can be added in the future if they meet
-   the requirements set out in the first paragraph of this section.
-
-
+   Only DNS-over-TCP and DNS-over-TLS are currently defined for use with
+   DNS Stateful Operations.  Other transports may be added in the future
+   if they meet the requirements set out in the first paragraph of this
+   section.
 
 
 
@@ -581,25 +581,45 @@ RFC 8490                 DNS Stateful Operations           February 2019
       Section 7.1.2 of this document).
 
    DSO Session Establishment in Progress:  A client has sent a DSO
-      request but has not yet received a DSO response.  In this phase,
-      the client may send more DSO requests and more DNS requests, but
-      MUST NOT send DSO unidirectional messages (Section 5.1).
+      request within the last 30 seconds, but has not yet received a DSO
+      response for that request.  In this phase, the client may send
+      more DSO requests and more DNS requests, but MUST NOT send DSO
+      unidirectional messages (Section 5.1).
 
-   DSO Session Establishment Failed:  The attempt to establish the DSO
-      Session did not succeed.  At this point, the client is permitted
-      to continue operating without a DSO Session (Connected but
-      Sessionless) but does not send further DSO messages (Section 5.1).
+   DSO Session Establishment Timeout:  A client has sent a DSO request,
+      and after 30 seconds has still received no DSO response for that
+      request.  This means that the server is now in an indeterminate
+      state.  The client forcibly aborts the connection.  The client MAY
+      reconnect without using DSO, if appropriate.
 
-   DSO Session Established:  Both client and server may send DSO
-      messages and DNS messages; both may send replies in response to
-      messages they receive (Section 5.2).  The inactivity timer
-      (Section 6.4) is active; the keepalive timer (Section 6.5) is
-      active.  Standard DNS-over-TCP inactivity timeout handling is no
-      longer in effect [RFC7766] (see Section 7.1.2 of this document).
+   DSO Session Establishment Failed:  A client has sent a DSO request,
+      and received a corresponding DSO response with a nonzero RCODE.
+      This means that the attempt to establish the DSO Session did not
+      succeed.  At this point, the client is permitted to continue
+      operating without a DSO Session (Connected but Sessionless) but
+      does not send further DSO messages (Section 5.1).
+
+   DSO Session Established:  A client has sent a DSO request, and
+      received a corresponding DSO response with RCODE set to NOERROR
+      (0).  A DSO Session has now been successfully established.  Both
+      client and server may send DSO messages and DNS messages; both may
+      send replies in response to messages they receive (Section 5.2).
+      The inactivity timer (Section 6.4) is active; the keepalive timer
+      (Section 6.5) is active.  Standard DNS-over-TCP inactivity timeout
+      handling is no longer in effect [RFC7766] (see Section 7.1.2 of
+      this document).
 
    Server Shutdown:  The server has decided to gracefully terminate the
       session and has sent the client a Retry Delay message
       (Section 6.6.1).  There may still be unprocessed messages from the
+
+
+
+Bellis, et al.               Standards Track                   [Page 11]
+
+RFC 8490                 DNS Stateful Operations           February 2019
+
+
       client; the server will ignore these.  The server will not send
       any further messages to the client (Section 6.6.1.1).
 
@@ -612,14 +632,6 @@ RFC 8490                 DNS Stateful Operations           February 2019
    Reconnect:  The client disconnected as a result of a server shutdown.
       The client either waits for the server-specified Retry Delay to
       expire (Section 6.6.3) or else contacts a different server
-
-
-
-Bellis, et al.               Standards Track                   [Page 11]
-
-RFC 8490                 DNS Stateful Operations           February 2019
-
-
       instance.  If the client no longer needs service, it does not
       reconnect.
 
@@ -637,7 +649,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
    In order for a session to be established between a client and a
    server, the client must first establish a connection to the server
-   using an applicable transport (see Section 4).
+   using an applicable transport (see Section 4.2).
 
    In some environments, it may be known in advance by external means
    that both client and server support DSO, and in these cases either
@@ -655,6 +667,15 @@ RFC 8490                 DNS Stateful Operations           February 2019
    described below.  This is referred to as explicit DSO Session
    establishment.
 
+
+
+
+
+Bellis, et al.               Standards Track                   [Page 12]
+
+RFC 8490                 DNS Stateful Operations           February 2019
+
+
    Until a DSO Session has been implicitly or explicitly established, a
    client MUST NOT initiate DSO unidirectional messages.
 
@@ -667,14 +688,6 @@ RFC 8490                 DNS Stateful Operations           February 2019
    Some DSO messages are permitted as early data (Section 11.1).  Others
    are not.  Unidirectional messages are never permitted as early data,
    unless an implicit DSO Session exists.
-
-
-
-
-Bellis, et al.               Standards Track                   [Page 12]
-
-RFC 8490                 DNS Stateful Operations           February 2019
-
 
    If a server receives a DSO message in early data whose Primary TLV is
    not permitted to appear in early data, the server MUST forcibly abort
@@ -708,21 +721,8 @@ RFC 8490                 DNS Stateful Operations           February 2019
    the DSO Keepalive, which may result in a successful NOERROR response,
    yielding the establishment of a DSO Session.
 
-   Two other possibilities exist: the server might drop the connection,
-   or the server might send no response to the DSO message.
-
-   In the first case, the client SHOULD mark that service instance as
-   not supporting DSO, and not attempt a DSO connection for some period
-   of time (at least an hour) after the failed attempt.  The client MAY
-   reconnect but not use DSO, if appropriate (Section 6.6.3.2).
-
-   In the second case, the client SHOULD wait 30 seconds, after which
-   time the server will be assumed not to support DSO.  If the server
-   doesn't respond within 30 seconds, the client MUST forcibly abort the
-   connection to the server since the server's behavior does not conform
-   to the specification, and hence its state is undefined.  The client
-   MAY reconnect, but not use DSO, if appropriate (Section 6.6.3.1).
-
+   When a DSO message is received by an existing DNS server that doesn't
+   recognize the DSO OPCODE, two other possible outcomes exist: the
 
 
 
@@ -731,6 +731,23 @@ Bellis, et al.               Standards Track                   [Page 13]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
+
+   server might send no response to the DSO message, or the server might
+   drop the connection.
+
+   If the server sends no response to the DSO message, the client SHOULD
+   wait 30 seconds, after which time the server will be assumed not to
+   support DSO.  If the server doesn't respond within 30 seconds, the
+   client MUST forcibly abort the connection to the server since the
+   server's behavior does not conform to the specification, and hence
+   its state is undefined.  The client MAY reconnect, but not use DSO,
+   if appropriate (Section 6.6.3.1).
+
+   If the server drops the connection the client SHOULD mark that
+   service instance as not supporting DSO, and not attempt a DSO
+   connection for some period of time (at least an hour) after the
+   failed attempt.  The client MAY reconnect but not use DSO, if
+   appropriate (Section 6.6.3.2).
 
 5.1.2.  DSO Session Establishment Success
 
@@ -763,23 +780,6 @@ RFC 8490                 DNS Stateful Operations           February 2019
    initiate a DSO Session.  Even for clients that do implement other
    future DSO-TYPEs, for simplicity they MAY elect to always send an
    initial DSO Keepalive request message as their way of initiating a
-   DSO Session.  A future definition of a new response-requiring DSO-
-   TYPE gives implementers the option of using that new DSO-TYPE if they
-   wish, but does not change the fact that sending a Keepalive TLV
-   remains a valid way of initiating a DSO Session.
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -787,6 +787,11 @@ Bellis, et al.               Standards Track                   [Page 14]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
+
+   DSO Session.  A future definition of a new response-requiring DSO-
+   TYPE gives implementers the option of using that new DSO-TYPE if they
+   wish, but does not change the fact that sending a Keepalive TLV
+   remains a valid way of initiating a DSO Session.
 
 5.3.  DSO Session Termination
 
@@ -834,11 +839,6 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-
-
-
-
-
 Bellis, et al.               Standards Track                   [Page 15]
 
 RFC 8490                 DNS Stateful Operations           February 2019
@@ -847,7 +847,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 5.4.  Message Format
 
    A DSO message begins with the standard twelve-byte DNS message header
-   [RFC1035] with the OPCODE field set to the DSO OPCODE.  However,
+   [RFC1035] with the OPCODE field set to the DSO OPCODE (6).  However,
    unlike standard DNS messages, the question section, answer section,
    authority records section, and additional records sections are not
    present.  The corresponding count fields (QDCOUNT, ANCOUNT, NSCOUNT,
@@ -861,7 +861,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
       |                          MESSAGE ID                           |
       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-      |QR |    OPCODE     |            Z              |     RCODE     |
+      |QR |  OPCODE (6)   |            Z              |     RCODE     |
       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
       |                     QDCOUNT (MUST be zero)                    |
       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
@@ -910,8 +910,8 @@ RFC 8490                 DNS Stateful Operations           February 2019
    used it in a DSO request message for which it is still awaiting a
    response, or if the client has used it to set up a long-lived
    operation that has not yet been canceled.  For example, a long-lived
-   operation could be a Push Notification subscription [DNS-PUSH] or a
-   Discovery Relay interface subscription [MDNS-DISCOVERY-RELAY].
+   operation could be a Push Notification subscription [Push] or a
+   Discovery Relay interface subscription [Relay].
 
    Whether a message is a DSO request message or a DSO unidirectional
    message is determined only by the specification for the Primary TLV.
@@ -931,14 +931,14 @@ RFC 8490                 DNS Stateful Operations           February 2019
    In a DSO response message, the DNS Header QR bit MUST be one (QR=1).
    If the QR bit is not one, the message is not a DSO response message.
 
-   In a DSO response message (QR=1), the MESSAGE ID field MUST contain a
-   copy of the value of the MESSAGE ID field in the DSO request message
-   being responded to.  Also, the MESSAGE ID field MUST NOT be zero.  If
-   a DSO response message (QR=1) is received where the MESSAGE ID is
-   zero, this is a fatal error and the recipient MUST forcibly abort the
+   In a DSO response message (QR=1), the MESSAGE ID field MUST NOT be
+   zero, and MUST contain a copy of the value of the (nonzero) MESSAGE
+   ID field in the DSO request message being responded to.  If a DSO
+   response message (QR=1) is received where the MESSAGE ID is zero,
+   this is a fatal error and the recipient MUST forcibly abort the
    connection immediately.
 
-   The DNS Header OPCODE field holds the DSO OPCODE value.
+   The DNS Header OPCODE field holds the DSO OPCODE value (6).
 
    The Z bits are currently unused in DSO messages; in both DSO request
    messages and DSO responses, the Z bits MUST be set to zero (0) on
@@ -988,22 +988,22 @@ RFC 8490                 DNS Stateful Operations           February 2019
    interpretation of those RCODE values in the context of that new DSO
    TLV.
 
+   The RCODE field is followed by the four zero-valued count fields,
+   followed by the DSO Data.
 
+5.4.2.  DSO Data
 
+   The standard twelve-byte DNS message header with its zero-valued
+   count fields is followed by the DSO Data, expressed using TLV syntax,
+   as described in Section 5.4.4.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+   A DSO request message or DSO unidirectional message MUST contain at
+   least one TLV.  The first TLV in a DSO request message or DSO
+   unidirectional message is referred to as the "Primary TLV" and
+   determines the nature of the operation being performed, including
+   whether it is a DSO request or a DSO unidirectional operation.  In
+   some cases, it may be appropriate to include other TLVs in a DSO
+   request message or DSO unidirectional message, such as the DSO
 
 
 
@@ -1012,54 +1012,54 @@ Bellis, et al.               Standards Track                   [Page 18]
 RFC 8490                 DNS Stateful Operations           February 2019
 
 
-5.4.2.  DSO Data
+   Encryption Padding TLV (Section 7.3).  Additional TLVs follow the
+   Primary TLV.  Additional TLVs are not limited to what is defined in
+   this document.  New Additional TLVs may be defined in the future.
+   Their definitions will describe when their use is appropriate.
 
-   The standard twelve-byte DNS message header with its zero-valued
-   count fields is followed by the DSO Data, expressed using TLV syntax,
-   as described in Section 5.4.3.
+   An unrecognized Primary TLV results in a DSOTYPENI error response.
+   Unrecognized Additional TLVs are silently ignored, as described in
+   Section 5.4.5 and Section 8.2.
 
-   A DSO request message or DSO unidirectional message MUST contain at
-   least one TLV.  The first TLV in a DSO request message or DSO
-   unidirectional message is referred to as the "Primary TLV" and
-   determines the nature of the operation being performed, including
-   whether it is a DSO request or a DSO unidirectional operation.  In
-   some cases, it may be appropriate to include other TLVs in a DSO
-   request message or DSO unidirectional message, such as the Encryption
-   Padding TLV (Section 7.3), and these extra TLVs are referred to as
-   the "Additional TLVs" and are not limited to what is defined in this
-   document.  New "Additional TLVs" may be defined in the future.  Their
-   definitions will describe when their use is appropriate.
+   A DSO response message may contain no TLVs, or may contain one or
+   more TLVs, appropriate to the information being communicated.
 
-   A DSO response message may contain no TLVs or may be specified to
-   contain one or more TLVs appropriate to the information being
-   communicated.  This includes "Primary TLVs" and "Additional TLVs"
-   defined in this document as well as in future TLV definitions.  It
-   may be permissible for an additional TLV to appear in a response to a
-   Primary TLV even though the specification of that Primary TLV does
-   not specify it explicitly.  See Section 8.2 for more information.
+   Any TLVs with the same DSO-TYPE as the Primary TLV from the
+   corresponding DSO request message are Response Primary TLV(s) and
+   MUST appear first in a DSO response message.  A DSO response message
+   may contain multiple Response Primary TLVs, or a single Response
+   Primary TLV, or in some cases, no Response Primary TLV.  A Response
+   Primary TLV is not required; for most DSO operations the MESSAGE ID
+   field in the DNS message header is sufficient to identify the DSO
+   request message to which a particular response message relates.
 
-   A DSO response message may contain one or more TLVs with the Primary
-   TLV DSO-TYPE the same as the Primary TLV from the corresponding DSO
-   request message, or it may contain zero or more Additional TLVs only.
-   The MESSAGE ID field in the DNS message header is sufficient to
-   identify the DSO request message to which this response message
-   relates.
+   Any other TLVs in a DSO response message are Response Additional
+   TLVs, such as the DSO Encryption Padding TLV (Section 7.3).  Response
+   Additional TLVs follow the Response Primary TLV(s), if present.
+   Response Additional TLVs are not limited to what is defined in this
+   document.  New Response Additional TLVs may be defined in the future.
+   Their definitions will describe when their use is appropriate.
+   Unrecognized Response Additional TLVs are silently ignored, as
+   described in Section 5.4.5 and Section 8.2.
 
-   A DSO response message may contain one or more TLVs with DSO-TYPEs
-   different from the Primary TLV from the corresponding DSO request
-   message, in which case those TLV(s) are referred to as "Response
-   Additional TLVs".
+   The specification for each DSO TLV determines what TLVs are required
+   in a response to a DSO request message using that TLV.  If a DSO
+   response is received for an operation where the specification
+   requires that the response carry a particular TLV or TLVs, and the
+   required TLV(s) are not present, then this is a fatal error and the
+   recipient of the defective response message MUST forcibly abort the
+   connection immediately.
 
-   Response Primary TLV(s), if present, MUST occur first in the response
-   message before any Response Additional TLVs.
 
-   It is anticipated that most DSO operations will be specified to use
-   DSO request messages that generate corresponding DSO responses.  In
-   some specialized high-traffic use cases, it may be appropriate to
-   specify DSO unidirectional messages.  DSO unidirectional messages can
-   be more efficient on the network because they don't generate a stream
-   of corresponding reply messages.  Using DSO unidirectional messages
-   can also simplify software in some cases by removing the need for an
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1068,6 +1068,15 @@ Bellis, et al.               Standards Track                   [Page 19]
 RFC 8490                 DNS Stateful Operations           February 2019
 
 
+5.4.3.  DSO Unidirectional Messages
+
+   It is anticipated that most DSO operations will be specified to use
+   DSO request messages, which generate corresponding DSO responses.  In
+   some specialized high-traffic use cases, it may be appropriate to
+   specify DSO unidirectional messages.  DSO unidirectional messages can
+   be more efficient on the network because they don't generate a stream
+   of corresponding reply messages.  Using DSO unidirectional messages
+   can also simplify software in some cases by removing the need for an
    initiator to maintain state while it waits to receive replies it
    doesn't care about.  When the specification for a particular TLV used
    as a Primary TLV (i.e., first) in an outgoing DSO request message
@@ -1093,7 +1102,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
    supports and wishes to receive these messages.
 
    For example, after a client has subscribed for Push Notifications
-   [DNS-PUSH], the subsequent event notifications are then sent as DSO
+   [Push], the subsequent event notifications are then sent as DSO
    unidirectional messages.  This is appropriate because the client
    initiated the message stream by virtue of its Push Notification
    subscription, thereby indicating its support of Push Notifications
@@ -1106,16 +1115,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
    initiated the message stream by virtue of its Discovery Relay link
    subscription, thereby indicating its support of Discovery Relay and
    its desire to receive inbound mDNS packets over that DSO Session
-   [MDNS-DISCOVERY-RELAY].
-
-
-
-
-
-
-
-
-
+   [Relay].
 
 
 
@@ -1124,21 +1124,23 @@ Bellis, et al.               Standards Track                   [Page 20]
 RFC 8490                 DNS Stateful Operations           February 2019
 
 
-5.4.3.  TLV Syntax
+5.4.4.  TLV Syntax
 
    All TLVs, whether used as "Primary", "Additional", "Response
    Primary", or "Response Additional", use the same encoding syntax.
 
-   Specifications that define new TLVs must specify whether the DSO-TYPE
-   can be used as the Primary TLV, as an Additional TLV, or in either
-   context, both in the case of requests and responses.  The
-   specification for a TLV must also state whether, when used as the
-   Primary (i.e., first) TLV in a DSO message (i.e., QR=0), that DSO
-   message is unidirectional or is a request message that requires a
-   response.  If the DSO message requires a response, the specification
-   must also state which TLVs, if any, are to be included in the
-   response.  The Primary TLV may or may not be contained in the
-   response depending on what is specified for that TLV.
+   A specification that defines a new TLV must specify whether the DSO-
+   TYPE can be used as a Primary TLV, and whether the DSO-TYPE can be
+   used as an Additional TLV.  Some DSO-TYPEs are dual-purpose and can
+   be used as Primary TLVs in some messages, and in other messages as
+   Additional TLVs.  The specification for a DSO-TYPE must also state
+   whether, when used as the Primary (i.e., first) TLV in a DSO message
+   (i.e., QR=0), that DSO message is unidirectional, or is a DSO request
+   message that requires a response.  If a DSO request message that
+   requires a response, the specification must also state which TLVs, if
+   any, are to be included in the response.  The Primary TLV may or may
+   not be contained in the response depending on what is specified for
+   that TLV.
 
                                                 1   1   1   1   1   1
         0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
@@ -1152,12 +1154,12 @@ RFC 8490                 DNS Stateful Operations           February 2019
       /                                                               /
       +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
 
-   DSO-TYPE:  a 16-bit unsigned integer, in network (big endian) byte
+   DSO-TYPE:  A 16-bit unsigned integer, in network (big endian) byte
       order, giving the DSO-TYPE of the current DSO TLV per the IANA
-      "DSO Type Codes" registry
+      "DSO Type Codes" registry.
 
-   DSO-LENGTH:  a 16-bit unsigned integer, in network (big endian) byte
-      order, giving the size in bytes of the DSO-DATA
+   DSO-LENGTH:  A 16-bit unsigned integer, in network (big endian) byte
+      order, giving the size in bytes of the DSO-DATA.
 
    DSO-DATA:  Type-code specific format.  The generic DSO machinery
       treats the DSO-DATA as an opaque "blob" without attempting to
@@ -1173,70 +1175,12 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-
-
 Bellis, et al.               Standards Track                   [Page 21]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
 
-5.4.3.1.  Request TLVs
-
-   The first TLV in a DSO request message or DSO unidirectional message
-   is the "Primary TLV", which indicates the operation to be performed.
-   A DSO request message or DSO unidirectional message MUST contain at
-   least one TLV, the Primary TLV.
-
-   Immediately following the Primary TLV, a DSO request message or DSO
-   unidirectional message MAY contain one or more "Additional TLVs",
-   which specify additional parameters relating to the operation.
-
-5.4.3.2.  Response TLVs
-
-   Depending on the operation, a DSO response message MAY contain no
-   TLVs, because it is simply a response to a previous DSO request
-   message, and the MESSAGE ID in the header is sufficient to identify
-   the DSO request in question.  Or, it may contain a single response
-   TLV with the same DSO-TYPE as the Primary TLV in the request message.
-   Alternatively, it may contain one or more TLVs of other types, or a
-   combination of the above, as appropriate for the information that
-   needs to be communicated.  The specification for each DSO TLV
-   determines what TLVs are required in a response to a DSO request
-   message using that TLV.
-
-   If a DSO response is received for an operation where the
-   specification requires that the response carry a particular TLV or
-   TLVs, and the required TLV(s) are not present, then this is a fatal
-   error and the recipient of the defective response message MUST
-   forcibly abort the connection immediately.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Bellis, et al.               Standards Track                   [Page 22]
-
-RFC 8490                 DNS Stateful Operations           February 2019
-
-
-5.4.3.3.  Unrecognized TLVs
+5.4.5.  Unrecognized TLVs
 
    If a DSO request message is received containing an unrecognized
    Primary TLV, with a nonzero MESSAGE ID (indicating that a response is
@@ -1287,12 +1231,12 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 23]
+Bellis, et al.               Standards Track                   [Page 22]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
 
-5.4.4.  EDNS(0) and TSIG
+5.4.6.  EDNS(0) and TSIG
 
    Since the ARCOUNT field MUST be zero, a DSO message cannot contain a
    valid EDNS(0) option in the additional records section.  If
@@ -1302,8 +1246,8 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
    For example, the EDNS(0) Padding Option [RFC7830] used for security
    purposes is not permitted in a DSO message, so if message padding is
-   desired for DSO messages, then the Encryption Padding TLV described
-   in Section 7.3 MUST be used.
+   desired for DSO messages, then the DSO Encryption Padding TLV
+   described in Section 7.3 MUST be used.
 
    A DSO message can't contain a TSIG record because a TSIG record is
    included in the additional section of the message, which would mean
@@ -1315,8 +1259,8 @@ RFC 8490                 DNS Stateful Operations           February 2019
    Note, however, that while DSO *messages* cannot include EDNS(0) or
    TSIG records, a DSO *session* is typically used to carry a whole
    series of DNS messages of different kinds, including DSO messages and
-   other DNS message types like Query [RFC1034] [RFC1035] and
-   Update[RFC2136].  These messages can carry EDNS(0) and TSIG records.
+   other DNS message types like Query [RFC1034] [RFC1035] and Update
+   [RFC2136].  These messages can carry EDNS(0) and TSIG records.
 
    Although messages may contain other EDNS(0) options as appropriate,
    this specification explicitly prohibits use of the edns-tcp-keepalive
@@ -1343,7 +1287,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 24]
+Bellis, et al.               Standards Track                   [Page 23]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -1399,7 +1343,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 25]
+Bellis, et al.               Standards Track                   [Page 24]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -1413,11 +1357,12 @@ RFC 8490                 DNS Stateful Operations           February 2019
    With a bidirectional exchange over TCP, such as with a DSO request
    message, the operating system TCP implementation waits for the
    application-layer client software to generate the corresponding DSO
-   response message.  It can then send a single combined packet
-   containing the TCP acknowledgement, the TCP window update, and the
-   application-generated DSO response message.  This is more efficient
-   than sending three separate packets, as would occur if the TCP packet
-   containing the DSO request were acknowledged immediately.
+   response message.  The TCP implementation can then send a single
+   combined packet containing the TCP acknowledgement, the TCP window
+   update, and the application-generated DSO response message.  This is
+   more efficient than sending three separate packets, as would occur if
+   the TCP packet containing the DSO request were acknowledged
+   immediately.
 
    With a DSO unidirectional message or DSO response message, there is
    no corresponding application-generated DSO response message, and
@@ -1454,8 +1399,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-
-Bellis, et al.               Standards Track                   [Page 26]
+Bellis, et al.               Standards Track                   [Page 25]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -1511,22 +1455,12 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 27]
+Bellis, et al.               Standards Track                   [Page 26]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
 
 5.5.3.  Error Responses
-
-   When a DSO unidirectional message type is received (MESSAGE ID field
-   is zero), the receiver should already be expecting this DSO message
-   type.  Section 5.4.3.3 describes the handling of unknown DSO message
-   types.  Parsing errors MUST also result in the receiver forcibly
-   aborting the connection.  When a DSO unidirectional message of an
-   unexpected type is received, the receiver SHOULD forcibly abort the
-   connection.  Whether the connection should be forcibly aborted for
-   other internal errors processing the DSO unidirectional message is
-   implementation dependent according to the severity of the error.
 
    When a DSO request message is unsuccessful for some reason, the
    responder returns an error code to the initiator.
@@ -1555,6 +1489,17 @@ RFC 8490                 DNS Stateful Operations           February 2019
    the client a Retry Delay message (Section 6.6.1), then the client
    SHOULD continue to use that DSO Session for subsequent operations.
 
+   When a DSO unidirectional message type is received (MESSAGE ID field
+   is zero), the receiver should already be expecting this DSO message
+   type.  Section 5.4.5 describes the handling of unknown DSO message
+   types.  When a DSO unidirectional message of an unexpected type is
+   received, the receiver SHOULD forcibly abort the connection.  Whether
+   the connection should be forcibly aborted for other internal errors
+   processing the DSO unidirectional message is implementation dependent
+   according to the severity of the error.
+
+   Parsing errors MUST also result in the receiver forcibly aborting the
+   connection.
 
 
 
@@ -1566,8 +1511,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-
-Bellis, et al.               Standards Track                   [Page 28]
+Bellis, et al.               Standards Track                   [Page 27]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -1577,8 +1521,8 @@ RFC 8490                 DNS Stateful Operations           February 2019
    This document, the base specification for DNS Stateful Operations,
    does not itself define any long-lived operations, but it defines a
    framework for supporting long-lived operations such as Push
-   Notification subscriptions [DNS-PUSH] and Discovery Relay interface
-   subscriptions [MDNS-DISCOVERY-RELAY].
+   Notification subscriptions [Push] and Discovery Relay interface
+   subscriptions [Relay].
 
    Long-lived operations, if successful, will remain active until the
    initiator terminates the operation.
@@ -1623,7 +1567,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 29]
+Bellis, et al.               Standards Track                   [Page 28]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -1634,15 +1578,17 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
    A DSO Session begins as described in Section 5.1.
 
-   The client may perform as many DNS operations as it wishes using the
-   newly created DSO Session.  When the client has multiple messages to
-   send, it SHOULD NOT wait for each response before sending the next
-   message.
+   Once a DSO Session has been created, client or server may initiate as
+   many DNS operations as they wish using the DSO Session.
 
-   The server MUST act on messages in the order they are received, but
-   SHOULD NOT delay sending responses to those messages as they become
-   available in order to return them in the order the requests were
-   received.
+   When an initiator has multiple messages to send, it SHOULD NOT wait
+   for each response before sending the next message.
+
+   A responder MUST act on messages in the order they are received, and
+   SHOULD return responses to request messages as they become available.
+   A responder SHOULD NOT delay sending responses for the purpose of
+   delivering responses in the same order that the corresponding
+   requests were received.
 
    Section 6.2.1.1 of the DNS-over-TCP specification [RFC7766] specifies
    this in more detail.
@@ -1677,9 +1623,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-
-
-Bellis, et al.               Standards Track                   [Page 30]
+Bellis, et al.               Standards Track                   [Page 29]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -1700,9 +1644,9 @@ RFC 8490                 DNS Stateful Operations           February 2019
    DSO Session alive.
 
    The two timeout values are independent.  The inactivity timeout may
-   be lower, the same, or higher than the keepalive interval, though in
-   most cases the inactivity timeout is expected to be shorter than the
-   keepalive interval.
+   be shorter, the same, or longer than the keepalive interval, though
+   in most cases the inactivity timeout is expected to be shorter than
+   the keepalive interval.
 
    A shorter inactivity timeout with a longer keepalive interval signals
    to the client that it should not speculatively keep an inactive DSO
@@ -1735,7 +1679,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 31]
+Bellis, et al.               Standards Track                   [Page 30]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -1762,16 +1706,16 @@ RFC 8490                 DNS Stateful Operations           February 2019
    transmission of the corresponding response.
 
    For long-lived DNS Stateful Operations (such as a Push Notification
-   subscription [DNS-PUSH] or a Discovery Relay interface subscription
-   [MDNS-DISCOVERY-RELAY]), an operation is considered "in progress" for
-   as long as the operation is active, i.e., until it is canceled.  This
-   means that a DSO Session can exist with active operations, with no
-   messages flowing in either direction, for far longer than the
-   inactivity timeout.  This is not an error.  This is why there are two
-   separate timers: the inactivity timeout and the keepalive interval.
-   Just because a DSO Session has no traffic for an extended period of
-   time, it does not automatically make that DSO Session "inactive", if
-   it has an active operation that is awaiting events.
+   subscription [Push] or a Discovery Relay interface subscription
+   [Relay]), an operation is considered "in progress" for as long as the
+   operation is active, i.e., until it is canceled.  This means that a
+   DSO Session can exist with active operations, with no messages
+   flowing in either direction, for far longer than the inactivity
+   timeout.  This is not an error.  This is why there are two separate
+   timers: the inactivity timeout and the keepalive interval.  Just
+   because a DSO Session has no traffic for an extended period of time,
+   it does not automatically make that DSO Session "inactive", if it has
+   an active operation that is awaiting events.
 
 
 
@@ -1791,7 +1735,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 32]
+Bellis, et al.               Standards Track                   [Page 31]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -1847,7 +1791,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 33]
+Bellis, et al.               Standards Track                   [Page 32]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -1903,7 +1847,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 34]
+Bellis, et al.               Standards Track                   [Page 33]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -1950,7 +1894,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
    A corporate DNS server that knows it is serving only clients on the
    internal network, with no intervening NAT gateways or firewalls, can
-   impose a higher keepalive interval because frequent DSO keepalive
+   impose a longer keepalive interval because frequent DSO keepalive
    traffic is not required.
 
    A public DNS server that is serving primarily residential consumer
@@ -1959,19 +1903,19 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 35]
+Bellis, et al.               Standards Track                   [Page 34]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
 
-   may impose a lower keepalive interval to generate more frequent DSO
+   may impose a shorter keepalive interval to generate more frequent DSO
    keepalive traffic.
 
    A smart client may be adaptive to its environment.  A client using a
    private IPv4 address [RFC1918] to communicate with a DNS server at an
    address outside that IPv4 private address block may conclude that
    there is likely to be a NAT gateway on the path, and accordingly
-   request a lower keepalive interval.
+   request a shorter keepalive interval.
 
    By default, it is RECOMMENDED that clients request, and servers
    grant, a keepalive interval of 60 minutes.  This keepalive interval
@@ -1982,18 +1926,18 @@ RFC 8490                 DNS Stateful Operations           February 2019
    "established connection idle-timeout" used by middleboxes be at least
    2 hours and 4 minutes [RFC5382] [RFC7857].
 
-   Note that the lower the keepalive interval value, the higher the load
-   on client and server.  Moreover, for a keepalive value that is
-   smaller than the time needed for the transport to retransmit, a
-   single packet loss would cause a server to overzealously abort the
-   connection.  For example, a (hypothetical and unrealistic) keepalive
-   interval value of 100 ms would result in a continuous stream of ten
-   messages per second or more (if allowed by the current congestion
-   control window) in both directions to keep the DSO Session alive.
-   And, in this extreme example, a single retransmission over a path
-   with, as an example, 100 ms RTT would introduce a momentary pause in
-   the stream of messages long enough to cause the server to abort the
-   connection.
+   Note that the shorter the keepalive interval value, the higher the
+   load on client and server.  Moreover, for a keepalive value that is
+   shorter than the time needed for the transport to retransmit, the
+   loss of a single packet would cause a server to overzealously abort
+   the connection.  For example, a (hypothetical and unrealistic)
+   keepalive interval value of 100 ms would result in a continuous
+   stream of ten messages per second or more (if allowed by the current
+   congestion control window) in both directions to keep the DSO Session
+   alive.  And, in this extreme example, a single retransmission over a
+   path with, as an example, 100 ms RTT would introduce a momentary
+   pause in the stream of messages long enough to cause the server to
+   abort the connection.
 
    Because of this concern, the server MUST NOT send a DSO Keepalive
    message (either a DSO response to a client-initiated DSO request or a
@@ -2015,7 +1959,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 36]
+Bellis, et al.               Standards Track                   [Page 35]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -2071,7 +2015,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 37]
+Bellis, et al.               Standards Track                   [Page 36]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -2127,7 +2071,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 38]
+Bellis, et al.               Standards Track                   [Page 37]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -2166,7 +2110,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
    session, in which case the server forcibly terminates the connection.
    Since the client doesn't know why the connection dropped, it may
    reconnect immediately.  If the server has determined that a client is
-   not following the protocol correctly, it may terminate the DSO
+   not following the protocol correctly, it MAY terminate the DSO
    Session as soon as it is established, specifying a long retry-delay
    to prevent the client from immediately reconnecting.
 
@@ -2178,12 +2122,12 @@ RFC 8490                 DNS Stateful Operations           February 2019
    to that service instance or to another suitable service instance if
    more than one is available.  If reconnecting to the same service
    instance, the client MUST respect the indicated delay, if available,
-   before attempting to reconnect.  Clients should not attempt to
+   before attempting to reconnect.  Clients SHOULD NOT attempt to
 
 
 
 
-Bellis, et al.               Standards Track                   [Page 39]
+Bellis, et al.               Standards Track                   [Page 38]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -2191,31 +2135,32 @@ RFC 8490                 DNS Stateful Operations           February 2019
    randomize the delay; the server will randomly jitter the retry delay
    values it sends to each client if this behavior is desired.
 
-   If the service instance will only be out of service for a short
-   maintenance period, it should use a value a little longer than the
-   expected maintenance window.  It should not default to a very large
-   delay value, or clients may not attempt to reconnect after it resumes
-   service.
+   If a particular service instance will only be out of service for a
+   short maintenance period, it should indicate a retry delay value that
+   is a little longer than the expected maintenance window.  It should
+   not default to a very large delay value, or clients may not attempt
+   to reconnect promptly after it resumes service.
 
-   If a particular service instance does not want a client to reconnect
-   ever (perhaps the service instance is being decommissioned), it
-   SHOULD set the retry delay to the maximum value 0xFFFFFFFF (2^32-1
-   milliseconds, approximately 49.7 days).  It is not possible to
-   instruct a client to stay away for longer than 49.7 days.  If, after
-   49.7 days, the DNS or other configuration information still indicates
-   that this is the valid service instance for a particular service,
-   then clients MAY attempt to reconnect.  In reality, if a client is
-   rebooted or otherwise loses state, it may well attempt to reconnect
-   before 49.7 days elapse, e.g., for as long as the DNS or other
-   configuration information continues to indicate that this is the
-   service instance the client should use.
+   If a service instance does not want a client to reconnect ever
+   (perhaps the service instance is being decommissioned), it SHOULD set
+   the retry delay to the maximum value 0xFFFFFFFF (2^32-1 milliseconds,
+   approximately 49.7 days).  It is not possible to instruct a client to
+   stay away for longer than 49.7 days.  If, after 49.7 days, the DNS or
+   other configuration information still indicates that this is the
+   valid service instance for a particular service, then clients MAY
+   attempt to reconnect.  In reality, if a client is rebooted or
+   otherwise loses state, it may well attempt to reconnect before 49.7
+   days elapse, e.g., for as long as the DNS or other configuration
+   information continues to indicate that this is the service instance
+   the client should use.
 
 6.6.3.1.  Reconnecting After a Forcible Abort
 
-   If a connection was forcibly aborted by the client, the client SHOULD
-   mark that service instance as not supporting DSO.  The client MAY
-   reconnect but not attempt to use DSO, or it may connect to a
-   different service instance if applicable.
+   If a connection was forcibly aborted by the client due to
+   noncompliant behavior by the server, the client SHOULD mark that
+   service instance as not supporting DSO.  The client MAY reconnect but
+   not attempt to use DSO, or it may connect to a different service
+   instance if applicable.
 
 6.6.3.2.  Reconnecting After an Unexplained Connection Drop
 
@@ -2235,15 +2180,15 @@ RFC 8490                 DNS Stateful Operations           February 2019
    some time has elapsed.  A reasonable minimum would be an hour.  Since
    forcibly aborted connections are the result of a software failure,
    it's not likely that the problem will be solved in the first hour
-   after it's first encountered.  However, by restricting the retry
 
 
 
-Bellis, et al.               Standards Track                   [Page 40]
+Bellis, et al.               Standards Track                   [Page 39]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
 
+   after it's first encountered.  However, by restricting the retry
    interval to an hour, the client will be able to notice when the
    problem has been fixed without placing an undue burden on the server.
 
@@ -2294,8 +2239,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-
-Bellis, et al.               Standards Track                   [Page 41]
+Bellis, et al.               Standards Track                   [Page 40]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -2351,7 +2295,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 42]
+Bellis, et al.               Standards Track                   [Page 41]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -2407,7 +2351,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 43]
+Bellis, et al.               Standards Track                   [Page 42]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -2427,24 +2371,23 @@ RFC 8490                 DNS Stateful Operations           February 2019
    own, as described above.
 
    It is not required that the Keepalive TLV be used in every DSO
-   Session.  While many DNS Stateful Operations will be used in
-   conjunction with a long-lived session state, not all DNS Stateful
-   Operations require a long-lived session state, and in some cases the
-   default 15-second value for both the inactivity timeout and keepalive
-   interval may be perfectly appropriate.  However, note that for
-   clients that implement only the DSO-TYPEs defined in this document, a
-   DSO Keepalive request message is the only way for a client to
-   initiate a DSO Session.
+   Session.  While many DSO operations will be used in conjunction with
+   a long-lived session state, not all DSO operations require a long-
+   lived session state, and in some cases the default 15-second value
+   for both the inactivity timeout and keepalive interval may be
+   perfectly appropriate.  However, note that for clients that implement
+   only the DSO-TYPEs defined in this document, a DSO Keepalive request
+   message is the only way for a client to initiate a DSO Session.
 
 7.1.1.  Client Handling of Received Session Timeout Values
 
    When a client receives a response to its client-initiated DSO
-   Keepalive message, or receives a server-initiated DSO Keepalive
-   message, the client has then received Session Timeout values dictated
-   by the server.  The two timeout values contained in the Keepalive TLV
-   from the server may each be higher, lower, or the same as the
-   respective Session Timeout values the client previously had for this
-   DSO Session.
+   Keepalive request message, or receives a server-initiated DSO
+   Keepalive unidirectional message, the client has then received
+   Session Timeout values dictated by the server.  The two timeout
+   values contained in the Keepalive TLV from the server may each be
+   higher, lower, or the same as the respective Session Timeout values
+   the client previously had for this DSO Session.
 
    In the case of the keepalive timer, the handling of the received
    value is straightforward.  The act of receiving the message
@@ -2460,15 +2403,15 @@ RFC 8490                 DNS Stateful Operations           February 2019
    permissible time allowed without useful activity on a DSO Session.
    The act of receiving the message containing the Keepalive TLV does
    not itself reset the inactivity timer.  The time elapsed since the
+   last useful activity on this DSO Session is unaffected by exchange of
 
 
 
-Bellis, et al.               Standards Track                   [Page 44]
+Bellis, et al.               Standards Track                   [Page 43]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
 
-   last useful activity on this DSO Session is unaffected by exchange of
    DSO Keepalive messages.  The new inactivity timeout value in the
    Keepalive TLV in the received message does update the timeout
    associated with the running inactivity timer; that becomes the new
@@ -2519,7 +2462,8 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 45]
+
+Bellis, et al.               Standards Track                   [Page 44]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -2547,9 +2491,9 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 7.2.1.  Retry Delay TLV Used as a Primary TLV
 
-   When sent from server to client, the Retry Delay TLV is used as the
-   Primary TLV in a DSO unidirectional message.  It is used by a server
-   to instruct a client to close the DSO Session and underlying
+   When used as the Primary TLV in a DSO unidirectional message, the
+   Retry Delay TLV is sent from server to client.  It is used by a
+   server to instruct a client to close the DSO Session and underlying
    connection, and not to reconnect for the indicated time interval.
 
    In this case, it applies to the DSO Session as a whole, and the
@@ -2575,7 +2519,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 46]
+Bellis, et al.               Standards Track                   [Page 45]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -2594,15 +2538,15 @@ RFC 8490                 DNS Stateful Operations           February 2019
    Delay messages, so clients MUST be prepared to accept DSO Retry Delay
    messages with any RCODE value.
 
-   In some cases, when a server sends a DSO Retry Delay message to a
-   client, there may be more than one reason for the server wanting to
-   end the session.  Possibly, the configuration could have been changed
-   such that some long-lived client operations can no longer be
-   continued due to policy (REFUSED), and other long-lived client
-   operations can no longer be performed due to the server no longer
-   being authoritative for those names (NOTAUTH).  In such cases, the
-   server MAY use any of the applicable RCODE values, or RCODE=NOERROR
-   (routine shutdown or restart).
+   In some cases, when a server sends a DSO Retry Delay unidirectional
+   message to a client, there may be more than one reason for the server
+   wanting to end the session.  Possibly, the configuration could have
+   been changed such that some long-lived client operations can no
+   longer be continued due to policy (REFUSED), and other long-lived
+   client operations can no longer be performed due to the server no
+   longer being authoritative for those names (NOTAUTH).  In such cases,
+   the server MAY use any of the applicable RCODE values, or
+   RCODE=NOERROR (routine shutdown or restart).
 
    Note that the selection of RCODE value in a DSO Retry Delay message
    is not critical since the RCODE value is generally used only for
@@ -2616,9 +2560,10 @@ RFC 8490                 DNS Stateful Operations           February 2019
    the RCODE value, they should treat unknown RCODE values the same as
    RCODE=NOERROR (routine shutdown or restart).
 
-   A DSO Retry Delay message from server to client is a DSO
-   unidirectional message; the MESSAGE ID MUST be set to zero in the
-   outgoing message and the client MUST NOT send a response.
+   A DSO Retry Delay message (DSO message where the primary TLV is Retry
+   Delay) from server to client is a DSO unidirectional message; the
+   MESSAGE ID MUST be set to zero in the outgoing message and the client
+   MUST NOT send a response.
 
    A client MUST NOT send a DSO Retry Delay message to a server.  If a
    server receives a DSO message where the Primary TLV is the Retry
@@ -2630,8 +2575,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-
-Bellis, et al.               Standards Track                   [Page 47]
+Bellis, et al.               Standards Track                   [Page 46]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -2647,6 +2591,9 @@ RFC 8490                 DNS Stateful Operations           February 2019
    retry applies only to the failed operation, not to the DSO Session as
    a whole.
 
+   Either a client or a server, whichever is acting in the role of the
+   responder for a particular DSO request message, MAY append a Retry
+   Delay TLV to an error response that it sends.
 
 
 
@@ -2684,10 +2631,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-
-
-
-Bellis, et al.               Standards Track                   [Page 48]
+Bellis, et al.               Standards Track                   [Page 47]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -2743,7 +2687,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 49]
+Bellis, et al.               Standards Track                   [Page 48]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -2799,7 +2743,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 50]
+Bellis, et al.               Standards Track                   [Page 49]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -2855,7 +2799,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 51]
+Bellis, et al.               Standards Track                   [Page 50]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -2911,7 +2855,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 52]
+Bellis, et al.               Standards Track                   [Page 51]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -2921,28 +2865,31 @@ RFC 8490                 DNS Stateful Operations           February 2019
 9.1.  Service Instances
 
    We use the term "service instance" to refer to software running on a
-   host that can receive connections on some sets of IP address and port
+   host that can receive connections on some set of { IP address, port }
    tuples.  What makes the software an instance is that regardless of
    which of these tuples the client uses to connect to it, the client is
-   connected to the same software, running on the same node (but see
+   connected to the same software, running on the same logical node (see
    Section 9.2), and will receive the same answers and the same keying
    information.
 
    Service instances are identified from the perspective of the client.
-   If the client is configured with IP address and port number tuples,
-   it has no way to tell if the service offered at one tuple is the same
-   server that is listening on a different tuple.  So in this case, the
-   client treats each such tuple as if it references a separate service
+   If the client is configured with { IP address, port } tuples, it has
+   no way to tell if the service offered at one tuple is the same server
+   that is listening on a different tuple.  So in this case, the client
+   treats each different tuple as if it references a different service
    instance.
 
    In some cases, a client is configured with a hostname and a port
-   number (either implicitly, where the port number is omitted and
-   assumed, or explicitly, as in the case of DNS SRV records).  In these
-   cases, the (hostname/port) tuple uniquely identifies the service
-   instance (hostname comparisons are case-insensitive [RFC1034]).
+   number.  The port number may be given explicitly, along with the
+   hostname.  The port number may be omitted, and assumed to have some
+   default value.  The hostname and a port number may be learned from
+   the network, as in the case of DNS SRV records.  In these cases, the
+   { hostname, port } tuple uniquely identifies the service instance,
+   subject to the usual case-insensitive DNS comparison of names
+   [RFC1034].
 
    It is possible that two hostnames might point to some common IP
-   addresses; this is a configuration error that the client is not
+   addresses; this is a configuration anomaly that the client is not
    obliged to detect.  The effect of this could be that after being told
    to disconnect, the client might reconnect to the same server because
    it is represented as a different service instance.
@@ -2964,10 +2911,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-
-
-
-Bellis, et al.               Standards Track                   [Page 53]
+Bellis, et al.               Standards Track                   [Page 52]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -2990,7 +2934,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
    using the connection as appropriate.
 
    If, after the connection is re-established, the client's assumption
-   that it is connected to the same service is violated in some way,
+   that it is connected to the same instance is violated in some way,
    that would be considered an incorrect behavior in this context.  It
    is, however, out of the possible scope for this specification to make
    specific recommendations in this regard; that would be up to follow-
@@ -3023,7 +2967,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 54]
+Bellis, et al.               Standards Track                   [Page 53]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -3045,16 +2989,16 @@ RFC 8490                 DNS Stateful Operations           February 2019
       example, to support concurrent transfers of multiple zones).
 
    A single server may support multiple services, including DNS Updates
-   [RFC2136], DNS Push Notifications [DNS-PUSH], and other services, for
-   one or more DNS zones.  When a client discovers that the target
-   server for several different operations is the same service instance
-   (see Section 9.1), the client SHOULD use a single shared DSO Session
-   for all those operations.
+   [RFC2136], DNS Push Notifications [Push], and other services, for one
+   or more DNS zones.  When a client discovers that the target server
+   for several different operations is the same service instance (see
+   Section 9.1), the client SHOULD use a single shared DSO Session for
+   all those operations.
 
    This requirement has two benefits.  First, it reduces unnecessary
-   connection load on the DNS server.  Second, it avoids paying the TCP
-   slow start penalty when making subsequent connections to the same
-   server.
+   connection load on the DNS server.  Second, it avoids the connection
+   startup time that would be spent establishing each new additional
+   connection to the same DNS server.
 
    However, server implementers and operators should be aware that
    connection sharing may not be possible in all cases.  A single host
@@ -3079,7 +3023,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 55]
+Bellis, et al.               Standards Track                   [Page 54]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -3135,7 +3079,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 56]
+Bellis, et al.               Standards Track                   [Page 55]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -3174,24 +3118,24 @@ RFC 8490                 DNS Stateful Operations           February 2019
    The logic of delayed ack is that the 200 ms delay cannot do any
    significant harm.  If something at the other end were waiting for
    something, then the receiving process should generate the reply that
-   the thing at the end is waiting for, and TCP will then immediately
-   send that reply (and the ack and window update).  And if the
-   receiving process does not in fact generate any reply for this
-   particular message, then by definition the thing at the other end
-   cannot be waiting for anything.  Therefore, the 200 ms delay is
-   harmless.
+   the thing at the other end is waiting for, and TCP will then
+   immediately send that reply (combined with the ack and window
+   update).  And if the receiving process does not in fact generate any
+   reply for this particular message, then by definition the thing at
+   the other end cannot be waiting for anything.  Therefore, the 200 ms
+   delay is harmless.
 
    This assumption may be true unless the sender is using Nagle's
    algorithm, a similar efficiency feature, created to protect the
    network from poorly written client software that performs many rapid
    small writes in succession.  Nagle's algorithm allows these small
-   writes to be combined into larger, less wasteful packets.
+   writes to be coalesced into larger, less wasteful packets.
 
 
 
 
 
-Bellis, et al.               Standards Track                   [Page 57]
+Bellis, et al.               Standards Track                   [Page 56]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -3235,27 +3179,24 @@ RFC 8490                 DNS Stateful Operations           February 2019
        with the goal of limiting the number of small packets in flight
        at any one time.
 
-   For DSO messages that elicit a response, delayed ack and Nagle's
-   algorithm do the right thing.
-
    The problem here is that with DSO messages that elicit no response,
    the TCP implementation is stuck waiting, unsure if a response is
    about to be generated or whether the TCP implementation should go
    ahead and send an ack and window update.
 
+   The solution is networking APIs that allow the receiver to inform the
+   TCP implementation that a received message has been read, processed,
+   and no response for this message will be generated.  TCP can then
 
 
 
 
-Bellis, et al.               Standards Track                   [Page 58]
+Bellis, et al.               Standards Track                   [Page 57]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
 
-   The solution is networking APIs that allow the receiver to inform the
-   TCP implementation that a received message has been read, processed,
-   and no response for this message will be generated.  TCP can then
-   stop waiting for a response that will never come and immediately go
+   stop waiting for a response that will never come, and immediately go
    ahead and send an ack and window update.
 
    For implementations of DSO, disabling delayed ack is NOT RECOMMENDED
@@ -3303,7 +3244,10 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 59]
+
+
+
+Bellis, et al.               Standards Track                   [Page 58]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -3359,27 +3303,27 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 60]
+Bellis, et al.               Standards Track                   [Page 59]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
 
    The meanings of the fields are as follows:
 
-   Type:  the 16-bit DSO type code
+   Type:  The 16-bit DSO type code.
 
-   Name:  the human-readable name of the TLV
+   Name:  The human-readable name of the TLV.
 
-   Early Data:  If OK, this TLV may be sent as early data in a TLS 0-RTT
-      (Section 2.3 of [RFC8446]) initial handshake.  If NA, the TLV may
-      appear as an Additional TLV in a DSO message that is sent as early
-      data.
+   Early Data:  If OK, this TLV may be sent as early data in a TLS zero
+      round-trip (Section 2.3 of the TLS 1.3 specification [RFC8446])
+      initial handshake.  If NA, the TLV may appear as an Additional TLV
+      in a DSO message that is sent as early data.
 
    Status:  RFC status (e.g., "Standards Track") or "External" if not
       documented in an RFC.
 
-   Reference:  a stable reference to the document in which this TLV is
-      defined
+   Reference:  A stable reference to the document in which this TLV is
+      defined.
 
    Note: DSO Type Code zero is reserved and is not currently intended
    for allocation.
@@ -3388,10 +3332,6 @@ RFC 8490                 DNS Stateful Operations           February 2019
    management" range 0004-003F and the "Reserved for future expansion"
    range FC00-FFFF require publication of an IETF Standards Action
    document [RFC8126].
-
-   Any document defining a new TLV that lists a value of "OK" in the
-   0-RTT column must include a threat analysis for the use of the TLV in
-   the case of TLS 0-RTT.  See Section 11.1 for details.
 
    Requests to register additional new DSO Type Codes in the
    "Unassigned" range 0040-F7FF are to be recorded by IANA after Expert
@@ -3411,11 +3351,15 @@ RFC 8490                 DNS Stateful Operations           February 2019
    of "experimental/local" values to ensure that no conflicts occur
    within the intended scope of use.
 
+   Any document defining a new TLV that lists a value of "OK" in the
+   Early Data column must include a threat analysis for the use of the
+   TLV in the case of TLS zero round-trip.  See Section 11.1 for
+   details.
 
 
 
 
-Bellis, et al.               Standards Track                   [Page 61]
+Bellis, et al.               Standards Track                   [Page 60]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -3447,34 +3391,37 @@ RFC 8490                 DNS Stateful Operations           February 2019
    Sessions as needed, denial of service or resource exhaustion should
    not be a concern.
 
-11.1.  TLS 0-RTT Considerations
+11.1.  TLS Zero Round-Trip Considerations
 
    DSO permits zero round-trip operation using TCP Fast Open with
-   TLS 1.3 [RFC8446] 0-RTT to reduce or eliminate round trips in session
-   establishment.  TCP Fast Open is only permitted in combination with
-   TLS 0-RTT.  In the rest of this section, we refer to TLS 1.3 early
-   data in a TLS 0-RTT initial handshake message, regardless of whether
-   or not it is included in a TCP SYN packet with early data using the
-   TCP Fast Open option, as "early data."
+   TLS 1.3 [RFC8446] early data to reduce or eliminate round trips in
+   session establishment.  TCP Fast Open is only permitted in
+   combination with TLS 1.3 early data.  In the rest of this section, we
+   refer to TLS 1.3 early data in a TLS zero round-trip initial
+   handshake message, regardless of whether or not it is included in a
+   TCP SYN packet with early data using the TCP Fast Open option, as
+   "early data."
 
    A DSO message may or may not be permitted to be sent as early data.
    The definition for each TLV that can be used as a Primary TLV is
    required to state whether or not that TLV is permitted as early data.
    Only response-requiring messages are ever permitted as early data,
-   and only clients are permitted to send any DSO message as early data
+   and only clients are permitted to send a DSO message as early data
    unless there is an implicit DSO session (see Section 5.1).
 
    For DSO messages that are permitted as early data, a client MAY
    include one or more such messages as early data without having to
-   wait for a DSO response to the first DSO request message to confirm
-   successful establishment of a DSO Session.
 
 
 
-Bellis, et al.               Standards Track                   [Page 62]
+
+Bellis, et al.               Standards Track                   [Page 61]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
+
+   wait for a DSO response to the first DSO request message to confirm
+   successful establishment of a DSO Session.
 
    However, unless there is an implicit DSO session, a client MUST NOT
    send DSO unidirectional messages until after a DSO Session has been
@@ -3496,17 +3443,17 @@ RFC 8490                 DNS Stateful Operations           February 2019
    the server.  None of the TLVs defined here have this property.
 
    If a new TLV is specified that does have this property, that TLV must
-   be specified as not permitted in 0-RTT messages.  This prevents work
-   from being done until a round-trip has occurred from the server to
-   the client to verify that the source address of the packet is
-   reachable.
+   be specified as not permitted in zero round-trip messages.  This
+   prevents work from being done until a round-trip has occurred from
+   the server to the client to verify that the source address of the
+   packet is reachable.
 
    Documents that define new TLVs must state whether each new TLV may be
    sent as early data.  Such documents must include a threat analysis in
    the security considerations section for each TLV defined in the
    document that may be sent as early data.  This threat analysis should
    be done based on the advice given in Sections 2.3, 8, and
-   Appendix E.5 of [RFC8446].
+   Appendix E.5 of the TLS 1.3 specification [RFC8446].
 
 12.  References
 
@@ -3520,17 +3467,19 @@ RFC 8490                 DNS Stateful Operations           February 2019
               specification", STD 13, RFC 1035, DOI 10.17487/RFC1035,
               November 1987, <https://www.rfc-editor.org/info/rfc1035>.
 
+
+
+
+
+Bellis, et al.               Standards Track                   [Page 62]
+
+RFC 8490                 DNS Stateful Operations           February 2019
+
+
    [RFC1918]  Rekhter, Y., Moskowitz, B., Karrenberg, D., de Groot, G.,
               and E. Lear, "Address Allocation for Private Internets",
               BCP 5, RFC 1918, DOI 10.17487/RFC1918, February 1996,
               <https://www.rfc-editor.org/info/rfc1918>.
-
-
-
-Bellis, et al.               Standards Track                   [Page 63]
-
-RFC 8490                 DNS Stateful Operations           February 2019
-
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
@@ -3567,31 +3516,28 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 12.2.  Informative References
 
-   [DNS-PUSH]
-              Pusateri, T. and S. Chesire, "DNS Push Notifications",
-              Work in Progress, draft-ietf-dnssd-push-16, November 2018.
-
-   [FTR]      Andrews, M. and R. Bellis, "A Common Operational Problem
+   [Fail]     Andrews, M. and R. Bellis, "A Common Operational Problem
               in DNS Servers - Failure To Respond", Work in Progress,
               draft-ietf-dnsop-no-response-issue-12, November 2018.
-
-   [MDNS-DISCOVERY-RELAY]
-              Lemon, T. and S. Chesire, "Multicast DNS Discovery Relay",
-              Work in Progress, draft-ietf-dnssd-mdns-relay-01, July
-              2018.
-
-
-
-
-Bellis, et al.               Standards Track                   [Page 64]
-
-RFC 8490                 DNS Stateful Operations           February 2019
-
 
    [NagleDA]  Cheshire, S., "TCP Performance problems caused by
               interaction between Nagle's Algorithm and Delayed ACK",
               May 2005,
               <http://www.stuartcheshire.org/papers/nagledelayedack/>.
+
+
+
+Bellis, et al.               Standards Track                   [Page 63]
+
+RFC 8490                 DNS Stateful Operations           February 2019
+
+
+   [Push]     Pusateri, T. and S. Chesire, "DNS Push Notifications",
+              Work in Progress, draft-ietf-dnssd-push-16, November 2018.
+
+   [Relay]    Lemon, T. and S. Chesire, "Multicast DNS Discovery Relay",
+              Work in Progress, draft-ietf-dnssd-mdns-relay-01, July
+              2018.
 
    [RFC1122]  Braden, R., Ed., "Requirements for Internet Hosts -
               Communication Layers", STD 3, RFC 1122,
@@ -3637,9 +3583,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-
-
-Bellis, et al.               Standards Track                   [Page 65]
+Bellis, et al.               Standards Track                   [Page 64]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -3695,7 +3639,7 @@ Authors' Addresses
 
 
 
-Bellis, et al.               Standards Track                   [Page 66]
+Bellis, et al.               Standards Track                   [Page 65]
 
 RFC 8490                 DNS Stateful Operations           February 2019
 
@@ -3751,4 +3695,4 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 67]
+Bellis, et al.               Standards Track                   [Page 66]
