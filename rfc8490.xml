@@ -1743,7 +1743,7 @@ and, at the same time, unilaterally informs the client of the new
 Session Timeout values to use from this point forward in this DSO Session.
 No client DSO response to this unilateral declaration is required or allowed.</t>
 
-<t>In DSO Keepalive response messages, one (and only one) instance of the Keepalive TLV MUST be present and is used only 
+<t>In DSO Keepalive response messages, exactly one instance of the Keepalive TLV MUST be present and is used only 
 as a Response Primary TLV sent as a reply to a DSO Keepalive request message from 
 the client.
 A Keepalive TLV MUST NOT be added to other responses as a Response Additional TLV.
