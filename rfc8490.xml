@@ -209,7 +209,7 @@ Importantly, it completely avoids conflating DNS Stateful Operations in any way
 with normal DNS operations or with existing EDNS(0)-based functionality.
 A goal of this approach is to avoid the operational issues that have
 befallen EDNS(0), particularly relating to middlebox behavior
-(see sections discussing EDNS, and problems caused by Firewalls and Load Balancers,
+(see sections discussing EDNS(0), and problems caused by Firewalls and Load Balancers,
 in the recent work describing causes of DNS failures <xref target="Fail"/>).</t>
 <!-- Removed mention section numbers, since section numbers in drafts may not remain stable -->
 
@@ -818,6 +818,9 @@ If a DSO response is received for an operation where the specification
 requires that the response carry a particular TLV or TLVs,
 and the required TLV(s) are not present, then this is a fatal
 error and the recipient of the defective response message MUST
+forcibly abort the connection immediately. Similarly, if more than the
+specified number of instances of a given TLV are present this is a fatal
+error and the recipient of the defective response message MUST
 forcibly abort the connection immediately.</t>
 
 <t><vspace blankLines='999' /></t>
@@ -888,11 +891,14 @@ Some DSO-TYPEs are dual-purpose and can be used as Primary TLVs in some messages
 and in other messages as Additional TLVs.
 The specification for a DSO-TYPE must also state whether,
 when used as the Primary (i.e., first) TLV in a DSO message (i.e., QR=0),
-that DSO message is unidirectional, or is a DSO request message that requires a response.
-If a DSO request message that requires a response, the specification
-must also state which TLVs, if any, are to be included in the response.
+that DSO message is unidirectional, or is a DSO request message that requires a response.</t>
+
+<t>If a DSO request message requires a response, the specification
+must also state which TLVs, if any, are to be included in the response and 
+how many instances of each of the TLVs are allowed.
 The Primary TLV may or may not be contained in the response
-depending on what is specified for that TLV.</t>
+depending on what is specified for that TLV. If multiple instances of the Primary TLV
+are allowed the specification should clearly describe how they should be processed.</t>
 
 <figure><artwork><![CDATA[
                                              1   1   1   1   1   1
@@ -1737,7 +1743,7 @@ and, at the same time, unilaterally informs the client of the new
 Session Timeout values to use from this point forward in this DSO Session.
 No client DSO response to this unilateral declaration is required or allowed.</t>
 
-<t>In DSO Keepalive response messages, the Keepalive TLV is REQUIRED and is used only 
+<t>In DSO Keepalive response messages, one (and only one) instance of the Keepalive TLV MUST be present and is used only 
 as a Response Primary TLV sent as a reply to a DSO Keepalive request message from 
 the client.
 A Keepalive TLV MUST NOT be added to other responses as a Response Additional TLV.
