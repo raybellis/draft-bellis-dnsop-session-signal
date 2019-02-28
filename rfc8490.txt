@@ -233,7 +233,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
    Stateful Operations in any way with normal DNS operations or with
    existing EDNS(0)-based functionality.  A goal of this approach is to
    avoid the operational issues that have befallen EDNS(0), particularly
-   relating to middlebox behavior (see sections discussing EDNS, and
+   relating to middlebox behavior (see sections discussing EDNS(0), and
    problems caused by firewalls and load balancers, in the recent work
    describing causes of DNS failures [Fail]).
 
@@ -1048,10 +1048,10 @@ RFC 8490                 DNS Stateful Operations           February 2019
    requires that the response carry a particular TLV or TLVs, and the
    required TLV(s) are not present, then this is a fatal error and the
    recipient of the defective response message MUST forcibly abort the
+   connection immediately.  Similarly, if more than the specified number
+   of instances of a given TLV are present this is a fatal error and the
+   recipient of the defective response message MUST forcibly abort the
    connection immediately.
-
-
-
 
 
 
@@ -1136,11 +1136,15 @@ RFC 8490                 DNS Stateful Operations           February 2019
    Additional TLVs.  The specification for a DSO-TYPE must also state
    whether, when used as the Primary (i.e., first) TLV in a DSO message
    (i.e., QR=0), that DSO message is unidirectional, or is a DSO request
-   message that requires a response.  If a DSO request message that
-   requires a response, the specification must also state which TLVs, if
-   any, are to be included in the response.  The Primary TLV may or may
-   not be contained in the response depending on what is specified for
-   that TLV.
+   message that requires a response.
+
+   If a DSO request message requires a response, the specification must
+   also state which TLVs, if any, are to be included in the response and
+   how many instances of each of the TLVs are allowed.  The Primary TLV
+   may or may not be contained in the response depending on what is
+   specified for that TLV.  If multiple instances of the Primary TLV are
+   allowed the specification should clearly describe how they should be
+   processed.
 
                                                 1   1   1   1   1   1
         0   1   2   3   4   5   6   7   8   9   0   1   2   3   4   5
@@ -1166,10 +1170,6 @@ RFC 8490                 DNS Stateful Operations           February 2019
       interpret it.  Interpretation of the meaning of the DSO-DATA for a
       particular DSO-TYPE is the responsibility of the software that
       implements that DSO-TYPE.
-
-
-
-
 
 
 
@@ -2361,14 +2361,14 @@ RFC 8490                 DNS Stateful Operations           February 2019
    use from this point forward in this DSO Session.  No client DSO
    response to this unilateral declaration is required or allowed.
 
-   In DSO Keepalive response messages, the Keepalive TLV is REQUIRED and
-   is used only as a Response Primary TLV sent as a reply to a DSO
-   Keepalive request message from the client.  A Keepalive TLV MUST NOT
-   be added to other responses as a Response Additional TLV.  If the
-   server wishes to update a client's Session Timeout values other than
-   in response to a DSO Keepalive request message from the client, then
-   it does so by sending a DSO Keepalive unidirectional message of its
-   own, as described above.
+   In DSO Keepalive response messages, exactly one instance of the
+   Keepalive TLV MUST be present and is used only as a Response Primary
+   TLV sent as a reply to a DSO Keepalive request message from the
+   client.  A Keepalive TLV MUST NOT be added to other responses as a
+   Response Additional TLV.  If the server wishes to update a client's
+   Session Timeout values other than in response to a DSO Keepalive
+   request message from the client, then it does so by sending a DSO
+   Keepalive unidirectional message of its own, as described above.
 
    It is not required that the Keepalive TLV be used in every DSO
    Session.  While many DSO operations will be used in conjunction with
