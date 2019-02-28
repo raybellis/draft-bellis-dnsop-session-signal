@@ -234,7 +234,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
    existing EDNS(0)-based functionality.  A goal of this approach is to
    avoid the operational issues that have befallen EDNS(0), particularly
    relating to middlebox behavior (see sections discussing EDNS, and
-   problems caused by Firewalls and Load Balancers, in the recent work
+   problems caused by firewalls and load balancers, in the recent work
    describing causes of DNS failures [Fail]).
 
    With EDNS(0), multiple options may be packed into a single OPT
@@ -1019,7 +1019,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
 
    An unrecognized Primary TLV results in a DSOTYPENI error response.
    Unrecognized Additional TLVs are silently ignored, as described in
-   Section 5.4.5 and Section 8.2.
+   Sections 5.4.5 and 8.2.
 
    A DSO response message may contain no TLVs, or may contain one or
    more TLVs, appropriate to the information being communicated.
@@ -1040,7 +1040,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
    document.  New Response Additional TLVs may be defined in the future.
    Their definitions will describe when their use is appropriate.
    Unrecognized Response Additional TLVs are silently ignored, as
-   described in Section 5.4.5 and Section 8.2.
+   described in Sections 5.4.5 and 8.2.
 
    The specification for each DSO TLV determines what TLVs are required
    in a response to a DSO request message using that TLV.  If a DSO
@@ -1769,12 +1769,11 @@ RFC 8490                 DNS Stateful Operations           February 2019
    being any operation active on the DSO Session, the client MUST close
    the connection gracefully.
 
-   If, at any time during the life of the DSO Session, twice the
-   inactivity timeout value (i.e., 30 seconds by default), or five
-   seconds if twice the inactivity timeout value is less than five
-   seconds, elapses without there being any operation active on the DSO
-   Session, then the server MUST consider the client delinquent and MUST
-   forcibly abort the DSO Session.
+   If, at any time during the life of the DSO Session, a period twice
+   the inactivity timeout value (i.e., 30 seconds by default), subject
+   to a minimum of five seconds.  elapses without there being any
+   operation active on the DSO Session, then the server MUST consider
+   the client delinquent and MUST forcibly abort the DSO Session.
 
    In this context, an operation being active on a DSO Session includes
    a query waiting for a response, an update waiting for a response, or
@@ -1785,6 +1784,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
    If the client wishes to keep an inactive DSO Session open for longer
    than the default duration, then it uses the DSO Keepalive message to
    request longer timeout values as described in Section 7.1.
+
 
 
 
@@ -2560,7 +2560,7 @@ RFC 8490                 DNS Stateful Operations           February 2019
    the RCODE value, they should treat unknown RCODE values the same as
    RCODE=NOERROR (routine shutdown or restart).
 
-   A DSO Retry Delay message (DSO message where the primary TLV is Retry
+   A DSO Retry Delay message (DSO message where the Primary TLV is Retry
    Delay) from server to client is a DSO unidirectional message; the
    MESSAGE ID MUST be set to zero in the outgoing message and the client
    MUST NOT send a response.
