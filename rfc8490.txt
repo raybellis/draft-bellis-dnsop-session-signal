@@ -1769,11 +1769,15 @@ RFC 8490                 DNS Stateful Operations           February 2019
    being any operation active on the DSO Session, the client MUST close
    the connection gracefully.
 
-   If, at any time during the life of the DSO Session, a period twice
-   the inactivity timeout value (i.e., 30 seconds by default), subject
-   to a minimum of five seconds.  elapses without there being any
-   operation active on the DSO Session, then the server MUST consider
-   the client delinquent and MUST forcibly abort the DSO Session.
+   If, at any time during the life of the DSO Session, too much time
+   elapses without there being any operation active on the DSO Session,
+   then the server MUST consider the client delinquent and MUST forcibly
+   abort the DSO Session.  What is considered "too much time" in this
+   context is five seconds, or twice the current inactivity timeout
+   value, whichever is greater.  If the inactivity timeout has its
+   default value of 15 seconds, this means that a client will be
+   considered delinquent and disconnected if it has not closed its
+   connection after 30 seconds of inactivity.
 
    In this context, an operation being active on a DSO Session includes
    a query waiting for a response, an update waiting for a response, or
@@ -1784,10 +1788,6 @@ RFC 8490                 DNS Stateful Operations           February 2019
    If the client wishes to keep an inactive DSO Session open for longer
    than the default duration, then it uses the DSO Keepalive message to
    request longer timeout values as described in Section 7.1.
-
-
-
-
 
 
 
