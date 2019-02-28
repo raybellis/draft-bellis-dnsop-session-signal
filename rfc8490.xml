@@ -209,7 +209,7 @@ Importantly, it completely avoids conflating DNS Stateful Operations in any way
 with normal DNS operations or with existing EDNS(0)-based functionality.
 A goal of this approach is to avoid the operational issues that have
 befallen EDNS(0), particularly relating to middlebox behavior
-(see sections discussing EDNS(0), and problems caused by Firewalls and Load Balancers,
+(see sections discussing EDNS(0), and problems caused by firewalls and load balancers,
 in the recent work describing causes of DNS failures <xref target="Fail"/>).</t>
 <!-- Removed mention section numbers, since section numbers in drafts may not remain stable -->
 
@@ -790,7 +790,8 @@ Their definitions will describe when their use is appropriate.</t>
 
 <t>An unrecognized Primary TLV results in a DSOTYPENI error response.
 Unrecognized Additional TLVs are silently ignored,
-as described in <xref target="unrecognized"/> and <xref target="TLV"/>.</t>
+as described in Sections <xref target="unrecognized" format="counter"/> and
+<xref target="TLV" format="counter"/>.</t>
 
 <t>A DSO response message may contain no TLVs, or may contain one or more TLVs,
 appropriate to the information being communicated.</t>
@@ -810,7 +811,8 @@ Response Additional TLVs are not limited to what is defined in this document.
 New Response Additional TLVs may be defined in the future.
 Their definitions will describe when their use is appropriate.
 Unrecognized Response Additional TLVs are silently ignored,
-as described in <xref target="unrecognized"/> and <xref target="TLV"/>.</t>
+as described in Sections <xref target="unrecognized" format="counter"/> and <xref
+target="TLV" format="counter"/>.</t>
 
 <t>The specification for each DSO TLV determines
 what TLVs are required in a response to a DSO request message using that TLV.
@@ -1311,11 +1313,15 @@ without there being any operation active on the DSO Session,
 the client MUST close the connection gracefully.</t>
 
 <t>If, at any time during the life of the DSO Session,
-twice the inactivity timeout value (i.e., 30 seconds by default),
-or five seconds if twice the inactivity timeout value is less than five seconds,
+too much time 
 elapses without there being any operation active on the DSO Session,
 then the server MUST consider the client delinquent
-and MUST forcibly abort the DSO Session.</t>
+and MUST forcibly abort the DSO Session.
+What is considered "too much time" in this context is five seconds,
+or twice the current inactivity timeout value, whichever is greater.
+If the inactivity timeout has its default value of 15 seconds,
+this means that a client will be considered delinquent and disconnected
+if it has not closed its connection after 30 seconds of inactivity.</t>
 
 <t>In this context, an operation being active on a DSO Session includes
 a query waiting for a response, an update waiting for a response,
@@ -1907,7 +1913,7 @@ wait before attempting a new connection to this service instance.</t>
 <t>For clients that do in some way modify their behavior depending on the RCODE value,
 they should treat unknown RCODE values the same as RCODE=NOERROR (routine shutdown or restart).</t>
 
-<t>A DSO Retry Delay message (DSO message where the primary TLV is Retry Delay)
+<t>A DSO Retry Delay message (DSO message where the Primary TLV is Retry Delay)
 from server to client is a DSO unidirectional message;
 the MESSAGE ID MUST be set to zero in the outgoing message
 and the client MUST NOT send a response.</t>
