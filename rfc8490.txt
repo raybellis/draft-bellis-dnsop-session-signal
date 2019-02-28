@@ -1498,8 +1498,8 @@ RFC 8490                 DNS Stateful Operations           February 2019
    processing the DSO unidirectional message is implementation dependent
    according to the severity of the error.
 
-   Parsing errors MUST also result in the receiver forcibly aborting the
-   connection.
+
+
 
 
 

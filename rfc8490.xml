@@ -1136,8 +1136,6 @@ Whether the connection should be forcibly aborted for other internal errors proc
 implementation dependent
 according to the severity of the error.</t>
 
-<t>Parsing errors MUST also result in the receiver forcibly aborting the connection.</t>
-
 <t><vspace blankLines='999' /></t>
 
 </section>
