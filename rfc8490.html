@@ -450,7 +450,7 @@
 
   <meta name="dct.creator" content="Bellis, R., Cheshire, S., Dickinson, J., Dickinson, S., Lemon, T., and T. Pusateri" />
   <meta name="dct.identifier" content="urn:ietf:id:" />
-  <meta name="dct.issued" scheme="ISO8601" content="2019-02" />
+  <meta name="dct.issued" scheme="ISO8601" content="2019-03" />
   <meta name="dct.abstract" content="This document defines a new DNS OPCODE for DNS Stateful Operations (DSO).  DSO messages communicate operations within persistent stateful sessions using Type Length Value (TLV) syntax.  Three TLVs are defined that manage session timeouts, termination, and encryption padding, and a framework is defined for extensions to enable new stateful operations.  This document updates RFC 1035 by adding a new DNS header OPCODE that has both different message semantics and a new result code.  This document updates RFC 7766 by redefining a session, providing new guidance on connection reuse, and providing a new mechanism for handling session idle timeouts." />
   <meta name="description" content="This document defines a new DNS OPCODE for DNS Stateful Operations (DSO).  DSO messages communicate operations within persistent stateful sessions using Type Length Value (TLV) syntax.  Three TLVs are defined that manage session timeouts, termination, and encryption padding, and a framework is defined for extensions to enable new stateful operations.  This document updates RFC 1035 by adding a new DNS header OPCODE that has both different message semantics and a new result code.  This document updates RFC 7766 by redefining a session, providing new guidance on connection reuse, and providing a new mechanism for handling session idle timeouts." />
 
@@ -507,7 +507,7 @@
 </tr>
 <tr>
 <td class="left"></td>
-<td class="right">February 2019</td>
+<td class="right">March 2019</td>
 </tr>
 
     	
@@ -677,13 +677,13 @@
   <h1 id="rfc.section.1">
 <a href="#rfc.section.1">1.</a> <a href="#introduction" id="introduction">Introduction</a>
 </h1>
-<p id="rfc.section.1.p.1">This document specifies a mechanism for managing stateful DNS connections.  DNS most commonly operates over a UDP transport, but it can also operate over streaming transports; the original DNS RFC specifies DNS over TCP <a href="#RFC1035" class="xref">[RFC1035]</a>, and a profile for DNS over TLS <a href="#RFC7858" class="xref">[RFC7858]</a> has been specified.  These transports can offer persistent long-lived sessions and therefore, when using them for transporting DNS messages, it is of benefit to have a mechanism that can establish parameters associated with those sessions, such as timeouts.  In such situations, it is also advantageous to support server-initiated messages (such as DNS Push Notifications <a href="#Push" class="xref">[Push]</a>).</p>
+<p id="rfc.section.1.p.1">This document specifies a mechanism for managing stateful DNS connections.  DNS most commonly operates over a UDP transport, but it can also operate over streaming transports; the original DNS RFC specifies DNS-over-TCP <a href="#RFC1035" class="xref">[RFC1035]</a>, and a profile for DNS-over-TLS <a href="#RFC7858" class="xref">[RFC7858]</a> has been specified.  These transports can offer persistent long-lived sessions and therefore, when using them for transporting DNS messages, it is of benefit to have a mechanism that can establish parameters associated with those sessions, such as timeouts.  In such situations, it is also advantageous to support server-initiated messages (such as DNS Push Notifications <a href="#Push" class="xref">[Push]</a>).</p>
 <p id="rfc.section.1.p.2">The existing Extension Mechanism for DNS (EDNS(0)) <a href="#RFC6891" class="xref">[RFC6891]</a> is explicitly defined to only have "per-message" semantics. While EDNS(0) has been used to signal at least one session-related parameter (edns-tcp-keepalive EDNS0 Option <a href="#RFC7828" class="xref">[RFC7828]</a>), the result is less than optimal due to the restrictions imposed by the EDNS(0) semantics and the lack of server-initiated signaling.  For example, a server cannot arbitrarily instruct a client to close a connection because the server can only send EDNS(0) options in responses to queries that contained EDNS(0) options.</p>
 <p id="rfc.section.1.p.3">This document defines a new DNS OPCODE for DNS Stateful Operations (DSO) with a value of 6.  DSO messages are used to communicate operations within persistent stateful sessions, expressed using Type Length Value (TLV) syntax.  This document defines an initial set of three TLVs used to manage session timeouts, termination, and encryption padding.</p>
 <p id="rfc.section.1.p.4">All three TLVs defined here are mandatory for all implementations of DSO.  Further TLVs may be defined in additional specifications.</p>
 <p id="rfc.section.1.p.5">DSO messages may or may not be acknowledged.  Whether a DSO message is to be acknowledged (a DSO request message) or is not to be acknowledged (a DSO unidirectional message) is specified in the definition of that particular DSO message type.  The MESSAGE ID is nonzero for DSO request messages, and zero for DSO unidirectional messages.  Messages are pipelined and responses may appear out of order when multiple requests are being processed concurrently.</p>
 <p id="rfc.section.1.p.6">The format for DSO messages (<a href="#format" class="xref">Section 5.4</a>) differs somewhat from the traditional DNS message format used for standard queries and responses.  The standard twelve-byte header is used, but the four count fields (QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT) are set to zero, and accordingly their corresponding sections are not present.</p>
-<p id="rfc.section.1.p.7">The actual data pertaining to DNS Stateful Operations (expressed in TLV syntax) is appended to the end of the DNS message header.  Just as in traditional DNS over TCP <a href="#RFC1035" class="xref">[RFC1035]</a> <a href="#RFC7766" class="xref">[RFC7766]</a>, the stream protocol carrying DSO messages (which are just another kind of DNS message) frames them by putting a 16-bit message length at the start. The length of the DSO message is therefore determined from that length rather than from any of the DNS header counts.</p>
+<p id="rfc.section.1.p.7">The actual data pertaining to DNS Stateful Operations (expressed in TLV syntax) is appended to the end of the DNS message header.  Just as in traditional DNS-over-TCP <a href="#RFC1035" class="xref">[RFC1035]</a> <a href="#RFC7766" class="xref">[RFC7766]</a>, the stream protocol carrying DSO messages (which are just another kind of DNS message) frames them by putting a 16-bit message length at the start. The length of the DSO message is therefore determined from that length rather than from any of the DNS header counts.</p>
 <p id="rfc.section.1.p.8">When displayed using packet analyzer tools that have not been updated to recognize the DSO format, this will result in the DSO data being displayed as unknown extra data after the end of the DNS message.</p>
 <p id="rfc.section.1.p.9">This new format has distinct advantages over an RR-based format because it is more explicit and more compact. Each TLV definition is specific to its use case and, as a result, contains no redundant or overloaded fields.  Importantly, it completely avoids conflating DNS Stateful Operations in any way with normal DNS operations or with existing EDNS(0)-based functionality.  A goal of this approach is to avoid the operational issues that have befallen EDNS(0), particularly relating to middlebox behavior (see sections discussing EDNS(0), and problems caused by firewalls and load balancers, in the recent work describing causes of DNS failures <a href="#Fail" class="xref">[Fail]</a>).</p>
 <p id="rfc.section.1.p.10">With EDNS(0), multiple options may be packed into a single OPT pseudo-RR, and there is no generalized mechanism for a client to be able to tell whether a server has processed or otherwise acted upon each individual option within the combined OPT pseudo-RR.  The specifications for each individual option need to define how each different option is to be acknowledged, if necessary.</p>
@@ -702,11 +702,11 @@
 <dt>DSO:</dt>
 <dd style="margin-left: 8">DNS Stateful Operations.</dd>
 <dt>connection:</dt>
-<dd style="margin-left: 8">a bidirectional byte (or message) stream, where the bytes (or messages) are delivered reliably and in order, such as provided by using DNS over TCP <a href="#RFC1035" class="xref">[RFC1035]</a> <a href="#RFC7766" class="xref">[RFC7766]</a> or DNS over TLS <a href="#RFC7858" class="xref">[RFC7858]</a>.</dd>
+<dd style="margin-left: 8">a bidirectional byte (or message) stream, where the bytes (or messages) are delivered reliably and in order, such as provided by using DNS-over-TCP <a href="#RFC1035" class="xref">[RFC1035]</a> <a href="#RFC7766" class="xref">[RFC7766]</a> or DNS-over-TLS <a href="#RFC7858" class="xref">[RFC7858]</a>.</dd>
 <dt>session:</dt>
 <dd style="margin-left: 8">the unqualified term "session" in the context of this document refers to a persistent network connection between two endpoints that allows for the exchange of DNS messages over a connection where either end of the connection can send messages to the other end.  (The term has no relationship to the "session layer" of the OSI "seven-layer model".)</dd>
 <dt>DSO Session:</dt>
-<dd style="margin-left: 8">a session established between two endpoints that acknowledge persistent DNS state via the exchange of DSO messages over the connection.  This is distinct from a DNS-over-TCP session as described in the previous specification for DNS over TCP <a href="#RFC7766" class="xref">[RFC7766]</a>.</dd>
+<dd style="margin-left: 8">a session established between two endpoints that acknowledge persistent DNS state via the exchange of DSO messages over the connection.  This is distinct from a DNS-over-TCP session as described in the previous specification for DNS-over-TCP <a href="#RFC7766" class="xref">[RFC7766]</a>.</dd>
 <dt>close gracefully:</dt>
 <dd style="margin-left: 8">a normal session shutdown where the client closes the TCP connection to the server using a graceful close such that no data is lost (e.g., using TCP FIN; see <a href="#sessiontermination" class="xref">Section 5.3</a>).</dd>
 <dt>forcibly abort:</dt>
@@ -789,8 +789,8 @@
 <a href="#rfc.section.4.2">4.2.</a> <a href="#transports" id="transports">Applicable Transports</a>
 </h1>
 <p id="rfc.section.4.2.p.1">DNS Stateful Operations are applicable in cases where it is useful to maintain an open session between a DNS client and server, where the transport allows such a session to be maintained, and where the transport guarantees in-order delivery of messages on which DSO depends.  Two specific transports that meet the requirements to support DNS Stateful Operations are DNS-over-TCP <a href="#RFC1035" class="xref">[RFC1035]</a> <a href="#RFC7766" class="xref">[RFC7766]</a> and DNS-over-TLS <a href="#RFC7858" class="xref">[RFC7858]</a>.</p>
-<p id="rfc.section.4.2.p.2">Note that in the case of DNS over TLS, there is no mechanism for upgrading from DNS-over-TCP to DNS-over-TLS mid-connection (see Section 7 of the DNS-over-TLS specification <a href="#RFC7858" class="xref">[RFC7858]</a>).  A connection is either DNS-over-TCP from the start, or DNS-over-TLS from the start.</p>
-<p id="rfc.section.4.2.p.3">DNS Stateful Operations are not applicable for transports that cannot support clean session semantics or that do not guarantee in-order delivery.   While in principle such a transport could be constructed over UDP, the current specification of DNS over UDP <a href="#RFC1035" class="xref">[RFC1035]</a> does not provide in-order delivery or session semantics and hence cannot be used.  Similarly, DNS-over-HTTP <a href="#RFC8484" class="xref">[RFC8484]</a> cannot be used because HTTP has its own mechanism for managing sessions, which is incompatible with the mechanism specified here.</p>
+<p id="rfc.section.4.2.p.2">Note that in the case of DNS-over-TLS, there is no mechanism for upgrading from DNS-over-TCP to DNS-over-TLS mid-connection (see Section 7 of the DNS-over-TLS specification <a href="#RFC7858" class="xref">[RFC7858]</a>).  A connection is either DNS-over-TCP from the start, or DNS-over-TLS from the start.</p>
+<p id="rfc.section.4.2.p.3">DNS Stateful Operations are not applicable for transports that cannot support clean session semantics or that do not guarantee in-order delivery.   While in principle such a transport could be constructed over UDP, the current specification of DNS-over-UDP <a href="#RFC1035" class="xref">[RFC1035]</a> does not provide in-order delivery or session semantics and hence cannot be used.  Similarly, DNS-over-HTTP <a href="#RFC8484" class="xref">[RFC8484]</a> cannot be used because HTTP has its own mechanism for managing sessions, which is incompatible with the mechanism specified here.</p>
 <p id="rfc.section.4.2.p.4">Only DNS-over-TCP and DNS-over-TLS are currently defined for use with DNS Stateful Operations.  Other transports may be added in the future if they meet the requirements set out in the first paragraph of this section.</p>
 <p></p>
 <h1 id="rfc.section.5">
@@ -850,7 +850,7 @@
 <h1 id="rfc.section.5.2">
 <a href="#rfc.section.5.2">5.2.</a> <a href="#stabops" id="stabops">Operations after DSO Session Establishment</a>
 </h1>
-<p id="rfc.section.5.2.p.1">Once a DSO Session has been established, clients and servers should behave as described in this specification with regard to inactivity timeouts and session termination, not as previously prescribed in the earlier specification for DNS over TCP <a href="#RFC7766" class="xref">[RFC7766]</a>.</p>
+<p id="rfc.section.5.2.p.1">Once a DSO Session has been established, clients and servers should behave as described in this specification with regard to inactivity timeouts and session termination, not as previously prescribed in the earlier specification for DNS-over-TCP <a href="#RFC7766" class="xref">[RFC7766]</a>.</p>
 <p id="rfc.section.5.2.p.2">Because a server that supports DNS Stateful Operations MUST return an RCODE of "NOERROR" when it receives a Keepalive TLV DSO request message, the Keepalive TLV is an ideal candidate for use in establishing a DSO Session.  Any other option that can only succeed when sent to a server of the desired kind is also a good candidate for use in establishing a DSO Session.  For clients that implement only the DSO-TYPEs defined in this base specification, sending a Keepalive TLV is the only DSO request message they have available to initiate a DSO Session.  Even for clients that do implement other future DSO-TYPEs, for simplicity they MAY elect to always send an initial DSO Keepalive request message as their way of initiating a DSO Session.  A future definition of a new response-requiring DSO-TYPE gives implementers the option of using that new DSO-TYPE if they wish, but does not change the fact that sending a Keepalive TLV remains a valid way of initiating a DSO Session.</p>
 <h1 id="rfc.section.5.3">
 <a href="#rfc.section.5.3">5.3.</a> <a href="#sessiontermination" id="sessiontermination">DSO Session Termination</a>
@@ -958,7 +958,7 @@
 <p id="rfc.section.5.4.2.p.4">A DSO response message may contain no TLVs, or may contain one or more TLVs, appropriate to the information being communicated.</p>
 <p id="rfc.section.5.4.2.p.5">Any TLVs with the same DSO-TYPE as the Primary TLV from the corresponding DSO request message are Response Primary TLV(s) and MUST appear first in a DSO response message.  A DSO response message may contain multiple Response Primary TLVs, or a single Response Primary TLV, or in some cases, no Response Primary TLV.  A Response Primary TLV is not required; for most DSO operations the MESSAGE ID field in the DNS message header is sufficient to identify the DSO request message to which a particular response message relates.</p>
 <p id="rfc.section.5.4.2.p.6">Any other TLVs in a DSO response message are Response Additional TLVs, such as the DSO Encryption Padding TLV (<a href="#padding" class="xref">Section 7.3</a>).  Response Additional TLVs follow the Response Primary TLV(s), if present.  Response Additional TLVs are not limited to what is defined in this document.  New Response Additional TLVs may be defined in the future.  Their definitions will describe when their use is appropriate.  Unrecognized Response Additional TLVs are silently ignored, as described in Sections <a href="#unrecognized" class="xref">5.4.5</a> and <a href="#TLV" class="xref">8.2</a>.</p>
-<p id="rfc.section.5.4.2.p.7">The specification for each DSO TLV determines what TLVs are required in a response to a DSO request message using that TLV.  If a DSO response is received for an operation where the specification requires that the response carry a particular TLV or TLVs, and the required TLV(s) are not present, then this is a fatal error and the recipient of the defective response message MUST forcibly abort the connection immediately. Similarly, if more than the specified number of instances of a given TLV are present this is a fatal error and the recipient of the defective response message MUST forcibly abort the connection immediately.</p>
+<p id="rfc.section.5.4.2.p.7">The specification for each DSO TLV determines what TLVs are required in a response to a DSO request message using that TLV.  If a DSO response is received for an operation where the specification requires that the response carry a particular TLV or TLVs, and the required TLV(s) are not present, then this is a fatal error and the recipient of the defective response message MUST forcibly abort the connection immediately. Similarly, if more than the specified number of instances of a given TLV are present, this is a fatal error and the recipient of the defective response message MUST forcibly abort the connection immediately.</p>
 <p></p>
 <h1 id="rfc.section.5.4.3">
 <a href="#rfc.section.5.4.3">5.4.3.</a> <a href="#Unidirectional" id="Unidirectional">DSO Unidirectional Messages</a>
@@ -1385,7 +1385,7 @@
 <h1 id="rfc.section.9.3">
 <a href="#rfc.section.9.3">9.3.</a> <a href="#sharing" id="sharing">Connection Sharing</a>
 </h1>
-<p id="rfc.section.9.3.p.1">As previously specified for DNS over TCP <a href="#RFC7766" class="xref">[RFC7766]</a>:</p>
+<p id="rfc.section.9.3.p.1">As previously specified for DNS-over-TCP <a href="#RFC7766" class="xref">[RFC7766]</a>:</p>
 <pre>
    To mitigate the risk of unintentional server overload, DNS
    clients MUST take care to minimize the number of concurrent
@@ -1549,7 +1549,7 @@
 <h1 id="rfc.section.11">
 <a href="#rfc.section.11">11.</a> <a href="#security-considerations" id="security-considerations">Security Considerations</a>
 </h1>
-<p id="rfc.section.11.p.1">If this mechanism is to be used with DNS over TLS, then these messages are subject to the same constraints as any other DNS-over-TLS messages and MUST NOT be sent in the clear before the TLS session is established.</p>
+<p id="rfc.section.11.p.1">If this mechanism is to be used with DNS-over-TLS, then these messages are subject to the same constraints as any other DNS-over-TLS messages and MUST NOT be sent in the clear before the TLS session is established.</p>
 <p id="rfc.section.11.p.2">The data field of the "Encryption Padding" TLV could be used as a covert channel.</p>
 <p id="rfc.section.11.p.3">When designing new DSO TLVs, the potential for data in the TLV to be used as a tracking identifier should be taken into consideration and should be avoided when not required.</p>
 <p id="rfc.section.11.p.4">When used without TLS or similar cryptographic protection, a malicious entity may be able to inject a malicious unidirectional DSO Retry Delay message into the data stream, specifying an unreasonably large RETRY DELAY, causing a denial-of-service attack against the client.</p>
@@ -1628,7 +1628,7 @@
 <tr>
 <td class="reference"><b id="Fail">[Fail]</b></td>
 <td class="top">
-<a>Andrews, M.</a> and <a>R. Bellis</a>, "<a>A Common Operational Problem in DNS Servers - Failure To Respond</a>", Work in Progress, draft-ietf-dnsop-no-response-issue-12, November 2018.</td>
+<a>Andrews, M.</a> and <a>R. Bellis</a>, "<a>A Common Operational Problem in DNS Servers - Failure To Communicate</a>", Work in Progress, draft-ietf-dnsop-no-response-issue-13, February 2019.</td>
 </tr>
 <tr>
 <td class="reference"><b id="NagleDA">[NagleDA]</b></td>

@@ -118,7 +118,7 @@
       </address>
     </author>
 
-    <date year="2019" month="February"/>
+    <date year="2019" month="March"/>
 
     <area>Internet</area>
     <workgroup>DNSOP Working Group</workgroup>
@@ -147,8 +147,8 @@ idle timeouts.</t>
 
 <t>This document specifies a mechanism for managing stateful DNS connections.
 DNS most commonly operates over a UDP transport, but it can also operate over
-streaming transports; the original DNS RFC specifies DNS over TCP <xref target="RFC1035"/>,
-and a profile for DNS over TLS <xref target="RFC7858"/> has been specified.
+streaming transports; the original DNS RFC specifies DNS-over-TCP <xref target="RFC1035"/>,
+and a profile for DNS-over-TLS <xref target="RFC7858"/> has been specified.
 These transports can offer persistent long-lived sessions and therefore, when
 using them for transporting DNS messages, it is of benefit to have a mechanism
 that can establish parameters associated with those sessions, such as timeouts.
@@ -191,7 +191,7 @@ corresponding sections are not present.</t>
 
 <t>The actual data pertaining to DNS Stateful Operations
 (expressed in TLV syntax) is appended to the end of the DNS message header.
-Just as in traditional DNS over TCP <xref target="RFC1035"/> <xref target="RFC7766"/>,
+Just as in traditional DNS-over-TCP <xref target="RFC1035"/> <xref target="RFC7766"/>,
 the stream protocol carrying DSO messages (which are just another kind of DNS message)
 frames them by putting a 16-bit message length at the start. The length of the
 DSO message is therefore determined from that length rather than from any of
@@ -258,7 +258,7 @@ success or failure of that operation.</t>
   a bidirectional byte (or message) stream,
 where the bytes (or messages) are delivered reliably and in order,
 such as provided by using
-DNS over TCP <xref target="RFC1035"/> <xref target="RFC7766"/> or DNS over TLS <xref target="RFC7858"/>.</t>
+DNS-over-TCP <xref target="RFC1035"/> <xref target="RFC7766"/> or DNS-over-TLS <xref target="RFC7858"/>.</t>
   <t hangText='session:'>
   the unqualified term "session" in the context of this document refers to
 a persistent network connection between two endpoints that allows for
@@ -271,7 +271,7 @@ OSI "seven-layer model".)</t>
   a session established between two endpoints that acknowledge
 persistent DNS state via the exchange of DSO messages over the connection.
 This is distinct from a DNS-over-TCP session as described in
-the previous specification for DNS over TCP <xref target="RFC7766"/>.</t>
+the previous specification for DNS-over-TCP <xref target="RFC7766"/>.</t>
   <t hangText='close gracefully:'>
   a normal session shutdown where the client closes the TCP connection
 to the server using a graceful close such that no data is lost
@@ -407,7 +407,7 @@ Two specific transports that meet the requirements to support DNS Stateful Opera
 DNS-over-TCP <xref target="RFC1035"/> <xref target="RFC7766"/> and
 DNS-over-TLS <xref target="RFC7858"/>.</t>
 
-<t>Note that in the case of DNS over TLS, there is no mechanism for upgrading from DNS-over-TCP
+<t>Note that in the case of DNS-over-TLS, there is no mechanism for upgrading from DNS-over-TCP
 to DNS-over-TLS mid-connection
 (see Section 7 of the DNS-over-TLS specification <xref target="RFC7858"/>).
 A connection is either DNS-over-TCP from the start, or DNS-over-TLS from the start.</t>
@@ -415,7 +415,7 @@ A connection is either DNS-over-TCP from the start, or DNS-over-TLS from the sta
 <t>DNS Stateful Operations are not applicable for transports that cannot
 support clean session
 semantics or that do not guarantee in-order delivery.   While in principle such a transport
-could be constructed over UDP, the current specification of DNS over UDP <xref target="RFC1035"/>
+could be constructed over UDP, the current specification of DNS-over-UDP <xref target="RFC1035"/>
 does not provide in-order delivery or session semantics and hence cannot be used.  Similarly,
 DNS-over-HTTP <xref target="RFC8484"/> cannot be used because HTTP has its own
 mechanism for managing sessions, which is incompatible with the mechanism specified here.</t>
@@ -590,7 +590,7 @@ and therefore either client or server may be the initiator of a message.</t>
 <t>Once a DSO Session has been established,
 clients and servers should behave as described in this specification with
 regard to inactivity timeouts and session termination, not as previously
-prescribed in the earlier specification for DNS over TCP <xref target="RFC7766"/>.</t>
+prescribed in the earlier specification for DNS-over-TCP <xref target="RFC7766"/>.</t>
 
 <t>Because a server that supports DNS Stateful Operations MUST return an RCODE
 of "NOERROR" when it receives a Keepalive TLV DSO request message,
@@ -821,7 +821,7 @@ requires that the response carry a particular TLV or TLVs,
 and the required TLV(s) are not present, then this is a fatal
 error and the recipient of the defective response message MUST
 forcibly abort the connection immediately. Similarly, if more than the
-specified number of instances of a given TLV are present this is a fatal
+specified number of instances of a given TLV are present, this is a fatal
 error and the recipient of the defective response message MUST
 forcibly abort the connection immediately.</t>
 
@@ -2133,7 +2133,7 @@ Stateful Operations.</t>
 </section>
 <section anchor="sharing" title="Connection Sharing">
 
-<t>As previously specified for DNS over TCP <xref target="RFC7766"/>:</t>
+<t>As previously specified for DNS-over-TCP <xref target="RFC7766"/>:</t>
 
 <figure><artwork><![CDATA[
    To mitigate the risk of unintentional server overload, DNS
@@ -2456,7 +2456,7 @@ TLS zero round-trip.  See <xref target="zrtt"/> for details.</t>
 </section>
 <section anchor="security-considerations" title="Security Considerations">
 
-<t>If this mechanism is to be used with DNS over TLS, then these messages
+<t>If this mechanism is to be used with DNS-over-TLS, then these messages
 are subject to the same constraints as any other DNS-over-TLS messages
 and MUST NOT be sent in the clear before the TLS session is established.</t>
 
@@ -2594,16 +2594,16 @@ This threat analysis should be done based on the advice given in Sections 2.3,
 
 <reference anchor="Fail">
 <front>
-<title>A Common Operational Problem in DNS Servers - Failure To Respond</title>
+<title>A Common Operational Problem in DNS Servers - Failure To Communicate</title>
 <author initials='M' surname='Andrews'>
   <organization/>
 </author>
 <author initials='R' surname='Bellis' fullname='Ray Bellis'>
   <organization/>
 </author>
-<date month='November' year='2018'/>
+<date month='February' year='2019'/>
 </front>
-<seriesInfo name='Work in Progress,' value='draft-ietf-dnsop-no-response-issue-12'/>
+<seriesInfo name='Work in Progress,' value='draft-ietf-dnsop-no-response-issue-13'/>
 </reference>
 
 
