@@ -1348,8 +1348,8 @@ should not speculatively maintain idle connections at all, and
 as soon as the client has completed the operation or operations relating
 to this server, the client should immediately begin closing this session.</t>
 
-<t>A server will forcibly abort an idle client session after either twice the
-inactivity timeout value or five seconds, whichever is greater.
+<t>A server will forcibly abort an idle client session after
+five seconds or twice the inactivity timeout value, whichever is greater.
 In the case of a zero inactivity timeout value, this means that
 if a client fails to close an idle client session, then the server
 will forcibly abort the idle session after five seconds.</t>
@@ -1408,7 +1408,7 @@ at the server because clients keep a DSO Session open for the same length of tim
 required.</t>
 
 <t>It may be appropriate for clients and servers to select different keepalive 
-interval values depending on the nature of the network they are on.</t>
+intervals depending on the type of network they are on.</t>
 
 <t>A corporate DNS server that knows it is serving only clients on the internal 
 network, with no intervening NAT gateways or firewalls, can impose a longer
@@ -1496,7 +1496,7 @@ and then killing and restarting the server software,
 which generally entails a loss of network connections.</t>
   <t>The client fails to meet its obligation to generate the required
 DSO keepalive traffic or to close an inactive session by the prescribed time
-(either twice the time interval dictated by the server or five seconds,
+(either five seconds or twice the time interval dictated by the server,
 whichever is greater, as described in <xref target="sessiontimeouts"/>).</t>
   <t>The client sends a grossly invalid or malformed request that
 is indicative of a seriously defective client implementation.</t>
@@ -1606,7 +1606,7 @@ If, after 49.7 days, the DNS or other configuration information
 still indicates that this is the valid service instance for a
 particular service, then clients MAY attempt to reconnect.
 In reality, if a client is rebooted or otherwise loses state, it
-may well attempt to reconnect before 49.7 days elapse, e.g., for as
+may well attempt to reconnect before 49.7 days elapse, for as
 long as the DNS or other configuration information continues to
 indicate that this is the service instance the client should use.</t>
 
@@ -1682,7 +1682,7 @@ a 32-bit unsigned integer, in network (big endian) byte order in units of millis
 This is the timeout at which the client MUST begin closing an inactive DSO Session.
 The inactivity timeout can be any value of the server's choosing.
 If the client does not gracefully close an inactive DSO
-Session, then after either twice this interval or five seconds,
+Session, then after either five seconds or twice this interval,
 whichever is greater, the server will forcibly abort the connection.</t>
   <t hangText='KEEPALIVE INTERVAL:'>
   The keepalive interval for the current DSO Session, specified as
@@ -1811,8 +1811,8 @@ and the client MUST immediately begin closing this DSO Session.
 However, if a server abruptly reduces the inactivity timeout in this
 way, then, to give the client time to close the connection gracefully
 before the server resorts to forcibly aborting it, the server
-SHOULD give the client an additional grace period of either one quarter
-of the new inactivity timeout or five seconds, whichever is greater.</t>
+SHOULD give the client an additional grace period of either
+five seconds or one quarter of the new inactivity timeout, whichever is greater.</t>
 </list></t>
 
 </section>
@@ -1935,8 +1935,6 @@ applies only to the failed operation, not to the DSO Session as a whole.</t>
 whichever is acting in the role of the responder for a particular DSO request message,
 MAY append a Retry Delay TLV to an error response that it sends.</t>
 
-<t><vspace blankLines='999' /></t>
-
 </section>
 </section>
 <section anchor="padding" title="Encryption Padding TLV">
@@ -2028,6 +2026,8 @@ where the DSO-TYPE of the Response TLV matches the DSO-TYPE of the Primary TLV i
 (in response to a client "C-P" request with nonzero MESSAGE ID indicating that a response is required)
 where the DSO-TYPE of the Response TLV does not match the DSO-TYPE of the Primary TLV in the request.</t>
 </list></t>
+
+<t><vspace blankLines='999' /></t>
 
 <t>The second five contexts are their counterparts in the opposite direction:
 DSO requests or DSO unidirectional messages from server to client, and the corresponding responses from client back to server.</t>

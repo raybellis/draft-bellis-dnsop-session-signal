@@ -1110,7 +1110,7 @@
 <p id="rfc.section.6.4.2.p.1">For the inactivity timeout value, lower values result in more frequent DSO Session teardowns and re-establishments.  Higher values result in lower traffic and a lower CPU load on the server, but a higher memory burden to maintain state for inactive DSO Sessions.</p>
 <p id="rfc.section.6.4.2.p.2">A server may dictate any value it chooses for the inactivity timeout (either in a response to a client-initiated request or in a server-initiated message) including values under one second, or even zero.</p>
 <p id="rfc.section.6.4.2.p.3">An inactivity timeout of zero informs the client that it should not speculatively maintain idle connections at all, and as soon as the client has completed the operation or operations relating to this server, the client should immediately begin closing this session.</p>
-<p id="rfc.section.6.4.2.p.4">A server will forcibly abort an idle client session after either twice the inactivity timeout value or five seconds, whichever is greater.  In the case of a zero inactivity timeout value, this means that if a client fails to close an idle client session, then the server will forcibly abort the idle session after five seconds.</p>
+<p id="rfc.section.6.4.2.p.4">A server will forcibly abort an idle client session after five seconds or twice the inactivity timeout value, whichever is greater.  In the case of a zero inactivity timeout value, this means that if a client fails to close an idle client session, then the server will forcibly abort the idle session after five seconds.</p>
 <p id="rfc.section.6.4.2.p.5">An inactivity timeout of 0xFFFFFFFF represents "infinity" and informs the client that it may keep an idle connection open as long as it wishes.  Note that after granting an unlimited inactivity timeout in this way, at any point the server may revise that inactivity timeout by sending a new DSO Keepalive message dictating new Session Timeout values to the client.</p>
 <p id="rfc.section.6.4.2.p.6">The largest <strong>finite</strong> inactivity timeout supported by the current Keepalive TLV is 0xFFFFFFFE (2^32-2 milliseconds, approximately 49.7 days).</p>
 <p></p>
@@ -1127,7 +1127,7 @@
 <a href="#rfc.section.6.5.2">6.5.2.</a> <a href="#values-for-the-keepalive-interval" id="values-for-the-keepalive-interval">Values for the Keepalive Interval</a>
 </h1>
 <p id="rfc.section.6.5.2.p.1">For the keepalive interval value, lower values result in a higher volume of DSO keepalive traffic. Higher values of the keepalive interval reduce traffic and the CPU load, but have minimal effect on the memory burden at the server because clients keep a DSO Session open for the same length of time (determined by the inactivity timeout) regardless of the level of DSO keepalive traffic required.</p>
-<p id="rfc.section.6.5.2.p.2">It may be appropriate for clients and servers to select different keepalive interval values depending on the nature of the network they are on.</p>
+<p id="rfc.section.6.5.2.p.2">It may be appropriate for clients and servers to select different keepalive intervals depending on the type of network they are on.</p>
 <p id="rfc.section.6.5.2.p.3">A corporate DNS server that knows it is serving only clients on the internal network, with no intervening NAT gateways or firewalls, can impose a longer keepalive interval because frequent DSO keepalive traffic is not required.</p>
 <p id="rfc.section.6.5.2.p.4">A public DNS server that is serving primarily residential consumer clients, where it is likely there will be a NAT gateway on the path, may impose a shorter keepalive interval to generate more frequent DSO keepalive traffic.</p>
 <p id="rfc.section.6.5.2.p.5">A smart client may be adaptive to its environment. A client using a private IPv4 address <a href="#RFC1918" class="xref">[RFC1918]</a> to communicate with a DNS server at an address outside that IPv4 private address block may conclude that there is likely to be a NAT gateway on the path, and accordingly request a shorter keepalive interval.</p>
@@ -1148,7 +1148,7 @@
 <li>The server application software or underlying operating system is shutting down or restarting.</li>
 <li>The server application software terminates unexpectedly (perhaps due to a bug that makes it crash, causing the underlying operating system to send a TCP RST).</li>
 <li>The server is undergoing a reconfiguration or maintenance procedure that, due to the way the server software is implemented, requires clients to be disconnected.  For example, some software is implemented such that it reads a configuration file at startup, and changing the server's configuration entails modifying the configuration file and then killing and restarting the server software, which generally entails a loss of network connections.</li>
-<li>The client fails to meet its obligation to generate the required DSO keepalive traffic or to close an inactive session by the prescribed time (either twice the time interval dictated by the server or five seconds, whichever is greater, as described in <a href="#sessiontimeouts" class="xref">Section 6.2</a>).</li>
+<li>The client fails to meet its obligation to generate the required DSO keepalive traffic or to close an inactive session by the prescribed time (either five seconds or twice the time interval dictated by the server, whichever is greater, as described in <a href="#sessiontimeouts" class="xref">Section 6.2</a>).</li>
 <li>The client sends a grossly invalid or malformed request that is indicative of a seriously defective client implementation.</li>
 <li>The server is over capacity and needs to shed some load.</li>
 </ul>
@@ -1177,7 +1177,7 @@
 </h1>
 <p id="rfc.section.6.6.3.p.1">After a DSO Session is ended by the server (either by sending the client a DSO Retry Delay message or by forcibly aborting the underlying transport connection), the client SHOULD try to reconnect to that service instance or to another suitable service instance if more than one is available.  If reconnecting to the same service instance, the client MUST respect the indicated delay, if available, before attempting to reconnect.   Clients SHOULD NOT attempt to randomize the delay; the server will randomly jitter the retry delay values it sends to each client if this behavior is desired.</p>
 <p id="rfc.section.6.6.3.p.2">If a particular service instance will only be out of service for a short maintenance period, it should indicate a retry delay value that is a little longer than the expected maintenance window.  It should not default to a very large delay value, or clients may not attempt to reconnect promptly after it resumes service.</p>
-<p id="rfc.section.6.6.3.p.3">If a service instance does not want a client to reconnect ever (perhaps the service instance is being decommissioned), it SHOULD set the retry delay to the maximum value 0xFFFFFFFF (2^32-1 milliseconds, approximately 49.7 days).  It is not possible to instruct a client to stay away for longer than 49.7 days.  If, after 49.7 days, the DNS or other configuration information still indicates that this is the valid service instance for a particular service, then clients MAY attempt to reconnect.  In reality, if a client is rebooted or otherwise loses state, it may well attempt to reconnect before 49.7 days elapse, e.g., for as long as the DNS or other configuration information continues to indicate that this is the service instance the client should use.</p>
+<p id="rfc.section.6.6.3.p.3">If a service instance does not want a client to reconnect ever (perhaps the service instance is being decommissioned), it SHOULD set the retry delay to the maximum value 0xFFFFFFFF (2^32-1 milliseconds, approximately 49.7 days).  It is not possible to instruct a client to stay away for longer than 49.7 days.  If, after 49.7 days, the DNS or other configuration information still indicates that this is the valid service instance for a particular service, then clients MAY attempt to reconnect.  In reality, if a client is rebooted or otherwise loses state, it may well attempt to reconnect before 49.7 days elapse, for as long as the DNS or other configuration information continues to indicate that this is the service instance the client should use.</p>
 <h1 id="rfc.section.6.6.3.1">
 <a href="#rfc.section.6.6.3.1">6.6.3.1.</a> <a href="#forcereconnect" id="forcereconnect">Reconnecting After a Forcible Abort</a>
 </h1>
@@ -1214,7 +1214,7 @@
 
 <dl>
 <dt>INACTIVITY TIMEOUT:</dt>
-<dd style="margin-left: 8">The inactivity timeout for the current DSO Session, specified as a 32-bit unsigned integer, in network (big endian) byte order in units of milliseconds.  This is the timeout at which the client MUST begin closing an inactive DSO Session.  The inactivity timeout can be any value of the server's choosing.  If the client does not gracefully close an inactive DSO Session, then after either twice this interval or five seconds, whichever is greater, the server will forcibly abort the connection.</dd>
+<dd style="margin-left: 8">The inactivity timeout for the current DSO Session, specified as a 32-bit unsigned integer, in network (big endian) byte order in units of milliseconds.  This is the timeout at which the client MUST begin closing an inactive DSO Session.  The inactivity timeout can be any value of the server's choosing.  If the client does not gracefully close an inactive DSO Session, then after either five seconds or twice this interval, whichever is greater, the server will forcibly abort the connection.</dd>
 <dt>KEEPALIVE INTERVAL:</dt>
 <dd style="margin-left: 8">The keepalive interval for the current DSO Session, specified as a 32-bit unsigned integer, in network (big endian) byte order in units of milliseconds.  This is the interval at which a client MUST generate DSO keepalive traffic to maintain connection state.  The keepalive interval MUST NOT be less than ten seconds.  If the client does not generate the mandated DSO keepalive traffic, then after twice this interval the server will forcibly abort the connection.  Since the minimum allowed keepalive interval is ten seconds, the minimum time at which a server will forcibly disconnect a client for failing to generate the mandated DSO keepalive traffic is twenty seconds.</dd>
 </dl>
@@ -1236,7 +1236,7 @@
 <li>If the current inactivity timer value is less than the new inactivity timeout, then the DSO Session may remain open for now.  When the inactivity timer value reaches the new inactivity timeout, the client MUST then begin closing the DSO Session as described above.</li>
 <li>If the current inactivity timer value is equal to the new inactivity timeout, then this DSO Session has been inactive for exactly as long as the server will permit, and now the client MUST immediately begin closing this DSO Session.</li>
 <li>If the current inactivity timer value is already greater than the new inactivity timeout, then this DSO Session has already been inactive for longer than the server permits, and the client MUST immediately begin closing this DSO Session.</li>
-<li>If the current inactivity timer value is already more than twice the new inactivity timeout, then the client is immediately considered delinquent (this DSO Session is immediately eligible to be forcibly terminated by the server) and the client MUST immediately begin closing this DSO Session.  However, if a server abruptly reduces the inactivity timeout in this way, then, to give the client time to close the connection gracefully before the server resorts to forcibly aborting it, the server SHOULD give the client an additional grace period of either one quarter of the new inactivity timeout or five seconds, whichever is greater.</li>
+<li>If the current inactivity timer value is already more than twice the new inactivity timeout, then the client is immediately considered delinquent (this DSO Session is immediately eligible to be forcibly terminated by the server) and the client MUST immediately begin closing this DSO Session.  However, if a server abruptly reduces the inactivity timeout in this way, then, to give the client time to close the connection gracefully before the server resorts to forcibly aborting it, the server SHOULD give the client an additional grace period of either five seconds or one quarter of the new inactivity timeout, whichever is greater.</li>
 </ul>
 <h1 id="rfc.section.7.1.2">
 <a href="#rfc.section.7.1.2">7.1.2.</a> <a href="#edns0keepalive" id="edns0keepalive">Relationship to edns-tcp-keepalive EDNS0 Option</a>
@@ -1286,7 +1286,6 @@
 <p id="rfc.section.7.2.2.p.1">In the case of a DSO request message that results in a nonzero RCODE value, the responder MAY append a Retry Delay TLV to the response, indicating the time interval during which the initiator SHOULD NOT attempt this operation again.</p>
 <p id="rfc.section.7.2.2.p.2">The indicated time interval during which the initiator SHOULD NOT retry applies only to the failed operation, not to the DSO Session as a whole.</p>
 <p id="rfc.section.7.2.2.p.3">Either a client or a server, whichever is acting in the role of the responder for a particular DSO request message, MAY append a Retry Delay TLV to an error response that it sends.</p>
-<p></p>
 <h1 id="rfc.section.7.3">
 <a href="#rfc.section.7.3">7.3.</a> <a href="#padding" id="padding">Encryption Padding TLV</a>
 </h1>
@@ -1340,7 +1339,8 @@
 <li>CRP - Response Primary TLV, included in response message sent back to the client (in response to a client "C-P" request with nonzero MESSAGE ID indicating that a response is required) where the DSO-TYPE of the Response TLV matches the DSO-TYPE of the Primary TLV in the request.</li>
 <li>CRA - Response Additional TLV, included in response message sent back to the client (in response to a client "C-P" request with nonzero MESSAGE ID indicating that a response is required) where the DSO-TYPE of the Response TLV does not match the DSO-TYPE of the Primary TLV in the request.</li>
 </ul>
-<p id="rfc.section.8.2.p.4">The second five contexts are their counterparts in the opposite direction: DSO requests or DSO unidirectional messages from server to client, and the corresponding responses from client back to server.</p>
+<p></p>
+<p id="rfc.section.8.2.p.5">The second five contexts are their counterparts in the opposite direction: DSO requests or DSO unidirectional messages from server to client, and the corresponding responses from client back to server.</p>
 <p></p>
 
 <ul>
@@ -1361,7 +1361,7 @@
 | Padding    |            X         X  |            X         X  |
 +------------+-------------------------+-------------------------+
 </pre>
-<p id="rfc.section.8.2.p.6">Note that some of the columns in this table are currently empty.  The table provides a template for future TLV definitions to follow.  It is recommended that definitions of future TLVs include a similar table summarizing the contexts where the new TLV is valid.</p>
+<p id="rfc.section.8.2.p.7">Note that some of the columns in this table are currently empty.  The table provides a template for future TLV definitions to follow.  It is recommended that definitions of future TLVs include a similar table summarizing the contexts where the new TLV is valid.</p>
 <p></p>
 <h1 id="rfc.section.9">
 <a href="#rfc.section.9">9.</a> <a href="#additional-considerations" id="additional-considerations">Additional Considerations</a>
