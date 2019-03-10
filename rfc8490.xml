@@ -1407,10 +1407,8 @@ at the server because clients keep a DSO Session open for the same length of tim
 (determined by the inactivity timeout) regardless of the level of DSO keepalive traffic 
 required.</t>
 
-<t>
-  It may be appropriate for clients and servers to select different
-  keepalive intervals depending on the type of network they are on.
-</t>
+<t>It may be appropriate for clients and servers to select different keepalive 
+intervals depending on the type of network they are on.</t>
 
 <t>A corporate DNS server that knows it is serving only clients on the internal 
 network, with no intervening NAT gateways or firewalls, can impose a longer
@@ -1608,7 +1606,7 @@ If, after 49.7 days, the DNS or other configuration information
 still indicates that this is the valid service instance for a
 particular service, then clients MAY attempt to reconnect.
 In reality, if a client is rebooted or otherwise loses state, it
-may well attempt to reconnect before 49.7 days elapse for as
+may well attempt to reconnect before 49.7 days elapse, for as
 long as the DNS or other configuration information continues to
 indicate that this is the service instance the client should use.</t>
 
@@ -1937,8 +1935,6 @@ applies only to the failed operation, not to the DSO Session as a whole.</t>
 whichever is acting in the role of the responder for a particular DSO request message,
 MAY append a Retry Delay TLV to an error response that it sends.</t>
 
-<t><vspace blankLines='999' /></t>
-
 </section>
 </section>
 <section anchor="padding" title="Encryption Padding TLV">
@@ -2028,6 +2024,8 @@ where the DSO-TYPE of the Response TLV matches the DSO-TYPE of the Primary TLV i
 (in response to a client "C-P" request with nonzero MESSAGE ID indicating that a response is required)
 where the DSO-TYPE of the Response TLV does not match the DSO-TYPE of the Primary TLV in the request.</t>
 </list></t>
+
+<t><vspace blankLines='999' /></t>
 
 <t>The second five contexts are their counterparts in the opposite direction:
 DSO requests or DSO unidirectional messages from server to client, and the corresponding responses from client back to server.</t>

@@ -128,27 +128,27 @@ RFC 8490                 DNS Stateful Operations              March 2019
      7.2.  Retry Delay TLV . . . . . . . . . . . . . . . . . . . . .  44
        7.2.1.  Retry Delay TLV Used as a Primary TLV . . . . . . . .  44
        7.2.2.  Retry Delay TLV Used as a Response Additional TLV . .  46
-     7.3.  Encryption Padding TLV  . . . . . . . . . . . . . . . . .  47
+     7.3.  Encryption Padding TLV  . . . . . . . . . . . . . . . . .  46
    8.  Summary Highlights  . . . . . . . . . . . . . . . . . . . . .  47
      8.1.  QR Bit and MESSAGE ID . . . . . . . . . . . . . . . . . .  47
-     8.2.  TLV Usage . . . . . . . . . . . . . . . . . . . . . . . .  49
-   9.  Additional Considerations . . . . . . . . . . . . . . . . . .  51
-     9.1.  Service Instances . . . . . . . . . . . . . . . . . . . .  51
-     9.2.  Anycast Considerations  . . . . . . . . . . . . . . . . .  52
-     9.3.  Connection Sharing  . . . . . . . . . . . . . . . . . . .  53
-     9.4.  Operational Considerations for Middleboxes  . . . . . . .  54
-     9.5.  TCP Delayed Acknowledgement Considerations  . . . . . . .  55
-   10. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  58
-     10.1.  DSO OPCODE Registration  . . . . . . . . . . . . . . . .  58
-     10.2.  DSO RCODE Registration . . . . . . . . . . . . . . . . .  58
-     10.3.  DSO Type Code Registry . . . . . . . . . . . . . . . . .  58
-   11. Security Considerations . . . . . . . . . . . . . . . . . . .  60
-     11.1.  TLS Zero Round-Trip Considerations . . . . . . . . . . .  60
-   12. References  . . . . . . . . . . . . . . . . . . . . . . . . .  61
-     12.1.  Normative References . . . . . . . . . . . . . . . . . .  61
-     12.2.  Informative References . . . . . . . . . . . . . . . . .  62
-   Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . .  64
-   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  64
+     8.2.  TLV Usage . . . . . . . . . . . . . . . . . . . . . . . .  48
+   9.  Additional Considerations . . . . . . . . . . . . . . . . . .  50
+     9.1.  Service Instances . . . . . . . . . . . . . . . . . . . .  50
+     9.2.  Anycast Considerations  . . . . . . . . . . . . . . . . .  51
+     9.3.  Connection Sharing  . . . . . . . . . . . . . . . . . . .  52
+     9.4.  Operational Considerations for Middleboxes  . . . . . . .  53
+     9.5.  TCP Delayed Acknowledgement Considerations  . . . . . . .  54
+   10. IANA Considerations . . . . . . . . . . . . . . . . . . . . .  57
+     10.1.  DSO OPCODE Registration  . . . . . . . . . . . . . . . .  57
+     10.2.  DSO RCODE Registration . . . . . . . . . . . . . . . . .  57
+     10.3.  DSO Type Code Registry . . . . . . . . . . . . . . . . .  57
+   11. Security Considerations . . . . . . . . . . . . . . . . . . .  59
+     11.1.  TLS Zero Round-Trip Considerations . . . . . . . . . . .  59
+   12. References  . . . . . . . . . . . . . . . . . . . . . . . . .  60
+     12.1.  Normative References . . . . . . . . . . . . . . . . . .  60
+     12.2.  Informative References . . . . . . . . . . . . . . . . .  61
+   Acknowledgements  . . . . . . . . . . . . . . . . . . . . . . . .  63
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .  63
 
 1.  Introduction
 
@@ -2145,9 +2145,9 @@ RFC 8490                 DNS Stateful Operations              March 2019
    valid service instance for a particular service, then clients MAY
    attempt to reconnect.  In reality, if a client is rebooted or
    otherwise loses state, it may well attempt to reconnect before 49.7
-   days elapse for as long as the DNS or other configuration information
-   continues to indicate that this is the service instance the client
-   should use.
+   days elapse, for as long as the DNS or other configuration
+   information continues to indicate that this is the service instance
+   the client should use.
 
 6.6.3.1.  Reconnecting after a Forcible Abort
 
@@ -2539,47 +2539,6 @@ RFC 8490                 DNS Stateful Operations              March 2019
    responder for a particular DSO request message, MAY append a Retry
    Delay TLV to an error response that it sends.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Bellis, et al.               Standards Track                   [Page 46]
-
-RFC 8490                 DNS Stateful Operations              March 2019
-
-
 7.3.  Encryption Padding TLV
 
    The Encryption Padding TLV (DSO-TYPE=3) can only be used as an
@@ -2614,6 +2573,13 @@ RFC 8490                 DNS Stateful Operations              March 2019
    and is a function of current best practices with respect to the type
    and length of data in the preceding TLVs [RFC8467].
 
+
+
+Bellis, et al.               Standards Track                   [Page 46]
+
+RFC 8490                 DNS Stateful Operations              March 2019
+
+
 8.  Summary Highlights
 
    This section summarizes some noteworthy highlights about various
@@ -2626,15 +2592,6 @@ RFC 8490                 DNS Stateful Operations              March 2019
 
    In DSO response messages, the QR bit is 1 and the MESSAGE ID is
    nonzero.
-
-
-
-
-
-Bellis, et al.               Standards Track                   [Page 47]
-
-RFC 8490                 DNS Stateful Operations              March 2019
-
 
    In DSO unidirectional messages, the QR bit is 0 and the MESSAGE ID is
    zero.
@@ -2674,20 +2631,7 @@ RFC 8490                 DNS Stateful Operations              March 2019
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-Bellis, et al.               Standards Track                   [Page 48]
+Bellis, et al.               Standards Track                   [Page 47]
 
 RFC 8490                 DNS Stateful Operations              March 2019
 
@@ -2724,6 +2668,30 @@ RFC 8490                 DNS Stateful Operations              March 2019
       the DSO-TYPE of the Response TLV does not match the DSO-TYPE of
       the Primary TLV in the request.
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Bellis, et al.               Standards Track                   [Page 48]
+
+RFC 8490                 DNS Stateful Operations              March 2019
+
+
    The second five contexts are their counterparts in the opposite
    direction: DSO requests or DSO unidirectional messages from server to
    client, and the corresponding responses from client back to server.
@@ -2738,15 +2706,6 @@ RFC 8490                 DNS Stateful Operations              March 2019
 
    o  S-A - Additional TLV, optionally added to a DSO request message or
       DSO unidirectional message from server to client.
-
-
-
-
-
-Bellis, et al.               Standards Track                   [Page 49]
-
-RFC 8490                 DNS Stateful Operations              March 2019
-
 
    o  SRP - Response Primary TLV, included in response message sent back
       to the server (in response to a server "S-P" request with nonzero
@@ -2784,22 +2743,7 @@ RFC 8490                 DNS Stateful Operations              March 2019
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Bellis, et al.               Standards Track                   [Page 50]
+Bellis, et al.               Standards Track                   [Page 49]
 
 RFC 8490                 DNS Stateful Operations              March 2019
 
@@ -2855,7 +2799,7 @@ RFC 8490                 DNS Stateful Operations              March 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 51]
+Bellis, et al.               Standards Track                   [Page 50]
 
 RFC 8490                 DNS Stateful Operations              March 2019
 
@@ -2911,7 +2855,7 @@ RFC 8490                 DNS Stateful Operations              March 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 52]
+Bellis, et al.               Standards Track                   [Page 51]
 
 RFC 8490                 DNS Stateful Operations              March 2019
 
@@ -2967,7 +2911,7 @@ RFC 8490                 DNS Stateful Operations              March 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 53]
+Bellis, et al.               Standards Track                   [Page 52]
 
 RFC 8490                 DNS Stateful Operations              March 2019
 
@@ -3023,7 +2967,7 @@ RFC 8490                 DNS Stateful Operations              March 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 54]
+Bellis, et al.               Standards Track                   [Page 53]
 
 RFC 8490                 DNS Stateful Operations              March 2019
 
@@ -3079,7 +3023,7 @@ RFC 8490                 DNS Stateful Operations              March 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 55]
+Bellis, et al.               Standards Track                   [Page 54]
 
 RFC 8490                 DNS Stateful Operations              March 2019
 
@@ -3135,7 +3079,7 @@ RFC 8490                 DNS Stateful Operations              March 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 56]
+Bellis, et al.               Standards Track                   [Page 55]
 
 RFC 8490                 DNS Stateful Operations              March 2019
 
@@ -3191,7 +3135,7 @@ RFC 8490                 DNS Stateful Operations              March 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 57]
+Bellis, et al.               Standards Track                   [Page 56]
 
 RFC 8490                 DNS Stateful Operations              March 2019
 
@@ -3247,7 +3191,7 @@ RFC 8490                 DNS Stateful Operations              March 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 58]
+Bellis, et al.               Standards Track                   [Page 57]
 
 RFC 8490                 DNS Stateful Operations              March 2019
 
@@ -3303,7 +3247,7 @@ RFC 8490                 DNS Stateful Operations              March 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 59]
+Bellis, et al.               Standards Track                   [Page 58]
 
 RFC 8490                 DNS Stateful Operations              March 2019
 
@@ -3359,7 +3303,7 @@ RFC 8490                 DNS Stateful Operations              March 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 60]
+Bellis, et al.               Standards Track                   [Page 59]
 
 RFC 8490                 DNS Stateful Operations              March 2019
 
@@ -3415,7 +3359,7 @@ RFC 8490                 DNS Stateful Operations              March 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 61]
+Bellis, et al.               Standards Track                   [Page 60]
 
 RFC 8490                 DNS Stateful Operations              March 2019
 
@@ -3471,7 +3415,7 @@ RFC 8490                 DNS Stateful Operations              March 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 62]
+Bellis, et al.               Standards Track                   [Page 61]
 
 RFC 8490                 DNS Stateful Operations              March 2019
 
@@ -3527,7 +3471,7 @@ RFC 8490                 DNS Stateful Operations              March 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 63]
+Bellis, et al.               Standards Track                   [Page 62]
 
 RFC 8490                 DNS Stateful Operations              March 2019
 
@@ -3583,7 +3527,7 @@ Authors' Addresses
 
 
 
-Bellis, et al.               Standards Track                   [Page 64]
+Bellis, et al.               Standards Track                   [Page 63]
 
 RFC 8490                 DNS Stateful Operations              March 2019
 
@@ -3639,4 +3583,4 @@ RFC 8490                 DNS Stateful Operations              March 2019
 
 
 
-Bellis, et al.               Standards Track                   [Page 65]
+Bellis, et al.               Standards Track                   [Page 64]
