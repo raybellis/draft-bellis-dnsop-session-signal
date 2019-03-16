@@ -136,12 +136,13 @@ has both different message semantics and a new result code.  This document
 updates RFC 7766 by redefining a session, providing new guidance on
 connection reuse, and providing a new mechanism for handling session
 idle timeouts.</t>
+<t><vspace blankLines='1' /></t>
     </abstract>
 
   </front>
 
   <middle>
-
+<?rfc needLines="24" ?>
 
 <section anchor="introduction" title="Introduction">
 
@@ -157,7 +158,7 @@ In such situations, it is also advantageous to support server-initiated messages
 
 <t>The existing Extension Mechanism for DNS (EDNS(0)) <xref target="RFC6891"/> is explicitly
 defined to only have "per-message" semantics. While EDNS(0) has been used to
-signal at least one session-related parameter (edns-tcp-keepalive EDNS0 Option
+signal at least one session-related parameter (edns-tcp-keepalive EDNS(0) Option
 <xref target="RFC7828"/>), the result is less than optimal due to the restrictions
 imposed by the EDNS(0) semantics and the lack of server-initiated signaling. 
 For example, a server cannot arbitrarily 
@@ -233,6 +234,7 @@ Each DSO request message communicates just one primary operation,
 and the RCODE in the corresponding response message indicates the
 success or failure of that operation.</t>
 
+<?rfc needLines="24" ?>
 </section>
 <section anchor="requirements-language" title="Requirements Language">
 
@@ -243,10 +245,6 @@ success or failure of that operation.</t>
     described in BCP&nbsp;14 <xref target="RFC2119"/> <xref target="RFC8174"/> 
     when, and only when, they appear in all capitals, as shown here.
         </t>
-
-
-
-<t><vspace blankLines='999' /></t>
 
 </section>
 <section anchor="terminology" title="Terminology">
@@ -371,7 +369,7 @@ great use in the
 general management of persistent connections. For example, using DSO Sessions 
 for stub-to-recursive DNS-over-TLS <xref target="RFC7858"/> is more flexible for both the 
 client and the server than attempting to manage sessions using just the
-edns-tcp-keepalive EDNS0 Option <xref target="RFC7828"/>.
+edns-tcp-keepalive EDNS(0) Option <xref target="RFC7828"/>.
 The simple set of TLVs defined in this document is
 sufficient to greatly enhance connection management for this use case.</t>
 
@@ -464,6 +462,7 @@ in response to messages they receive (<xref target="stabops"/>).   The inactivit
 active; the keepalive timer (<xref target="keepalivetimer"/>) is active.
 Standard DNS-over-TCP inactivity timeout handling is no longer in effect <xref
 target="RFC7766"/> (see <xref target="edns0keepalive"/> of this document).</t>
+<?rfc needLines="6" ?>
   <t hangText='Server Shutdown:'>
   The server has decided to gracefully terminate the session and has sent the client
 a Retry Delay message (<xref target="retry"/>).   There may still be unprocessed messages from the client;
@@ -554,14 +553,18 @@ doesn't recognize the DSO OPCODE, two other possible outcomes exist:
 the server might send no response to the DSO message, or
 the server might drop the connection.</t>
 
-<t>If the server sends no response to the DSO message,
-the client SHOULD wait 30 seconds, after which time the server will
-be assumed not to support DSO.  
-
-If the server doesn't respond within 30 seconds, the client MUST
-forcibly abort the connection to the server since the server's behavior does not conform to the specification, and
-hence its state is undefined.  The client MAY reconnect, but not use DSO, if
-appropriate (<xref target="forcereconnect"/>).</t>
+<t>If the server sends no response to the DSO message, the client SHOULD
+   wait 30 seconds, after which time the server will be assumed not to
+   support DSO.  If the server doesn't respond within 30 seconds, it can
+   be assumed that it is not going to respond; this leaves it in an
+   unspecified state: there is no specification requiring that a
+   response be sent to an unknown message, but there is also no
+   specification stating what state the server is in if no response is
+   sent.  Therefore the client MUST forcibly abort the connection to the
+   server.  The client MAY reconnect, but not use DSO, if appropriate
+   (<xref target="forcereconnect"/>).  By disconnecting and reconnecting, the client
+   ensures that the server is in a known state before sending any
+   subsequent requests.</t>
 
 <t>If the server drops the connection
 the client SHOULD mark that service instance as not supporting DSO, and not
@@ -648,8 +651,6 @@ beyond what is reasonable to expect software to recover from.
 This document describes this latter form of error condition as a
 "fatal error" and specifies that an implementation encountering
 a fatal error condition "MUST forcibly abort the connection immediately".</t>
-
-<t><vspace blankLines='999' /></t>
 
 </section>
 </section>
@@ -987,10 +988,10 @@ and Update <xref target="RFC2136"/>. These messages can carry EDNS(0) and TSIG r
 
 <t>Although messages may contain other EDNS(0) options as appropriate,
 this specification explicitly prohibits use of the
-edns-tcp-keepalive EDNS0 Option <xref target="RFC7828"/>
+edns-tcp-keepalive EDNS(0) Option <xref target="RFC7828"/>
 in <spanx style="strong">any</spanx> messages sent on a DSO Session (because it is obsoleted by
 the functionality provided by the DSO Keepalive operation).
-If any message sent on a DSO Session contains an edns-tcp-keepalive EDNS0 option,
+If any message sent on a DSO Session contains an edns-tcp-keepalive EDNS(0) Option,
 this is a fatal error and the recipient of the defective message MUST
 forcibly abort the connection immediately.</t>
 
@@ -1592,6 +1593,7 @@ if available, before attempting to reconnect.   Clients SHOULD NOT attempt to ra
 the server will randomly jitter the retry delay values it sends to each client if this behavior is
 desired.</t>
 
+<?rfc needLines="6" ?>
 <t>If a particular service instance will only be out of service for a short maintenance period,
 it should indicate a retry delay value that is a little longer than the expected maintenance window.
 It should not default to a very large delay value, or clients may
@@ -1816,18 +1818,18 @@ of the new inactivity timeout, whichever is greater.</t>
 </list></t>
 
 </section>
-<section anchor="edns0keepalive" title="Relationship to edns-tcp-keepalive EDNS0 Option">
+<section anchor="edns0keepalive" title="Relationship to edns-tcp-keepalive EDNS(0) Option">
 
 <t>The inactivity timeout value in the Keepalive TLV (DSO-TYPE=1) has
-similar intent to the edns-tcp-keepalive EDNS0 Option <xref target="RFC7828"/>. A
+similar intent to the edns-tcp-keepalive EDNS(0) Option <xref target="RFC7828"/>. A
 client/server pair that supports DSO MUST NOT use the edns-tcp-keepalive
-EDNS0 Option within any message after a DSO Session has been
+EDNS(0) Option within any message after a DSO Session has been
 established. A client that has sent a DSO message to establish a
-session MUST NOT send an edns-tcp-keepalive EDNS0 Option from this
+session MUST NOT send an edns-tcp-keepalive EDNS(0) Option from this
 point on. Once a DSO Session has been established, if either client
 or server receives a DNS message over the DSO Session that contains
-an edns-tcp-keepalive EDNS0 Option, this is a fatal error and the
-receiver of the edns-tcp-keepalive EDNS0 Option MUST forcibly abort
+an edns-tcp-keepalive EDNS(0) Option, this is a fatal error and the
+receiver of the edns-tcp-keepalive EDNS(0) Option MUST forcibly abort
 the connection immediately.</t>
 
 </section>
@@ -1876,7 +1878,8 @@ SHOULD indicate the principal reason for the termination:</t>
   <t>REFUSED indicates that the server has been reconfigured,
 and at this time it is now unable to perform one or more
 of the long-lived client operations that were previously being performed on this DSO Session.</t>
-  <t>NOTAUTH indicates that the server has been reconfigured
+<?rfc needLines="6" ?>
+<t>NOTAUTH indicates that the server has been reconfigured
 and at this time it is now unable to perform one or more
 of the long-lived client operations that were previously being performed on this DSO Session
 because it does not have authority over the names in question
@@ -2024,8 +2027,6 @@ where the DSO-TYPE of the Response TLV matches the DSO-TYPE of the Primary TLV i
 (in response to a client "C-P" request with nonzero MESSAGE ID indicating that a response is required)
 where the DSO-TYPE of the Response TLV does not match the DSO-TYPE of the Primary TLV in the request.</t>
 </list></t>
-
-<t><vspace blankLines='999' /></t>
 
 <t>The second five contexts are their counterparts in the opposite direction:
 DSO requests or DSO unidirectional messages from server to client, and the corresponding responses from client back to server.</t>
@@ -2489,6 +2490,7 @@ permitted as early data.  Only response-requiring messages are ever permitted as
 data, and only clients are permitted to send a DSO message as
 early data unless there is an implicit DSO session (see <xref target="establishment"/>).</t>
 
+<?rfc needLines="6" ?>
 <t>For DSO messages that are permitted as early data, a client MAY include one or more such
 messages as early data without having to wait for a DSO response to the first
 DSO request message to confirm successful establishment of a DSO Session.</t>
@@ -2569,7 +2571,7 @@ This threat analysis should be done based on the advice given in Sections 2.3,
 &RFC7413;
 &RFC8446;
 
-<!-- I-D.ietf-draft-ietf-dnssd-push-16: I-D exists -->
+<!-- I-D.ietf-draft-ietf-dnssd-push-18: I-D exists -->
 
 <reference anchor="Push">
 <front>
@@ -2577,12 +2579,12 @@ This threat analysis should be done based on the advice given in Sections 2.3,
 <author initials='T' surname='Pusateri' fullname='Tom Pusateri'>
   <organization/>
 </author>
-<author initials='S' surname='Chesire' fullname='Stuart Chesire'>
+<author initials='S' surname='Cheshire' fullname='Stuart Cheshire'>
   <organization/>
 </author>
-<date month='November' year='2018'/>
+<date month='March' year='2019'/>
 </front>
-<seriesInfo name='Work in Progress,' value='draft-ietf-dnssd-push-16'/>
+<seriesInfo name='Work in Progress,' value='draft-ietf-dnssd-push-18'/>
 </reference>
 
 
@@ -2605,19 +2607,19 @@ This threat analysis should be done based on the advice given in Sections 2.3,
 </reference>
 
 
-<!-- I-D.ietf-dnssd-mdns-relay: I-D Expired-->
+<!-- I-D.ietf-dnssd-mdns-relay: I-D Exists-->
 <reference anchor="Relay">
 <front>
 <title>Multicast DNS Discovery Relay</title>
 <author initials='T' surname='Lemon' fullname='Ted Lemon'>
   <organization/>
 </author>
-<author initials='S' surname='Chesire' fullname='Stuart Chesire'>
+<author initials='S' surname='Cheshire' fullname='Stuart Cheshire'>
   <organization/>
 </author>
-<date month='July' year='2018'/>
+<date month='March' year='2019'/>
 </front>
-<seriesInfo name='Work in Progress,' value='draft-ietf-dnssd-mdns-relay-01'/>
+<seriesInfo name='Work in Progress,' value='draft-ietf-dnssd-mdns-relay-02'/>
 </reference>
 
 
