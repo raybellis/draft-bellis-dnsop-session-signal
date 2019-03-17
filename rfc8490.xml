@@ -2032,6 +2032,8 @@ where the DSO-TYPE of the Response TLV matches the DSO-TYPE of the Primary TLV i
 where the DSO-TYPE of the Response TLV does not match the DSO-TYPE of the Primary TLV in the request.</t>
 </list></t>
 
+<?rfc needLines="25" ?>
+
 <t>The second five contexts are their counterparts in the opposite direction:
 DSO requests or DSO unidirectional messages from server to client, and the corresponding responses from client back to server.</t>
 

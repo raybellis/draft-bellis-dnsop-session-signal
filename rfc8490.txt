@@ -2724,6 +2724,30 @@ RFC 8490                 DNS Stateful Operations              March 2019
       the DSO-TYPE of the Response TLV does not match the DSO-TYPE of
       the Primary TLV in the request.
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Bellis, et al.               Standards Track                   [Page 49]
+
+RFC 8490                 DNS Stateful Operations              March 2019
+
+
    The second five contexts are their counterparts in the opposite
    direction: DSO requests or DSO unidirectional messages from server to
    client, and the corresponding responses from client back to server.
@@ -2738,15 +2762,6 @@ RFC 8490                 DNS Stateful Operations              March 2019
 
    o  S-A - Additional TLV, optionally added to a DSO request message or
       DSO unidirectional message from server to client.
-
-
-
-
-
-Bellis, et al.               Standards Track                   [Page 49]
-
-RFC 8490                 DNS Stateful Operations              March 2019
-
 
    o  SRP - Response Primary TLV, included in response message sent back
       to the server (in response to a server "S-P" request with nonzero
@@ -2774,21 +2789,6 @@ RFC 8490                 DNS Stateful Operations              March 2019
    table provides a template for future TLV definitions to follow.  It
    is recommended that definitions of future TLVs include a similar
    table summarizing the contexts where the new TLV is valid.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
