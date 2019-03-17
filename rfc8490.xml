@@ -485,6 +485,7 @@ forcibly aborted the connection, but the client still needs service.   The clien
 connects to a different service instance (<xref target="serviceinstances"/>) or waits to reconnect (<xref target="forcereconnect"/>).</t>
 </list></t>
 
+<?rfc needLines="25" ?>
 <section anchor="establishment" title="DSO Session Establishment">
 
 <t>In order for a session to be established between a client and a server, the client must first
@@ -524,6 +525,7 @@ Session, the client MUST forcibly abort the connection.   This can only be enfor
 TLS connections; therefore, servers MUST NOT enable TCP Fast Open (TFO) when listening for a connection
 that does not require TLS.</t>
 
+<?rfc needLines="25" ?>
 <section anchor="stabfail" title="DSO Session Establishment Failure">
 
 <t>If the response RCODE is set to NOTIMP (4), or in practice any value other than NOERROR (0) or DSOTYPENI
@@ -612,6 +614,7 @@ gives implementers the option of using that new DSO-TYPE if they wish,
 but does not change the fact that sending a Keepalive TLV
 remains a valid way of initiating a DSO Session.</t>
 
+<?rfc needLines="25" ?>
 </section>
 <section anchor="sessiontermination" title="DSO Session Termination">
 
@@ -652,6 +655,7 @@ This document describes this latter form of error condition as a
 "fatal error" and specifies that an implementation encountering
 a fatal error condition "MUST forcibly abort the connection immediately".</t>
 
+<?rfc needLines="25" ?>
 </section>
 </section>
 <section anchor="format" title="Message Format">
