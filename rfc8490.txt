@@ -2697,6 +2697,21 @@ RFC 8490                 DNS Stateful Operations              March 2019
    The table below indicates, for each of the three TLVs defined in this
    document, whether they are valid in each of ten different contexts.
 
+   Note that some of the columns in this table are currently empty.
+   The table provides a template for future TLV definitions to follow.
+   It is recommended that definitions of future TLVs include a similar
+   table summarizing the contexts where the new TLV is valid.
+
+                +-------------------------+-------------------------+
+                | C-P  C-U  C-A  CRP  CRA | S-P  S-U  S-A  SRP  SRA |
+   +------------+-------------------------+-------------------------+
+   | KeepAlive  |  X              X       |       X                 |
+   +------------+-------------------------+-------------------------+
+   | RetryDelay |                      X  |       X              X  |
+   +------------+-------------------------+-------------------------+
+   | Padding    |            X         X  |            X         X  |
+   +------------+-------------------------+-------------------------+
+
    The first five contexts are DSO requests or DSO unidirectional
    messages from client to server, and the corresponding responses from
    server back to client:
@@ -2723,21 +2738,6 @@ RFC 8490                 DNS Stateful Operations              March 2019
       nonzero MESSAGE ID indicating that a response is required) where
       the DSO-TYPE of the Response TLV does not match the DSO-TYPE of
       the Primary TLV in the request.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -2775,20 +2775,20 @@ RFC 8490                 DNS Stateful Operations              March 2019
       the DSO-TYPE of the Response TLV does not match the DSO-TYPE of
       the Primary TLV in the request.
 
-                +-------------------------+-------------------------+
-                | C-P  C-U  C-A  CRP  CRA | S-P  S-U  S-A  SRP  SRA |
-   +------------+-------------------------+-------------------------+
-   | KeepAlive  |  X              X       |       X                 |
-   +------------+-------------------------+-------------------------+
-   | RetryDelay |                      X  |       X              X  |
-   +------------+-------------------------+-------------------------+
-   | Padding    |            X         X  |            X         X  |
-   +------------+-------------------------+-------------------------+
 
-   Note that some of the columns in this table are currently empty.  The
-   table provides a template for future TLV definitions to follow.  It
-   is recommended that definitions of future TLVs include a similar
-   table summarizing the contexts where the new TLV is valid.
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

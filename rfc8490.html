@@ -1327,26 +1327,7 @@
 <a href="#rfc.section.8.2">8.2.</a> <a href="#TLV" id="TLV">TLV Usage</a>
 </h1>
 <p id="rfc.section.8.2.p.1">The table below indicates, for each of the three TLVs defined in this document, whether they are valid in each of ten different contexts.</p>
-<p id="rfc.section.8.2.p.2">The first five contexts are DSO requests or DSO unidirectional messages from client to server, and the corresponding responses from server back to client:</p>
-<p></p>
-
-<ul>
-<li>C-P - Primary TLV, sent in DSO request message, from client to server, with nonzero MESSAGE ID indicating that this request MUST generate response message.</li>
-<li>C-U - Primary TLV, sent in DSO unidirectional message, from client to server, with zero MESSAGE ID indicating that this request MUST NOT generate response message.</li>
-<li>C-A - Additional TLV, optionally added to a DSO request message or DSO unidirectional message from client to server.</li>
-<li>CRP - Response Primary TLV, included in response message sent back to the client (in response to a client "C-P" request with nonzero MESSAGE ID indicating that a response is required) where the DSO-TYPE of the Response TLV matches the DSO-TYPE of the Primary TLV in the request.</li>
-<li>CRA - Response Additional TLV, included in response message sent back to the client (in response to a client "C-P" request with nonzero MESSAGE ID indicating that a response is required) where the DSO-TYPE of the Response TLV does not match the DSO-TYPE of the Primary TLV in the request.</li>
-</ul>
-<p id="rfc.section.8.2.p.4">The second five contexts are their counterparts in the opposite direction: DSO requests or DSO unidirectional messages from server to client, and the corresponding responses from client back to server.</p>
-<p></p>
-
-<ul>
-<li>S-P - Primary TLV, sent in DSO request message, from server to client, with nonzero MESSAGE ID indicating that this request MUST generate response message.</li>
-<li>S-U - Primary TLV, sent in DSO unidirectional message, from server to client, with zero MESSAGE ID indicating that this request MUST NOT generate response message.</li>
-<li>S-A - Additional TLV, optionally added to a DSO request message or DSO unidirectional message from server to client.</li>
-<li>SRP - Response Primary TLV, included in response message sent back to the server (in response to a server "S-P" request with nonzero MESSAGE ID indicating that a response is required) where the DSO-TYPE of the Response TLV matches the DSO-TYPE of the Primary TLV in the request.</li>
-<li>SRA - Response Additional TLV, included in response message sent back to the server (in response to a server "S-P" request with nonzero MESSAGE ID indicating that a response is required) where the DSO-TYPE of the Response TLV does not match the DSO-TYPE of the Primary TLV in the request.</li>
-</ul>
+<p id="rfc.section.8.2.p.2">Note that some of the columns in this table are currently empty.<br> The table provides a template for future TLV definitions to follow.<br> It is recommended that definitions of future TLVs include a similar table summarizing the contexts where the new TLV is valid.</p>
 <pre>
              +-------------------------+-------------------------+
              | C-P  C-U  C-A  CRP  CRA | S-P  S-U  S-A  SRP  SRA |
@@ -1358,7 +1339,26 @@
 | Padding    |            X         X  |            X         X  |
 +------------+-------------------------+-------------------------+
 </pre>
-<p id="rfc.section.8.2.p.6">Note that some of the columns in this table are currently empty.  The table provides a template for future TLV definitions to follow.  It is recommended that definitions of future TLVs include a similar table summarizing the contexts where the new TLV is valid.</p>
+<p id="rfc.section.8.2.p.3">The first five contexts are DSO requests or DSO unidirectional messages from client to server, and the corresponding responses from server back to client:</p>
+<p></p>
+
+<ul>
+<li>C-P - Primary TLV, sent in DSO request message, from client to server, with nonzero MESSAGE ID indicating that this request MUST generate response message.</li>
+<li>C-U - Primary TLV, sent in DSO unidirectional message, from client to server, with zero MESSAGE ID indicating that this request MUST NOT generate response message.</li>
+<li>C-A - Additional TLV, optionally added to a DSO request message or DSO unidirectional message from client to server.</li>
+<li>CRP - Response Primary TLV, included in response message sent back to the client (in response to a client "C-P" request with nonzero MESSAGE ID indicating that a response is required) where the DSO-TYPE of the Response TLV matches the DSO-TYPE of the Primary TLV in the request.</li>
+<li>CRA - Response Additional TLV, included in response message sent back to the client (in response to a client "C-P" request with nonzero MESSAGE ID indicating that a response is required) where the DSO-TYPE of the Response TLV does not match the DSO-TYPE of the Primary TLV in the request.</li>
+</ul>
+<p id="rfc.section.8.2.p.5">The second five contexts are their counterparts in the opposite direction: DSO requests or DSO unidirectional messages from server to client, and the corresponding responses from client back to server.</p>
+<p></p>
+
+<ul>
+<li>S-P - Primary TLV, sent in DSO request message, from server to client, with nonzero MESSAGE ID indicating that this request MUST generate response message.</li>
+<li>S-U - Primary TLV, sent in DSO unidirectional message, from server to client, with zero MESSAGE ID indicating that this request MUST NOT generate response message.</li>
+<li>S-A - Additional TLV, optionally added to a DSO request message or DSO unidirectional message from server to client.</li>
+<li>SRP - Response Primary TLV, included in response message sent back to the server (in response to a server "S-P" request with nonzero MESSAGE ID indicating that a response is required) where the DSO-TYPE of the Response TLV matches the DSO-TYPE of the Primary TLV in the request.</li>
+<li>SRA - Response Additional TLV, included in response message sent back to the server (in response to a server "S-P" request with nonzero MESSAGE ID indicating that a response is required) where the DSO-TYPE of the Response TLV does not match the DSO-TYPE of the Primary TLV in the request.</li>
+</ul>
 <p></p>
 <h1 id="rfc.section.9">
 <a href="#rfc.section.9">9.</a> <a href="#additional-considerations" id="additional-considerations">Additional Considerations</a>

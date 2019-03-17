@@ -2015,6 +2015,23 @@ various aspects of the DSO protocol.</t>
 <t>The table below indicates, for each of the three TLVs defined in this
 document, whether they are valid in each of ten different contexts.</t>
 
+<t>Note that some of the columns in this table are currently empty.<vspace />
+The table provides a template for future TLV definitions to follow.<vspace />
+It is recommended that definitions of future TLVs include a
+similar table summarizing the contexts where the new TLV is valid.</t>
+
+<figure><artwork><![CDATA[
+             +-------------------------+-------------------------+
+             | C-P  C-U  C-A  CRP  CRA | S-P  S-U  S-A  SRP  SRA |
++------------+-------------------------+-------------------------+
+| KeepAlive  |  X              X       |       X                 |
++------------+-------------------------+-------------------------+
+| RetryDelay |                      X  |       X              X  |
++------------+-------------------------+-------------------------+
+| Padding    |            X         X  |            X         X  |
++------------+-------------------------+-------------------------+
+]]></artwork></figure>
+
 <t>The first five contexts are DSO requests or DSO unidirectional messages from client to server,
 and the corresponding responses from server back to client:</t>
 
@@ -2050,23 +2067,6 @@ where the DSO-TYPE of the Response TLV matches the DSO-TYPE of the Primary TLV i
 (in response to a server "S-P" request with nonzero MESSAGE ID indicating that a response is required)
 where the DSO-TYPE of the Response TLV does not match the DSO-TYPE of the Primary TLV in the request.</t>
 </list></t>
-
-<figure><artwork><![CDATA[
-             +-------------------------+-------------------------+
-             | C-P  C-U  C-A  CRP  CRA | S-P  S-U  S-A  SRP  SRA |
-+------------+-------------------------+-------------------------+
-| KeepAlive  |  X              X       |       X                 |
-+------------+-------------------------+-------------------------+
-| RetryDelay |                      X  |       X              X  |
-+------------+-------------------------+-------------------------+
-| Padding    |            X         X  |            X         X  |
-+------------+-------------------------+-------------------------+
-]]></artwork></figure>
-
-<t>Note that some of the columns in this table are currently empty.
-The table provides a template for future TLV definitions to follow.
-It is recommended that definitions of future TLVs include a
-similar table summarizing the contexts where the new TLV is valid.</t>
 
 <t><vspace blankLines='999' /></t>
 
